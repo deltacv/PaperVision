@@ -1,0 +1,41 @@
+name,en,es
+en,English,Ingles
+es,Spanish,Español
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+cat_pipeline_flow,Pipeline Flow,Ejecucion
+cat_coding,Coding,Codigo
+cat_high_level_cv,High Level,Alto Nivel
+cat_color_op,Basic Color Operations,Operaciones Basicas de Color
+cat_shape_det,Basic Shape Detection,Operaciones Basicas de Detectar Figuras
+cat_overlay,Overlay,Overlay
+cat_math,Math,Matematicas
+cat_misc,Miscellaneous,Miscelaneo
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+,,
+nod_pipelineinput,Pipeline Input,Entrada
+nod_pipelineoutput,Pipeline Outpu,Salida
+nod_binarymask,Binary Mask,Mascara Binaria
+nod_colorthresh,Color Threshold,Umbral de Color
+nod_cvtcolor,Convert Color,Convertir Color
+nod_boundingrect,Bounding Rectangles,Rectangulos Delimitantes
+nod_findcontours,Simple Find Contours,Deteccion de Contornos
+nod_drawcontours,Draw Contours,Dibujar Contornos
+nod_drawcontours_onimage,Draw Contours on Image,Dibujar Contornos en Imagen
+nod_sumintegers,Sum Integers,Sumar Enteros
+nod_codesnippet,Code Snippet,Trozo de Codigo

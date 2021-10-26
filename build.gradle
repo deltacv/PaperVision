@@ -1,0 +1,29 @@
+buildscript {
+    ext {
+        kotlin_version = "1.5.10"
+        kotlinx_coroutines_version = "1.5.0-native-mt"
+        classgraph_version = "4.8.108"
+
+        env = findProperty('env') == 'release' ? 'release' : 'dev'
+
+        println("Current build is: $env")
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    group 'com.github.deltacv'
+    version '1.0.0'
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}

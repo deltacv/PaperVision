@@ -1,0 +1,3 @@
+rootProject.name = 'EasyVision'
+
+include ':EasyVision'
