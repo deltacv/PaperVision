@@ -98,9 +98,10 @@ fabric.properties
 
 # End of https://www.toptal.com/developers/gitignore/api/intellij
 
-
 *.log
 
 **/build/*
 
 *.DS_Store
+
+imgui.ini
