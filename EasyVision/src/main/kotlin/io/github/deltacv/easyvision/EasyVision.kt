@@ -24,25 +24,26 @@
 package io.github.deltacv.easyvision
 
 import com.github.serivesmejia.eocvsim.util.Log
-import imgui.ImFont
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.app.Application
 import imgui.app.Configuration
-import imgui.flag.*
-import io.github.deltacv.easyvision.codegen.*
+import imgui.flag.ImGuiCond
+import imgui.flag.ImGuiMouseButton
+import imgui.flag.ImGuiWindowFlags
+import io.github.deltacv.easyvision.codegen.CodeGenManager
 import io.github.deltacv.easyvision.gui.Font
-import io.github.deltacv.easyvision.gui.util.PopupBuilder
-import io.github.deltacv.easyvision.gui.util.makeFont
-import io.github.deltacv.easyvision.gui.style.imnodes.ImNodesDarkStyle
-import io.github.deltacv.easyvision.id.IdElementContainer
-import io.github.deltacv.easyvision.io.KeyManager
+import io.github.deltacv.easyvision.gui.FontManager
 import io.github.deltacv.easyvision.gui.NodeEditor
 import io.github.deltacv.easyvision.gui.NodeList
-import io.github.deltacv.easyvision.gui.FontManager
-import io.github.deltacv.mai18n.tr
+import io.github.deltacv.easyvision.gui.style.imnodes.ImNodesDarkStyle
+import io.github.deltacv.easyvision.gui.util.PopupBuilder
+import io.github.deltacv.easyvision.id.IdElementContainer
+import io.github.deltacv.easyvision.io.KeyManager
+import io.github.deltacv.mai18n.LangManager
 import org.lwjgl.BufferUtils
-import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.glfw.GLFW.glfwGetWindowSize
+import org.lwjgl.glfw.GLFW.glfwSetKeyCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 
 class EasyVision : Application() {
@@ -77,6 +78,8 @@ class EasyVision : Application() {
     val codeGenManager = CodeGenManager(this)
     val fontManager = FontManager()
 
+    val langManager = LangManager("/lang.csv", "en").makeTr()
+
     val nodeEditor = NodeEditor(this, keyManager)
     val nodeList = NodeList(this, keyManager)
 
@@ -86,7 +89,9 @@ class EasyVision : Application() {
     fun start() {
         Log.info(TAG, "Starting EasyVision...")
         Log.blank()
+
         nodeEditor.init()
+        langManager.loadIfNeeded()
 
         launch(this)
 

@@ -8,8 +8,7 @@ import imgui.flag.*
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.gui.util.Table
-import io.github.deltacv.easyvision.gui.util.makeFont
-import io.github.deltacv.easyvision.i18n.tr
+import io.github.deltacv.mai18n.tr
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys

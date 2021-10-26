@@ -7,8 +7,7 @@ import imgui.extension.imnodes.flag.ImNodesColorStyle
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.i18n.tr
-import jdk.jfr.Category
+import io.github.deltacv.mai18n.tr
 
 interface Type {
     val name: String

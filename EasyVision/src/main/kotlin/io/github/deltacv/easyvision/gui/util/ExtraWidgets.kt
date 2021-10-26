@@ -72,13 +72,3 @@ object ExtraWidgets {
     }
 
 }
-
-fun makeFont(size: Float): ImFont {
-    val fontConfig = ImFontConfig()
-    fontConfig.sizePixels = size
-    fontConfig.oversampleH = 1
-    fontConfig.oversampleV = 1
-    fontConfig.pixelSnapH = false
-
-    return ImGui.getIO().fonts.addFontDefault(fontConfig)
-}
