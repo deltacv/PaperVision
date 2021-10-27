@@ -23,9 +23,9 @@ import io.github.deltacv.easyvision.node.DrawNode
 )
 class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
-    val input = MatAttribute(INPUT, "Input")
-    val scalar = ScalarRangeAttribute(INPUT, Colors.values()[0], "Threshold")
-    val output = MatAttribute(OUTPUT, "Binary Output")
+    val input = MatAttribute(INPUT, "$[att_input]")
+    val scalar = ScalarRangeAttribute(INPUT, Colors.values()[0], "$[att_threshold]")
+    val output = MatAttribute(OUTPUT, "$[att_binaryoutput]")
 
     override fun onEnable() {
         + input

@@ -17,10 +17,10 @@ import io.github.deltacv.easyvision.node.DrawNode
 )
 class CvtColorNode : DrawNode<CvtColorNode.Session>() {
 
-    val input  = MatAttribute(INPUT, "Input")
-    val output = MatAttribute(OUTPUT, "Output")
+    val input  = MatAttribute(INPUT, "$[att_input]")
+    val output = MatAttribute(OUTPUT, "$[att_output]")
 
-    val convertTo = EnumAttribute(INPUT, Colors.values(), "Convert To")
+    val convertTo = EnumAttribute(INPUT, Colors.values(), "$[att_convertto]")
 
     override fun onEnable() {
         + input

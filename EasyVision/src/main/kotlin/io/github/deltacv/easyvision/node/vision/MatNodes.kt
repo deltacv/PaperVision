@@ -29,7 +29,7 @@ class InputMatNode : DrawNode<NoSession>(allowDelete = false) {
     }
 
     override fun onEnable() {
-        + MatAttribute(OUTPUT, "Input")
+        + MatAttribute(OUTPUT, "$[att_input]")
     }
 
     override fun genCode(current: CodeGen.Current) = NoSession
@@ -59,7 +59,7 @@ class OutputMatNode : DrawNode<NoSession>(allowDelete = false) {
         ImNodes.setNodeScreenSpacePos(id, windowSize.x - nodeSize.x * 1.5f , windowSize.y / 2f - nodeSize.y / 2)
     }
 
-    val input = MatAttribute(INPUT, "Output")
+    val input = MatAttribute(INPUT, "$[att_output]")
 
     override fun onEnable() {
         + input

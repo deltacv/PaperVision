@@ -91,7 +91,7 @@ abstract class DrawNode<S: CodeGenSession>(
     }
 
     protected fun noValue(attrib: Attribute): Nothing {
-        raise("Attribute $attrib is not an output of this node or not handled by this")
+        raise(tr("err_attrib_nothandledby_this", attrib))
     }
 
     open fun drawNode() { }

@@ -18,10 +18,10 @@ import io.github.deltacv.easyvision.node.DrawNode
 )
 class MaskNode : DrawNode<MaskNode.Session>(){
 
-    val inputMat = MatAttribute(INPUT, "Input")
-    val maskMat  = MatAttribute(INPUT, "Binary Mask")
+    val inputMat = MatAttribute(INPUT, "$[att_input]")
+    val maskMat  = MatAttribute(INPUT, "$[att_binarymask]")
 
-    val outputMat = MatAttribute(OUTPUT, "Output")
+    val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
         + inputMat

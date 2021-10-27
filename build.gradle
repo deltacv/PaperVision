@@ -22,6 +22,12 @@ allprojects {
     group 'com.github.deltacv'
     version '1.0.0'
 
+    tasks.withType(Jar) {
+        manifest {
+            attributes['Main-Class'] = 'io.github.deltacv.easyvision.Main'
+        }
+    }
+
     repositories {
         mavenCentral()
         maven { url 'https://jitpack.io' }

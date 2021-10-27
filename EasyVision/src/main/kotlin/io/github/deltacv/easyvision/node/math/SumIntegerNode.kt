@@ -17,8 +17,8 @@ import io.github.deltacv.easyvision.node.Category
 )
 class SumIntegerNode : DrawNode<SumIntegerNode.Session>() {
 
-    val numbers = ListAttribute(INPUT, IntAttribute, "Numbers", sameLine = true)
-    val result  = IntAttribute(OUTPUT, "Result")
+    val numbers = ListAttribute(INPUT, IntAttribute, "$[att_numbers]", sameLine = true)
+    val result  = IntAttribute(OUTPUT, "$[att_result]")
 
     override fun onEnable() {
         + numbers

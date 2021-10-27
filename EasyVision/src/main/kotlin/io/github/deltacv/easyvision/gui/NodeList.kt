@@ -95,9 +95,7 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
             if(hoveringPlusTime.millis > 500) {
                 ImGui.beginTooltip()
                     ImGui.text(
-                        if(isNodesListOpen) {
-                            "Press ESCAPE to close the nodes list"
-                        } else "Press SPACE to open the nodes list"
+                        tr(if(isNodesListOpen) "mis_nodeslist_close" else "mis_nodeslist_open")
                     )
                 ImGui.endTooltip()
             }
@@ -175,7 +173,7 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
 
         // NODES WINDOW
 
-        ImNodes.getStyle().gridSpacing = 99999f // lol only way to make grid invisible
+        ImNodes.getStyle().gridSpacing = 99999f // lol
         ImNodes.pushColorStyle(ImNodesColorStyle.GridBackground, ImColor.floatToColor(0f, 0f, 0f, 0f))
 
         ImNodes.clearNodeSelection()
@@ -320,7 +318,7 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
             tableLoop@ for((_, table) in tablesCategories) {
                 for((id, rect) in table.currentRects) {
                     // AABB collision check
-                    if(mousePos.x > rect.min.x && mousePos.x < rect.max.x &&
+                    if(mousePos.x > rect.min.x && mousePos.x < rect.max.x + 6 &&
                             mousePos.y > rect.min.y && mousePos.y < rect.max.y) {
                         hoveredNode = id
                         isHoverManuallyDetected = true
@@ -342,9 +340,9 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
    private fun handleClick(closeOnClick: Boolean) {
         if(ImGui.isMouseClicked(ImGuiMouseButton.Left)) {
             if(hoveredNode >= 0) {
-                val nodeClass = listNodes[hoveredNode]!!::class.java
-                val instance = nodeClass.getConstructor().newInstance()
-                instance.enable()
+                val instance = easyVision.nodeEditor.addNode(
+                    listNodes[hoveredNode]!!::class.java
+                ) // add node with the class by using reflection
 
                 if(instance is DrawNode<*>) {
                     val nodePos = ImVec2()

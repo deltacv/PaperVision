@@ -10,6 +10,7 @@ import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.exception.NodeGenException
+import io.github.deltacv.mai18n.tr
 
 interface Type {
     val name: String

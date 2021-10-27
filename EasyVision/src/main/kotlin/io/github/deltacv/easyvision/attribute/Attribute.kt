@@ -7,6 +7,7 @@ import io.github.deltacv.easyvision.exception.AttributeGenException
 import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
+import io.github.deltacv.mai18n.tr
 
 enum class AttributeMode { INPUT, OUTPUT }
 

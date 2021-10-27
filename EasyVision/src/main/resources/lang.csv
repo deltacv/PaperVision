@@ -1,13 +1,6 @@
 name,en,es
-en,English,Ingles
-es,Spanish,Español
-,,
-,,
-,,
-,,
-,,
-,,
-,,
+lan_en,English,Ingles
+lan_es,Spanish,Español
 cat_pipeline_flow,Pipeline Flow,Ejecucion
 cat_coding,Coding,Codigo
 cat_high_level_cv,High Level,Alto Nivel
@@ -16,20 +9,8 @@ cat_shape_det,Basic Shape Detection,Operaciones Basicas de Detectar Figuras
 cat_overlay,Overlay,Overlay
 cat_math,Math,Matematicas
 cat_misc,Miscellaneous,Miscelaneo
-,,
-,,
-,,
-,,
-,,
-,,
-,,
-,,
-,,
-,,
-,,
-,,
 nod_pipelineinput,Pipeline Input,Entrada
-nod_pipelineoutput,Pipeline Outpu,Salida
+nod_pipelineoutput,Pipeline Output,Salida
 nod_binarymask,Binary Mask,Mascara Binaria
 nod_colorthresh,Color Threshold,Umbral de Color
 nod_cvtcolor,Convert Color,Convertir Color
@@ -39,3 +20,28 @@ nod_drawcontours,Draw Contours,Dibujar Contornos
 nod_drawcontours_onimage,Draw Contours on Image,Dibujar Contornos en Imagen
 nod_sumintegers,Sum Integers,Sumar Enteros
 nod_codesnippet,Code Snippet,Trozo de Codigo
+att_input,Input,Entrada
+att_output,Output,Salida
+att_convertto,Convert To,Convertir A
+att_binarymask,Binary Mask,Mascara Binaria
+att_binaryinput,Binary Input,Entrada Binaria
+att_binaryoutput,Binary Output,Salida Binaria
+att_threshold,Threshold,Umbral de Color
+att_contours,Contours,Contornos
+att_colorspace,Color Space,Espacio de Color
+att_boundingrects,Bounding Rects,Rectangulos
+att_drawon_image,Draw On,Dibujar En
+att_linecolor,Line Color,Color de Linea
+att_linethickness,Line Thickness,Grosor de Linea
+att_numbers,Numbers,Numeros
+att_result,Result,Resultado
+err_musthave_attachedattrib,$[0] attribute must have another attribute attached,El atributo $[0] debe tener otro atributo conectado
+err_attachedattrib_isnot,Attribute attached is not $[0],El atributo conectado no es $[0]
+err_valreturned_isnot,Value returned from the node is not $[0],El valor retornado del nodo no es $[0]
+err_attrib_nothandledby_this,Attribute $[0] is not an output of this node or not handled by this,El atributo $[0] no es una salida de este nodo o no es manejado por este
+err_couldntlink_didntmatch,Couldn’t link nodes: Types didn’t match,No se completo la conexion: Los tipos son diferentes
+err_couldntlink_recursion,Couldn’t link nodes: Recursion problem detected,No se completo la conexion: Problema de recursion detectado
+mis_input,Input,Entrada
+mis_output,Output,Salida
+mis_nodeslist_open,Press SPACE to open the nodes list,Presiona ESPACIO para abrir la lista de nodos
+mis_nodeslist_close,Press ESCAPE to close the nodes list,Presiona ESCAPE para cerrar la lista de nodos

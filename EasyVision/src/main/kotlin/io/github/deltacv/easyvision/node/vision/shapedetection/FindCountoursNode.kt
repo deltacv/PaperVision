@@ -20,8 +20,8 @@ import io.github.deltacv.easyvision.node.RegisterNode
 )
 class FindContoursNode : DrawNode<FindContoursNode.Session>() {
 
-    val inputMat = MatAttribute(INPUT, "Binary Input")
-    val outputPoints = ListAttribute(OUTPUT, PointsAttribute, "Contours")
+    val inputMat = MatAttribute(INPUT, "$[att_binaryinput]")
+    val outputPoints = ListAttribute(OUTPUT, PointsAttribute, "$[att_contours]")
 
     override fun onEnable() {
         + inputMat

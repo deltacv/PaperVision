@@ -78,7 +78,7 @@ class EasyVision : Application() {
     val codeGenManager = CodeGenManager(this)
     val fontManager = FontManager()
 
-    val langManager = LangManager("/lang.csv", "en").makeTr()
+    val langManager = LangManager("/lang.csv", "es").makeTr()
 
     val nodeEditor = NodeEditor(this, keyManager)
     val nodeList = NodeList(this, keyManager)
@@ -159,8 +159,4 @@ class EasyVision : Application() {
         // thanks.
         keyManager.updateKey(scancode, action)
     }
-}
-
-fun main() {
-    EasyVision().start()
 }

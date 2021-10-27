@@ -1,5 +1,6 @@
 package io.github.deltacv.easyvision.gui
 
+import com.github.serivesmejia.eocvsim.util.Log
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
@@ -16,10 +17,13 @@ import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.node.vision.InputMatNode
 import io.github.deltacv.easyvision.node.vision.OutputMatNode
 import io.github.deltacv.easyvision.util.ElapsedTime
+import io.github.deltacv.mai18n.tr
 
 class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
 
     companion object {
+        const val TAG = "NodeEditor"
+
         val KEY_PAN_CONSTANT = 5f
         val PAN_CONSTANT = 25f
     }
@@ -117,6 +121,19 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
         handleDeleteSelection()
     }
 
+    fun addNode(nodeClazz: Class<out Node<*>>): Node<*> {
+        val instance = try {
+            nodeClazz.getConstructor().newInstance()
+        } catch(e: NoSuchMethodException) {
+            throw UnsupportedOperationException("Node ${nodeClazz.typeName} does not implement a constructor with no parameters", e)
+        } catch(e: IllegalStateException) {
+            throw UnsupportedOperationException("Error while instantiating node ${nodeClazz.typeName}", e)
+        }
+
+        instance.enable()
+        return instance
+    }
+
     private val startAttr = ImInt()
     private val endAttr = ImInt()
 
@@ -139,7 +156,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
             }
 
             if(!startAttrib.acceptLink(endAttrib) || !endAttrib.acceptLink(startAttrib)) {
-                PopupBuilder.addWarningToolTip("Couldn't link nodes: Types didn't match")
+                PopupBuilder.addWarningToolTip(tr("err_couldntlink_didntmatch"))
                 return // one or both of the attributes didn't accept the link, abort.
             }
 
@@ -154,7 +171,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
             val link = Link(start, end).enable() // create the link and enable it
 
             if(Node.checkRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
-                PopupBuilder.addWarningToolTip("Couldn't link nodes: Recursion problem detected")
+                PopupBuilder.addWarningToolTip(tr("err_couldntlink_recursion"))
                 // remove the link if a recursion case was detected (e.g both nodes were attached to each other)
                 link.delete()
             }

@@ -22,8 +22,8 @@ import io.github.deltacv.easyvision.node.RegisterNode
 )
 class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
-    val inputContours = ListAttribute(INPUT, PointsAttribute, "Contours")
-    val outputRects   = ListAttribute(OUTPUT, RectAttribute, "Bounding Rects")
+    val inputContours = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
+    val outputRects   = ListAttribute(OUTPUT, RectAttribute, "$[att_boundingrects]")
 
     override fun onEnable() {
         + inputContours

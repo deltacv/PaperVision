@@ -25,13 +25,13 @@ open class DrawContoursNode
 @JvmOverloads constructor(val isDrawOnInput: Boolean = false)
     : DrawNode<DrawContoursNode.Session>()  {
 
-    val inputMat = MatAttribute(INPUT, "Input")
-    val contours = ListAttribute(INPUT, PointsAttribute, "Contours")
+    val inputMat = MatAttribute(INPUT, "$[att_input]")
+    val contours = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
 
-    val lineColor = ScalarAttribute(INPUT, Colors.RGB, "Line Color")
-    val lineThickness = IntAttribute(INPUT, "Line Thickness")
+    val lineColor = ScalarAttribute(INPUT, Colors.RGB, "$[att_linecolor]")
+    val lineThickness = IntAttribute(INPUT, "$[att_linethickness]")
 
-    val outputMat = MatAttribute(OUTPUT, "Output")
+    val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
         + inputMat
@@ -40,10 +40,12 @@ open class DrawContoursNode
         + lineColor
         + lineThickness
 
-        lineThickness.value.set(1)
+        lineThickness.value.set(1) // initial value
 
         if(!isDrawOnInput) {
             + outputMat
+        } else {
+            inputMat.variableName = "$[att_drawon_image]"
         }
     }
 

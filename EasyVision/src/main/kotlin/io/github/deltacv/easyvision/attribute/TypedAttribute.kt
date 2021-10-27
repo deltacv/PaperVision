@@ -49,7 +49,7 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
     private var isSecondDraw = false
 
     private val finalVarName by lazy {
-        variableName ?: if (mode == AttributeMode.INPUT) "Input" else "Output"
+        variableName ?: if (mode == AttributeMode.INPUT) "$[mis_input]" else "$[mis_output]"
     }
 
     val nodeSize = ImVec2()
@@ -84,21 +84,21 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
             val t: String
 
             if(mode == AttributeMode.OUTPUT && parentNode.nodeAttributes.size > 1) {
-                t = if(drawType) {
+                t = tr(if(drawType) {
                     "$finalVarName $typeName"
-                } else finalVarName
+                } else finalVarName)
 
                 val textSize = ImVec2()
                 ImGui.calcTextSize(textSize, t)
 
                 ImGui.indent((nodeSize.x - textSize.x))
             } else {
-                t = if(drawType) {
+                t = tr(if(drawType) {
                     "$typeName $finalVarName"
-                } else finalVarName
+                } else finalVarName)
             }
 
-            ImGui.text(tr(t))
+            ImGui.text(t)
         } else if(!inputSameLine) {
             ImGui.text("")
         }
@@ -127,11 +127,11 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
 
                 raiseAssert(
                     linkedAttrib != null,
-                    "$name attribute must have another attribute attached"
+                    tr("err_musthave_attachedattrib", name)
                 )
 
                 val value = linkedAttrib!!.value(current)
-                raiseAssert(checkConsumer(value), "Attribute attached is not $name")
+                raiseAssert(checkConsumer(value), tr("err_attachedattrib_isnot", name))
 
                 value as T
             } else {
@@ -139,7 +139,7 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
             }
         } else {
             val value = getOutputValue(current)
-            raiseAssert(checkConsumer(value), "Value returned from the node is not $name")
+            raiseAssert(checkConsumer(value), tr("err_valreturned_isnot", name))
 
             return value as T
         }
