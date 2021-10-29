@@ -52,7 +52,6 @@ class CodeGen(var className: String) {
             bodyScope.newStatement()
         }
 
-        val process = processFrameScope.get()
         bodyScope.method(
             Visibility.PUBLIC, "Mat", "processFrame", processFrameScope,
             Parameter("Mat", "input"), isOverride = true

@@ -1,5 +1,6 @@
 package io.github.deltacv.easyvision.gui
 
+import com.github.serivesmejia.eocvsim.util.Log
 import imgui.*
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.ImNodesContext
@@ -19,18 +20,12 @@ import kotlinx.coroutines.*
 class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
 
     companion object {
+        val TAG = "NodeList"
+
         val listNodes = IdElementContainer<Node<*>>()
         val listAttributes = IdElementContainer<Attribute>()
 
         val plusFontSize = 60f
-
-        lateinit var categorizedNodes: CategorizedNodes
-            private set
-
-        @OptIn(DelicateCoroutinesApi::class)
-        private val annotatedNodesJob = GlobalScope.launch(Dispatchers.IO) {
-            categorizedNodes = NodeScanner.scan()
-        }
     }
 
     lateinit var buttonFont: Font
@@ -49,7 +44,7 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
     }
 
     fun draw() {
-        val size = EasyVision.windowSize
+        val size = easyVision.window.size
 
         if(!easyVision.nodeEditor.isNodeFocused && keyManager.released(Keys.Spacebar)) {
             showList()
@@ -87,15 +82,21 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
 
         ImGui.pushFont(easyVision.defaultFont.imfont)
 
-        if (button != lastButton && !isNodesListOpen && button && openButtonTimeout.millis > 200) {
+        if (button != lastButton && button && !isNodesListOpen
+            && NodeScanner.hasFinishedAsyncScan && openButtonTimeout.millis > 200
+        ) {
             showList()
         }
 
         if(ImGui.isItemHovered()) {
             if(hoveringPlusTime.millis > 500) {
+                val tooltipText = if(!NodeScanner.hasFinishedAsyncScan)
+                    "mis_searchingnodes_pleasewait"
+                else if(isNodesListOpen) "mis_nodeslist_close" else "mis_nodeslist_open"
+
                 ImGui.beginTooltip()
                     ImGui.text(
-                        tr(if(isNodesListOpen) "mis_nodeslist_close" else "mis_nodeslist_open")
+                        tr(tooltipText)
                     )
                 ImGui.endTooltip()
             }
@@ -113,11 +114,12 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
     val nodes by lazy {
         val map = mutableMapOf<Category, MutableList<Node<*>>>()
 
-        for((category, nodeClasses) in categorizedNodes) {
+        for((category, nodeClasses) in NodeScanner.waitAsyncScan()) {
             val list = mutableListOf<Node<*>>()
 
             for(nodeClass in nodeClasses) {
-                val instance = nodeClass.getConstructor().newInstance()
+                val instance = instantiateNode(nodeClass)
+
                 if(instance is DrawNode && !instance.annotationData.showInList) {
                     continue
                 }
@@ -366,12 +368,6 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
 
     fun showList() {
         if(!isNodesListOpen) {
-            if(!annotatedNodesJob.isCompleted) {
-                runBlocking {
-                    annotatedNodesJob.join() // wait for the scanning to finish
-                }
-            }
-
             if(::listContext.isInitialized) {
                 listContext.destroy()
             }

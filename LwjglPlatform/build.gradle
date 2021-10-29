@@ -1,0 +1,28 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'java'
+}
+
+apply from: '../build.common.gradle'
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0"
+
+    implementation project(":EasyVision")
+    implementation "com.github.deltacv.EOCV-Sim:Common:$eocvsim_common_version"
+
+    compileOnly "io.github.spair:imgui-java-app:$imgui_version" // platforms should add the "implementation" they need
+}
+
+
+task(runEv, dependsOn: 'classes', type: JavaExec) {
+    main = 'io.deltacv.easyvision.platform.lwjgl.AppMain'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+tasks.withType(Jar) {
+    manifest {
+        attributes['Main-Class'] = 'io.github.deltacv.easyvision.platform.lwjgl.AppMain'
+    }
+}

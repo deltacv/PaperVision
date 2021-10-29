@@ -6,17 +6,19 @@ import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.AttributeMode
 import io.github.deltacv.easyvision.attribute.TypedAttribute
 import io.github.deltacv.easyvision.attribute.math.DoubleAttribute
+import io.github.deltacv.easyvision.attribute.math.IntAttribute
 import io.github.deltacv.easyvision.attribute.misc.ListAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.node.vision.Colors
 import io.github.deltacv.easyvision.util.Range2d
+import io.github.deltacv.easyvision.util.Range2i
 
 class ScalarAttribute(
     mode: AttributeMode,
     color: Colors,
     variableName: String? = null
-) : ListAttribute(mode, DoubleAttribute, variableName, color.channels, sameLine = true) {
+) : ListAttribute(mode, IntAttribute, variableName, color.channels, sameLine = true) {
 
     var color = color
         set(value) {
@@ -43,20 +45,20 @@ class ScalarAttribute(
     }
 
     override fun onElementCreation(element: Attribute) {
-        if(element is DoubleAttribute) {
-            element.sliderMode(Range2d(0.0, 255.0))
+        if(element is IntAttribute) {
+            element.sliderMode(Range2i(0, 255))
         }
     }
 
     override fun value(current: CodeGen.Current): GenValue.Scalar {
         val values = (super.value(current) as GenValue.GLists.List).elements
-        val ZERO = GenValue.Double(0.0)
+        val ZERO = GenValue.Int(0)
 
         val value = GenValue.Scalar(
-            (values.getOr(0, ZERO) as GenValue.Double).value,
-            (values.getOr(1, ZERO) as GenValue.Double).value,
-            (values.getOr(2, ZERO) as GenValue.Double).value,
-            (values.getOr(3, ZERO) as GenValue.Double).value
+            (values.getOr(0, ZERO) as GenValue.Int).value.toDouble(),
+            (values.getOr(1, ZERO) as GenValue.Int).value.toDouble(),
+            (values.getOr(2, ZERO) as GenValue.Int).value.toDouble(),
+            (values.getOr(3, ZERO) as GenValue.Int).value.toDouble()
         )
 
         return value(

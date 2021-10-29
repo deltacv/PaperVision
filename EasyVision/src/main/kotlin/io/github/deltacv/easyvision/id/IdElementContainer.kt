@@ -10,6 +10,21 @@ class IdElementContainer<T> : Iterable<T> {
     var elements = ArrayList<T>()
         private set
 
+    fun requestId(element: T, id: Int) = lazy {
+        if(id >= e.size) {
+            // add null elements until the list has a size of "id"
+            // and add "element" to the list in the index "id"
+            for(i in e.size until id) {
+                e.add(null)
+            }
+        }
+
+        e.add(id, element)
+        elements.add(element)
+
+        e.lastIndexOf(element)
+    }
+
     fun nextId(element: () -> T) = lazy {
         nextId(element()).value
     }
@@ -38,6 +53,11 @@ class IdElementContainer<T> : Iterable<T> {
 
         if(!elements.contains(element))
             elements.add(element)
+    }
+
+    fun clear() {
+        e.clear()
+        elements.clear()
     }
 
     override fun iterator() = elements.listIterator()

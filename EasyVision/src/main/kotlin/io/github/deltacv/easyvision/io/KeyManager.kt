@@ -1,6 +1,6 @@
 package io.github.deltacv.easyvision.io
 
-import org.lwjgl.glfw.GLFW.*
+import io.github.deltacv.easyvision.EasyVision
 
 class KeyManager {
 
@@ -22,13 +22,20 @@ class KeyManager {
         }
     }
 
-    fun updateKey(scancode: Int, action: Int) {
+    fun updateKey(scancode: Int, action: KeyAction) {
         when (action) {
-            GLFW_PRESS -> {
+            KeyAction.PRESS -> {
                 pressedKeys[scancode] = true
+                pressingKeys[scancode] = false
                 pressingKeys[scancode] = true
             }
-            GLFW_RELEASE -> {
+            KeyAction.PRESSING -> {
+                pressedKeys[scancode] = false
+                pressingKeys[scancode] = true
+                releasedKeys[scancode] = false
+            }
+            KeyAction.RELEASE -> {
+                pressingKeys[scancode] = false
                 pressingKeys[scancode] = false
                 releasedKeys[scancode] = true
             }
@@ -45,3 +52,7 @@ class KeyManager {
     fun released(scancode: Int) = releasedKeys[scancode] ?: false
 
 }
+
+enum class KeyAction { PRESS, PRESSING, RELEASE, UNKNOWN }
+
+val Keys = EasyVision.platformKeys

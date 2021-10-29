@@ -2,6 +2,7 @@ package io.github.deltacv.easyvision.node
 
 import com.github.serivesmejia.eocvsim.util.Log
 import io.github.classgraph.ClassGraph
+import kotlinx.coroutines.*
 
 typealias CategorizedNodes = Map<Category, MutableList<Class<out Node<*>>>>
 
@@ -17,8 +18,13 @@ object NodeScanner {
         "org.lwjgl"
     )
 
+    var result: CategorizedNodes? = null
+        private set
+
     @Suppress("UNCHECKED_CAST") //shut
-    fun scan(): CategorizedNodes {
+    fun scan(useCache: Boolean = true): CategorizedNodes {
+        if(result != null && useCache) return result!!
+
         val nodes = mutableMapOf<Category, MutableList<Class<out Node<*>>>>()
 
         Log.info(TAG, "Scanning for nodes...")
@@ -55,7 +61,30 @@ object NodeScanner {
         Log.info(TAG, "Found ${nodeClasses.size} nodes")
         Log.blank()
 
+        result = nodes
         return nodes
+    }
+
+    private var job: Job? = null
+
+    val hasFinishedAsyncScan get() = job == null && result != null
+
+    @OptIn(DelicateCoroutinesApi::class)
+    fun startAsyncScan() {
+        job = GlobalScope.launch(Dispatchers.IO) {
+            scan()
+            job = null
+        }
+    }
+
+    fun waitAsyncScan(): CategorizedNodes {
+        if(job != null) {
+            runBlocking {
+                job!!.join()
+            }
+        }
+
+        return result!!
     }
 
 }

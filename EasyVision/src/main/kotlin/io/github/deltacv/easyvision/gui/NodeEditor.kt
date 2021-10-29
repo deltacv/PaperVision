@@ -33,8 +33,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
     var isNodeFocused = false
         private set
 
-    val inputNode = InputMatNode()
-    val outputNode = OutputMatNode()
+    val inputNode = InputMatNode { easyVision.window.size }
+    val outputNode = OutputMatNode { easyVision.window.size }
 
     fun init() {
         ImNodes.createContext()
@@ -63,28 +63,27 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
 
         ImNodes.endNodeEditor()
 
-        isNodeFocused = ImNodes.numSelectedNodes() >= 0
+        isNodeFocused = ImNodes.numSelectedNodes() > 0 || ImNodes.getHoveredNode() >= 0
 
         if(easyVision.nodeList.isNodesListOpen) {
             ImNodes.clearLinkSelection()
             ImNodes.clearNodeSelection()
-        } else if(isNodeFocused || scrollTimer.millis <= 500) { // not hovering any node
+        } else if(!isNodeFocused || scrollTimer.millis <= 500) { // not hovering any node
             var doingKeys = false
 
             // scrolling
             if(keyManager.pressing(Keys.ArrowLeft)) {
                 editorPanning.x += KEY_PAN_CONSTANT
                 doingKeys = true
-            }
-            if(keyManager.pressing(Keys.ArrowRight)) {
+            } else if(keyManager.pressing(Keys.ArrowRight)) {
                 editorPanning.x -= KEY_PAN_CONSTANT
                 doingKeys = true
             }
+
             if(keyManager.pressing(Keys.ArrowUp)) {
                 editorPanning.y += KEY_PAN_CONSTANT
                 doingKeys = true
-            }
-            if(keyManager.pressing(Keys.ArrowDown)) {
+            } else if(keyManager.pressing(Keys.ArrowDown)) {
                 editorPanning.y -= KEY_PAN_CONSTANT
                 doingKeys = true
             }
@@ -122,13 +121,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
     }
 
     fun addNode(nodeClazz: Class<out Node<*>>): Node<*> {
-        val instance = try {
-            nodeClazz.getConstructor().newInstance()
-        } catch(e: NoSuchMethodException) {
-            throw UnsupportedOperationException("Node ${nodeClazz.typeName} does not implement a constructor with no parameters", e)
-        } catch(e: IllegalStateException) {
-            throw UnsupportedOperationException("Error while instantiating node ${nodeClazz.typeName}", e)
-        }
+        val instance = instantiateNode(nodeClazz)
 
         instance.enable()
         return instance
@@ -215,4 +208,12 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
         ImNodes.destroyContext()
     }
 
+}
+
+fun instantiateNode(nodeClazz: Class<out Node<*>>) = try {
+    nodeClazz.getConstructor().newInstance()
+} catch(e: NoSuchMethodException) {
+    throw UnsupportedOperationException("Node ${nodeClazz.typeName} does not implement a constructor with no parameters", e)
+} catch(e: IllegalStateException) {
+    throw UnsupportedOperationException("Error while instantiating node ${nodeClazz.typeName}", e)
 }

@@ -10,16 +10,11 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
 
-    implementation "io.github.spair:imgui-java-app:1.84.1.0"
+    compileOnly "io.github.spair:imgui-java-binding:$imgui_version"
 
-    implementation "com.github.deltacv.EOCV-Sim:Common:3.3.1"
+    implementation "com.github.deltacv.EOCV-Sim:Common:$eocvsim_common_version"
     implementation "com.github.deltacv:mai18n:1.0.0"
 
-    implementation 'com.google.code.gson:gson:2.8.7'
+    implementation 'com.beust:klaxon:5.5'
     implementation "io.github.classgraph:classgraph:$classgraph_version"
-}
-
-task(runEv, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.github.deltacv.easyvision.Main'
-    classpath = sourceSets.main.runtimeClasspath
 }

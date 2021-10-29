@@ -18,16 +18,12 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
  */
 
 package io.github.deltacv.easyvision
 
 import com.github.serivesmejia.eocvsim.util.Log
 import imgui.ImGui
-import imgui.ImVec2
-import imgui.app.Application
-import imgui.app.Configuration
 import imgui.flag.ImGuiCond
 import imgui.flag.ImGuiMouseButton
 import imgui.flag.ImGuiWindowFlags
@@ -40,39 +36,33 @@ import io.github.deltacv.easyvision.gui.style.imnodes.ImNodesDarkStyle
 import io.github.deltacv.easyvision.gui.util.PopupBuilder
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.io.KeyManager
+import io.github.deltacv.easyvision.node.NodeScanner
+import io.github.deltacv.easyvision.platform.PlatformKeys
+import io.github.deltacv.easyvision.platform.PlatformSetup
+import io.github.deltacv.easyvision.platform.PlatformSetupCallback
+import io.github.deltacv.easyvision.platform.PlatformWindow
 import io.github.deltacv.mai18n.LangManager
-import org.lwjgl.BufferUtils
-import org.lwjgl.glfw.GLFW.glfwGetWindowSize
-import org.lwjgl.glfw.GLFW.glfwSetKeyCallback
-import org.lwjgl.glfw.GLFWKeyCallback
 
-class EasyVision : Application() {
+class EasyVision(private val setupCall: PlatformSetupCallback) {
 
     companion object {
         const val TAG = "EasyVision"
 
-        var imnodesStyle = ImNodesDarkStyle
-        lateinit var defaultImGuiFont: Font
+        lateinit var platformKeys: PlatformKeys
             private set
 
-        private var ptr = 0L
+        var imnodesStyle = ImNodesDarkStyle
 
-        private val w = BufferUtils.createIntBuffer(1)
-        private val h = BufferUtils.createIntBuffer(1)
-
-        val windowSize: ImVec2 get() {
-            w.position(0)
-            h.position(0)
-
-            glfwGetWindowSize(ptr, w, h)
-
-            return ImVec2(w.get(0).toFloat(), h.get(0).toFloat())
-        }
+        lateinit var defaultImGuiFont: Font
+            private set
 
         val miscIds = IdElementContainer<Any>()
     }
 
-    private var prevKeyCallback: GLFWKeyCallback? = null
+    lateinit var setup: PlatformSetup
+        private set
+    lateinit var window: PlatformWindow
+        private set
 
     val keyManager = KeyManager()
     val codeGenManager = CodeGenManager(this)
@@ -86,24 +76,20 @@ class EasyVision : Application() {
     lateinit var defaultFont: Font
         private set
 
-    fun start() {
+    fun init() {
         Log.info(TAG, "Starting EasyVision...")
         Log.blank()
 
+        NodeScanner.startAsyncScan()
+
+        Log.info(TAG, "Using the ${setupCall.name} platform")
+        setup = setupCall.setup()
+
+        platformKeys = setup.keys ?: throw IllegalArgumentException("Platform ${setup.name} must provide PlatformKeys")
+        window = setup.window ?: throw IllegalArgumentException("Platform ${setup.name} must provide a Window")
+
         nodeEditor.init()
         langManager.loadIfNeeded()
-
-        launch(this)
-
-        nodeEditor.destroy()
-    }
-
-    override fun configure(config: Configuration) {
-        config.title = "EasyVision"
-    }
-
-    override fun initImGui(config: Configuration?) {
-        super.initImGui(config)
 
         // initializing fonts right after the imgui context is created
         // we can't create fonts mid-frame so that's kind of a problem
@@ -113,16 +99,14 @@ class EasyVision : Application() {
         nodeList.init()
     }
 
-    override fun process() {
-        if(prevKeyCallback == null) {
-            ptr = handle
-            // register a new key callback that will call the previous callback and handle some special keys
-            prevKeyCallback = glfwSetKeyCallback(handle, ::keyCallback)
-        }
+    fun firstProcess() {
+        window.title = "EasyVision"
+    }
 
+    fun process() {
         ImGui.setNextWindowPos(0f, 0f, ImGuiCond.Always)
 
-        val size = windowSize
+        val size = window.size
         ImGui.setNextWindowSize(size.x, size.y, ImGuiCond.Always)
 
         ImGui.pushFont(defaultFont.imfont)
@@ -151,12 +135,7 @@ class EasyVision : Application() {
         }
     }
 
-    private fun keyCallback(windowId: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-        if(prevKeyCallback != null) {
-            prevKeyCallback!!.invoke(windowId, key, scancode, action, mods) //invoke the imgui callback
-        }
-
-        // thanks.
-        keyManager.updateKey(scancode, action)
+    fun destroy() {
+        nodeEditor.destroy()
     }
 }

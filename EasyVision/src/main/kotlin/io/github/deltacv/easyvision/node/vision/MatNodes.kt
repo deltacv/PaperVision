@@ -12,19 +12,25 @@ import io.github.deltacv.easyvision.codegen.NoSession
 import io.github.deltacv.easyvision.codegen.parse.v
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.RegisterNode
+import io.github.deltacv.easyvision.serialization.NoNodeData
+import java.lang.IllegalArgumentException
 
 @RegisterNode(
     name = "nod_pipelineinput",
     category = Category.FLOW,
     showInList = false
 )
-class InputMatNode : DrawNode<NoSession>(allowDelete = false) {
+class InputMatNode @JvmOverloads constructor(
+    val windowSizeSupplier: () -> ImVec2 = {
+        throw IllegalArgumentException("A window size is needed")
+    }
+) : DrawNode<NoSession, NoNodeData>(allowDelete = false) {
 
     override fun init() {
-        val windowSize = EasyVision.windowSize
         val nodeSize = ImVec2()
         ImNodes.getNodeDimensions(id, nodeSize)
 
+        val windowSize = windowSizeSupplier()
         ImNodes.setNodeScreenSpacePos(id, nodeSize.x * 0.5f, windowSize.y / 2f - nodeSize.y / 2)
     }
 
@@ -49,13 +55,17 @@ class InputMatNode : DrawNode<NoSession>(allowDelete = false) {
     category = Category.FLOW,
     showInList = false
 )
-class OutputMatNode : DrawNode<NoSession>(allowDelete = false) {
+class OutputMatNode @JvmOverloads constructor(
+    val windowSizeSupplier: () -> ImVec2 = {
+        throw IllegalArgumentException("A window size is needed")
+    }
+) : DrawNode<NoSession, NoNodeData>(allowDelete = false) {
 
     override fun init() {
-        val windowSize = EasyVision.windowSize
         val nodeSize = ImVec2()
         ImNodes.getNodeDimensions(id, nodeSize)
 
+        val windowSize = windowSizeSupplier()
         ImNodes.setNodeScreenSpacePos(id, windowSize.x - nodeSize.x * 1.5f , windowSize.y / 2f - nodeSize.y / 2)
     }
 

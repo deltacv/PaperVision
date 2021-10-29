@@ -1,7 +1,9 @@
 package io.github.deltacv.easyvision.node
 
+import com.beust.klaxon.Json
 import imgui.ImGui
 import imgui.ImVec2
+import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.attribute.Attribute
@@ -10,26 +12,44 @@ import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.exception.NodeGenException
+import io.github.deltacv.easyvision.serialization.NodeSerializationData
 import io.github.deltacv.mai18n.tr
 
 interface Type {
     val name: String
 }
 
-abstract class Node<S: CodeGenSession>(
+abstract class Node<S: CodeGenSession, D: NodeSerializationData>(
     private var allowDelete: Boolean = true
 ) : DrawableIdElement {
 
+    @Json(ignored = true)
+    var serializedId: Int? = null
+        private set
+
+    @Json(ignored = true)
     var nodesIdContainer = nodes
+    @Json(ignored = true)
     var attributesIdContainer = attributes
 
+    @Json(ignored = true)
     var drawAttributesCircles = true
 
-    override val id by lazy { nodesIdContainer.nextId(this).value }
+    @Json(ignored = true)
+    override val id by lazy {
+        if(serializedId == null) {
+            nodesIdContainer.nextId(this).value
+        } else {
+            nodesIdContainer.requestId(this, serializedId!!).value
+        }
+    }
 
+    @Json(ignored = true)
     private val attribs = mutableListOf<Attribute>() // internal mutable list
+    @Json(ignored = true)
     val nodeAttributes = attribs as List<Attribute> // public read-only
 
+    @Json(ignored = true)
     var genSession: S? = null
         private set
 
@@ -86,6 +106,7 @@ abstract class Node<S: CodeGenSession>(
         raise("Node doesn't have output attributes")
     }
 
+    @Json(ignored = true)
     private var isCurrentlyGenCode = false
 
     @Suppress("UNCHECKED_CAST")
@@ -126,6 +147,31 @@ abstract class Node<S: CodeGenSession>(
         }
     }
 
+    protected abstract fun makeSerializationData(): D
+    protected open fun takeDeserializationData(data: D) { /* do nothing */ }
+
+    /**
+     * Call before enable()
+     */
+    fun deserialize(data: D) {
+        serializedId = data.id
+        takeDeserializationData(data)
+    }
+
+    fun serialize(): D {
+        val data = makeSerializationData()
+
+        data.id = id
+        data.node = this
+
+        val pos = ImVec2()
+        ImNodes.getNodeEditorSpacePos(id, pos)
+
+        data.nodePos = pos
+
+        return data
+    }
+
     open fun onPropagateReceive(current: CodeGen.Current) {
         genCodeIfNecessary(current)
     }
@@ -149,13 +195,13 @@ abstract class Node<S: CodeGenSession>(
     }
 
     companion object {
-        val nodes = IdElementContainer<Node<*>>()
+        val nodes = IdElementContainer<Node<*, *>>()
         val attributes = IdElementContainer<Attribute>()
 
         @JvmStatic protected val INPUT = AttributeMode.INPUT
         @JvmStatic protected val OUTPUT = AttributeMode.OUTPUT
 
-        fun checkRecursion(from: Node<*>, to: Node<*>): Boolean {
+        fun checkRecursion(from: Node<*, *>, to: Node<*, *>): Boolean {
             val linksBetween = Link.getLinksBetween(from, to)
 
             var hasOutputToInput = false

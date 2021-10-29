@@ -26,8 +26,8 @@ open class ListAttribute(
         override val name = "List"
         override val allowsNew = false
 
-        override val styleColor = rgbaColor(95,158,160, 180)
-        override val styleHoveredColor = rgbaColor(95,158,160, 180)
+        override val styleColor = rgbaColor(95, 158, 160, 180)
+        override val styleHoveredColor = rgbaColor(95, 158, 160, 255)
     }
 
     override var typeName = "[${elementType.name}]"
