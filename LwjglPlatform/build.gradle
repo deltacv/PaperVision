@@ -12,7 +12,7 @@ dependencies {
     implementation project(":EasyVision")
     implementation "com.github.deltacv.EOCV-Sim:Common:$eocvsim_common_version"
 
-    compileOnly "io.github.spair:imgui-java-app:$imgui_version" // platforms should add the "implementation" they need
+    implementation "io.github.spair:imgui-java-app:$imgui_version"
 }
 
 

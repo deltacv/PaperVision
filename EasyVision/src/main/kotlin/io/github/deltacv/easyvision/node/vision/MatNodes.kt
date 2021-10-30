@@ -2,7 +2,6 @@ package io.github.deltacv.easyvision.node.vision
 
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
-import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
@@ -12,7 +11,6 @@ import io.github.deltacv.easyvision.codegen.NoSession
 import io.github.deltacv.easyvision.codegen.parse.v
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.RegisterNode
-import io.github.deltacv.easyvision.serialization.NoNodeData
 import java.lang.IllegalArgumentException
 
 @RegisterNode(
@@ -24,7 +22,7 @@ class InputMatNode @JvmOverloads constructor(
     val windowSizeSupplier: () -> ImVec2 = {
         throw IllegalArgumentException("A window size is needed")
     }
-) : DrawNode<NoSession, NoNodeData>(allowDelete = false) {
+) : DrawNode<NoSession>(allowDelete = false) {
 
     override fun init() {
         val nodeSize = ImVec2()
@@ -59,7 +57,7 @@ class OutputMatNode @JvmOverloads constructor(
     val windowSizeSupplier: () -> ImVec2 = {
         throw IllegalArgumentException("A window size is needed")
     }
-) : DrawNode<NoSession, NoNodeData>(allowDelete = false) {
+) : DrawNode<NoSession>(allowDelete = false) {
 
     override fun init() {
         val nodeSize = ImVec2()

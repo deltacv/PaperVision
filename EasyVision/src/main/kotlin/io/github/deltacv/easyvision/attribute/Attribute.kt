@@ -7,28 +7,44 @@ import io.github.deltacv.easyvision.exception.AttributeGenException
 import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
-import io.github.deltacv.mai18n.tr
+import io.github.deltacv.easyvision.serialization.data.AttributeSerializationData
+import io.github.deltacv.easyvision.serialization.data.DataSerializable
+import io.github.deltacv.easyvision.serialization.data.BasicAttribData
 
 enum class AttributeMode { INPUT, OUTPUT }
 
-abstract class Attribute : DrawableIdElement {
+abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializationData> {
+
+    @Transient
+    private var serializedId: Int? = null
 
     abstract val mode: AttributeMode
 
-    override val id by lazy { parentNode.attributesIdContainer.nextId(this).value }
+    override val id by lazy {
+        if(serializedId == null) {
+            parentNode.attributesIdContainer.nextId(this).value
+        } else {
+            parentNode.attributesIdContainer.requestId(this, serializedId!!).value
+        }
+    }
 
+    @Transient
     lateinit var parentNode: Node<*>
         internal set
 
+    @Transient
     val links = mutableListOf<Link>()
     val hasLink get() = links.isNotEmpty()
 
     val isInput by lazy { mode == AttributeMode.INPUT }
     val isOutput by lazy { !isInput }
-    
+
+    @Transient
     private var isFirstDraw = true
 
+    @Transient
     private var cancelNextDraw = false
+    @Transient
     var wasLastDrawCancelled = false
         private set
 
@@ -39,7 +55,7 @@ abstract class Attribute : DrawableIdElement {
         cancelNextDraw = true
     }
 
-    override open fun draw() {
+    override fun draw() {
         if(cancelNextDraw) {
             cancelNextDraw = false
             wasLastDrawCancelled = true
@@ -132,5 +148,25 @@ abstract class Attribute : DrawableIdElement {
     abstract fun value(current: CodeGen.Current): GenValue
 
     protected fun getOutputValue(current: CodeGen.Current) = parentNode.getOutputValueOf(current, this)
+
+    override fun makeSerializationData() = BasicAttribData(id)
+
+    override fun takeDeserializationData(data: AttributeSerializationData) { /* do nothing */ }
+
+    /**
+     * Call before enable()
+     */
+    final override fun deserialize(data: AttributeSerializationData) {
+        serializedId = data.id
+
+        takeDeserializationData(data)
+    }
+
+    final override fun serialize(): AttributeSerializationData {
+        val data = makeSerializationData()
+        data.id = id
+
+        return data
+    }
 
 }

@@ -36,11 +36,15 @@ import io.github.deltacv.easyvision.gui.style.imnodes.ImNodesDarkStyle
 import io.github.deltacv.easyvision.gui.util.PopupBuilder
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.io.KeyManager
+import io.github.deltacv.easyvision.io.Keys
 import io.github.deltacv.easyvision.node.NodeScanner
 import io.github.deltacv.easyvision.platform.PlatformKeys
 import io.github.deltacv.easyvision.platform.PlatformSetup
 import io.github.deltacv.easyvision.platform.PlatformSetupCallback
 import io.github.deltacv.easyvision.platform.PlatformWindow
+import io.github.deltacv.easyvision.serialization.EasyVisionSerializer
+import io.github.deltacv.easyvision.serialization.data.DataSerializable
+import io.github.deltacv.easyvision.serialization.data.DataSerializer
 import io.github.deltacv.mai18n.LangManager
 
 class EasyVision(private val setupCall: PlatformSetupCallback) {
@@ -128,11 +132,15 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         PopupBuilder.draw()
         ImGui.popFont()
 
-        keyManager.update()
-
         if(ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
             codeGenManager.build()
         }
+
+        if(keyManager.pressed(Keys.ArrowUp)) {
+            println(EasyVisionSerializer.serializeCurrent())
+        }
+
+        keyManager.update()
     }
 
     fun destroy() {

@@ -6,13 +6,18 @@ import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.TypedAttribute
 import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.id.IdElementContainer
+import io.github.deltacv.easyvision.serialization.data.DataSerializable
+import io.github.deltacv.easyvision.serialization.data.LinkSerializationData
+import io.github.deltacv.easyvision.serialization.data.SerializeData
 
-class Link(val a: Int, val b: Int) : DrawableIdElement {
+class Link(val a: Int, val b: Int) : DrawableIdElement, DataSerializable<LinkSerializationData> {
 
     override val id by links.nextId { this }
 
-    val aAttrib = Node.attributes[a]!!
-    val bAttrib = Node.attributes[b]!!
+    val aAttrib by lazy { Node.attributes[a]!! }
+    val bAttrib by lazy { Node.attributes[b]!! }
+
+    constructor(data: LinkSerializationData) : this(data.from, data.to)
 
     override fun draw() {
         if(!aAttrib.links.contains(this))
@@ -22,8 +27,8 @@ class Link(val a: Int, val b: Int) : DrawableIdElement {
             bAttrib.links.add(this)
 
         val typedAttrib = when {
-            aAttrib is TypedAttribute -> aAttrib
-            bAttrib is TypedAttribute -> bAttrib
+            aAttrib is TypedAttribute -> aAttrib as TypedAttribute
+            bAttrib is TypedAttribute -> bAttrib as TypedAttribute
             else -> null
         }
 
@@ -75,6 +80,15 @@ class Link(val a: Int, val b: Int) : DrawableIdElement {
 
             return l
         }
+    }
+
+    override fun makeSerializationData() = LinkSerializationData(a, b)
+    override fun takeDeserializationData(data: LinkSerializationData) { }
+
+    override fun serialize() = makeSerializationData()
+
+    override fun deserialize(data: LinkSerializationData) {
+        throw UnsupportedOperationException("deserialize() shouldn't be called on links")
     }
 
 }

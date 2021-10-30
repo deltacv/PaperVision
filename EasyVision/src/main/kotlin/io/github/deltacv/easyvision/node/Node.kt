@@ -1,41 +1,41 @@
 package io.github.deltacv.easyvision.node
 
-import com.beust.klaxon.Json
+import com.google.gson.annotations.Expose
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
-import io.github.deltacv.easyvision.id.DrawableIdElement
-import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.AttributeMode
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.exception.NodeGenException
-import io.github.deltacv.easyvision.serialization.NodeSerializationData
-import io.github.deltacv.mai18n.tr
+import io.github.deltacv.easyvision.id.DrawableIdElement
+import io.github.deltacv.easyvision.id.IdElementContainer
+import io.github.deltacv.easyvision.serialization.data.DataSerializable
+import io.github.deltacv.easyvision.serialization.data.BasicNodeData
+import io.github.deltacv.easyvision.serialization.data.NodeSerializationData
 
 interface Type {
     val name: String
 }
 
-abstract class Node<S: CodeGenSession, D: NodeSerializationData>(
+abstract class Node<S: CodeGenSession>(
     private var allowDelete: Boolean = true
-) : DrawableIdElement {
+) : DrawableIdElement, DataSerializable<NodeSerializationData> {
 
-    @Json(ignored = true)
+    @Transient
     var serializedId: Int? = null
         private set
 
-    @Json(ignored = true)
+    @Transient
     var nodesIdContainer = nodes
-    @Json(ignored = true)
+    @Transient
     var attributesIdContainer = attributes
 
-    @Json(ignored = true)
+    @Transient
     var drawAttributesCircles = true
 
-    @Json(ignored = true)
     override val id by lazy {
         if(serializedId == null) {
             nodesIdContainer.nextId(this).value
@@ -44,12 +44,13 @@ abstract class Node<S: CodeGenSession, D: NodeSerializationData>(
         }
     }
 
-    @Json(ignored = true)
+    @Transient
     private val attribs = mutableListOf<Attribute>() // internal mutable list
-    @Json(ignored = true)
+
+    @Transient
     val nodeAttributes = attribs as List<Attribute> // public read-only
 
-    @Json(ignored = true)
+    @Transient
     var genSession: S? = null
         private set
 
@@ -106,7 +107,7 @@ abstract class Node<S: CodeGenSession, D: NodeSerializationData>(
         raise("Node doesn't have output attributes")
     }
 
-    @Json(ignored = true)
+    @Expose(serialize = false, deserialize = false)
     private var isCurrentlyGenCode = false
 
     @Suppress("UNCHECKED_CAST")
@@ -147,26 +148,30 @@ abstract class Node<S: CodeGenSession, D: NodeSerializationData>(
         }
     }
 
-    protected abstract fun makeSerializationData(): D
-    protected open fun takeDeserializationData(data: D) { /* do nothing */ }
+    override fun makeSerializationData() = BasicNodeData(id, ImVec2().apply {
+        ImNodes.getNodeEditorSpacePos(id, this)
+    })
+
+    override fun takeDeserializationData(data: NodeSerializationData) { /* do nothing */ }
 
     /**
      * Call before enable()
      */
-    fun deserialize(data: D) {
+    final override fun deserialize(data: NodeSerializationData) {
         serializedId = data.id
+        if(this is DrawNode<*>) {
+            nextNodePosition = data.nodePos
+        }
+
         takeDeserializationData(data)
     }
 
-    fun serialize(): D {
+    final override fun serialize(): NodeSerializationData {
         val data = makeSerializationData()
-
         data.id = id
-        data.node = this
 
         val pos = ImVec2()
         ImNodes.getNodeEditorSpacePos(id, pos)
-
         data.nodePos = pos
 
         return data
@@ -195,13 +200,13 @@ abstract class Node<S: CodeGenSession, D: NodeSerializationData>(
     }
 
     companion object {
-        val nodes = IdElementContainer<Node<*, *>>()
+        val nodes = IdElementContainer<Node<*>>()
         val attributes = IdElementContainer<Attribute>()
 
         @JvmStatic protected val INPUT = AttributeMode.INPUT
         @JvmStatic protected val OUTPUT = AttributeMode.OUTPUT
 
-        fun checkRecursion(from: Node<*, *>, to: Node<*, *>): Boolean {
+        fun checkRecursion(from: Node<*>, to: Node<*>): Boolean {
             val linksBetween = Link.getLinksBetween(from, to)
 
             var hasOutputToInput = false

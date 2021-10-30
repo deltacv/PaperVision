@@ -7,13 +7,12 @@ import imgui.extension.imnodes.flag.ImNodesColorStyle
 import imgui.flag.ImGuiMouseButton
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.codegen.CodeGenSession
-import io.github.deltacv.easyvision.serialization.NodeSerializationData
 import io.github.deltacv.mai18n.tr
 import java.lang.IllegalArgumentException
 
-abstract class DrawNode<S: CodeGenSession, D: NodeSerializationData>(
+abstract class DrawNode<S: CodeGenSession>(
     allowDelete: Boolean = true
-) : Node<S, D>(allowDelete) {
+) : Node<S>(allowDelete) {
 
     var nextNodePosition: ImVec2? = null
 

@@ -1,5 +1,7 @@
 package io.github.deltacv.easyvision.node.vision.overlay
 
+import imgui.ImGui
+import imgui.flag.ImGuiMouseButton
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.math.IntAttribute
 import io.github.deltacv.easyvision.attribute.misc.ListAttribute
@@ -15,6 +17,9 @@ import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
 import io.github.deltacv.easyvision.node.vision.Colors
+import io.github.deltacv.easyvision.serialization.data.DataSerializable
+import io.github.deltacv.easyvision.serialization.data.DataSerializer
+import io.github.deltacv.easyvision.serialization.data.SerializeData
 
 @RegisterNode(
     name = "nod_drawcontours",
@@ -32,6 +37,9 @@ open class DrawContoursNode
     val lineThickness = IntAttribute(INPUT, "$[att_linethickness]")
 
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
+
+    @SerializeData
+    var yes = 0
 
     override fun onEnable() {
         + inputMat
