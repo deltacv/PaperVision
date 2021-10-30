@@ -1,9 +1,8 @@
 package io.github.deltacv.easyvision.serialization
 
-import com.google.gson.GsonBuilder
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
-import io.github.deltacv.easyvision.serialization.data.DataSerializable
+import io.github.deltacv.easyvision.serialization.data.interfaces.DataSerializable
 import io.github.deltacv.easyvision.serialization.data.DataSerializer
 
 object EasyVisionSerializer {

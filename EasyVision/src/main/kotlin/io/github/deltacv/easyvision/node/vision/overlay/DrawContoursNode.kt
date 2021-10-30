@@ -1,7 +1,5 @@
 package io.github.deltacv.easyvision.node.vision.overlay
 
-import imgui.ImGui
-import imgui.flag.ImGuiMouseButton
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.math.IntAttribute
 import io.github.deltacv.easyvision.attribute.misc.ListAttribute
@@ -17,8 +15,6 @@ import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
 import io.github.deltacv.easyvision.node.vision.Colors
-import io.github.deltacv.easyvision.serialization.data.DataSerializable
-import io.github.deltacv.easyvision.serialization.data.DataSerializer
 import io.github.deltacv.easyvision.serialization.data.SerializeData
 
 @RegisterNode(

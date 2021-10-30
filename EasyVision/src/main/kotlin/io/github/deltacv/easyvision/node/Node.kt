@@ -12,9 +12,9 @@ import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.exception.NodeGenException
 import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.id.IdElementContainer
-import io.github.deltacv.easyvision.serialization.data.DataSerializable
-import io.github.deltacv.easyvision.serialization.data.BasicNodeData
-import io.github.deltacv.easyvision.serialization.data.NodeSerializationData
+import io.github.deltacv.easyvision.serialization.data.interfaces.DataSerializable
+import io.github.deltacv.easyvision.serialization.data.interfaces.BasicNodeData
+import io.github.deltacv.easyvision.serialization.data.interfaces.NodeSerializationData
 
 interface Type {
     val name: String
@@ -148,11 +148,11 @@ abstract class Node<S: CodeGenSession>(
         }
     }
 
-    override fun makeSerializationData() = BasicNodeData(id, ImVec2().apply {
+    open fun makeSerializationData() = BasicNodeData(id, ImVec2().apply {
         ImNodes.getNodeEditorSpacePos(id, this)
     })
 
-    override fun takeDeserializationData(data: NodeSerializationData) { /* do nothing */ }
+    open fun takeDeserializationData(data: NodeSerializationData) { /* do nothing */ }
 
     /**
      * Call before enable()

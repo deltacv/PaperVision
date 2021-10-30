@@ -2,13 +2,11 @@ package io.github.deltacv.easyvision.node
 
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.flag.ImNodesColorStyle
-import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.TypedAttribute
 import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.id.IdElementContainer
-import io.github.deltacv.easyvision.serialization.data.DataSerializable
-import io.github.deltacv.easyvision.serialization.data.LinkSerializationData
-import io.github.deltacv.easyvision.serialization.data.SerializeData
+import io.github.deltacv.easyvision.serialization.data.interfaces.DataSerializable
+import io.github.deltacv.easyvision.serialization.data.interfaces.LinkSerializationData
 
 class Link(val a: Int, val b: Int) : DrawableIdElement, DataSerializable<LinkSerializationData> {
 
@@ -82,10 +80,7 @@ class Link(val a: Int, val b: Int) : DrawableIdElement, DataSerializable<LinkSer
         }
     }
 
-    override fun makeSerializationData() = LinkSerializationData(a, b)
-    override fun takeDeserializationData(data: LinkSerializationData) { }
-
-    override fun serialize() = makeSerializationData()
+    override fun serialize() = LinkSerializationData(a, b)
 
     override fun deserialize(data: LinkSerializationData) {
         throw UnsupportedOperationException("deserialize() shouldn't be called on links")

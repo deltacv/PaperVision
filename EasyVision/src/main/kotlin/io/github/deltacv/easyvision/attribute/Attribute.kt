@@ -7,15 +7,14 @@ import io.github.deltacv.easyvision.exception.AttributeGenException
 import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
-import io.github.deltacv.easyvision.serialization.data.AttributeSerializationData
-import io.github.deltacv.easyvision.serialization.data.DataSerializable
-import io.github.deltacv.easyvision.serialization.data.BasicAttribData
+import io.github.deltacv.easyvision.serialization.data.interfaces.AttributeSerializationData
+import io.github.deltacv.easyvision.serialization.data.interfaces.DataSerializable
+import io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData
 
 enum class AttributeMode { INPUT, OUTPUT }
 
 abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializationData> {
 
-    @Transient
     private var serializedId: Int? = null
 
     abstract val mode: AttributeMode
@@ -28,23 +27,18 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
         }
     }
 
-    @Transient
     lateinit var parentNode: Node<*>
         internal set
 
-    @Transient
     val links = mutableListOf<Link>()
     val hasLink get() = links.isNotEmpty()
 
     val isInput by lazy { mode == AttributeMode.INPUT }
     val isOutput by lazy { !isInput }
 
-    @Transient
     private var isFirstDraw = true
-
-    @Transient
     private var cancelNextDraw = false
-    @Transient
+
     var wasLastDrawCancelled = false
         private set
 
@@ -149,9 +143,8 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
 
     protected fun getOutputValue(current: CodeGen.Current) = parentNode.getOutputValueOf(current, this)
 
-    override fun makeSerializationData() = BasicAttribData(id)
-
-    override fun takeDeserializationData(data: AttributeSerializationData) { /* do nothing */ }
+    open fun makeSerializationData() = BasicAttribData(id)
+    open fun takeDeserializationData(data: AttributeSerializationData) { /* do nothing */ }
 
     /**
      * Call before enable()

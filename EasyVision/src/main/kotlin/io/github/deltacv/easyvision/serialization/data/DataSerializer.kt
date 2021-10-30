@@ -2,6 +2,7 @@ package io.github.deltacv.easyvision.serialization.data
 
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
+import io.github.deltacv.easyvision.serialization.data.interfaces.DataSerializable
 
 object DataSerializer {
 
