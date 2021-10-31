@@ -15,7 +15,7 @@ object DataSerializer {
         return gson.toJson(serializables)
     }
 
-    fun deserialize(data: String): Map<String, DataSerializable<*>> {
+    fun deserialize(data: String): Map<String, List<DataSerializable<*>>> {
         return gson.fromJson(data, object : TypeToken<Map<String, List<DataSerializable<*>>>>() {}.type)
     }
 

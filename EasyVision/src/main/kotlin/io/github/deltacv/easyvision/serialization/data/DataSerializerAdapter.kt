@@ -19,5 +19,4 @@ object DataSerializableAdapter : JsonSerializer<DataSerializable<*>>, JsonDeseri
         return jsonObjectToDataSerializable(json, context)
     }
 
-
 }

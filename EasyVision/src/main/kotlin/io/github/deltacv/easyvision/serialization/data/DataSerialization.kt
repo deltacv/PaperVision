@@ -7,7 +7,7 @@ import com.google.gson.JsonSerializationContext
 import io.github.deltacv.easyvision.node.hasSuperclass
 import io.github.deltacv.easyvision.serialization.data.interfaces.DataSerializable
 
-private val gson = GsonBuilder()
+val gson = GsonBuilder()
     .registerTypeAdapter(DataSerializable::class.java, DataSerializableAdapter)
     .create()
 

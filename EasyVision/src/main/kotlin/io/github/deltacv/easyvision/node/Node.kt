@@ -24,16 +24,12 @@ abstract class Node<S: CodeGenSession>(
     private var allowDelete: Boolean = true
 ) : DrawableIdElement, DataSerializable<NodeSerializationData> {
 
-    @Transient
     var serializedId: Int? = null
         private set
 
-    @Transient
     var nodesIdContainer = nodes
-    @Transient
     var attributesIdContainer = attributes
 
-    @Transient
     var drawAttributesCircles = true
 
     override val id by lazy {
@@ -47,10 +43,8 @@ abstract class Node<S: CodeGenSession>(
     @Transient
     private val attribs = mutableListOf<Attribute>() // internal mutable list
 
-    @Transient
     val nodeAttributes = attribs as List<Attribute> // public read-only
 
-    @Transient
     var genSession: S? = null
         private set
 
@@ -107,7 +101,6 @@ abstract class Node<S: CodeGenSession>(
         raise("Node doesn't have output attributes")
     }
 
-    @Expose(serialize = false, deserialize = false)
     private var isCurrentlyGenCode = false
 
     @Suppress("UNCHECKED_CAST")
@@ -198,6 +191,8 @@ abstract class Node<S: CodeGenSession>(
             warn(message)
         }
     }
+
+    override fun toString() = "Node(type=${this::class.java.typeName}, id=$id)"
 
     companion object {
         val nodes = IdElementContainer<Node<*>>()

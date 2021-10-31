@@ -83,7 +83,8 @@ class Link(val a: Int, val b: Int) : DrawableIdElement, DataSerializable<LinkSer
     override fun serialize() = LinkSerializationData(a, b)
 
     override fun deserialize(data: LinkSerializationData) {
-        throw UnsupportedOperationException("deserialize() shouldn't be called on links")
     }
+
+    override fun toString() = "Link(from=$a, to=$b)"
 
 }

@@ -10,6 +10,8 @@ class BasicAttribData(id: Int) : AttributeSerializationData() {
     init {
         this.id = id
     }
+
+    constructor(): this(0)
 }
 
 abstract class NodeSerializationData {
@@ -27,9 +29,13 @@ class BasicNodeData(
         this.nodePos = nodePos
     }
 
+    constructor() : this(0, ImVec2(0f, 0f))
+
 }
 
 data class LinkSerializationData(
     var from: Int,
     var to: Int
-)
+) {
+    constructor() : this(0, 0)
+}
