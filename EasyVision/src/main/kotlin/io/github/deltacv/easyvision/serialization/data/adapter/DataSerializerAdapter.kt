@@ -1,8 +1,7 @@
-package io.github.deltacv.easyvision.serialization.data
+package io.github.deltacv.easyvision.serialization.data.adapter
 
 import com.google.gson.*
-import io.github.deltacv.easyvision.node.hasSuperclass
-import io.github.deltacv.easyvision.serialization.data.interfaces.DataSerializable
+import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import java.lang.reflect.Type
 
 object DataSerializableAdapter : JsonSerializer<DataSerializable<*>>, JsonDeserializer<DataSerializable<*>> {

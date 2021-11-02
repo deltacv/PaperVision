@@ -2,12 +2,11 @@ package io.github.deltacv.easyvision.serialization.data
 
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
-import io.github.deltacv.easyvision.serialization.data.interfaces.DataSerializable
+import io.github.deltacv.easyvision.serialization.data.adapter.DataSerializableAdapter
 
 object DataSerializer {
 
     val gson = GsonBuilder()
-        .setPrettyPrinting()
         .registerTypeHierarchyAdapter(DataSerializable::class.java, DataSerializableAdapter)
         .create()
 

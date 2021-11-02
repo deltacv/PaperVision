@@ -5,8 +5,8 @@ import imgui.extension.imnodes.flag.ImNodesColorStyle
 import io.github.deltacv.easyvision.attribute.TypedAttribute
 import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.id.IdElementContainer
-import io.github.deltacv.easyvision.serialization.data.interfaces.DataSerializable
-import io.github.deltacv.easyvision.serialization.data.interfaces.LinkSerializationData
+import io.github.deltacv.easyvision.serialization.data.DataSerializable
+import io.github.deltacv.easyvision.serialization.ev.LinkSerializationData
 
 class Link(val a: Int, val b: Int) : DrawableIdElement, DataSerializable<LinkSerializationData> {
 

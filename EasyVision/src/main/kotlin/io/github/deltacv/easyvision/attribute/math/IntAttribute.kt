@@ -7,6 +7,7 @@ import io.github.deltacv.easyvision.attribute.Type
 import io.github.deltacv.easyvision.attribute.TypedAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
+import io.github.deltacv.easyvision.serialization.data.SerializeData
 import io.github.deltacv.easyvision.util.Range2d
 import io.github.deltacv.easyvision.util.Range2i
 
@@ -21,8 +22,10 @@ class IntAttribute(
         override fun new(mode: AttributeMode, variableName: String) = IntAttribute(mode, variableName)
     }
 
+    @SerializeData
     val value = ImInt()
 
+    @SerializeData
     private var range: Range2i? = null
 
     override fun drawAttribute() {

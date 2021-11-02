@@ -1,4 +1,4 @@
-package io.github.deltacv.easyvision.serialization.data.interfaces
+package io.github.deltacv.easyvision.serialization.ev
 
 import imgui.ImVec2
 

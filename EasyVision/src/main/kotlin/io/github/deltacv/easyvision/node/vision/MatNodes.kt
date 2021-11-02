@@ -19,21 +19,23 @@ import java.lang.IllegalArgumentException
     showInList = false
 )
 class InputMatNode @JvmOverloads constructor(
-    val windowSizeSupplier: () -> ImVec2 = {
-        throw IllegalArgumentException("A window size is needed")
-    }
+    var windowSizeSupplier: (() -> ImVec2)? = null
 ) : DrawNode<NoSession>(allowDelete = false) {
 
     override fun init() {
-        val nodeSize = ImVec2()
-        ImNodes.getNodeDimensions(id, nodeSize)
+        windowSizeSupplier?.let {
+            val nodeSize = ImVec2()
+            ImNodes.getNodeDimensions(id, nodeSize)
 
-        val windowSize = windowSizeSupplier()
-        ImNodes.setNodeScreenSpacePos(id, nodeSize.x * 0.5f, windowSize.y / 2f - nodeSize.y / 2)
+            val windowSize = it()
+            ImNodes.setNodeScreenSpacePos(id, nodeSize.x * 0.5f, windowSize.y / 2f - nodeSize.y / 2)
+        }
     }
 
+    val output = MatAttribute(OUTPUT, "$[att_input]")
+
     override fun onEnable() {
-        + MatAttribute(OUTPUT, "$[att_input]")
+        + output
     }
 
     override fun genCode(current: CodeGen.Current) = NoSession
@@ -54,17 +56,17 @@ class InputMatNode @JvmOverloads constructor(
     showInList = false
 )
 class OutputMatNode @JvmOverloads constructor(
-    val windowSizeSupplier: () -> ImVec2 = {
-        throw IllegalArgumentException("A window size is needed")
-    }
+    var windowSizeSupplier: (() -> ImVec2)? = null
 ) : DrawNode<NoSession>(allowDelete = false) {
 
     override fun init() {
-        val nodeSize = ImVec2()
-        ImNodes.getNodeDimensions(id, nodeSize)
+        windowSizeSupplier?.let {
+            val nodeSize = ImVec2()
+            ImNodes.getNodeDimensions(id, nodeSize)
 
-        val windowSize = windowSizeSupplier()
-        ImNodes.setNodeScreenSpacePos(id, windowSize.x - nodeSize.x * 1.5f , windowSize.y / 2f - nodeSize.y / 2)
+            val windowSize = it()
+            ImNodes.setNodeScreenSpacePos(id, windowSize.x - nodeSize.x * 1.5f , windowSize.y / 2f - nodeSize.y / 2)
+        }
     }
 
     val input = MatAttribute(INPUT, "$[att_output]")

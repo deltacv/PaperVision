@@ -22,7 +22,9 @@ class IdElementContainer<T> : Iterable<T> {
         e.add(id, element)
         elements.add(element)
 
-        e.lastIndexOf(element)
+        val i = e.lastIndexOf(element)
+        println("added ${element!!::class.java.typeName} with id $i from requested $id")
+        i
     }
 
     fun nextId(element: () -> T) = lazy {
@@ -46,7 +48,13 @@ class IdElementContainer<T> : Iterable<T> {
         e[id] = null
     }
 
-    operator fun get(id: Int) = e[id]
+    operator fun get(id: Int): T? {
+        if(id < 0 || id > e.size) {
+            throw ArrayIndexOutOfBoundsException("The id $id has not been allocated in this container")
+        }
+
+        return e[id]
+    }
 
     operator fun set(id: Int, element: T) {
         e[id] = element

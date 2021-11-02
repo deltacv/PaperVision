@@ -10,7 +10,7 @@ object PopupBuilder {
     private val tooltips = mutableListOf<ToolTip>()
     private val labels = mutableMapOf<String, Label>()
 
-    fun addWarningToolTip(message: String, w: Float? = null, h: Float? = null) {
+    fun addWarningToolTip(message: String) {
         deleteLabel("WARN")
         addToolTip(
             ImGui.getMousePosX(),

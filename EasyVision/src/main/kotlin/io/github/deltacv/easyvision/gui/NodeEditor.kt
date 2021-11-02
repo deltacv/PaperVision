@@ -33,8 +33,19 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
     var isNodeFocused = false
         private set
 
-    val inputNode = InputMatNode { easyVision.window.size }
-    val outputNode = OutputMatNode { easyVision.window.size }
+    private val winSizeSupplier: () -> ImVec2 = { easyVision.window.size }
+
+    var inputNode = InputMatNode(winSizeSupplier)
+        set(value) {
+            value.windowSizeSupplier = winSizeSupplier
+            field = value
+        }
+
+    var outputNode = OutputMatNode(winSizeSupplier)
+        set(value) {
+            value.windowSizeSupplier = winSizeSupplier
+            field = value
+        }
 
     fun init() {
         ImNodes.createContext()

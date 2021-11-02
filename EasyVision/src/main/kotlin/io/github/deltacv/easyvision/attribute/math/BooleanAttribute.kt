@@ -7,6 +7,7 @@ import io.github.deltacv.easyvision.attribute.Type
 import io.github.deltacv.easyvision.attribute.TypedAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
+import io.github.deltacv.easyvision.serialization.data.SerializeData
 
 class BooleanAttribute(
     override val mode: AttributeMode,
@@ -19,6 +20,7 @@ class BooleanAttribute(
         override fun new(mode: AttributeMode, variableName: String) = BooleanAttribute(mode, variableName)
     }
 
+    @SerializeData
     val value = ImBoolean()
 
     override fun drawAttribute() {

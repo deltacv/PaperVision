@@ -1,6 +1,5 @@
 package io.github.deltacv.easyvision.node
 
-import com.google.gson.annotations.Expose
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
@@ -12,9 +11,9 @@ import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.exception.NodeGenException
 import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.id.IdElementContainer
-import io.github.deltacv.easyvision.serialization.data.interfaces.DataSerializable
-import io.github.deltacv.easyvision.serialization.data.interfaces.BasicNodeData
-import io.github.deltacv.easyvision.serialization.data.interfaces.NodeSerializationData
+import io.github.deltacv.easyvision.serialization.data.DataSerializable
+import io.github.deltacv.easyvision.serialization.ev.BasicNodeData
+import io.github.deltacv.easyvision.serialization.ev.NodeSerializationData
 
 interface Type {
     val name: String
@@ -89,8 +88,10 @@ abstract class Node<S: CodeGenSession>(
     }
 
     fun addAttribute(attribute: Attribute) {
-        attribute.parentNode = this
-        attribs.add(attribute)
+        if(!attribs.contains(attribute)) {
+            attribute.parentNode = this
+            attribs.add(attribute)
+        }
     }
 
     operator fun Attribute.unaryPlus() = addAttribute(this)

@@ -7,9 +7,9 @@ import io.github.deltacv.easyvision.exception.AttributeGenException
 import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
-import io.github.deltacv.easyvision.serialization.data.interfaces.AttributeSerializationData
-import io.github.deltacv.easyvision.serialization.data.interfaces.DataSerializable
-import io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData
+import io.github.deltacv.easyvision.serialization.ev.AttributeSerializationData
+import io.github.deltacv.easyvision.serialization.data.DataSerializable
+import io.github.deltacv.easyvision.serialization.ev.BasicAttribData
 
 enum class AttributeMode { INPUT, OUTPUT }
 
@@ -161,5 +161,7 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
 
         return data
     }
+
+    override fun toString() = "Attribute(type=${this::class.java.typeName}, id=$id)"
 
 }

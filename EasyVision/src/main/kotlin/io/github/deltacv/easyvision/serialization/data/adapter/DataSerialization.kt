@@ -1,15 +1,12 @@
-package io.github.deltacv.easyvision.serialization.data
+package io.github.deltacv.easyvision.serialization.data.adapter
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonSerializationContext
 import io.github.deltacv.easyvision.node.hasSuperclass
-import io.github.deltacv.easyvision.serialization.data.interfaces.DataSerializable
-
-val gson = GsonBuilder()
-    .registerTypeAdapter(DataSerializable::class.java, DataSerializableAdapter)
-    .create()
+import io.github.deltacv.easyvision.serialization.data.DataSerializable
+import io.github.deltacv.easyvision.serialization.data.SerializeData
 
 fun DataSerializable<*>.toJsonObject(): JsonObject {
     val obj = JsonObject()

@@ -8,6 +8,7 @@ import io.github.deltacv.easyvision.attribute.TypedAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.gui.util.ExtraWidgets
+import io.github.deltacv.easyvision.serialization.data.SerializeData
 
 class RangeAttribute(
     override val mode: AttributeMode,
@@ -23,7 +24,9 @@ class RangeAttribute(
     var min = 0
     var max = 255
 
+    @SerializeData
     val minValue = ImInt(min)
+    @SerializeData
     val maxValue = ImInt(max)
 
     private val minId by EasyVision.miscIds.nextId()

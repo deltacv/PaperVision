@@ -37,13 +37,16 @@ import io.github.deltacv.easyvision.gui.util.PopupBuilder
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys
+import io.github.deltacv.easyvision.node.Link
+import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.node.NodeScanner
+import io.github.deltacv.easyvision.node.hasSuperclass
 import io.github.deltacv.easyvision.platform.PlatformKeys
 import io.github.deltacv.easyvision.platform.PlatformSetup
 import io.github.deltacv.easyvision.platform.PlatformSetupCallback
 import io.github.deltacv.easyvision.platform.PlatformWindow
-import io.github.deltacv.easyvision.serialization.EasyVisionSerializer
-import io.github.deltacv.easyvision.serialization.data.DataSerializer
+import io.github.deltacv.easyvision.serialization.ev.EasyVisionSerializer
+import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import io.github.deltacv.mai18n.LangManager
 
 class EasyVision(private val setupCall: PlatformSetupCallback) {
@@ -80,15 +83,31 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         private set
 
     fun init() {
-        for((key, values) in DataSerializer.deserialize(testJson)) {
-            println("Deserialized: $key ->")
-            for(value in values) {
-                println("\t$value")
+        val data = EasyVisionSerializer.deserializeAndApply(testJson, nodeEditor)
+
+        println("Nodes: ->")
+        Node.nodes.clear()
+        Node.attributes.clear()
+        for(node in data.nodes) {
+            println("\t$node")
+            node.enable()
+            println("\tAttribs ->")
+            for(field in node::class.java.declaredFields) {
+                if(hasSuperclass(field.type, DataSerializable::class.java)) {
+                    field.isAccessible = true
+                    println("\t\t${field.get(node)}")
+                }
             }
         }
 
+        println("Links ->")
+        Link.links.clear()
+        for(link in data.links) {
+            println("\t$link")
+            link.enable()
+        }
+
         Log.info(TAG, "Starting EasyVision...")
-        Log.blank()
 
         NodeScanner.startAsyncScan()
 
@@ -97,6 +116,8 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
         platformKeys = setup.keys ?: throw IllegalArgumentException("Platform ${setup.name} must provide PlatformKeys")
         window = setup.window ?: throw IllegalArgumentException("Platform ${setup.name} must provide a Window")
+
+        Log.blank()
 
         nodeEditor.init()
         langManager.loadIfNeeded()
@@ -154,291 +175,6 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
     }
 }
 
-val testJson = """
-{
-  "nodes": [
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicNodeData",
-      "data": {
-        "id": 0,
-        "nodePos": {
-          "x": 10.5,
-          "y": 211.5
-        }
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.vision.InputMatNode"
-    },
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicNodeData",
-      "data": {
-        "id": 1,
-        "nodePos": {
-          "x": 1260.5,
-          "y": 308.5
-        }
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.vision.OutputMatNode",
-      "object": {
-        "input": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 1
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.vision.MatAttribute"
-        }
-      }
-    },
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicNodeData",
-      "data": {
-        "id": 2,
-        "nodePos": {
-          "x": 139.0,
-          "y": 341.5
-        }
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.vision.ThresholdNode",
-      "object": {
-        "input": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 2
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.vision.MatAttribute"
-        },
-        "scalar": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 3
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.vision.structs.ScalarRangeAttribute"
-        },
-        "output": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 8
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.vision.MatAttribute"
-        }
-      }
-    },
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicNodeData",
-      "data": {
-        "id": 3,
-        "nodePos": {
-          "x": 474.0,
-          "y": 439.0
-        }
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.vision.shapedetection.FindContoursNode",
-      "object": {
-        "inputMat": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 9
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.vision.MatAttribute"
-        },
-        "outputPoints": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 10
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.misc.ListAttribute"
-        }
-      }
-    },
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicNodeData",
-      "data": {
-        "id": 4,
-        "nodePos": {
-          "x": 715.0,
-          "y": 477.0
-        }
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.vision.shapedetection.BoundingRectsNode",
-      "object": {
-        "inputContours": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 11
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.misc.ListAttribute"
-        },
-        "outputRects": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 12
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.misc.ListAttribute"
-        }
-      }
-    },
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicNodeData",
-      "data": {
-        "id": 5,
-        "nodePos": {
-          "x": 717.0,
-          "y": 146.0
-        }
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.vision.overlay.DrawContoursNode",
-      "object": {
-        "inputMat": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 13
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.vision.MatAttribute"
-        },
-        "contours": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 14
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.misc.ListAttribute"
-        },
-        "lineColor": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 15
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.vision.structs.ScalarAttribute"
-        },
-        "lineThickness": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 19
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.math.IntAttribute"
-        },
-        "outputMat": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 20
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.vision.MatAttribute"
-        },
-        "yes": 0
-      }
-    },
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicNodeData",
-      "data": {
-        "id": 6,
-        "nodePos": {
-          "x": 1068.0,
-          "y": 160.0
-        }
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.vision.overlay.DrawRectanglesNode",
-      "object": {
-        "inputMat": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 21
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.vision.MatAttribute"
-        },
-        "contours": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 22
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.misc.ListAttribute"
-        },
-        "lineColor": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 23
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.vision.structs.ScalarAttribute"
-        },
-        "lineThickness": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 27
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.math.IntAttribute"
-        },
-        "outputMat": {
-          "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.BasicAttribData",
-          "data": {
-            "id": 28
-          },
-          "objectClass": "io.github.deltacv.easyvision.attribute.vision.MatAttribute"
-        }
-      }
-    }
-  ],
-  "links": [
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.LinkSerializationData",
-      "data": {
-        "from": 0,
-        "to": 2
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.Link"
-    },
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.LinkSerializationData",
-      "data": {
-        "from": 8,
-        "to": 9
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.Link"
-    },
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.LinkSerializationData",
-      "data": {
-        "from": 10,
-        "to": 11
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.Link"
-    },
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.LinkSerializationData",
-      "data": {
-        "from": 10,
-        "to": 14
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.Link"
-    },
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.LinkSerializationData",
-      "data": {
-        "from": 0,
-        "to": 13
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.Link"
-    },
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.LinkSerializationData",
-      "data": {
-        "from": 20,
-        "to": 21
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.Link"
-    },
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.LinkSerializationData",
-      "data": {
-        "from": 28,
-        "to": 1
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.Link"
-    },
-    {
-      "dataClass": "io.github.deltacv.easyvision.serialization.data.interfaces.LinkSerializationData",
-      "data": {
-        "from": 12,
-        "to": 22
-      },
-      "objectClass": "io.github.deltacv.easyvision.node.Link"
-    }
-  ]
-}
+const val testJson = """
+{"nodes":[{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":0,"nodePos":{"x":51.5,"y":184.5}},"objectClass":"io.github.deltacv.easyvision.node.vision.InputMatNode","object":{"output":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":0},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"}}},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":1,"nodePos":{"x":1126.5,"y":347.5}},"objectClass":"io.github.deltacv.easyvision.node.vision.OutputMatNode","object":{"input":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":1},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"}}},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":2,"nodePos":{"x":206.0,"y":369.5}},"objectClass":"io.github.deltacv.easyvision.node.vision.ThresholdNode","object":{"input":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":2},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"},"scalar":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":3},"objectClass":"io.github.deltacv.easyvision.attribute.vision.structs.ScalarRangeAttribute"},"output":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":8},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"}}},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":3,"nodePos":{"x":563.0,"y":545.0}},"objectClass":"io.github.deltacv.easyvision.node.vision.shapedetection.FindContoursNode","object":{"inputMat":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":9},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"},"outputPoints":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":10},"objectClass":"io.github.deltacv.easyvision.attribute.misc.ListAttribute"}}},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":4,"nodePos":{"x":854.0,"y":295.0}},"objectClass":"io.github.deltacv.easyvision.node.vision.overlay.DrawContoursNode","object":{"inputMat":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":11},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"},"contours":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":12},"objectClass":"io.github.deltacv.easyvision.attribute.misc.ListAttribute"},"lineColor":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":13},"objectClass":"io.github.deltacv.easyvision.attribute.vision.structs.ScalarAttribute"},"lineThickness":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":17},"objectClass":"io.github.deltacv.easyvision.attribute.math.IntAttribute","object":{"value":{"data":[2607]}}},"outputMat":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":18},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"},"yes":0}}],"links":[{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":0,"to":2},"objectClass":"io.github.deltacv.easyvision.node.Link"},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":8,"to":9},"objectClass":"io.github.deltacv.easyvision.node.Link"},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":0,"to":11},"objectClass":"io.github.deltacv.easyvision.node.Link"},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":10,"to":12},"objectClass":"io.github.deltacv.easyvision.node.Link"},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":18,"to":1},"objectClass":"io.github.deltacv.easyvision.node.Link"}]}
 """

@@ -1,11 +1,11 @@
-package io.github.deltacv.easyvision.serialization
+package io.github.deltacv.easyvision.serialization.ev
 
 import io.github.deltacv.easyvision.gui.NodeEditor
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.node.vision.InputMatNode
 import io.github.deltacv.easyvision.node.vision.OutputMatNode
-import io.github.deltacv.easyvision.serialization.data.interfaces.DataSerializable
+import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import io.github.deltacv.easyvision.serialization.data.DataSerializer
 
 object EasyVisionSerializer {
@@ -23,7 +23,7 @@ object EasyVisionSerializer {
         links = Link.links.elements
     )
 
-    fun deserialize(json: String, nodeEditor: NodeEditor? = null) {
+    fun deserializeAndApply(json: String, nodeEditor: NodeEditor? = null): EasyVisionData {
         val data = DataSerializer.deserialize(json)
 
         val nodes = mutableListOf<Node<*>>()
@@ -31,20 +31,18 @@ object EasyVisionSerializer {
 
         val nodesData = data["nodes"]
         if(nodesData != null) {
-            for((i, node) in nodesData.withIndex()) {
+            for(node in nodesData) {
                 if(node is Node<*>) {
                     // applying the inputmatnode and outputmatnode positions in case they passed a node editor
                     if(nodeEditor != null) {
-                        if(node is InputMatNode) {
-
-                        } else if(node is OutputMatNode) {
-
-                        } else {
-                            nodes.add(node) // do not add the inputmat and outputmat nodes to the list
+                        when (node) {
+                            is InputMatNode -> nodeEditor.inputNode = node
+                            is OutputMatNode -> nodeEditor.outputNode = node
+                            //else -> nodes.add(node) // do not add the inputmat and outputmat nodes to the list
                         }
-                    } else {
-                        nodes.add(node)
                     }
+
+                    nodes.add(node)
                 }
             }
         }
@@ -57,6 +55,8 @@ object EasyVisionSerializer {
                 }
             }
         }
+
+        return EasyVisionData(nodes, links)
     }
 
 }
