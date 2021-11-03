@@ -2,6 +2,7 @@ package io.github.deltacv.easyvision.serialization.data.adapter
 
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import io.github.deltacv.easyvision.node.hasSuperclass
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import java.lang.reflect.Field
@@ -15,16 +16,8 @@ fun jsonObjectToDataSerializable(
     val jsonObject = json.asJsonObject
 
     val dataClass = Class.forName(jsonObject.get("dataClass").asString)
-    val dataInstance = dataClass.getConstructor().newInstance()
-    println("instanced data class ${dataClass.typeName}")
-
-    val dataObject = jsonObject.get("data")
-    if(dataObject != null && dataObject.isJsonObject) {
-        println("processing fields of data class ${dataClass.typeName}")
-        for((name, obj) in dataObject.asJsonObject.entrySet()) {
-            processValue(dataInstance, name, obj, context)
-        }
-    }
+    val dataObj = jsonObject.get("data") ?: JsonObject()
+    val dataInstance = context?.deserialize(dataObj, dataClass) ?: gson.fromJson(dataObj, dataClass)
 
     val objectClass = Class.forName(jsonObject.get("objectClass").asString)
 
@@ -51,7 +44,6 @@ private fun processValue(instance: Any, valueName: String, value: JsonElement, c
     try {
         val field = instance::class.java.getFieldDeep(valueName)
 
-        println("processing $valueName")
         if(field != null) {
             field.isAccessible = true
 
@@ -63,11 +55,11 @@ private fun processValue(instance: Any, valueName: String, value: JsonElement, c
                     field.set(instance, jsonObjectToDataSerializable(value, context))
                 }
             } else {
-                val v = if (context != null) context.deserialize(value, field.type) else gson.fromJson(value, field.type)
-                println("value of $field = $v")
                 field.set(
                     instance,
-                    v
+                    if (context != null)
+                        context.deserialize(value, field.type)
+                    else gson.fromJson(value, field.type)
                 )
             }
         }

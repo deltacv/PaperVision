@@ -1,23 +1,31 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 apply from: '../build.common.gradle'
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
     implementation project(":EasyVision")
-    implementation "com.github.deltacv.EOCV-Sim:Common:$eocvsim_common_version"
+    implementation("com.github.deltacv.EOCV-Sim:Common:$eocvsim_common_version") {
+        exclude group: 'org.openpnp', module: 'opencv'
+    }
 
     implementation "io.github.spair:imgui-java-app:$imgui_version"
+
+    implementation platform('org.lwjgl:lwjgl-bom:3.2.3')
+    implementation "org.lwjgl:lwjgl-stb"
+
+    ['natives-linux', 'natives-windows', 'natives-macos'].each {
+        implementation "org.lwjgl:lwjgl-stb::$it"
+    }
 }
 
-
 task(runEv, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.deltacv.easyvision.platform.lwjgl.AppMain'
+    main = 'io.github.deltacv.easyvision.platform.lwjgl.AppMain'
     classpath = sourceSets.main.runtimeClasspath
 }
 

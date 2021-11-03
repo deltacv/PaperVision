@@ -1,5 +1,6 @@
 package io.github.deltacv.easyvision.serialization.ev
 
+import com.google.gson.JsonElement
 import io.github.deltacv.easyvision.gui.NodeEditor
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
@@ -23,11 +24,21 @@ object EasyVisionSerializer {
         links = Link.links.elements
     )
 
-    fun deserializeAndApply(json: String, nodeEditor: NodeEditor? = null): EasyVisionData {
-        val data = DataSerializer.deserialize(json)
+    private fun deserialize(obj: JsonElement?, json: String?, apply: Boolean, nodeEditor: NodeEditor?): EasyVisionData {
+        val data = if(obj != null) {
+            DataSerializer.deserialize(obj)
+        } else {
+            DataSerializer.deserialize(json!!)
+        }
 
         val nodes = mutableListOf<Node<*>>()
         val links = mutableListOf<Link>()
+
+        if(apply) {
+            Node.nodes.clear()
+            Node.attributes.clear()
+            Link.links.clear()
+        }
 
         val nodesData = data["nodes"]
         if(nodesData != null) {
@@ -38,10 +49,12 @@ object EasyVisionSerializer {
                         when (node) {
                             is InputMatNode -> nodeEditor.inputNode = node
                             is OutputMatNode -> nodeEditor.outputNode = node
-                            //else -> nodes.add(node) // do not add the inputmat and outputmat nodes to the list
                         }
                     }
 
+                    if(apply) {
+                        node.enable()
+                    }
                     nodes.add(node)
                 }
             }
@@ -51,6 +64,9 @@ object EasyVisionSerializer {
         if(linksData != null) {
             for(link in linksData) {
                 if(link is Link) {
+                    if(apply) {
+                        link.enable()
+                    }
                     links.add(link)
                 }
             }
@@ -58,6 +74,12 @@ object EasyVisionSerializer {
 
         return EasyVisionData(nodes, links)
     }
+
+    fun deserialize(json: String) = deserialize(null, json, false, null)
+    fun deserialize(obj: JsonElement) = deserialize(obj, null, false, null)
+
+    fun deserializeAndApply(json: String, nodeEditor: NodeEditor) = deserialize(null, json, true, nodeEditor)
+    fun deserializeAndApply(obj: JsonElement, nodeEditor: NodeEditor) = deserialize(obj, null, true, nodeEditor)
 
 }
 

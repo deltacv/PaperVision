@@ -65,7 +65,7 @@ class Table(val maxColumns: Int = 4, val drawCallback: ((Int, ImVec2) -> Unit)? 
         val columns = if(rects.size >= maxColumns) maxColumns else rects.size
 
         var index = 0
-        var currentColumn = 0
+        var currentColumn: Int
 
         if(ImGui.beginTable("###$columnsId", columns)) {
             rowLoop@ while(index < rects.size) {

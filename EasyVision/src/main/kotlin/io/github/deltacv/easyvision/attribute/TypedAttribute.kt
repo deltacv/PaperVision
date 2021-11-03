@@ -39,27 +39,20 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
     open val linkColor get() = styleColor
     open val linkHoveredColor get() = styleHoveredColor
 
-    @Transient
     var drawDescriptiveText = true
-    @Transient
     var drawType = true
 
-    @Transient
     var inputSameLine = false
 
-    @Transient
     open var typeName = "(${type.name})"
 
-    @Transient
     private var isFirstDraw = true
-    @Transient
     private var isSecondDraw = false
 
     private val finalVarName by lazy {
         variableName ?: if (mode == AttributeMode.INPUT) "$[mis_input]" else "$[mis_output]"
     }
 
-    @Transient
     val nodeSize = ImVec2()
 
     override fun draw() {

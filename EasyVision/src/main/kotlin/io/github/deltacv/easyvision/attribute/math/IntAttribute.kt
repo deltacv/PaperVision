@@ -2,13 +2,14 @@ package io.github.deltacv.easyvision.attribute.math
 
 import imgui.ImGui
 import imgui.type.ImInt
+import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.attribute.AttributeMode
 import io.github.deltacv.easyvision.attribute.Type
 import io.github.deltacv.easyvision.attribute.TypedAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.serialization.data.SerializeData
-import io.github.deltacv.easyvision.util.Range2d
+import io.github.deltacv.easyvision.serialization.ev.AttributeSerializationData
 import io.github.deltacv.easyvision.util.Range2i
 
 class IntAttribute(
@@ -22,11 +23,14 @@ class IntAttribute(
         override fun new(mode: AttributeMode, variableName: String) = IntAttribute(mode, variableName)
     }
 
-    @SerializeData
     val value = ImInt()
+    private val sliderValue = ImInt()
+    private var nextValue: Int? = null
 
     @SerializeData
     private var range: Range2i? = null
+
+    private val sliderId by EasyVision.miscIds.nextId()
 
     override fun drawAttribute() {
         super.drawAttribute()
@@ -35,8 +39,21 @@ class IntAttribute(
             sameLineIfNeeded()
 
             ImGui.pushItemWidth(110.0f)
-            ImGui.inputInt("", value)
+
+            if(range == null) {
+                ImGui.inputInt("", value)
+            } else {
+                ImGui.sliderInt("###$sliderId", sliderValue.data, range!!.min, range!!.max)
+                value.set(sliderValue.get())
+            }
+
             ImGui.popItemWidth()
+
+            if(nextValue != null) {
+                value.set(nextValue!!)
+                sliderValue.set(nextValue!!)
+                nextValue = null
+            }
         }
     }
 
@@ -51,5 +68,15 @@ class IntAttribute(
     override fun value(current: CodeGen.Current) = value(
         current, "an Int", GenValue.Int(value.get())
     ) { it is GenValue.Int }
+
+    override fun makeSerializationData() = Data(value.get())
+
+    override fun takeDeserializationData(data: AttributeSerializationData) {
+        if(data is Data) {
+            nextValue = data.value
+        }
+    }
+
+    data class Data(val value: Int = 0) : AttributeSerializationData()
 
 }

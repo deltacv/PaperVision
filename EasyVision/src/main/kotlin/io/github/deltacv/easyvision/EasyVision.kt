@@ -83,29 +83,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         private set
 
     fun init() {
-        val data = EasyVisionSerializer.deserializeAndApply(testJson, nodeEditor)
-
-        println("Nodes: ->")
-        Node.nodes.clear()
-        Node.attributes.clear()
-        for(node in data.nodes) {
-            println("\t$node")
-            node.enable()
-            println("\tAttribs ->")
-            for(field in node::class.java.declaredFields) {
-                if(hasSuperclass(field.type, DataSerializable::class.java)) {
-                    field.isAccessible = true
-                    println("\t\t${field.get(node)}")
-                }
-            }
-        }
-
-        println("Links ->")
-        Link.links.clear()
-        for(link in data.links) {
-            println("\t$link")
-            link.enable()
-        }
+        EasyVisionSerializer.deserializeAndApply(testJson, nodeEditor)
 
         Log.info(TAG, "Starting EasyVision...")
 
@@ -118,6 +96,10 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         window = setup.window ?: throw IllegalArgumentException("Platform ${setup.name} must provide a Window")
 
         Log.blank()
+
+        // disable annoying ini file creation (hopefully shouldn't break anything)
+        ImGui.getIO().iniFilename = null
+        ImGui.getIO().logFilename = null
 
         nodeEditor.init()
         langManager.loadIfNeeded()
@@ -132,6 +114,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
     fun firstProcess() {
         window.title = "EasyVision"
+        window.icon = "/ico/ico_ezv.png"
     }
 
     fun process() {
@@ -176,5 +159,5 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 }
 
 const val testJson = """
-{"nodes":[{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":0,"nodePos":{"x":51.5,"y":184.5}},"objectClass":"io.github.deltacv.easyvision.node.vision.InputMatNode","object":{"output":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":0},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"}}},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":1,"nodePos":{"x":1126.5,"y":347.5}},"objectClass":"io.github.deltacv.easyvision.node.vision.OutputMatNode","object":{"input":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":1},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"}}},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":2,"nodePos":{"x":206.0,"y":369.5}},"objectClass":"io.github.deltacv.easyvision.node.vision.ThresholdNode","object":{"input":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":2},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"},"scalar":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":3},"objectClass":"io.github.deltacv.easyvision.attribute.vision.structs.ScalarRangeAttribute"},"output":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":8},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"}}},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":3,"nodePos":{"x":563.0,"y":545.0}},"objectClass":"io.github.deltacv.easyvision.node.vision.shapedetection.FindContoursNode","object":{"inputMat":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":9},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"},"outputPoints":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":10},"objectClass":"io.github.deltacv.easyvision.attribute.misc.ListAttribute"}}},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":4,"nodePos":{"x":854.0,"y":295.0}},"objectClass":"io.github.deltacv.easyvision.node.vision.overlay.DrawContoursNode","object":{"inputMat":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":11},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"},"contours":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":12},"objectClass":"io.github.deltacv.easyvision.attribute.misc.ListAttribute"},"lineColor":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":13},"objectClass":"io.github.deltacv.easyvision.attribute.vision.structs.ScalarAttribute"},"lineThickness":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":17},"objectClass":"io.github.deltacv.easyvision.attribute.math.IntAttribute","object":{"value":{"data":[2607]}}},"outputMat":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":18},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"},"yes":0}}],"links":[{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":0,"to":2},"objectClass":"io.github.deltacv.easyvision.node.Link"},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":8,"to":9},"objectClass":"io.github.deltacv.easyvision.node.Link"},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":0,"to":11},"objectClass":"io.github.deltacv.easyvision.node.Link"},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":10,"to":12},"objectClass":"io.github.deltacv.easyvision.node.Link"},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":18,"to":1},"objectClass":"io.github.deltacv.easyvision.node.Link"}]}
+{"nodes":[{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":0,"nodePos":{"x":86.5,"y":144.5}},"objectClass":"io.github.deltacv.easyvision.node.vision.InputMatNode","object":{"output":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":0},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"}}},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":1,"nodePos":{"x":1161.5,"y":307.5}},"objectClass":"io.github.deltacv.easyvision.node.vision.OutputMatNode","object":{"input":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":1},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"}}},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":2,"nodePos":{"x":241.0,"y":329.5}},"objectClass":"io.github.deltacv.easyvision.node.vision.ThresholdNode","object":{"input":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":2},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"},"scalar":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":3},"objectClass":"io.github.deltacv.easyvision.attribute.vision.structs.ScalarRangeAttribute"},"output":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":8},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"}}},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":3,"nodePos":{"x":598.0,"y":505.0}},"objectClass":"io.github.deltacv.easyvision.node.vision.shapedetection.FindContoursNode","object":{"inputMat":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":9},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"},"outputPoints":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":10},"objectClass":"io.github.deltacv.easyvision.attribute.misc.ListAttribute"}}},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicNodeData","data":{"id":4,"nodePos":{"x":889.0,"y":255.0}},"objectClass":"io.github.deltacv.easyvision.node.vision.overlay.DrawContoursNode","object":{"inputMat":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":11},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"},"contours":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":12},"objectClass":"io.github.deltacv.easyvision.attribute.misc.ListAttribute"},"lineColor":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":13},"objectClass":"io.github.deltacv.easyvision.attribute.vision.structs.ScalarAttribute"},"lineThickness":{"dataClass":"io.github.deltacv.easyvision.attribute.math.IntAttribute${"$"}Data","data":{"value":2607,"id":17},"objectClass":"io.github.deltacv.easyvision.attribute.math.IntAttribute"},"outputMat":{"dataClass":"io.github.deltacv.easyvision.serialization.ev.BasicAttribData","data":{"id":18},"objectClass":"io.github.deltacv.easyvision.attribute.vision.MatAttribute"},"yes":0}}],"links":[{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":0,"to":2},"objectClass":"io.github.deltacv.easyvision.node.Link"},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":8,"to":9},"objectClass":"io.github.deltacv.easyvision.node.Link"},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":0,"to":11},"objectClass":"io.github.deltacv.easyvision.node.Link"},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":10,"to":12},"objectClass":"io.github.deltacv.easyvision.node.Link"},{"dataClass":"io.github.deltacv.easyvision.serialization.ev.LinkSerializationData","data":{"from":18,"to":1},"objectClass":"io.github.deltacv.easyvision.node.Link"}]}
 """

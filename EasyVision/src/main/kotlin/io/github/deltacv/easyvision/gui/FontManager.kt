@@ -48,10 +48,10 @@ class FontManager {
     }
 
     fun resizeFont(font: Font, newSize: Float): Font {
-        if(font.isDefault) {
-            return makeDefaultFont(newSize)
+        return if(font.isDefault) {
+            makeDefaultFont(newSize)
         } else {
-            return makeFont("", font.name, newSize)
+            makeFont("", font.name, newSize)
         }
     }
 

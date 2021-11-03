@@ -1,4 +1,4 @@
-package io.deltacv.easyvision.platform.lwjgl.glfw
+package io.github.deltacv.easyvision.platform.lwjgl.glfw
 
 import io.github.deltacv.easyvision.platform.PlatformKeys
 import org.lwjgl.glfw.GLFW.*

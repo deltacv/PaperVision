@@ -22,9 +22,7 @@ class IdElementContainer<T> : Iterable<T> {
         e.add(id, element)
         elements.add(element)
 
-        val i = e.lastIndexOf(element)
-        println("added ${element!!::class.java.typeName} with id $i from requested $id")
-        i
+        e.lastIndexOf(element)
     }
 
     fun nextId(element: () -> T) = lazy {

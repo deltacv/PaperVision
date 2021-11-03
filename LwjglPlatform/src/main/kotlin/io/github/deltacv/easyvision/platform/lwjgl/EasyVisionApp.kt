@@ -1,9 +1,9 @@
-package io.deltacv.easyvision.platform.lwjgl
+package io.github.deltacv.easyvision.platform.lwjgl
 
 import imgui.app.Application
 import imgui.app.Configuration
-import io.deltacv.easyvision.platform.lwjgl.glfw.GlfwKeys
-import io.deltacv.easyvision.platform.lwjgl.glfw.GlfwWindow
+import io.github.deltacv.easyvision.platform.lwjgl.glfw.GlfwKeys
+import io.github.deltacv.easyvision.platform.lwjgl.glfw.GlfwWindow
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.io.KeyAction
 import io.github.deltacv.easyvision.platform.platformSetup

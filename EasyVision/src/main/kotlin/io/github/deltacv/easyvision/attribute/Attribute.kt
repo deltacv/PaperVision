@@ -143,7 +143,7 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
 
     protected fun getOutputValue(current: CodeGen.Current) = parentNode.getOutputValueOf(current, this)
 
-    open fun makeSerializationData() = BasicAttribData(id)
+    open fun makeSerializationData(): AttributeSerializationData = BasicAttribData(id)
     open fun takeDeserializationData(data: AttributeSerializationData) { /* do nothing */ }
 
     /**
