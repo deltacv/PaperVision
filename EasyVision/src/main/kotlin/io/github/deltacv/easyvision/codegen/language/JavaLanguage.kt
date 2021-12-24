@@ -4,7 +4,15 @@ import io.github.deltacv.easyvision.codegen.Visibility
 import io.github.deltacv.easyvision.codegen.build.*
 import io.github.deltacv.easyvision.codegen.csv
 
-object JavaLanguage : Language {
+object JavaLanguage : JavaLanguageBase()
+
+open class JavaLanguageBase(val usesSemicolon: Boolean = true) : Language {
+
+    override val excludedImports = mutableListOf(
+        "java.lang.String"
+    )
+
+    override val Parameter.string get() = "${type.shortNameWithGenerics} $name"
 
     override fun instanceVariableDeclaration(
         vis: Visibility,
@@ -21,21 +29,21 @@ object JavaLanguage : Language {
         return "${vis.name.lowercase()}$modifiers ${variable.type.shortNameWithGenerics} $name $ending"
     }
 
-    override fun localVariableDeclaration(name: String, variable: Value): String {
+    override fun localVariableDeclaration(name: String, variable: Value, isFinal: Boolean): String {
         val ending = if(variable.value != null) "= ${variable.value};" else ";"
 
-        return "${variable.type.shortNameWithGenerics} $name $ending"
+        return "${if(isFinal) "final " else ""}${variable.type.shortNameWithGenerics} $name $ending"
     }
 
-    override fun variableSetDeclaration(name: String, v: Value) = "$name = ${v.value!!};"
+    override fun variableSetDeclaration(name: String, v: Value) = "$name = ${v.value!!}" + semicolonIfNecessary()
 
-    override fun instanceVariableSetDeclaration(name: String, v: Value) = "this.$name = ${v.value!!};"
+    override fun instanceVariableSetDeclaration(name: String, v: Value) = "this.$name = ${v.value!!}" + semicolonIfNecessary()
 
     override fun methodCallDeclaration(className: Type, methodName: String, vararg parameters: Value) =
-        "${className.shortName}.$methodName(${parameters.csv()});"
+        "${className.shortName}.$methodName(${parameters.csv()})" + semicolonIfNecessary()
 
     override fun methodCallDeclaration(methodName: String, vararg parameters: Value) =
-        "$methodName(${parameters.csv()});"
+        "$methodName(${parameters.csv()})" + semicolonIfNecessary()
 
     override fun methodDeclaration(
         vis: Visibility,
@@ -55,6 +63,11 @@ object JavaLanguage : Language {
             "${vis.name.lowercase()} $static$final${returnType.shortName} $name(${parameters.csv()})"
         )
     }
+
+    override fun returnDeclaration(value: Value?) =
+        (if(value != null) {
+            "return ${value.value!!}"
+        } else "return") + semicolonIfNecessary()
 
     override fun foreachLoopDeclaration(variable: Value, iterable: Value) =
         "for(${variable.type.shortName} ${variable.value} : ${iterable.value})"
@@ -81,6 +94,8 @@ object JavaLanguage : Language {
 
     override fun enumClassDeclaration(name: String, vararg values: String) = "enum $name { ${values.csv() } "
 
+    override fun importDeclaration(pkg: String) = "import $pkg" + semicolonIfNecessary()
+
     override fun new(type: Type, vararg parameters: Value) = Value(
         type, "new ${type.shortName}${if(type.hasGenerics) "<>" else ""}(${parameters.csv()})"
     )
@@ -88,5 +103,7 @@ object JavaLanguage : Language {
     override fun callValue(methodName: String, returnType: Type, vararg parameters: Value) = Value(
         returnType, "$methodName(${parameters.csv()})"
     )
+
+    private fun semicolonIfNecessary() = if(usesSemicolon) ";" else ""
 
 }

@@ -18,11 +18,6 @@ fun Array<out String>.csv(): String {
     return builder.toString()
 }
 
-fun Array<out Parameter>.csv(): String {
-    val stringArray = this.map { "${it.type.shortNameWithGenerics} ${it.name}" }.toTypedArray()
-    return stringArray.csv()
-}
-
 fun Array<out Value>.csv(): String {
     val stringArray = this.map { it.value!! }.toTypedArray()
     return stringArray.csv()

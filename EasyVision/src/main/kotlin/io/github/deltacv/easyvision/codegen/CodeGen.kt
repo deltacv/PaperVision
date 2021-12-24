@@ -67,6 +67,8 @@ class CodeGen(var className: String, val language: Language) {
             bodyScope.scope(classEndScope)
         }
 
+        importScope.importType(OpenCvTypes.OpenCvPipeline)
+
         mainScope.scope(importScope)
         mainScope.newStatement()
         mainScope.clazz(Visibility.PUBLIC, className, bodyScope, extends = OpenCvTypes.OpenCvPipeline)
