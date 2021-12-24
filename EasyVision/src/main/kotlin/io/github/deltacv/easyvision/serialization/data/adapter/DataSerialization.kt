@@ -31,13 +31,17 @@ fun dataSerializableToJsonObject(value: DataSerializable<*>, context: JsonSerial
 
     dataObject.addProperty("dataClass", data::class.java.name)
 
-    val jsonData = if(context != null) context.serialize(data) else gson.toJsonTree(data)
-    if(jsonData.isJsonObject) {
-        if((jsonData as JsonObject).size() > 0) {
+    try {
+        val jsonData = if(context != null) context.serialize(data) else gson.toJsonTree(data)
+        if(jsonData.isJsonObject) {
+            if((jsonData as JsonObject).size() > 0) {
+                dataObject.add("data", jsonData)
+            }
+        } else {
             dataObject.add("data", jsonData)
         }
-    } else {
-        dataObject.add("data", jsonData)
+    } catch(e: Exception) {
+        throw RuntimeException("Exception while processing data object ${data::class.java.typeName}", e)
     }
 
     dataObject.addProperty("objectClass", value::class.java.name)

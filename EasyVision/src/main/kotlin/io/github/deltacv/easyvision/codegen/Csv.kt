@@ -1,7 +1,8 @@
 package io.github.deltacv.easyvision.codegen
 
-import io.github.deltacv.easyvision.codegen.parse.Parameter
-import io.github.deltacv.easyvision.codegen.parse.Value
+import io.github.deltacv.easyvision.codegen.build.Parameter
+import io.github.deltacv.easyvision.codegen.build.Type
+import io.github.deltacv.easyvision.codegen.build.Value
 
 fun Array<out String>.csv(): String {
     val builder = StringBuilder()
@@ -18,11 +19,16 @@ fun Array<out String>.csv(): String {
 }
 
 fun Array<out Parameter>.csv(): String {
-    val stringArray = this.map { "${it.type} ${it.name}" }.toTypedArray()
+    val stringArray = this.map { "${it.type.shortNameWithGenerics} ${it.name}" }.toTypedArray()
     return stringArray.csv()
 }
 
 fun Array<out Value>.csv(): String {
     val stringArray = this.map { it.value!! }.toTypedArray()
+    return stringArray.csv()
+}
+
+fun Array<out Type>.csv(): String {
+    val stringArray = this.map { it.shortNameWithGenerics }.toTypedArray()
     return stringArray.csv()
 }

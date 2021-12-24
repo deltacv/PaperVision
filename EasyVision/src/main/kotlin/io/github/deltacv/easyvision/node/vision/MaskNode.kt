@@ -5,8 +5,10 @@ import io.github.deltacv.easyvision.attribute.vision.MatAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.codegen.parse.new
-import io.github.deltacv.easyvision.codegen.parse.v
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Core
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
+import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.node.RegisterNode
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
@@ -41,15 +43,13 @@ class MaskNode : DrawNode<MaskNode.Session>(){
 
         val output = tryName("${input.value.value!!}Mask")
 
-        import("org.opencv.core.Core")
-
         group {
-            private(output, new("Mat"))
+            private(output, new(Mat))
         }
 
         current.scope {
             "$output.release"()
-            "Core.bitwise_and"(input.value, input.value, output.v, mask.value)
+            Core("bitwise_and", input.value, input.value, output.v, mask.value)
         }
 
         session.outputMat = GenValue.Mat(output.v, input.color)

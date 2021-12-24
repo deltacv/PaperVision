@@ -4,14 +4,15 @@ import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.math.IntAttribute
 import io.github.deltacv.easyvision.attribute.misc.ListAttribute
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
-import io.github.deltacv.easyvision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.easyvision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.easyvision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.codegen.parse.new
-import io.github.deltacv.easyvision.codegen.parse.v
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Scalar
+import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
@@ -69,23 +70,20 @@ open class DrawRectanglesNode
         var drawMat = input.value
 
         // add necessary imports
-        import("org.opencv.imgproc.Imgproc")
-        import("org.opencv.core.Scalar")
 
         group {
             public(
                 colorScalar,
-                new(
-                    "Scalar",
-                    color.a.toString(),
-                    color.b.toString(),
-                    color.c.toString(),
-                    color.d.toString(),
+                Scalar.new(
+                    color.a.v,
+                    color.b.v,
+                    color.c.v,
+                    color.d.v,
                 )
             )
 
             if (!isDrawOnInput) {
-                private(output, new("Mat"))
+                private(output, new(OpenCvTypes.Mat))
             }
         }
 
@@ -95,9 +93,8 @@ open class DrawRectanglesNode
                 "${input.value.value}.copyTo"(drawMat)
             }
 
-            "Imgproc.drawContours"(
-                drawMat,
-                contoursList.value,
+            Imgproc("drawContours",
+                drawMat, contoursList.value,
                 (-1).v, colorScalar.v, thickness.v
             )
         }

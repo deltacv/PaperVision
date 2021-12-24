@@ -7,8 +7,9 @@ import io.github.deltacv.easyvision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.codegen.parse.new
-import io.github.deltacv.easyvision.codegen.parse.v
+import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
@@ -39,14 +40,9 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
 
         val hierarchyMatName = tryName("hierarchy")
         val hierarchyMatValue = hierarchyMatName.v
-
-        import("org.opencv.imgproc.Imgproc")
-        import("org.opencv.core.MatOfPoint")
-        import("java.util.ArrayList")
-
         group {
-            private(listName, new("ArrayList<MatOfPoint>"))
-            private(hierarchyMatName, new("Mat"))
+            private(listName, new(JavaTypes.ArrayList(OpenCvTypes.MatOfPoint)))
+            private(hierarchyMatName, new(OpenCvTypes.Mat))
         }
 
         current.scope {

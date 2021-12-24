@@ -9,6 +9,7 @@ import io.github.deltacv.easyvision.attribute.TypedAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.gui.style.rgbaColor
+import io.github.deltacv.easyvision.serialization.data.SerializeData
 
 class EnumAttribute<T: Enum<T>>(
     override val mode: AttributeMode,
@@ -28,6 +29,7 @@ class EnumAttribute<T: Enum<T>>(
         it.name
     }.toTypedArray()
 
+    @SerializeData
     val currentItem = ImInt()
 
     override fun drawAttribute() {

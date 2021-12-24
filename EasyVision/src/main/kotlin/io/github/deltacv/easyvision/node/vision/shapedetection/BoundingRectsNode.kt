@@ -7,10 +7,9 @@ import io.github.deltacv.easyvision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.codegen.parse.callValue
-import io.github.deltacv.easyvision.codegen.parse.new
-import io.github.deltacv.easyvision.codegen.parse.v
-import io.github.deltacv.easyvision.codegen.parse.variableName
+import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
@@ -41,19 +40,15 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
         val rectsList = tryName("${input.value.value}Rects")
 
-        import("org.opencv.imgproc.Imgproc")
-        import("org.opencv.core.Rect")
-        import("java.util.ArrayList")
-
         group {
-            private(rectsList, new("ArrayList<Rect>"))
+            private(rectsList, new(JavaTypes.ArrayList(OpenCvTypes.Rect)))
         }
 
         current.scope {
             "${rectsList}.clear"()
 
-            foreach(variableName("MatOfPoint", "points"), input.value) {
-                "${rectsList}.add"(callValue("Imgproc.boundingRect", "Rect", it))
+            foreach(variableName(OpenCvTypes.MatOfPoint, "points"), input.value) {
+                "${rectsList}.add"(callValue("Imgproc.boundingRect", OpenCvTypes.Rect, it))
             }
         }
 

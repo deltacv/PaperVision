@@ -8,10 +8,9 @@ import io.github.deltacv.easyvision.attribute.vision.MatAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.codegen.NoSession
-import io.github.deltacv.easyvision.codegen.parse.v
+import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.RegisterNode
-import java.lang.IllegalArgumentException
 
 @RegisterNode(
     name = "nod_pipelineinput",

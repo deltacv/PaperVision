@@ -8,13 +8,17 @@ import io.github.deltacv.easyvision.attribute.vision.structs.ScalarRangeAttribut
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.codegen.parse.cvtColorValue
-import io.github.deltacv.easyvision.codegen.parse.new
-import io.github.deltacv.easyvision.codegen.parse.v
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Core
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Scalar
+import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.gui.util.ExtraWidgets
 import io.github.deltacv.easyvision.node.RegisterNode
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
+import io.github.deltacv.easyvision.serialization.data.SerializeData
 
 @RegisterNode(
     name = "nod_colorthresh",
@@ -33,7 +37,8 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         + output
     }
 
-    val colorValue = ImInt()
+    @SerializeData
+    private var colorValue = ImInt()
 
     private var lastColor = Colors.values()[0]
 
@@ -84,49 +89,44 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         val upperScalar = tryName("upper${targetColor.name}")
 
         // add necessary imports
-        import("org.opencv.imgproc.Imgproc")
-        import("org.opencv.core.Scalar")
-        import("org.opencv.core.Core")
 
         group {
             // lower color scalar
             public(
                 lowerScalar,
-                new(
-                    "Scalar",
-                    range.a.min.toString(),
-                    range.b.min.toString(),
-                    range.c.min.toString(),
-                    range.d.min.toString(),
+                Scalar.new(
+                    range.a.min.v,
+                    range.b.min.v,
+                    range.c.min.v,
+                    range.d.min.v,
                 )
             )
 
             // upper color scalar
             public(
                 upperScalar,
-                new(
-                    "Scalar",
-                    range.a.max.toString(),
-                    range.b.max.toString(),
-                    range.c.max.toString(),
-                    range.d.max.toString(),
+                Scalar.new(
+                    range.a.max.v,
+                    range.b.max.v,
+                    range.c.max.v,
+                    range.d.max.v,
                 )
             )
 
             if (needsCvt) {
-                private(cvtMat, new("Mat"))
+                private(cvtMat, new(Mat))
             }
             // output mat target
-            private(thresholdTargetMat, new("Mat"))
+            private(thresholdTargetMat, new(Mat))
         }
 
         current.scope {
             if(needsCvt) {
-                "Imgproc.cvtColor"(inputMat.value, cvtMat.v, cvtColorValue(matColor, targetColor))
+                Imgproc("cvtColor", inputMat.value, cvtMat.v, cvtColorValue(matColor, targetColor))
                 inputMat = GenValue.Mat(cvtMat.v, targetColor)
             }
 
-            "Core.inRange"(inputMat.value, lowerScalar.v, upperScalar.v, thresholdTargetMat.v)
+            Core("inRange", inputMat.value, lowerScalar.v, upperScalar.v, thresholdTargetMat.v)
         }
 
         session.outputMat = GenValue.Mat(thresholdTargetMat.v, targetColor, true)

@@ -27,3 +27,8 @@ val String.fileExtension: String? get() {
         null
     }
 }
+
+fun resourceToString(resourcePath: String): String {
+    val stream = KeyManager::class.java.getResourceAsStream(resourcePath)!!
+    return stream.bufferedReader().use { it.readText() }
+}

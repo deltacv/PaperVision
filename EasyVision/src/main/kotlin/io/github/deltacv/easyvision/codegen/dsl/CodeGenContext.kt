@@ -1,9 +1,9 @@
 package io.github.deltacv.easyvision.codegen.dsl
 
 import io.github.deltacv.easyvision.codegen.*
-import io.github.deltacv.easyvision.codegen.parse.*
+import io.github.deltacv.easyvision.codegen.build.*
 
-class CodeGenContext(val codeGen: CodeGen) {
+class CodeGenContext(val codeGen: CodeGen) : LanguageContext(codeGen.language) {
 
     fun import(pkg: String) {
         codeGen.importScope.import(pkg)
@@ -48,12 +48,12 @@ class CodeGenContext(val codeGen: CodeGen) {
     fun tryName(name: String) = codeGen.classStartScope.tryName(name)
 
     operator fun String.invoke(
-        vis: Visibility, returnType: String,
+        vis: Visibility, returnType: Type,
         vararg parameters: Parameter,
         isStatic: Boolean = false, isFinal: Boolean = false, isOverride: Boolean = true,
         scopeBlock: ScopeContext.() -> Unit
     ) {
-        val s = Scope(2)
+        val s = Scope(2, codeGen.language)
         scopeBlock(s.context)
 
         codeGen.classEndScope.method(

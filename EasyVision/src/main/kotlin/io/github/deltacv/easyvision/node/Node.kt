@@ -104,12 +104,12 @@ abstract class Node<S: CodeGenSession>(
 
     private var isCurrentlyGenCode = false
 
-    @Suppress("UNCHECKED_CAST")
     /**
      * Generates code if there's not a session in the current CodeGen
      * Automatically propagates to all the nodes attached to the output
      * attributes after genCode finishes. Called by default on onPropagateReceive()
     */
+    @Suppress("UNCHECKED_CAST")
     fun genCodeIfNecessary(current: CodeGen.Current) {
         val codeGen = current.codeGen
         val session = codeGen.sessions[this]

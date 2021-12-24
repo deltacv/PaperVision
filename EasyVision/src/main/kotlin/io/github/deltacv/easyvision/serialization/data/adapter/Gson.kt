@@ -5,5 +5,5 @@ import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import io.github.deltacv.easyvision.serialization.data.adapter.DataSerializableAdapter
 
 val gson = GsonBuilder()
-    .registerTypeAdapter(DataSerializable::class.java, DataSerializableAdapter)
+    .registerTypeHierarchyAdapter(DataSerializable::class.java, DataSerializableAdapter)
     .create()

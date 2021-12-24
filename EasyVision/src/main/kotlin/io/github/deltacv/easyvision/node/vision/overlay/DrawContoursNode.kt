@@ -9,8 +9,11 @@ import io.github.deltacv.easyvision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.codegen.parse.new
-import io.github.deltacv.easyvision.codegen.parse.v
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Scalar
+import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
@@ -33,9 +36,6 @@ open class DrawContoursNode
     val lineThickness = IntAttribute(INPUT, "$[att_linethickness]")
 
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
-
-    @SerializeData
-    var yes = 0
 
     override fun onEnable() {
         + inputMat
@@ -71,24 +71,19 @@ open class DrawContoursNode
 
         var drawMat = input.value
 
-        // add necessary imports
-        import("org.opencv.imgproc.Imgproc")
-        import("org.opencv.core.Scalar")
-
         group {
             public(
                 colorScalar,
-                new(
-                    "Scalar",
-                    color.a.toString(),
-                    color.b.toString(),
-                    color.c.toString(),
-                    color.d.toString(),
+                Scalar.new(
+                    color.a.v,
+                    color.b.v,
+                    color.c.v,
+                    color.d.v,
                 )
             )
 
             if (!isDrawOnInput) {
-                private(output, new("Mat"))
+                private(output, new(Mat))
             }
         }
 
@@ -98,11 +93,7 @@ open class DrawContoursNode
                 "${input.value.value}.copyTo"(drawMat)
             }
 
-            "Imgproc.drawContours"(
-                drawMat,
-                contoursList.value,
-                (-1).v, colorScalar.v, thickness.v
-            )
+            Imgproc("drawContours", drawMat, contoursList.value, (-1).v, colorScalar.v, thickness.v)
         }
 
         session.outputMat = GenValue.Mat(drawMat, input.color, input.isBinary)
@@ -111,6 +102,8 @@ open class DrawContoursNode
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+        genCodeIfNecessary(current)
+
         if(attrib == outputMat) {
             return genSession!!.outputMat
         }
