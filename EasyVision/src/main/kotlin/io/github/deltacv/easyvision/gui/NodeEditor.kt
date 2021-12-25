@@ -5,6 +5,7 @@ import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.ImNodesContext
+import imgui.extension.imnodes.flag.ImNodesMiniMapLocation
 import imgui.flag.ImGuiMouseButton
 import imgui.type.ImInt
 import io.github.deltacv.easyvision.EasyVision
@@ -64,6 +65,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
         ImNodes.editorContextSet(context)
 
         ImNodes.beginNodeEditor()
+
+        ImNodes.miniMap(0.15f, ImNodesMiniMapLocation.TopLeft)
 
         for(node in Node.nodes) {
             node.draw()

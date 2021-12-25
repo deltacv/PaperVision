@@ -30,6 +30,11 @@ open class LanguageContext(val language: Language) {
     fun callValue(methodName: String, returnType: Type, vararg parameters: Value) =
         language.callValue(methodName, returnType, *parameters)
 
+    fun callValue(classType: Type, methodName: String, returnType: Type, vararg parameters: Value) =
+        language.callValue("${classType.shortName}.$methodName", returnType, *parameters).apply {
+            additionalImport(classType.importName)
+        }
+
     fun enumValue(type: Type, constantName: String) = language.enumValue(type, constantName)
 
     fun cvtColorValue(a: Colors, b: Colors) = language.cvtColorValue(a, b)

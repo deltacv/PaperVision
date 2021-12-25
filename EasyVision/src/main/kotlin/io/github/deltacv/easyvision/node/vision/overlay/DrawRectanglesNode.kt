@@ -28,7 +28,7 @@ open class DrawRectanglesNode
     : DrawNode<DrawRectanglesNode.Session>()  {
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")
-    val contours = ListAttribute(INPUT, RectAttribute, "$[att_rects]")
+    val rectangles = ListAttribute(INPUT, RectAttribute, "$[att_rects]")
 
     val lineColor = ScalarAttribute(INPUT, Colors.RGB, "$[att_linecolor]")
     val lineThickness = IntAttribute(INPUT, "$[att_linethickness]")
@@ -37,7 +37,7 @@ open class DrawRectanglesNode
 
     override fun onEnable() {
         + inputMat
-        + contours
+        + rectangles
 
         + lineColor
         + lineThickness
@@ -55,21 +55,19 @@ open class DrawRectanglesNode
         val session = Session()
 
         val color = lineColor.value(current)
-        val colorScalar = tryName("contoursColor")
+        val colorScalar = tryName("rectsColor")
 
         val input = inputMat.value(current)
-        val contoursList = contours.value(current)
+        val rectanglesList = rectangles.value(current)
         val thickness = lineThickness.value(current).value
 
-        val output = tryName("${input.value.value!!}Contours")
+        val output = tryName("${input.value.value!!}Rects")
 
-        if(contoursList !is GenValue.GLists.RuntimeListOf<*>) {
-            contours.raise("") // TODO: Handle non-runtime lists
+        if(rectanglesList !is GenValue.GLists.RuntimeListOf<*>) {
+            rectangles.raise("") // TODO: Handle non-runtime lists
         }
 
         var drawMat = input.value
-
-        // add necessary imports
 
         group {
             public(
@@ -93,10 +91,9 @@ open class DrawRectanglesNode
                 "${input.value.value}.copyTo"(drawMat)
             }
 
-            Imgproc("drawContours",
-                drawMat, contoursList.value,
-                (-1).v, colorScalar.v, thickness.v
-            )
+            foreach(variableName(OpenCvTypes.Rect, "rect"), rectanglesList.value) {
+                Imgproc("rectangle", drawMat, it, colorScalar.v, thickness.v)
+            }
         }
 
         session.outputMat = GenValue.Mat(drawMat, input.color, input.isBinary)

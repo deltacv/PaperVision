@@ -10,7 +10,7 @@ class CodeGenManager(val easyVision: EasyVision) {
     fun build() {
         val timer = ElapsedTime()
 
-        val codeGen = CodeGen("TestPipeline", KotlinLanguage)
+        val codeGen = CodeGen("TestPipeline", JavaLanguage)
         easyVision.nodeEditor.inputNode.startGen(codeGen.currScopeProcessFrame)
 
         println(codeGen.gen())

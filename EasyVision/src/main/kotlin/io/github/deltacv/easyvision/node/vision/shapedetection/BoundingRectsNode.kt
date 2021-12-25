@@ -9,6 +9,7 @@ import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
@@ -48,7 +49,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
             "${rectsList}.clear"()
 
             foreach(variableName(OpenCvTypes.MatOfPoint, "points"), input.value) {
-                "${rectsList}.add"(callValue("Imgproc.boundingRect", OpenCvTypes.Rect, it))
+                "${rectsList}.add"(callValue(Imgproc, "boundingRect", OpenCvTypes.Rect, it))
             }
         }
 

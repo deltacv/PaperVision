@@ -3,7 +3,7 @@ buildscript {
         kotlin_version = "1.5.10"
         kotlinx_coroutines_version = "1.5.0-native-mt"
         classgraph_version = "4.8.108"
-        imgui_version = "1.84.1.0"
+        imgui_version = "1.85.1"
         eocvsim_common_version = "3.3.1"
 
         env = findProperty('env') == 'release' ? 'release' : 'dev'
