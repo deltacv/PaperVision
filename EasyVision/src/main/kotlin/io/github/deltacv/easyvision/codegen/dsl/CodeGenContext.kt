@@ -5,10 +5,6 @@ import io.github.deltacv.easyvision.codegen.build.*
 
 class CodeGenContext(val codeGen: CodeGen) : LanguageContext(codeGen.language) {
 
-    fun import(pkg: String) {
-        codeGen.importScope.import(pkg)
-    }
-
     fun enum(name: String, vararg values: String) {
         codeGen.classStartScope.enumClass(name, *values)
     }

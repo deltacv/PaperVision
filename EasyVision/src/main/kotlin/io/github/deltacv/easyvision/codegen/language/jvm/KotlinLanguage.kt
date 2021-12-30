@@ -1,4 +1,4 @@
-package io.github.deltacv.easyvision.codegen.language
+package io.github.deltacv.easyvision.codegen.language.jvm
 
 import io.github.deltacv.easyvision.codegen.Visibility
 import io.github.deltacv.easyvision.codegen.build.Parameter
@@ -7,8 +7,9 @@ import io.github.deltacv.easyvision.codegen.build.Type
 import io.github.deltacv.easyvision.codegen.build.Value
 import io.github.deltacv.easyvision.codegen.build.type.KotlinTypes
 import io.github.deltacv.easyvision.codegen.csv
+import io.github.deltacv.easyvision.codegen.language.LanguageBase
 
-object KotlinLanguage : JavaLanguageBase(usesSemicolon = false) {
+object KotlinLanguage : LanguageBase(usesSemicolon = false) {
 
     init {
         excludedImports.add("kotlin.Unit")
@@ -52,10 +53,10 @@ object KotlinLanguage : JavaLanguageBase(usesSemicolon = false) {
     ): Pair<String?, String> {
         val visibility = if(vis != Visibility.PUBLIC) "${vis.name.lowercase()} " else ""
         val open = if(!isFinal) "open " else ""
-        val returnType = if(returnType != VoidType) ": ${returnType.shortName}" else ""
+        val returnTypeStr = if(returnType != VoidType) ": ${returnType.shortName}" else ""
 
         return Pair("",
-            "${if(isOverride) "override " else ""}$visibility${open}fun $name(${parameters.csv()})$returnType"
+            "${if(isOverride) "override " else ""}$visibility${open}fun $name(${parameters.csv()})$returnTypeStr"
         )
     }
 

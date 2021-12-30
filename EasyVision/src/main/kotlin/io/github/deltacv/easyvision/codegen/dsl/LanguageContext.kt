@@ -32,7 +32,7 @@ open class LanguageContext(val language: Language) {
 
     fun callValue(classType: Type, methodName: String, returnType: Type, vararg parameters: Value) =
         language.callValue("${classType.shortName}.$methodName", returnType, *parameters).apply {
-            additionalImport(classType.importName)
+            additionalImport(classType)
         }
 
     fun enumValue(type: Type, constantName: String) = language.enumValue(type, constantName)

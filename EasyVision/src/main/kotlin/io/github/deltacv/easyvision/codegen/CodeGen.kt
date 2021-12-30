@@ -28,53 +28,7 @@ class CodeGen(var className: String, val language: Language) {
 
     val sessions = mutableMapOf<Node<*>, CodeGenSession>()
 
-    fun gen(): String {
-        val mainScope = Scope(0, language, importScope)
-        val bodyScope = Scope(1, language, importScope)
-
-        val start = classStartScope.get()
-        if(start.isNotBlank()) {
-            bodyScope.scope(classStartScope)
-            bodyScope.newStatement()
-        }
-
-        val init = initScope.get()
-        if(init.isNotBlank()) {
-            bodyScope.method(
-                Visibility.PUBLIC, language.VoidType, "init", initScope,
-                Parameter(OpenCvTypes.Mat, "input"), isOverride = true
-            )
-            bodyScope.newStatement()
-        }
-
-        bodyScope.method(
-            Visibility.PUBLIC, OpenCvTypes.Mat, "processFrame", processFrameScope,
-            Parameter(OpenCvTypes.Mat, "input"), isOverride = true
-        )
-
-        val viewportTapped = viewportTappedScope.get()
-        if(viewportTapped.isNotBlank()) {
-            bodyScope.newStatement()
-
-            bodyScope.method(
-                Visibility.PUBLIC, language.VoidType, "onViewportTapped", viewportTappedScope,
-                isOverride = true
-            )
-        }
-
-        val end = classEndScope.get()
-        if(end.isNotBlank()) {
-            bodyScope.scope(classEndScope)
-        }
-
-        importScope.importType(OpenCvTypes.OpenCvPipeline)
-
-        mainScope.scope(importScope)
-        mainScope.newStatement()
-        mainScope.clazz(Visibility.PUBLIC, className, bodyScope, extends = OpenCvTypes.OpenCvPipeline)
-
-        return mainScope.get()
-    }
+    fun gen() = language.gen(this)
 
     private val context = CodeGenContext(this)
 

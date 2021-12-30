@@ -1,5 +1,6 @@
 package io.github.deltacv.easyvision.codegen.language
 
+import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.Visibility
 import io.github.deltacv.easyvision.codegen.build.*
 import io.github.deltacv.easyvision.codegen.build.type.StandardTypes
@@ -17,6 +18,8 @@ interface Language : ValueBuilder {
     val DoubleType get() = StandardTypes.cdouble
 
     val VoidType get() = StandardTypes.cvoid
+
+    val newImportBuilder: () -> ImportBuilder
 
     fun Array<out Parameter>.csv(): String {
         val stringArray = this.map { it.string }.toTypedArray()
@@ -63,6 +66,14 @@ interface Language : ValueBuilder {
 
     fun enumClassDeclaration(name: String, vararg values: String): String
 
-    fun importDeclaration(pkg: String): String
+    fun block(start: String, body: Scope, tabs: String): String
+
+    fun gen(codeGen: CodeGen): String
+
+    interface ImportBuilder {
+        fun import(type: Type)
+
+        fun build(): String
+    }
 
 }
