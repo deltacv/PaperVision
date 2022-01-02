@@ -3,7 +3,9 @@ package io.github.deltacv.easyvision.codegen
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.codegen.language.interpreted.JavascriptLanguage
 import io.github.deltacv.easyvision.codegen.language.interpreted.PythonLanguage
+import io.github.deltacv.easyvision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.easyvision.util.ElapsedTime
+import io.github.deltacv.eocvsim.ipc.message.sim.PythonPipelineSourceMessage
 
 class CodeGenManager(val easyVision: EasyVision) {
 
@@ -13,8 +15,7 @@ class CodeGenManager(val easyVision: EasyVision) {
         val codeGen = CodeGen("TestPipeline", PythonLanguage)
         easyVision.nodeEditor.inputNode.startGen(codeGen.currScopeProcessFrame)
 
-        println(codeGen.gen())
-        println("took ${timer.seconds}")
+        easyVision.eocvSimIpcClient.broadcast(PythonPipelineSourceMessage("ipc py test", codeGen.gen()))
     }
 
 }

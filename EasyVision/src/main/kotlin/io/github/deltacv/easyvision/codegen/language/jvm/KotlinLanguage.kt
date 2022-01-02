@@ -12,7 +12,7 @@ import io.github.deltacv.easyvision.codegen.language.LanguageBase
 object KotlinLanguage : LanguageBase(usesSemicolon = false) {
 
     init {
-        excludedImports.add("kotlin.Unit")
+        mutableExcludedImports.add(KotlinTypes.Unit)
     }
 
     override val VoidType get() = KotlinTypes.Unit
@@ -53,7 +53,7 @@ object KotlinLanguage : LanguageBase(usesSemicolon = false) {
     ): Pair<String?, String> {
         val visibility = if(vis != Visibility.PUBLIC) "${vis.name.lowercase()} " else ""
         val open = if(!isFinal) "open " else ""
-        val returnTypeStr = if(returnType != VoidType) ": ${returnType.shortName}" else ""
+        val returnTypeStr = if(returnType != VoidType) ": ${returnType.className}" else ""
 
         return Pair("",
             "${if(isOverride) "override " else ""}$visibility${open}fun $name(${parameters.csv()})$returnTypeStr"

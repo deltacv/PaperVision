@@ -16,6 +16,8 @@ dependencies {
         exclude group: 'org.openpnp', module: 'opencv'
     }
     implementation "com.github.deltacv:mai18n:1.0.0"
+    implementation "com.github.deltacv:Ipc:4.0.0"
+    implementation "org.java-websocket:Java-WebSocket:1.5.2"
 
     implementation 'com.google.code.gson:gson:2.8.8'
     implementation "io.github.classgraph:classgraph:$classgraph_version"

@@ -3,6 +3,7 @@ package io.github.deltacv.easyvision.codegen.language
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.Visibility
 import io.github.deltacv.easyvision.codegen.build.*
+import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.csv
 
@@ -12,9 +13,11 @@ open class LanguageBase(
     val optimizeImports: Boolean = true
 ) : Language {
 
-    override val excludedImports = mutableListOf(
-        "java.lang.String"
+    protected val mutableExcludedImports =  mutableListOf(
+        JavaTypes.String
     )
+
+    override val excludedImports = mutableExcludedImports as List<Type>
 
     override val newImportBuilder: () -> Language.ImportBuilder = { BaseImportBuilder(this) }
 
@@ -46,7 +49,7 @@ open class LanguageBase(
     override fun instanceVariableSetDeclaration(name: String, v: Value) = "this.$name = ${v.value!!}" + semicolonIfNecessary()
 
     override fun methodCallDeclaration(className: Type, methodName: String, vararg parameters: Value) =
-        "${className.shortName}.$methodName(${parameters.csv()})" + semicolonIfNecessary()
+        "${className.className}.$methodName(${parameters.csv()})" + semicolonIfNecessary()
 
     override fun methodCallDeclaration(methodName: String, vararg parameters: Value) =
         "$methodName(${parameters.csv()})" + semicolonIfNecessary()
@@ -66,7 +69,7 @@ open class LanguageBase(
         return Pair(if(isOverride) {
             "@Override"
         } else null,
-            "${vis.name.lowercase()} $static$final${returnType.shortName} $name(${parameters.csv()})"
+            "${vis.name.lowercase()} $static$final${returnType.className} $name(${parameters.csv()})"
         )
     }
 
@@ -76,7 +79,7 @@ open class LanguageBase(
         } else "return") + semicolonIfNecessary()
 
     override fun foreachLoopDeclaration(variable: Value, iterable: Value) =
-        "for(${variable.type.shortName} ${variable.value} : ${iterable.value})"
+        "for(${variable.type.className} ${variable.value} : ${iterable.value})"
 
     override fun whileLoopDeclaration(condition: Condition) = "while(${condition.value})"
 
@@ -104,16 +107,13 @@ open class LanguageBase(
         val bodyStr = body.get()
         val endWhitespaceLine = if(!bodyStr.endsWith("\n")) "\n" else ""
 
-        return """
-            $tabs${start.trim()} {
-            $bodyStr$endWhitespaceLine
-            $tabs}""".trimIndent().trim()
+        return "$tabs${start.trim()} {\n$bodyStr$endWhitespaceLine$tabs}"
     }
 
     open fun importDeclaration(importPath: String, className: String) = "import ${importPath}.${className}" + semicolonIfNecessary()
 
     override fun new(type: Type, vararg parameters: Value) = Value(
-        type, "new ${type.shortName}${if(type.hasGenerics) "<>" else ""}(${parameters.csv()})"
+        type, "new ${type.className}${if(type.hasGenerics) "<>" else ""}(${parameters.csv()})"
     )
 
     override fun callValue(methodName: String, returnType: Type, vararg parameters: Value) = Value(
@@ -181,18 +181,23 @@ open class LanguageBase(
         private val imports = mutableMapOf<String, MutableList<String>>()
 
         override fun import(type: Type) {
-            if(imports.containsKey(type.importName)) {
-                val importsOfThis = imports[type.importName]!!
+            if(lang.isImportExcluded(type)) return
+
+            if(imports.containsKey(type.packagePath)) {
+                val importsOfThis = imports[type.packagePath]!!
 
                 if(importsOfThis.size > 2 && lang.optimizeImports) {
                     importsOfThis.clear()
                     importsOfThis.add("*")
                 } else {
                     if(importsOfThis.size == 1 && importsOfThis[0] == "*") return
-                    importsOfThis.add(type.shortName)
+
+                    if(!importsOfThis.contains(type.className)) {
+                        importsOfThis.add(type.className)
+                    }
                 }
             } else {
-                imports[type.importName] = mutableListOf(type.shortName)
+                imports[type.packagePath] = mutableListOf(type.className)
             }
         }
 

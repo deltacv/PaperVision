@@ -8,7 +8,7 @@ import io.github.deltacv.easyvision.codegen.csv
 
 interface Language : ValueBuilder {
 
-    val excludedImports: List<String>
+    val excludedImports: List<Type>
 
     override val language get() = this
 
@@ -28,15 +28,7 @@ interface Language : ValueBuilder {
 
     val Parameter.string: String
 
-    fun isImportExcluded(import: String): Boolean {
-        for(excludedImport in excludedImports) {
-            if(excludedImport == import) {
-                return true
-            }
-        }
-
-        return false
-    }
+    fun isImportExcluded(import: Type) = excludedImports.contains(import)
 
     fun instanceVariableDeclaration(
         vis: Visibility, name: String, variable: Value,

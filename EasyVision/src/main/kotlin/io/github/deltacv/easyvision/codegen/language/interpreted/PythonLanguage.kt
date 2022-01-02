@@ -17,7 +17,7 @@ object PythonLanguage : LanguageBase(
 
     override val Parameter.string get() = name
 
-    override val newImportBuilder = { PythonImportBuilder() }
+    override val newImportBuilder = { PythonImportBuilder(this) }
 
     override fun instanceVariableDeclaration(
         vis: Visibility,
@@ -86,19 +86,21 @@ object PythonLanguage : LanguageBase(
         throw UnsupportedOperationException("importDeclaration(importPath, className) is not supported in Python")
 
     override fun new(type: Type, vararg parameters: Value) = Value(
-        type, "${type.shortName}(${parameters.csv()})"
+        type, "${type.className}(${parameters.csv()})"
     )
 
-    class PythonImportBuilder : Language.ImportBuilder {
+    class PythonImportBuilder(val lang: Language) : Language.ImportBuilder {
         private val imports = mutableMapOf<String, MutableList<String>>()
 
         override fun import(type: Type) {
-            val classNames = imports[type.importName]
+            if(lang.isImportExcluded(type)) return
+
+            val classNames = imports[type.packagePath]
 
             if(classNames == null) {
-                imports[type.importName] = mutableListOf(type.shortName)
-            } else if(!classNames.contains(type.shortName)){
-                classNames.add(type.shortName)
+                imports[type.packagePath] = mutableListOf(type.className)
+            } else if(!classNames.contains(type.className)){
+                classNames.add(type.className)
             }
         }
 

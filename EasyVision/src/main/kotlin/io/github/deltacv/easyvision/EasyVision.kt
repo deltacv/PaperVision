@@ -48,6 +48,7 @@ import io.github.deltacv.easyvision.platform.PlatformSetupCallback
 import io.github.deltacv.easyvision.platform.PlatformWindow
 import io.github.deltacv.easyvision.serialization.ev.EasyVisionSerializer
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
+import io.github.deltacv.eocvsim.ipc.IpcClient
 import io.github.deltacv.mai18n.LangManager
 
 class EasyVision(private val setupCall: PlatformSetupCallback) {
@@ -80,6 +81,8 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
     val nodeEditor = NodeEditor(this, keyManager)
     val nodeList = NodeList(this, keyManager)
 
+    val eocvSimIpcClient = IpcClient()
+
     lateinit var defaultFont: Font
         private set
 
@@ -87,6 +90,8 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         EasyVisionSerializer.deserializeAndApply(resourceToString("/testproj.json"), nodeEditor)
 
         Log.info(TAG, "Starting EasyVision...")
+
+        eocvSimIpcClient.connect()
 
         NodeScanner.startAsyncScan()
 

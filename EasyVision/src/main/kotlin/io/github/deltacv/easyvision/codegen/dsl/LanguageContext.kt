@@ -3,7 +3,6 @@ package io.github.deltacv.easyvision.codegen.dsl
 import io.github.deltacv.easyvision.codegen.build.Condition
 import io.github.deltacv.easyvision.codegen.build.Type
 import io.github.deltacv.easyvision.codegen.build.Value
-import io.github.deltacv.easyvision.codegen.build.genType
 import io.github.deltacv.easyvision.codegen.language.Language
 import io.github.deltacv.easyvision.node.vision.Colors
 
@@ -31,7 +30,7 @@ open class LanguageContext(val language: Language) {
         language.callValue(methodName, returnType, *parameters)
 
     fun callValue(classType: Type, methodName: String, returnType: Type, vararg parameters: Value) =
-        language.callValue("${classType.shortName}.$methodName", returnType, *parameters).apply {
+        language.callValue("${classType.className}.$methodName", returnType, *parameters).apply {
             additionalImport(classType)
         }
 
