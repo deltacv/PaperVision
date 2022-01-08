@@ -4,7 +4,9 @@ buildscript {
         kotlinx_coroutines_version = "1.5.0-native-mt"
         classgraph_version = "4.8.108"
         imgui_version = "1.86.0"
-        eocvsim_common_version = "3.3.1"
+
+        slf4j_version = "1.7.32"
+        log4j_version = "2.17.1"
 
         env = findProperty('env') == 'release' ? 'release' : 'dev'
 

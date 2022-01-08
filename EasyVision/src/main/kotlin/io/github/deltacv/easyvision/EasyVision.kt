@@ -22,7 +22,6 @@
 
 package io.github.deltacv.easyvision
 
-import com.github.serivesmejia.eocvsim.util.Log
 import imgui.ImGui
 import imgui.flag.ImGuiCond
 import imgui.flag.ImGuiMouseButton
@@ -38,24 +37,20 @@ import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys
 import io.github.deltacv.easyvision.io.resourceToString
-import io.github.deltacv.easyvision.node.Link
-import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.node.NodeScanner
-import io.github.deltacv.easyvision.node.hasSuperclass
 import io.github.deltacv.easyvision.platform.PlatformKeys
 import io.github.deltacv.easyvision.platform.PlatformSetup
 import io.github.deltacv.easyvision.platform.PlatformSetupCallback
 import io.github.deltacv.easyvision.platform.PlatformWindow
 import io.github.deltacv.easyvision.serialization.ev.EasyVisionSerializer
-import io.github.deltacv.easyvision.serialization.data.DataSerializable
+import io.github.deltacv.easyvision.util.IpcClientWatchDog
+import io.github.deltacv.easyvision.util.loggerForThis
 import io.github.deltacv.eocvsim.ipc.IpcClient
 import io.github.deltacv.mai18n.LangManager
 
 class EasyVision(private val setupCall: PlatformSetupCallback) {
 
     companion object {
-        const val TAG = "EasyVision"
-
         lateinit var platformKeys: PlatformKeys
             private set
 
@@ -66,6 +61,8 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
         val miscIds = IdElementContainer<Any>()
     }
+
+    val logger by loggerForThis()
 
     lateinit var setup: PlatformSetup
         private set
@@ -81,7 +78,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
     val nodeEditor = NodeEditor(this, keyManager)
     val nodeList = NodeList(this, keyManager)
 
-    val eocvSimIpcClient = IpcClient()
+    val eocvSimIpcClient = IpcClientWatchDog()
 
     lateinit var defaultFont: Font
         private set
@@ -89,19 +86,17 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
     fun init() {
         EasyVisionSerializer.deserializeAndApply(resourceToString("/testproj.json"), nodeEditor)
 
-        Log.info(TAG, "Starting EasyVision...")
+        logger.info("Starting EasyVision...")
 
-        eocvSimIpcClient.connect()
+        eocvSimIpcClient.start()
 
         NodeScanner.startAsyncScan()
 
-        Log.info(TAG, "Using the ${setupCall.name} platform")
+        logger.info("Using the ${setupCall.name} platform")
         setup = setupCall.setup()
 
         platformKeys = setup.keys ?: throw IllegalArgumentException("Platform ${setup.name} must provide PlatformKeys")
         window = setup.window ?: throw IllegalArgumentException("Platform ${setup.name} must provide a Window")
-
-        Log.blank()
 
         // disable annoying ini file creation (hopefully shouldn't break anything)
         ImGui.getIO().iniFilename = null
@@ -161,5 +156,6 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
     fun destroy() {
         nodeEditor.destroy()
+        eocvSimIpcClient.stop()
     }
 }

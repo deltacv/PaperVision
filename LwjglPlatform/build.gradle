@@ -7,12 +7,13 @@ plugins {
 apply from: '../build.common.gradle'
 
 dependencies {
+    implementation project(":EasyVision")
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 
-    implementation project(":EasyVision")
-    implementation("com.github.deltacv.EOCV-Sim:Common:$eocvsim_common_version") {
-        exclude group: 'org.openpnp', module: 'opencv'
-    }
+    implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version"
 
     implementation "io.github.spair:imgui-java-app:$imgui_version"
 

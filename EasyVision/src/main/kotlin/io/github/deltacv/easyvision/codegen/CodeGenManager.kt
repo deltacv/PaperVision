@@ -5,6 +5,8 @@ import io.github.deltacv.easyvision.codegen.language.interpreted.JavascriptLangu
 import io.github.deltacv.easyvision.codegen.language.interpreted.PythonLanguage
 import io.github.deltacv.easyvision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.easyvision.util.ElapsedTime
+import io.github.deltacv.eocvsim.ipc.message.sim.ChangePipelineMessage
+import io.github.deltacv.eocvsim.ipc.message.sim.PipelineSource
 import io.github.deltacv.eocvsim.ipc.message.sim.PythonPipelineSourceMessage
 
 class CodeGenManager(val easyVision: EasyVision) {
@@ -15,7 +17,11 @@ class CodeGenManager(val easyVision: EasyVision) {
         val codeGen = CodeGen("TestPipeline", PythonLanguage)
         easyVision.nodeEditor.inputNode.startGen(codeGen.currScopeProcessFrame)
 
-        easyVision.eocvSimIpcClient.broadcast(PythonPipelineSourceMessage("ipc py test", codeGen.gen()))
+        easyVision.eocvSimIpcClient.broadcast(
+            PythonPipelineSourceMessage("ipc py test", codeGen.gen()).onResponse {
+                easyVision.eocvSimIpcClient.broadcast(ChangePipelineMessage("ipc py test", PipelineSource.PYTHON_RUNTIME, true))
+            }
+        )
     }
 
 }

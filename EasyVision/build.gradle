@@ -5,6 +5,10 @@ plugins {
 
 apply from: '../build.common.gradle'
 
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
@@ -12,11 +16,10 @@ dependencies {
 
     compileOnly "io.github.spair:imgui-java-binding:$imgui_version" // platforms should add the "implementation" they need
 
-    implementation("com.github.deltacv.EOCV-Sim:Common:$eocvsim_common_version") {
-        exclude group: 'org.openpnp', module: 'opencv'
-    }
+    implementation "org.slf4j:slf4j-api:$slf4j_version"
+
     implementation "com.github.deltacv:mai18n:1.0.0"
-    implementation "com.github.deltacv:Ipc:4.0.0"
+    implementation("com.github.deltacv:Ipc:4.0.0") { changing = true }
     implementation "org.java-websocket:Java-WebSocket:1.5.2"
 
     implementation 'com.google.code.gson:gson:2.8.8'

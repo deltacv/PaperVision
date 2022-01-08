@@ -1,6 +1,5 @@
 package io.github.deltacv.easyvision.gui
 
-import com.github.serivesmejia.eocvsim.util.Log
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
@@ -18,13 +17,12 @@ import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.node.vision.InputMatNode
 import io.github.deltacv.easyvision.node.vision.OutputMatNode
 import io.github.deltacv.easyvision.util.ElapsedTime
+import io.github.deltacv.easyvision.util.loggerForThis
 import io.github.deltacv.mai18n.tr
 
 class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
 
     companion object {
-        const val TAG = "NodeEditor"
-
         val KEY_PAN_CONSTANT = 5f
         val PAN_CONSTANT = 25f
     }

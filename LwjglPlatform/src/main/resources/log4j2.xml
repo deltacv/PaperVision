@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Configuration>
+    <Properties>
+        <Property name="pattern">[%d{HH:mm:ss}] [%t/%level]: [%c{1}] %msg%n</Property>
+    </Properties>
+    <Appenders>
+        <Console name="stdout" target="SYSTEM_OUT">
+            <PatternLayout pattern="${pattern}"/>
+            <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="ACCEPT"/>
+        </Console>
+
+        <Console name="stderr" target="SYSTEM_ERR">
+            <PatternLayout pattern="${pattern}"/>
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        </Console>
+
+        <File name="logfile" fileName="${sys:user.home}/.eocvsim/logs/eocvsim-${date:yyyy_MM_dd-HH.mm.ss}.log" append="false">
+            <PatternLayout pattern="${pattern}"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="TRACE">
+            <AppenderRef ref="stdout" level="INFO"/>
+            <AppenderRef ref="stderr" level="INFO"/>
+            <AppenderRef ref="logfile" level="TRACE"/>
+        </Root>
+    </Loggers>
+</Configuration>

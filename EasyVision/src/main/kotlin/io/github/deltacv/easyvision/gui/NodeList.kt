@@ -1,6 +1,5 @@
 package io.github.deltacv.easyvision.gui
 
-import com.github.serivesmejia.eocvsim.util.Log
 import imgui.*
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.ImNodesContext
@@ -20,8 +19,6 @@ import kotlinx.coroutines.*
 class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
 
     companion object {
-        val TAG = "NodeList"
-
         val listNodes = IdElementContainer<Node<*>>()
         val listAttributes = IdElementContainer<Attribute>()
 

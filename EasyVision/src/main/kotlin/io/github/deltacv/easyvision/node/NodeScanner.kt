@@ -1,14 +1,14 @@
 package io.github.deltacv.easyvision.node
 
-import com.github.serivesmejia.eocvsim.util.Log
 import io.github.classgraph.ClassGraph
+import io.github.deltacv.easyvision.util.loggerForThis
 import kotlinx.coroutines.*
 
 typealias CategorizedNodes = Map<Category, MutableList<Class<out Node<*>>>>
 
 object NodeScanner {
 
-    val TAG = "NodeScanner"
+    val logger by loggerForThis()
 
     val ignoredPackages = arrayOf(
         "java",
@@ -27,7 +27,7 @@ object NodeScanner {
 
         val nodes = mutableMapOf<Category, MutableList<Class<out Node<*>>>>()
 
-        Log.info(TAG, "Scanning for nodes...")
+        logger.info("Scanning for nodes...")
 
         val classGraph = ClassGraph()
             .enableClassInfo()
@@ -54,12 +54,11 @@ object NodeScanner {
                     list.add(nodeClazz)
                 }
 
-                Log.info(TAG, "Found node ${nodeClazz.typeName}")
+                logger.trace("Found node ${nodeClazz.typeName}")
             }
         }
 
-        Log.info(TAG, "Found ${nodeClasses.size} nodes")
-        Log.blank()
+        logger.info("Found ${nodeClasses.size} nodes")
 
         result = nodes
         return nodes
