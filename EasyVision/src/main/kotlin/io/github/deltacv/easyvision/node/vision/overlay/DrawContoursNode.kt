@@ -9,7 +9,6 @@ import io.github.deltacv.easyvision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Scalar
@@ -18,7 +17,6 @@ import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
 import io.github.deltacv.easyvision.node.vision.Colors
-import io.github.deltacv.easyvision.serialization.data.SerializeData
 
 @RegisterNode(
     name = "nod_drawcontours",
@@ -57,13 +55,20 @@ open class DrawContoursNode
         val session = Session()
 
         val color = lineColor.value(current)
-        val colorScalar = tryName("contoursColor")
+        val colorScalar = uniqueVariable("contoursColor",
+            Scalar.new(
+                color.a.v,
+                color.b.v,
+                color.c.v,
+                color.d.v,
+            )
+        )
 
         val input = inputMat.value(current)
         val contoursList = contours.value(current)
         val thickness = lineThickness.value(current).value
 
-        val output = tryName("${input.value.value!!}Contours")
+        val output = uniqueVariable("${input.value.value!!}Contours", Mat.new())
 
         if(contoursList !is GenValue.GLists.RuntimeListOf<*>) {
             contours.raise("") // TODO: Handle non-runtime lists
@@ -72,28 +77,20 @@ open class DrawContoursNode
         var drawMat = input.value
 
         group {
-            public(
-                colorScalar,
-                Scalar.new(
-                    color.a.v,
-                    color.b.v,
-                    color.c.v,
-                    color.d.v,
-                )
-            )
+            public(colorScalar)
 
             if (!isDrawOnInput) {
-                private(output, new(Mat))
+                private(output)
             }
         }
 
         current.scope {
             if(!isDrawOnInput) {
-                drawMat = output.v
-                "${input.value.value}.copyTo"(drawMat)
+                drawMat = output
+                input.value("copyTo", drawMat)
             }
 
-            Imgproc("drawContours", drawMat, contoursList.value, (-1).v, colorScalar.v, thickness.v)
+            Imgproc("drawContours", drawMat, contoursList.value, (-1).v, colorScalar, thickness.v)
         }
 
         session.outputMat = GenValue.Mat(drawMat, input.color, input.isBinary)

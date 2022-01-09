@@ -3,6 +3,7 @@ package io.github.deltacv.easyvision.codegen.dsl
 import io.github.deltacv.easyvision.codegen.build.Condition
 import io.github.deltacv.easyvision.codegen.build.Type
 import io.github.deltacv.easyvision.codegen.build.Value
+import io.github.deltacv.easyvision.codegen.build.Variable
 import io.github.deltacv.easyvision.codegen.language.Language
 import io.github.deltacv.easyvision.node.vision.Colors
 
@@ -26,20 +27,19 @@ open class LanguageContext(val language: Language) {
 
     fun value(type: Type, value: String) = language.value(type, value)
 
-    fun callValue(methodName: String, returnType: Type, vararg parameters: Value) =
-        language.callValue(methodName, returnType, *parameters)
+    fun String.callValue(returnType: Type, vararg parameters: Value) =
+        language.callValue(this, returnType, *parameters)
 
-    fun callValue(classType: Type, methodName: String, returnType: Type, vararg parameters: Value) =
-        language.callValue("${classType.className}.$methodName", returnType, *parameters).apply {
-            additionalImport(classType)
-        }
+    fun Type.callValue(methodName: String, returnType: Type, vararg parameters: Value) =
+        language.callValue(this, methodName, returnType, *parameters)
+
+    fun Value.callValue(methodName: String, returnType: Type, vararg parameters: Value) =
+        language.callValue(this, methodName, returnType, *parameters)
 
     fun enumValue(type: Type, constantName: String) = language.enumValue(type, constantName)
 
     fun cvtColorValue(a: Colors, b: Colors) = language.cvtColorValue(a, b)
 
-    fun variable(type: Type) = language.variable(type)
-
-    fun variableName(type: Type, name: String) = language.variableName(type, name)
-
+    fun variable(name: String, value: Value) = Variable(name, value)
+    fun variable(type: Type, name: String) = Variable(type, name)
 }

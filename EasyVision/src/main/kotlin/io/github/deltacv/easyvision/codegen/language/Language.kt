@@ -12,6 +12,7 @@ interface Language : ValueBuilder {
 
     override val language get() = this
 
+    val BooleanType get() = StandardTypes.cboolean
     val IntType get() = StandardTypes.cint
     val LongType get() = StandardTypes.clong
     val FloatType get() = StandardTypes.cfloat
@@ -31,15 +32,17 @@ interface Language : ValueBuilder {
     fun isImportExcluded(import: Type) = excludedImports.contains(import)
 
     fun instanceVariableDeclaration(
-        vis: Visibility, name: String, variable: Value,
+        vis: Visibility, variable: Variable,
         isStatic: Boolean = false, isFinal: Boolean = false): String
 
-    fun localVariableDeclaration(name: String, variable: Value, isFinal: Boolean = false): String
+    fun localVariableDeclaration(variable: Variable, isFinal: Boolean = false): String
 
-    fun variableSetDeclaration(name: String, v: Value): String
-    fun instanceVariableSetDeclaration(name: String, v: Value): String
+    fun variableSetDeclaration(variable: Variable, v: Value): String
+    fun instanceVariableSetDeclaration(variable: Variable, v: Value): String
 
     fun methodCallDeclaration(className: Type, methodName: String, vararg parameters: Value): String
+    fun methodCallDeclaration(callee: Value, methodName: String, vararg parameters: Value): String
+
     fun methodCallDeclaration(methodName: String, vararg parameters: Value): String
 
     fun methodDeclaration(

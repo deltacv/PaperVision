@@ -17,8 +17,12 @@ class CodeGenManager(val easyVision: EasyVision) {
         val codeGen = CodeGen("TestPipeline", PythonLanguage)
         easyVision.nodeEditor.inputNode.startGen(codeGen.currScopeProcessFrame)
 
+        val code = codeGen.gen()
+
+        println(code)
+
         easyVision.eocvSimIpcClient.broadcast(
-            PythonPipelineSourceMessage("ipc py test", codeGen.gen()).onResponse {
+            PythonPipelineSourceMessage("ipc py test", code).onResponse {
                 easyVision.eocvSimIpcClient.broadcast(ChangePipelineMessage("ipc py test", PipelineSource.PYTHON_RUNTIME, true))
             }
         )

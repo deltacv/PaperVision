@@ -82,54 +82,53 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         
         val needsCvt = matColor != targetColor
 
-        val cvtMat = tryName("${targetColor.name.lowercase()}Mat")
-        val thresholdTargetMat = tryName("${targetColor.name.lowercase()}BinaryMat")
+        val cvtMat = uniqueVariable("${targetColor.name.lowercase()}Mat", Mat.new())
+        val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}BinaryMat", Mat.new())
 
-        val lowerScalar = tryName("lower${targetColor.name}")
-        val upperScalar = tryName("upper${targetColor.name}")
+        val lowerScalar = uniqueVariable("lower${targetColor.name}",
+            Scalar.new(
+                range.a.min.v,
+                range.b.min.v,
+                range.c.min.v,
+                range.d.min.v,
+            )
+        )
+
+        val upperScalar = uniqueVariable("upper${targetColor.name}",
+            Scalar.new(
+                range.a.max.v,
+                range.b.max.v,
+                range.c.max.v,
+                range.d.max.v,
+            )
+        )
 
         // add necessary imports
 
         group {
             // lower color scalar
-            public(
-                lowerScalar,
-                Scalar.new(
-                    range.a.min.v,
-                    range.b.min.v,
-                    range.c.min.v,
-                    range.d.min.v,
-                )
-            )
+            public(lowerScalar)
 
             // upper color scalar
-            public(
-                upperScalar,
-                Scalar.new(
-                    range.a.max.v,
-                    range.b.max.v,
-                    range.c.max.v,
-                    range.d.max.v,
-                )
-            )
+            public(upperScalar)
 
             if (needsCvt) {
-                private(cvtMat, new(Mat))
+                private(cvtMat)
             }
             // output mat target
-            private(thresholdTargetMat, new(Mat))
+            private(thresholdTargetMat)
         }
 
         current.scope {
             if(needsCvt) {
-                Imgproc("cvtColor", inputMat.value, cvtMat.v, cvtColorValue(matColor, targetColor))
-                inputMat = GenValue.Mat(cvtMat.v, targetColor)
+                Imgproc("cvtColor", inputMat.value, cvtMat, cvtColorValue(matColor, targetColor))
+                inputMat = GenValue.Mat(cvtMat, targetColor)
             }
 
-            Core("inRange", inputMat.value, lowerScalar.v, upperScalar.v, thresholdTargetMat.v)
+            Core("inRange", inputMat.value, lowerScalar, upperScalar, thresholdTargetMat)
         }
 
-        session.outputMat = GenValue.Mat(thresholdTargetMat.v, targetColor, true)
+        session.outputMat = GenValue.Mat(thresholdTargetMat, targetColor, true)
 
         session
     }

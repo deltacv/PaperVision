@@ -25,34 +25,36 @@ open class LanguageBase(
 
     override fun instanceVariableDeclaration(
         vis: Visibility,
-        name: String,
-        variable: Value,
+        variable: Variable,
         isStatic: Boolean,
         isFinal: Boolean
     ): String {
         val modifiers = if(isStatic) " static" else "" +
                 if(isFinal) " final" else ""
 
-        val ending = if(variable.value != null) "= ${variable.value};" else ";"
+        val ending = if(variable.variableValue.value != null) " = ${variable.variableValue.value}" else ""
 
-        return "${vis.name.lowercase()}$modifiers ${variable.type.shortNameWithGenerics} $name $ending"
+        return "${vis.name.lowercase()}$modifiers ${variable.type.shortNameWithGenerics} ${variable.name}$ending${semicolonIfNecessary()}"
     }
 
-    override fun localVariableDeclaration(name: String, variable: Value, isFinal: Boolean): String {
-        val ending = (if(variable.value != null) "= ${variable.value}" else "") + semicolonIfNecessary()
+    override fun localVariableDeclaration(variable: Variable, isFinal: Boolean): String {
+        val ending = (if(variable.variableValue.value != null) " = ${variable.variableValue.value}" else "")
 
-        return "${if(isFinal) "final " else ""}${variable.type.shortNameWithGenerics} $name $ending"
+        return "${if(isFinal) "final " else ""}${variable.type.shortNameWithGenerics} ${variable.name}$ending${semicolonIfNecessary()}"
     }
 
-    override fun variableSetDeclaration(name: String, v: Value) = "$name = ${v.value!!}" + semicolonIfNecessary()
+    override fun variableSetDeclaration(variable: Variable, v: Value) = "${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
 
-    override fun instanceVariableSetDeclaration(name: String, v: Value) = "this.$name = ${v.value!!}" + semicolonIfNecessary()
+    override fun instanceVariableSetDeclaration(variable: Variable, v: Value) = "this.${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
 
     override fun methodCallDeclaration(className: Type, methodName: String, vararg parameters: Value) =
-        "${className.className}.$methodName(${parameters.csv()})" + semicolonIfNecessary()
+        "${className.className}.$methodName(${parameters.csv()})${semicolonIfNecessary()}"
+
+    override fun methodCallDeclaration(callee: Value, methodName: String, vararg parameters: Value) =
+        "${callee.value}.$methodName(${parameters.csv()})${semicolonIfNecessary()}"
 
     override fun methodCallDeclaration(methodName: String, vararg parameters: Value) =
-        "$methodName(${parameters.csv()})" + semicolonIfNecessary()
+        "$methodName(${parameters.csv()})${semicolonIfNecessary()}"
 
     override fun methodDeclaration(
         vis: Visibility,
@@ -110,7 +112,7 @@ open class LanguageBase(
         return "$tabs${start.trim()} {\n$bodyStr$endWhitespaceLine$tabs}"
     }
 
-    open fun importDeclaration(importPath: String, className: String) = "import ${importPath}.${className}" + semicolonIfNecessary()
+    open fun importDeclaration(importPath: String, className: String) = "import ${importPath}.${className}${semicolonIfNecessary()}"
 
     override fun new(type: Type, vararg parameters: Value) = Value(
         type, "new ${type.className}${if(type.hasGenerics) "<>" else ""}(${parameters.csv()})"
@@ -118,7 +120,20 @@ open class LanguageBase(
 
     override fun callValue(methodName: String, returnType: Type, vararg parameters: Value) = Value(
         returnType, "$methodName(${parameters.csv()})"
-    )
+    ).apply {
+        additionalImports(*parameters)
+    }
+
+    override fun callValue(classType: Type, methodName: String, returnType: Type, vararg parameters: Value) =
+        Value(returnType, "${classType.className}.$methodName(${parameters.csv()})").apply {
+            additionalImports(classType)
+            additionalImports(*parameters)
+        }
+
+    override fun callValue(callee: Value, methodName: String, returnType: Type, vararg parameters: Value) =
+        Value(returnType, "${callee.value}.$methodName(${parameters.csv()})").apply {
+            additionalImports(callee, *parameters)
+        }
 
     override fun gen(codeGen: CodeGen): String = codeGen.run {
         val mainScope = Scope(0, language, importScope)

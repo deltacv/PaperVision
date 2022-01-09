@@ -8,7 +8,8 @@ import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
-import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.MatOfPoint
 import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
@@ -35,24 +36,22 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
         val input = inputMat.value(current)
         input.requireBinary(inputMat)
 
-        val listName = tryName("contours")
-        val listValue = listName.v
+        val list = uniqueVariable("contours", JavaTypes.ArrayList(MatOfPoint).new())
+        val hierarchyMat = uniqueVariable("hierarchy", Mat.new())
 
-        val hierarchyMatName = tryName("hierarchy")
-        val hierarchyMatValue = hierarchyMatName.v
         group {
-            private(listName, new(JavaTypes.ArrayList(OpenCvTypes.MatOfPoint)))
-            private(hierarchyMatName, new(OpenCvTypes.Mat))
+            private(list)
+            private(hierarchyMat)
         }
 
         current.scope {
-            "${listName}.clear"()
-            "${hierarchyMatName}.release"()
+            list("clear")
+            hierarchyMat("release")
 
-            "Imgproc.findContours"(input.value, listValue, hierarchyMatValue, "Imgproc.RETR_LIST".v, "Imgproc.CHAIN_APPROX_SIMPLE".v)
+            "Imgproc.findContours"(input.value, list, hierarchyMat, "Imgproc.RETR_LIST".v, "Imgproc.CHAIN_APPROX_SIMPLE".v)
         }
 
-        session.contoursList = GenValue.GLists.RuntimeListOf(listValue, GenValue.GPoints.Points::class)
+        session.contoursList = GenValue.GLists.RuntimeListOf(list, GenValue.GPoints.Points::class)
 
         session
     }

@@ -1,10 +1,7 @@
 package io.github.deltacv.easyvision.codegen.language.interpreted
 
 import io.github.deltacv.easyvision.codegen.Visibility
-import io.github.deltacv.easyvision.codegen.build.Parameter
-import io.github.deltacv.easyvision.codegen.build.Scope
-import io.github.deltacv.easyvision.codegen.build.Type
-import io.github.deltacv.easyvision.codegen.build.Value
+import io.github.deltacv.easyvision.codegen.build.*
 import io.github.deltacv.easyvision.codegen.csv
 import io.github.deltacv.easyvision.codegen.language.LanguageBase
 
@@ -14,19 +11,17 @@ object JavascriptLanguage : LanguageBase(genInClass = false, optimizeImports = f
 
     override fun instanceVariableDeclaration(
         vis: Visibility,
-        name: String,
-        variable: Value,
+        variable: Variable,
         isStatic: Boolean,
         isFinal: Boolean
-    ) = "var $name = ${variable.value}" + semicolonIfNecessary()
+    ) = "var ${variable.name} = ${variable.variableValue.value}${semicolonIfNecessary()}"
 
     override fun localVariableDeclaration(
-        name: String,
-        variable: Value,
+        variable: Variable,
         isFinal: Boolean
-    ) = instanceVariableDeclaration(Visibility.PUBLIC, name, variable)
+    ) = instanceVariableDeclaration(Visibility.PUBLIC, variable)
 
-    override fun instanceVariableSetDeclaration(name: String, v: Value) = "$name = ${v.value!!}" + semicolonIfNecessary()
+    override fun instanceVariableSetDeclaration(variable: Variable, v: Value) = "${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
 
     override fun methodDeclaration(
         vis: Visibility,
@@ -69,7 +64,7 @@ object JavascriptLanguage : LanguageBase(genInClass = false, optimizeImports = f
             |}""".trimMargin()
     }
 
-    override fun importDeclaration(importPath: String, className: String) = "importClass($importPath.$className)" + semicolonIfNecessary()
+    override fun importDeclaration(importPath: String, className: String) = "importClass($importPath.$className)${semicolonIfNecessary()}"
 
     override fun new(type: Type, vararg parameters: Value) = Value(
         type, "new ${type.className}(${parameters.csv()})"

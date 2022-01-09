@@ -4,6 +4,7 @@ import io.github.deltacv.easyvision.codegen.build.Scope
 import io.github.deltacv.easyvision.codegen.build.Value
 import io.github.deltacv.easyvision.codegen.Visibility
 import io.github.deltacv.easyvision.codegen.build.Type
+import io.github.deltacv.easyvision.codegen.build.Variable
 
 class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
 
@@ -19,16 +20,17 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         scope.methodCall(this, method, *parameters)
     }
 
-    infix fun String.value(v: Value) =
-        scope.instanceVariable(Visibility.PUBLIC, this, v)
+    operator fun Value.invoke(method: String, vararg parameters: Value) {
+        scope.methodCall(this, method, *parameters)
+    }
 
     infix fun String.local(v: Value) =
-        scope.localVariable(this, v)
+        scope.localVariable(Variable(this, v))
 
-    infix fun String.set(v: Value) =
+    infix fun Variable.set(v: Value) =
         scope.variableSet(this, v)
 
-    infix fun String.instanceSet(v: Value) =
+    infix fun Variable.instanceSet(v: Value) =
         scope.instanceVariableSet(this, v)
 
     fun foreach(variable: Value, list: Value, block: ScopeContext.(Value) -> Unit) {

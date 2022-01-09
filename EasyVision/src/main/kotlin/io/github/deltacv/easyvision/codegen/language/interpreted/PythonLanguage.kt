@@ -1,10 +1,7 @@
 package io.github.deltacv.easyvision.codegen.language.interpreted
 
 import io.github.deltacv.easyvision.codegen.Visibility
-import io.github.deltacv.easyvision.codegen.build.Parameter
-import io.github.deltacv.easyvision.codegen.build.Scope
-import io.github.deltacv.easyvision.codegen.build.Type
-import io.github.deltacv.easyvision.codegen.build.Value
+import io.github.deltacv.easyvision.codegen.build.*
 import io.github.deltacv.easyvision.codegen.csv
 import io.github.deltacv.easyvision.codegen.language.Language
 import io.github.deltacv.easyvision.codegen.language.LanguageBase
@@ -19,21 +16,22 @@ object PythonLanguage : LanguageBase(
 
     override val newImportBuilder = { PythonImportBuilder(this) }
 
+    override fun and(left: Condition, right: Condition) = condition("(${left.value}) and (${right.value})")
+    override fun or(left: Condition, right: Condition) = condition("(${left.value}) or (${right.value})")
+
     override fun instanceVariableDeclaration(
         vis: Visibility,
-        name: String,
-        variable: Value,
+        variable: Variable,
         isStatic: Boolean,
         isFinal: Boolean
-    ) = "$name = ${variable.value}" + semicolonIfNecessary()
+    ) = "${variable.name} = ${variable.variableValue.value ?: "None"}"
 
     override fun localVariableDeclaration(
-        name: String,
-        variable: Value,
+        variable: Variable,
         isFinal: Boolean
-    ) = instanceVariableDeclaration(Visibility.PUBLIC, name, variable)
+    ) = instanceVariableDeclaration(Visibility.PUBLIC, variable)
 
-    override fun instanceVariableSetDeclaration(name: String, v: Value) = "$name = ${v.value!!}" + semicolonIfNecessary()
+    override fun instanceVariableSetDeclaration(variable: Variable, v: Value) = "${variable.name} = ${v.value!!}" + semicolonIfNecessary()
 
     override fun methodDeclaration(
         vis: Visibility,

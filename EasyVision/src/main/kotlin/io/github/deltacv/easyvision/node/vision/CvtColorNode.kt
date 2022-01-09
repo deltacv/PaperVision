@@ -3,14 +3,14 @@ package io.github.deltacv.easyvision.node.vision
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.misc.EnumAttribute
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
-import io.github.deltacv.easyvision.codegen.*
+import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
-import io.github.deltacv.easyvision.codegen.build.*
-import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
-import io.github.deltacv.easyvision.node.RegisterNode
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
+import io.github.deltacv.easyvision.node.RegisterNode
 
 @RegisterNode(
     name = "nod_cvtcolor",
@@ -49,18 +49,18 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
         }
 
         if(matColor != targetColor) {
-            val matName = tryName("${targetColor.name.lowercase()}Mat")
+            val mat = uniqueVariable("${targetColor.name.lowercase()}Mat", Mat.new())
 
             group {
                 // create mat instance variable
-                private(matName, new(OpenCvTypes.Mat))
+                private(mat)
             }
 
             current.scope { // add a cvtColor step in processFrame
-                Imgproc("cvtColor", inputMat.value, matName.v, cvtColorValue(matColor, targetColor))
+                Imgproc("cvtColor", inputMat.value, mat, cvtColorValue(matColor, targetColor))
             }
 
-            session.outputMatValue = GenValue.Mat(matName.v, targetColor) // store data in the current session
+            session.outputMatValue = GenValue.Mat(mat, targetColor) // store data in the current session
         } else {
             // we don't need to do any processing if the mat is
             // already of the color the user specified to convert to

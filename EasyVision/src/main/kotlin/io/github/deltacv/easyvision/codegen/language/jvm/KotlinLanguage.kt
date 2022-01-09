@@ -1,10 +1,7 @@
 package io.github.deltacv.easyvision.codegen.language.jvm
 
 import io.github.deltacv.easyvision.codegen.Visibility
-import io.github.deltacv.easyvision.codegen.build.Parameter
-import io.github.deltacv.easyvision.codegen.build.Scope
-import io.github.deltacv.easyvision.codegen.build.Type
-import io.github.deltacv.easyvision.codegen.build.Value
+import io.github.deltacv.easyvision.codegen.build.*
 import io.github.deltacv.easyvision.codegen.build.type.KotlinTypes
 import io.github.deltacv.easyvision.codegen.csv
 import io.github.deltacv.easyvision.codegen.language.LanguageBase
@@ -15,31 +12,38 @@ object KotlinLanguage : LanguageBase(usesSemicolon = false) {
         mutableExcludedImports.add(KotlinTypes.Unit)
     }
 
+    override val BooleanType get() = KotlinTypes.Boolean
+
+    override val IntType get() = KotlinTypes.Int
+    override val LongType get() = KotlinTypes.Long
+    override val FloatType get() = KotlinTypes.Float
+    override val DoubleType get() = KotlinTypes.Double
+
     override val VoidType get() = KotlinTypes.Unit
+
     override val Parameter.string get() = "$name: ${type.shortNameWithGenerics}"
 
     override fun instanceVariableDeclaration(
         vis: Visibility,
-        name: String,
-        variable: Value,
+        variable: Variable,
         isStatic: Boolean,
         isFinal: Boolean
     ): String {
 
-        val ending = if(variable.value != null) "= ${variable.value}" else ""
+        val ending = if(variable.variableValue.value != null) "= ${variable.variableValue.value}" else ""
 
         var modifiers = if(isFinal) "val" else "var"
         if(vis != Visibility.PUBLIC) {
             modifiers = "${vis.name.lowercase()} " + modifiers
         }
 
-        return "$modifiers $name: ${variable.type.shortNameWithGenerics} $ending"
+        return "$modifiers ${variable.name}: ${variable.type.shortNameWithGenerics} $ending"
     }
 
-    override fun localVariableDeclaration(name: String, variable: Value, isFinal: Boolean): String {
-        val ending = if(variable.value != null) "= ${variable.value}" else ""
+    override fun localVariableDeclaration(variable: Variable, isFinal: Boolean): String {
+        val ending = if(variable.variableValue.value != null) " = ${variable.variableValue.value}" else ""
 
-        return "${if(isFinal) "val" else "var"} $name: ${variable.type.shortNameWithGenerics}  $ending"
+        return "${if(isFinal) "val" else "var"} ${variable.name}: ${variable.type.shortNameWithGenerics}$ending"
     }
 
     override fun methodDeclaration(

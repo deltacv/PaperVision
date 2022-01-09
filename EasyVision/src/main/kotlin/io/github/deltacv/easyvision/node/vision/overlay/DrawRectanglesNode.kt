@@ -11,6 +11,7 @@ import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Scalar
 import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.node.Category
@@ -55,13 +56,20 @@ open class DrawRectanglesNode
         val session = Session()
 
         val color = lineColor.value(current)
-        val colorScalar = tryName("rectsColor")
+        val colorScalar = uniqueVariable("rectsColor",
+            Scalar.new(
+                color.a.v,
+                color.b.v,
+                color.c.v,
+                color.d.v,
+            )
+        )
 
         val input = inputMat.value(current)
         val rectanglesList = rectangles.value(current)
         val thickness = lineThickness.value(current).value
 
-        val output = tryName("${input.value.value!!}Rects")
+        val output = uniqueVariable("${input.value.value!!}Rects", Mat.new())
 
         if(rectanglesList !is GenValue.GLists.RuntimeListOf<*>) {
             rectangles.raise("") // TODO: Handle non-runtime lists
@@ -70,29 +78,21 @@ open class DrawRectanglesNode
         var drawMat = input.value
 
         group {
-            public(
-                colorScalar,
-                Scalar.new(
-                    color.a.v,
-                    color.b.v,
-                    color.c.v,
-                    color.d.v,
-                )
-            )
+            public(colorScalar)
 
             if (!isDrawOnInput) {
-                private(output, new(OpenCvTypes.Mat))
+                private(output)
             }
         }
 
         current.scope {
             if(!isDrawOnInput) {
-                drawMat = output.v
-                "${input.value.value}.copyTo"(drawMat)
+                drawMat = output
+                input.value("copyTo", drawMat)
             }
 
-            foreach(variableName(OpenCvTypes.Rect, "rect"), rectanglesList.value) {
-                Imgproc("rectangle", drawMat, it, colorScalar.v, thickness.v)
+            foreach(variable(OpenCvTypes.Rect, "rect"), rectanglesList.value) {
+                Imgproc("rectangle", drawMat, it, colorScalar, thickness.v)
             }
         }
 

@@ -10,7 +10,6 @@ import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
-import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
@@ -39,21 +38,21 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
             raise("") // TODO: Handle non-runtime lists
         }
 
-        val rectsList = tryName("${input.value.value}Rects")
+        val rectsList = uniqueVariable("${input.value.value}Rects", JavaTypes.ArrayList(OpenCvTypes.Rect).new())
 
         group {
-            private(rectsList, new(JavaTypes.ArrayList(OpenCvTypes.Rect)))
+            private(rectsList)
         }
 
         current.scope {
-            "${rectsList}.clear"()
+            rectsList("clear")
 
-            foreach(variableName(OpenCvTypes.MatOfPoint, "points"), input.value) {
-                "${rectsList}.add"(callValue(Imgproc, "boundingRect", OpenCvTypes.Rect, it))
+            foreach(variable(OpenCvTypes.MatOfPoint, "points"), input.value) {
+                rectsList("add", Imgproc.callValue("boundingRect", OpenCvTypes.Rect, it))
             }
         }
 
-        session.outputRects = GenValue.GLists.RuntimeListOf(rectsList.v, GenValue.GRects.RuntimeRect::class)
+        session.outputRects = GenValue.GLists.RuntimeListOf(rectsList, GenValue.GRects.RuntimeRect::class)
 
         session
     }
