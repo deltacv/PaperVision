@@ -9,6 +9,7 @@ import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.gui.util.ExtraWidgets
 import io.github.deltacv.easyvision.serialization.data.SerializeData
+import java.util.*
 
 class RangeAttribute(
     override val mode: AttributeMode,
@@ -29,6 +30,9 @@ class RangeAttribute(
     @SerializeData
     val maxValue = ImInt(max)
 
+    private var prevMin: Int? = null
+    private var prevMax: Int? = null
+
     private val minId by EasyVision.miscIds.nextId()
     private val maxId by EasyVision.miscIds.nextId()
 
@@ -48,14 +52,16 @@ class RangeAttribute(
             val mn = minValue.get()
             val mx = maxValue.get()
 
-            if(mn > mx) {
-                minValue.set(mx)
+            if(mn != prevMin || mx != prevMax) {
+                changed()
             }
-            if(mx < mn) {
-                maxValue.set(mn)
-            }
+
+            prevMin = mn
+            prevMax = mx
         }
     }
+
+    override fun get() = arrayOf(minValue.get().toDouble(), maxValue.get().toDouble())
 
     override fun value(current: CodeGen.Current) = value(
         current, "a Range", GenValue.Range(

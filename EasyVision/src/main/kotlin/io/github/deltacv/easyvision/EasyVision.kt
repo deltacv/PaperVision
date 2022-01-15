@@ -60,6 +60,8 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
             private set
 
         val miscIds = IdElementContainer<Any>()
+
+        val eocvSimIpcClient = IpcClientWatchDog()
     }
 
     val logger by loggerForThis()
@@ -77,8 +79,6 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
     val nodeEditor = NodeEditor(this, keyManager)
     val nodeList = NodeList(this, keyManager)
-
-    val eocvSimIpcClient = IpcClientWatchDog()
 
     lateinit var defaultFont: Font
         private set

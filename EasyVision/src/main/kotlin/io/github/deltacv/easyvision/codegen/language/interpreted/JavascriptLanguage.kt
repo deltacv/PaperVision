@@ -12,14 +12,20 @@ object JavascriptLanguage : LanguageBase(genInClass = false, optimizeImports = f
     override fun instanceVariableDeclaration(
         vis: Visibility,
         variable: Variable,
+        label: String?,
         isStatic: Boolean,
         isFinal: Boolean
-    ) = "var ${variable.name} = ${variable.variableValue.value}${semicolonIfNecessary()}"
+    ) = Pair(
+        if(label != null) {
+            "label(\"${variable.name}\", \"$label\")"
+        } else null,
+        "var ${variable.name} = ${variable.variableValue.value}${semicolonIfNecessary()}"
+    )
 
     override fun localVariableDeclaration(
         variable: Variable,
         isFinal: Boolean
-    ) = instanceVariableDeclaration(Visibility.PUBLIC, variable)
+    ) = instanceVariableDeclaration(Visibility.PUBLIC, variable).second
 
     override fun instanceVariableSetDeclaration(variable: Variable, v: Value) = "${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
 

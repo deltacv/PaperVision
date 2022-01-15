@@ -22,14 +22,20 @@ object PythonLanguage : LanguageBase(
     override fun instanceVariableDeclaration(
         vis: Visibility,
         variable: Variable,
+        label: String?,
         isStatic: Boolean,
         isFinal: Boolean
-    ) = "${variable.name} = ${variable.variableValue.value ?: "None"}"
+    ) = Pair(
+        if(label != null) {
+            "label(\"$label\", \"${variable.name}\")"
+        } else null,
+        "${variable.name} = ${variable.variableValue.value}${semicolonIfNecessary()}"
+    )
 
     override fun localVariableDeclaration(
         variable: Variable,
         isFinal: Boolean
-    ) = instanceVariableDeclaration(Visibility.PUBLIC, variable)
+    ) = instanceVariableDeclaration(Visibility.PUBLIC, variable).second
 
     override fun instanceVariableSetDeclaration(variable: Variable, v: Value) = "${variable.name} = ${v.value!!}" + semicolonIfNecessary()
 

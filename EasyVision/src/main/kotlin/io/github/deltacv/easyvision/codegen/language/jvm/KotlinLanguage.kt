@@ -2,6 +2,7 @@ package io.github.deltacv.easyvision.codegen.language.jvm
 
 import io.github.deltacv.easyvision.codegen.Visibility
 import io.github.deltacv.easyvision.codegen.build.*
+import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
 import io.github.deltacv.easyvision.codegen.build.type.KotlinTypes
 import io.github.deltacv.easyvision.codegen.csv
 import io.github.deltacv.easyvision.codegen.language.LanguageBase
@@ -26,10 +27,10 @@ object KotlinLanguage : LanguageBase(usesSemicolon = false) {
     override fun instanceVariableDeclaration(
         vis: Visibility,
         variable: Variable,
+        label: String?,
         isStatic: Boolean,
         isFinal: Boolean
-    ): String {
-
+    ): Pair<String?, String> {
         val ending = if(variable.variableValue.value != null) "= ${variable.variableValue.value}" else ""
 
         var modifiers = if(isFinal) "val" else "var"
@@ -37,7 +38,13 @@ object KotlinLanguage : LanguageBase(usesSemicolon = false) {
             modifiers = "${vis.name.lowercase()} " + modifiers
         }
 
-        return "$modifiers ${variable.name}: ${variable.type.shortNameWithGenerics} $ending"
+        return Pair(
+            if(label != null) {
+                variable.additionalImports(JavaTypes.LabelAnnotation)
+                "@Label(name = \"$label\")"
+            } else null,
+            "$modifiers ${variable.name}: ${variable.type.shortNameWithGenerics} $ending"
+        )
     }
 
     override fun localVariableDeclaration(variable: Variable, isFinal: Boolean): String {

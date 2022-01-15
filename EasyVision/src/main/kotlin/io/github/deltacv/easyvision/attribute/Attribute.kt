@@ -10,6 +10,7 @@ import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.serialization.ev.AttributeSerializationData
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import io.github.deltacv.easyvision.serialization.ev.BasicAttribData
+import io.github.deltacv.easyvision.util.event.EventHandler
 
 enum class AttributeMode { INPUT, OUTPUT }
 
@@ -41,6 +42,8 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
 
     var wasLastDrawCancelled = false
         private set
+
+    val onChange = EventHandler("OnChange-${this::class.simpleName}")
 
     abstract fun drawAttribute()
 
@@ -140,6 +143,8 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
     abstract fun acceptLink(other: Attribute): Boolean
 
     abstract fun value(current: CodeGen.Current): GenValue
+
+    open fun get(): Any? = null
 
     protected fun getOutputValue(current: CodeGen.Current) = parentNode.getOutputValueOf(current, this)
 

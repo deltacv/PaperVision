@@ -31,6 +31,8 @@ open class DrawContoursNode
     val contours = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
 
     val lineColor = ScalarAttribute(INPUT, Colors.RGB, "$[att_linecolor]")
+    val colorScalarLabel = label(lineColor)
+
     val lineThickness = IntAttribute(INPUT, "$[att_linethickness]")
 
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
@@ -77,7 +79,7 @@ open class DrawContoursNode
         var drawMat = input.value
 
         group {
-            public(colorScalar)
+            public(colorScalar, colorScalarLabel)
 
             if (!isDrawOnInput) {
                 private(output)

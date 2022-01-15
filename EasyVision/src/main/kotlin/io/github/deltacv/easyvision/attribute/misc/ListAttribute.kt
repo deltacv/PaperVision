@@ -2,10 +2,6 @@ package io.github.deltacv.easyvision.attribute.misc
 
 import com.google.gson.JsonObject
 import imgui.ImGui
-import imgui.ImVec2
-import imgui.extension.imnodes.ImNodes
-import imgui.extension.imnodes.flag.ImNodesColorStyle
-import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.AttributeMode
 import io.github.deltacv.easyvision.attribute.Type
@@ -16,8 +12,8 @@ import io.github.deltacv.easyvision.gui.style.rgbaColor
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import io.github.deltacv.easyvision.serialization.data.adapter.dataSerializableToJsonObject
 import io.github.deltacv.easyvision.serialization.data.adapter.jsonObjectToDataSerializable
-import io.github.deltacv.easyvision.serialization.data.adapter.toJsonObject
 import io.github.deltacv.easyvision.serialization.ev.AttributeSerializationData
+import java.util.*
 
 open class ListAttribute(
     override val mode: AttributeMode,
@@ -222,6 +218,16 @@ open class ListAttribute(
 
     override fun acceptLink(other: Attribute) = other is ListAttribute && other.elementType == elementType
 
+    override fun get(): Array<Any> {
+        val list = mutableListOf<Any>()
+
+        for(attribute in listAttributes) {
+            list.add(attribute.get() ?: continue)
+        }
+
+        return list.toTypedArray()
+    }
+
     private fun createElement(enable: Boolean = true): TypedAttribute {
         val count = listAttributes.size.toString()
         val elementName = count + if (count.length == 1) " " else ""
@@ -231,6 +237,8 @@ open class ListAttribute(
         if(enable) element.enable() //enables the new element
 
         element.drawType = false // hides the variable type
+
+        element.onChange.doPersistent(onChange::run)
 
         listAttributes.add(element)
 

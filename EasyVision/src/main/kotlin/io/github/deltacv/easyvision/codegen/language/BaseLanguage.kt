@@ -6,6 +6,7 @@ import io.github.deltacv.easyvision.codegen.build.*
 import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.csv
+import io.github.deltacv.easyvision.codegen.language.jvm.JavaLanguage
 
 open class LanguageBase(
     val usesSemicolon: Boolean = true,
@@ -26,15 +27,22 @@ open class LanguageBase(
     override fun instanceVariableDeclaration(
         vis: Visibility,
         variable: Variable,
+        label: String?,
         isStatic: Boolean,
         isFinal: Boolean
-    ): String {
+    ): Pair<String?, String> {
         val modifiers = if(isStatic) " static" else "" +
                 if(isFinal) " final" else ""
 
         val ending = if(variable.variableValue.value != null) " = ${variable.variableValue.value}" else ""
 
-        return "${vis.name.lowercase()}$modifiers ${variable.type.shortNameWithGenerics} ${variable.name}$ending${semicolonIfNecessary()}"
+        return Pair(
+            if(label != null) {
+                variable.additionalImports(JavaTypes.LabelAnnotation)
+                "@Label(name = \"$label\")"
+            } else null,
+            "${vis.name.lowercase()}$modifiers ${variable.type.shortNameWithGenerics} ${variable.name}$ending${semicolonIfNecessary()}"
+        )
     }
 
     override fun localVariableDeclaration(variable: Variable, isFinal: Boolean): String {

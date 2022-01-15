@@ -21,9 +21,9 @@ class CodeGenManager(val easyVision: EasyVision) {
 
         println(code)
 
-        easyVision.eocvSimIpcClient.broadcast(
+        EasyVision.eocvSimIpcClient.broadcast(
             PythonPipelineSourceMessage("ipc py test", code).onResponse {
-                easyVision.eocvSimIpcClient.broadcast(ChangePipelineMessage("ipc py test", PipelineSource.PYTHON_RUNTIME, true))
+                EasyVision.eocvSimIpcClient.broadcast(ChangePipelineMessage("ipc py test", PipelineSource.PYTHON_RUNTIME, true))
             }
         )
     }

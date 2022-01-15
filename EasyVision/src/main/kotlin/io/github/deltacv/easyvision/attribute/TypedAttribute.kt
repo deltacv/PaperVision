@@ -31,6 +31,12 @@ interface Type {
 
 abstract class TypedAttribute(val type: Type) : Attribute() {
 
+    init {
+        onChange {
+            println("$this change")
+        }
+    }
+
     abstract var variableName: String?
 
     open val styleColor get() = type.styleColor
@@ -147,5 +153,19 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
     }
 
     override fun acceptLink(other: Attribute) = this::class == other::class
+
+    protected fun changed() = onChange.run()
+
+    private var previousGet: Any? = null
+
+    protected fun checkChange() {
+        val currentGet = get()
+
+        if(currentGet != previousGet) {
+            changed()
+        }
+
+        previousGet = currentGet
+    }
 
 }

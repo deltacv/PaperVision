@@ -34,6 +34,7 @@ class EnumAttribute<T: Enum<T>>(
 
     override fun drawAttribute() {
         super.drawAttribute()
+        checkChange()
 
         if(!hasLink) {
             ImGui.pushItemWidth(110.0f)
@@ -43,6 +44,8 @@ class EnumAttribute<T: Enum<T>>(
     }
 
     override fun acceptLink(other: Attribute) = other is EnumAttribute<*> && values[0]::class == other.values[0]::class
+
+    override fun get() = values[currentItem.get()]
 
     @Suppress("UNCHECKED_CAST")
     override fun value(current: CodeGen.Current): GenValue.Enum<T> {

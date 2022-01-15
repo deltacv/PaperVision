@@ -21,14 +21,14 @@ class CodeGenContext(val codeGen: CodeGen) : LanguageContext(codeGen.language) {
         codeGen.viewportTappedScope(block)
     }
 
-    fun public(variable: Variable) =
-        codeGen.classStartScope.instanceVariable(Visibility.PUBLIC, variable)
+    fun public(variable: Variable, label: String? = null) =
+        codeGen.classStartScope.instanceVariable(Visibility.PUBLIC, variable, label)
 
-    fun private(variable: Variable) =
-        codeGen.classStartScope.instanceVariable(Visibility.PRIVATE, variable)
+    fun private(variable: Variable, label: String? = null) =
+        codeGen.classStartScope.instanceVariable(Visibility.PRIVATE, variable, label)
 
-    fun protected(variable: Variable) =
-        codeGen.classStartScope.instanceVariable(Visibility.PROTECTED, variable)
+    fun protected(variable: Variable, label: String? = null) =
+        codeGen.classStartScope.instanceVariable(Visibility.PROTECTED, variable, label)
 
     private var isFirstGroup = true
 

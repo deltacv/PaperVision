@@ -25,11 +25,14 @@ class BooleanAttribute(
 
     override fun drawAttribute() {
         super.drawAttribute()
+        checkChange()
 
         if(!hasLink && mode == AttributeMode.INPUT) {
             ImGui.checkbox("", value)
         }
     }
+
+    override fun get() = value.get()
 
     override fun value(current: CodeGen.Current): GenValue.Boolean {
         if(isInput) {

@@ -31,6 +31,7 @@ class DoubleAttribute(
 
     override fun drawAttribute() {
         super.drawAttribute()
+        checkChange()
 
         if(!hasLink && mode == AttributeMode.INPUT) {
             sameLineIfNeeded()
@@ -55,6 +56,8 @@ class DoubleAttribute(
     fun normalMode() {
         this.range = null
     }
+
+    override fun get() = value.get()
 
     override fun value(current: CodeGen.Current) = value(
         current, "a Double", GenValue.Double(value.get())

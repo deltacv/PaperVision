@@ -32,8 +32,8 @@ interface Language : ValueBuilder {
     fun isImportExcluded(import: Type) = excludedImports.contains(import)
 
     fun instanceVariableDeclaration(
-        vis: Visibility, variable: Variable,
-        isStatic: Boolean = false, isFinal: Boolean = false): String
+        vis: Visibility, variable: Variable, label: String? = null,
+        isStatic: Boolean = false, isFinal: Boolean = false): Pair<String?, String>
 
     fun localVariableDeclaration(variable: Variable, isFinal: Boolean = false): String
 

@@ -5,10 +5,14 @@ import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.flag.ImNodesColorStyle
 import imgui.flag.ImGuiMouseButton
+import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.codegen.CodeGenSession
+import io.github.deltacv.eocvsim.ipc.message.sim.TunerChangeValueMessage
+import io.github.deltacv.eocvsim.ipc.message.sim.TunerChangeValuesMessage
 import io.github.deltacv.mai18n.tr
 import java.lang.IllegalArgumentException
+import java.util.*
 
 abstract class DrawNode<S: CodeGenSession>(
     allowDelete: Boolean = true
@@ -94,11 +98,34 @@ abstract class DrawNode<S: CodeGenSession>(
         raise(tr("err_attrib_nothandledby_this", attrib))
     }
 
+    @Suppress("UNCHECKED_CAST")
+    protected fun label(attribute: Attribute): String {
+        val hex = Integer.toHexString(attribute.hashCode())
+
+        attribute.onChange {
+            val value = attribute.get()
+
+            if(value != null) {
+                EasyVision.eocvSimIpcClient.broadcastIfPossible(
+                    when (value) {
+                        is Array<*> -> TunerChangeValuesMessage(hex, value)
+                        is Iterable<*> -> TunerChangeValuesMessage(hex, value.map { it as Any }.toTypedArray())
+                        else -> TunerChangeValueMessage(hex, 0, value)
+                    }
+                )
+            }
+        }
+
+        return hex
+    }
+
     open fun drawNode() { }
 
     data class AnnotationData(val name: String,
                               val description: String,
                               val category: Category,
                               val showInList: Boolean)
+
+    private class AttributeLabelListener
 
 }

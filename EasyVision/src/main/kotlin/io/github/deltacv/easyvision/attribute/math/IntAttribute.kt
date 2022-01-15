@@ -34,6 +34,7 @@ class IntAttribute(
 
     override fun drawAttribute() {
         super.drawAttribute()
+        checkChange()
 
         if(!hasLink && mode == AttributeMode.INPUT) {
             sameLineIfNeeded()
@@ -64,6 +65,8 @@ class IntAttribute(
     fun normalMode() {
         this.range = null
     }
+
+    override fun get() = value.get()
 
     override fun value(current: CodeGen.Current) = value(
         current, "an Int", GenValue.Int(value.get())

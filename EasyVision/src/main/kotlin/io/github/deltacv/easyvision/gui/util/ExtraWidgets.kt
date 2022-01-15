@@ -20,6 +20,16 @@ object ExtraWidgets {
 
         ImGui.sliderInt("###$maxId", maxValue.data, min, max)
         ImGui.popItemWidth()
+
+        val mn = minValue.get()
+        val mx = maxValue.get()
+
+        if(mn > mx) {
+            minValue.set(mx)
+        }
+        if(mx < mn) {
+            maxValue.set(mn)
+        }
     }
 
     private val valuesStringCache = mutableMapOf<Class<*>, Array<String>>()
