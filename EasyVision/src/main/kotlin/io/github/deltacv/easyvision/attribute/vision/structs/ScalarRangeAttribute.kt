@@ -65,7 +65,7 @@ class ScalarRangeAttribute(
         val hexMax = hexMin.hexString
 
         onChange {
-            val values = (getIfPossible { retriggerPrevizBuild() } ?: return@onChange) as Array<*>
+            val values = (getIfPossible { rebuildPreviz() } ?: return@onChange) as Array<*>
 
             val minValues = arrayOf(0.0, 0.0, 0.0, 0.0)
             val maxValues = arrayOf(0.0, 0.0, 0.0, 0.0)

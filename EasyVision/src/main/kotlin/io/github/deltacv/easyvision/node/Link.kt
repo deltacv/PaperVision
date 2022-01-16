@@ -24,9 +24,6 @@ class Link(val a: Int, val b: Int) : DrawableIdElement, DataSerializable<LinkSer
         if(!bAttrib.links.contains(this))
             bAttrib.links.add(this)
 
-        aAttrib.onChange.run()
-        bAttrib.onChange.run()
-
         val typedAttrib = when {
             aAttrib is TypedAttribute -> aAttrib as TypedAttribute
             bAttrib is TypedAttribute -> bAttrib as TypedAttribute

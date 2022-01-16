@@ -6,6 +6,7 @@ import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.AttributeMode
 import io.github.deltacv.easyvision.codegen.CodeGen
+import io.github.deltacv.easyvision.codegen.CodeGenManager
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.exception.NodeGenException
@@ -32,6 +33,10 @@ abstract class Node<S: CodeGenSession>(
     var attributesIdContainer = attributes
 
     var drawAttributesCircles = true
+
+    // will be set on NodeEditor#draw
+    lateinit var codeGenManager: CodeGenManager
+        internal set
 
     val onChange = EventHandler("${this::class.java.simpleName}-OnChange")
 

@@ -1,6 +1,5 @@
 package io.github.deltacv.easyvision.attribute
 
-import com.google.gson.annotations.Expose
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
@@ -8,7 +7,6 @@ import imgui.extension.imnodes.flag.ImNodesColorStyle
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.util.ElapsedTime
 import io.github.deltacv.easyvision.util.hexString
 import io.github.deltacv.eocvsim.ipc.message.sim.TunerChangeValueMessage
 import io.github.deltacv.eocvsim.ipc.message.sim.TunerChangeValuesMessage
@@ -152,18 +150,22 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
 
     override fun acceptLink(other: Attribute) = this::class == other::class
 
-    protected fun changed() = onChange.run()
+    protected fun changed() {
+        if(!isFirstDraw && !isSecondDraw) onChange.run()
+    }
 
     private var previousGet: Any? = null
 
     protected fun checkChange() {
-        val currentGet = get()
+        if(mode == AttributeMode.INPUT) {
+            val currentGet = get()
 
-        if(currentGet != previousGet) {
-            changed()
+            if (currentGet != previousGet) {
+                changed()
+            }
+
+            previousGet = currentGet
         }
-
-        previousGet = currentGet
     }
 
     private var cachedLabel: String? = null
@@ -174,7 +176,7 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
             cachedLabel = hexString
 
             onChange {
-                val value = getIfPossible { retriggerPrevizBuild() } ?: return@onChange
+                val value = getIfPossible { rebuildPreviz() } ?: return@onChange
                 broadcastLabelMessageFor(cachedLabel!!, value)
             }
         }

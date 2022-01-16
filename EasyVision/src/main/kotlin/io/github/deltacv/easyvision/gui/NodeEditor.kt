@@ -67,6 +67,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
         ImNodes.miniMap(0.15f, ImNodesMiniMapLocation.TopLeft)
 
         for(node in Node.nodes) {
+            node.codeGenManager = easyVision.codeGenManager
             node.draw()
         }
         for(link in Link.links) {
@@ -180,6 +181,9 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
                 // remove the link if a recursion case was detected (e.g both nodes were attached to each other)
                 link.delete()
             }
+
+            startAttrib.onChange.run()
+            endAttrib.onChange.run()
         }
     }
 

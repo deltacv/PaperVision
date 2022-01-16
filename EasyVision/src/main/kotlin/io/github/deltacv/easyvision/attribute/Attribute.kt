@@ -175,9 +175,7 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
         }
     }
 
-    fun retriggerPrevizBuild() {
-
-    }
+    fun rebuildPreviz() = parentNode.codeGenManager.rebuildPreviz()
 
     protected fun getOutputValue(current: CodeGen.Current) = parentNode.getOutputValueOf(current, this)
 
@@ -204,4 +202,4 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
 
 }
 
-fun <T: Attribute> T.rebuildOnChange(): T = apply { onChange { retriggerPrevizBuild() } }
+fun <T: Attribute> T.rebuildOnChange(): T = apply { onChange { rebuildPreviz() } }

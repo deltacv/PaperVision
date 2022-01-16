@@ -19,15 +19,15 @@ class CodeGen(
 
     val importScope     = Scope(0, language)
     val classStartScope = Scope(1, language, importScope, isForPreviz)
-    val classEndScope   = Scope(1, language, importScope)
+    val classEndScope   = Scope(1, language, importScope, isForPreviz)
 
-    val initScope     = Scope(2, language, importScope)
+    val initScope     = Scope(2, language, importScope, isForPreviz)
     val currScopeInit = Current(this, initScope, isForPreviz)
 
-    val processFrameScope     = Scope(2, language, importScope)
+    val processFrameScope     = Scope(2, language, importScope, isForPreviz)
     val currScopeProcessFrame = Current(this, processFrameScope, isForPreviz)
 
-    val viewportTappedScope     = Scope(2, language, importScope)
+    val viewportTappedScope     = Scope(2, language, importScope, isForPreviz)
     val currScopeViewportTapped = Current(this, viewportTappedScope, isForPreviz)
 
     val sessions = mutableMapOf<Node<*>, CodeGenSession>()

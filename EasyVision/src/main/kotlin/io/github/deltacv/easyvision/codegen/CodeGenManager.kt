@@ -12,13 +12,16 @@ import io.github.deltacv.eocvsim.ipc.message.sim.PythonPipelineSourceMessage
 
 class CodeGenManager(val easyVision: EasyVision) {
 
+    var isOnPrevizSession = false
+        private set
+    var previzSessionName: String? = null
+        private set
+
     fun build(
         name: String,
         language: Language = JavaLanguage,
         isForPreviz: Boolean = false
     ): String {
-        val timer = ElapsedTime()
-
         val codeGen = CodeGen(name, if(isForPreviz) PythonLanguage else language, isForPreviz)
         easyVision.nodeEditor.inputNode.startGen(codeGen.currScopeProcessFrame)
 
@@ -38,9 +41,24 @@ class CodeGenManager(val easyVision: EasyVision) {
                     )
                 }
             )
+
+            previzSessionName = name
+            isOnPrevizSession = true
         }
 
         return code
     }
 
+    fun startPreviz(name: String) = build(name, isForPreviz = true)
+
+    fun rebuildPreviz() {
+        if(isOnPrevizSession) {
+            build(previzSessionName!!, isForPreviz = true)
+        }
+    }
+
+    fun stopPreviz() {
+        isOnPrevizSession = false
+        previzSessionName = null
+    }
 }
