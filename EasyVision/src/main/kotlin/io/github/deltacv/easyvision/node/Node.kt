@@ -14,6 +14,8 @@ import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import io.github.deltacv.easyvision.serialization.ev.BasicNodeData
 import io.github.deltacv.easyvision.serialization.ev.NodeSerializationData
+import io.github.deltacv.easyvision.util.event.EventHandler
+import io.github.deltacv.easyvision.util.event.EventListener
 
 interface Type {
     val name: String
@@ -30,6 +32,12 @@ abstract class Node<S: CodeGenSession>(
     var attributesIdContainer = attributes
 
     var drawAttributesCircles = true
+
+    val onChange = EventHandler("${this::class.java.simpleName}-OnChange")
+
+    private val attribOnChangeListener = EventListener {
+        onChange.run()
+    }
 
     override val id by lazy {
         if(serializedId == null) {
@@ -90,6 +98,7 @@ abstract class Node<S: CodeGenSession>(
     fun addAttribute(attribute: Attribute) {
         if(!attribs.contains(attribute)) {
             attribute.parentNode = this
+            attribute.onChange(attribOnChangeListener)
             attribs.add(attribute)
         }
     }

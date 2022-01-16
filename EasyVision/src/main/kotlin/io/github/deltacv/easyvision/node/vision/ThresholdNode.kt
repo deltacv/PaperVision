@@ -3,6 +3,7 @@ package io.github.deltacv.easyvision.node.vision
 import imgui.ImGui
 import imgui.type.ImInt
 import io.github.deltacv.easyvision.attribute.Attribute
+import io.github.deltacv.easyvision.attribute.rebuildOnChange
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
 import io.github.deltacv.easyvision.attribute.vision.structs.ScalarRangeAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
@@ -27,9 +28,9 @@ import io.github.deltacv.easyvision.serialization.data.SerializeData
 )
 class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
-    val input = MatAttribute(INPUT, "$[att_input]")
+    val input = MatAttribute(INPUT, "$[att_input]").rebuildOnChange()
     val scalar = ScalarRangeAttribute(INPUT, Colors.values()[0], "$[att_threshold]")
-    val output = MatAttribute(OUTPUT, "$[att_binaryoutput]")
+    val output = MatAttribute(OUTPUT, "$[att_binaryoutput]").rebuildOnChange()
 
     override fun onEnable() {
         + input
@@ -85,6 +86,8 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         val cvtMat = uniqueVariable("${targetColor.name.lowercase()}Mat", Mat.new())
         val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}BinaryMat", Mat.new())
 
+        val scalarLabels = scalar.labelsForTwoScalars()
+
         val lowerScalar = uniqueVariable("lower${targetColor.name}",
             Scalar.new(
                 range.a.min.v,
@@ -107,10 +110,10 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
         group {
             // lower color scalar
-            public(lowerScalar)
+            public(lowerScalar, scalarLabels.first)
 
             // upper color scalar
-            public(upperScalar)
+            public(upperScalar, scalarLabels.second)
 
             if (needsCvt) {
                 private(cvtMat)

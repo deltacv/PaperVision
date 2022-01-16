@@ -218,7 +218,7 @@ open class ListAttribute(
 
     override fun acceptLink(other: Attribute) = other is ListAttribute && other.elementType == elementType
 
-    override fun get(): Array<Any> {
+    override fun thisGet(): Array<Any> {
         val list = mutableListOf<Any>()
 
         for(attribute in listAttributes) {

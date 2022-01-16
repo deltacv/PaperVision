@@ -1,6 +1,7 @@
 package io.github.deltacv.easyvision.node.vision
 
 import io.github.deltacv.easyvision.attribute.Attribute
+import io.github.deltacv.easyvision.attribute.rebuildOnChange
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
@@ -24,10 +25,10 @@ class MaskNode : DrawNode<MaskNode.Session>(){
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
-        + inputMat
-        + maskMat
+        + inputMat.rebuildOnChange()
+        + maskMat.rebuildOnChange()
 
-        + outputMat
+        + outputMat.rebuildOnChange()
     }
 
     override fun genCode(current: CodeGen.Current) = current {
@@ -46,7 +47,7 @@ class MaskNode : DrawNode<MaskNode.Session>(){
         }
 
         current.scope {
-            "$output.release"()
+            output("release")
             Core("bitwise_and", input.value, input.value, output, mask.value)
         }
 

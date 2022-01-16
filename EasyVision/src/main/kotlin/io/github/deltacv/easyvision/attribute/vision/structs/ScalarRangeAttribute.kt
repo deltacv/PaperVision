@@ -10,6 +10,7 @@ import io.github.deltacv.easyvision.attribute.misc.ListAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.node.vision.Colors
+import io.github.deltacv.easyvision.util.hexString
 
 class ScalarRangeAttribute(
     mode: AttributeMode,
@@ -43,18 +44,47 @@ class ScalarRangeAttribute(
         val values = (super.value(current) as GenValue.GLists.List).elements
         val ZERO = GenValue.Range.ZERO
 
-        val value = GenValue.ScalarRange(
+        val range = GenValue.ScalarRange(
             values.getOr(0, ZERO) as GenValue.Range,
             values.getOr(1, ZERO) as GenValue.Range,
             values.getOr(2, ZERO) as GenValue.Range,
             values.getOr(3, ZERO) as GenValue.Range
         )
 
-        return value(
-            current, "a scalar range", value
-        ) { it is GenValue.ScalarRange }
+        return value(current, "a scalar range", range) {
+            it is GenValue.ScalarRange
+        }
     }
 
+    private var twoScalarsCached: Pair<String, String>? = null
+
+    fun labelsForTwoScalars(): Pair<String, String> {
+        if(twoScalarsCached != null) return twoScalarsCached!!
+
+        val hexMin = hexString
+        val hexMax = hexMin.hexString
+
+        onChange {
+            val values = (getIfPossible { retriggerPrevizBuild() } ?: return@onChange) as Array<*>
+
+            val minValues = arrayOf(0.0, 0.0, 0.0, 0.0)
+            val maxValues = arrayOf(0.0, 0.0, 0.0, 0.0)
+
+            for((i, value) in values.withIndex()) {
+                val valueArr = value as Array<*>
+
+                minValues[i] = valueArr[0] as Double
+                maxValues[i] = valueArr[1] as Double
+            }
+
+            broadcastLabelMessageFor(hexMin, minValues)
+            broadcastLabelMessageFor(hexMax, maxValues)
+        }
+
+        twoScalarsCached = Pair(hexMin, hexMax)
+
+        return twoScalarsCached!!
+    }
 
 }
 

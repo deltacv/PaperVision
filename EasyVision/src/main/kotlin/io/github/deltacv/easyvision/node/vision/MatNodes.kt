@@ -3,6 +3,7 @@ package io.github.deltacv.easyvision.node.vision
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.easyvision.attribute.Attribute
+import io.github.deltacv.easyvision.attribute.rebuildOnChange
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
@@ -34,7 +35,7 @@ class InputMatNode @JvmOverloads constructor(
     val output = MatAttribute(OUTPUT, "$[att_input]")
 
     override fun onEnable() {
-        + output
+        + output.rebuildOnChange()
     }
 
     override fun genCode(current: CodeGen.Current) = NoSession
@@ -71,7 +72,7 @@ class OutputMatNode @JvmOverloads constructor(
     val input = MatAttribute(INPUT, "$[att_output]")
 
     override fun onEnable() {
-        + input
+        + input.rebuildOnChange()
     }
 
     override fun genCode(current: CodeGen.Current) = current {

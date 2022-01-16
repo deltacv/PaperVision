@@ -11,20 +11,24 @@ enum class Visibility {
     PUBLIC, PRIVATE, PROTECTED
 }
 
-class CodeGen(var className: String, val language: Language) {
+class CodeGen(
+    var className: String,
+    val language: Language,
+    val isForPreviz: Boolean = false
+) {
 
     val importScope     = Scope(0, language)
-    val classStartScope = Scope(1, language, importScope)
+    val classStartScope = Scope(1, language, importScope, isForPreviz)
     val classEndScope   = Scope(1, language, importScope)
 
     val initScope     = Scope(2, language, importScope)
-    val currScopeInit = Current(this, initScope)
+    val currScopeInit = Current(this, initScope, isForPreviz)
 
     val processFrameScope     = Scope(2, language, importScope)
-    val currScopeProcessFrame = Current(this, processFrameScope)
+    val currScopeProcessFrame = Current(this, processFrameScope, isForPreviz)
 
     val viewportTappedScope     = Scope(2, language, importScope)
-    val currScopeViewportTapped = Current(this, viewportTappedScope)
+    val currScopeViewportTapped = Current(this, viewportTappedScope, isForPreviz)
 
     val sessions = mutableMapOf<Node<*>, CodeGenSession>()
 
@@ -34,7 +38,7 @@ class CodeGen(var className: String, val language: Language) {
 
     operator fun <T> invoke(block: CodeGenContext.() -> T) = block(context)
 
-    data class Current(val codeGen: CodeGen, val scope: Scope) {
+    data class Current internal constructor(val codeGen: CodeGen, val scope: Scope, val isForPreviz: Boolean) {
         operator fun <T> invoke(scopeBlock: CodeGenContext.() -> T) = codeGen.invoke(scopeBlock)
     }
 

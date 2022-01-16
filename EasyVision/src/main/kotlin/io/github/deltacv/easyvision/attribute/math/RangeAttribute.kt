@@ -61,7 +61,7 @@ class RangeAttribute(
         }
     }
 
-    override fun get() = arrayOf(minValue.get().toDouble(), maxValue.get().toDouble())
+    override fun thisGet() = arrayOf(minValue.get().toDouble(), maxValue.get().toDouble())
 
     override fun value(current: CodeGen.Current) = value(
         current, "a Range", GenValue.Range(

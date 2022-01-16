@@ -2,6 +2,7 @@ package io.github.deltacv.easyvision.node.vision.shapedetection
 
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.misc.ListAttribute
+import io.github.deltacv.easyvision.attribute.rebuildOnChange
 import io.github.deltacv.easyvision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.easyvision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
@@ -25,8 +26,8 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
     val outputRects   = ListAttribute(OUTPUT, RectAttribute, "$[att_boundingrects]")
 
     override fun onEnable() {
-        + inputContours
-        + outputRects
+        + inputContours.rebuildOnChange()
+        + outputRects.rebuildOnChange()
     }
 
     override fun genCode(current: CodeGen.Current) = current {

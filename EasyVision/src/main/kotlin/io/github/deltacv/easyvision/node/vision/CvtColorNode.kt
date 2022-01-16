@@ -2,6 +2,7 @@ package io.github.deltacv.easyvision.node.vision
 
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.misc.EnumAttribute
+import io.github.deltacv.easyvision.attribute.rebuildOnChange
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
@@ -25,10 +26,10 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
     val convertTo = EnumAttribute(INPUT, Colors.values(), "$[att_convertto]")
 
     override fun onEnable() {
-        + input
-        + convertTo
+        + input.rebuildOnChange()
+        + convertTo.rebuildOnChange()
 
-        + output
+        + output.rebuildOnChange()
     }
 
     override fun genCode(current: CodeGen.Current) = current {

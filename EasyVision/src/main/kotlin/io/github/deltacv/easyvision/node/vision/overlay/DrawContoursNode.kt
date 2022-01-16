@@ -3,6 +3,7 @@ package io.github.deltacv.easyvision.node.vision.overlay
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.math.IntAttribute
 import io.github.deltacv.easyvision.attribute.misc.ListAttribute
+import io.github.deltacv.easyvision.attribute.rebuildOnChange
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
 import io.github.deltacv.easyvision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.easyvision.attribute.vision.structs.ScalarAttribute
@@ -31,15 +32,14 @@ open class DrawContoursNode
     val contours = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
 
     val lineColor = ScalarAttribute(INPUT, Colors.RGB, "$[att_linecolor]")
-    val colorScalarLabel = label(lineColor)
 
     val lineThickness = IntAttribute(INPUT, "$[att_linethickness]")
 
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
-        + inputMat
-        + contours
+        + inputMat.rebuildOnChange()
+        + contours.rebuildOnChange()
 
         + lineColor
         + lineThickness
@@ -68,7 +68,9 @@ open class DrawContoursNode
 
         val input = inputMat.value(current)
         val contoursList = contours.value(current)
+
         val thickness = lineThickness.value(current).value
+        val thicknessVariable = uniqueVariable("contoursThickness", thickness.v)
 
         val output = uniqueVariable("${input.value.value!!}Contours", Mat.new())
 
@@ -79,7 +81,11 @@ open class DrawContoursNode
         var drawMat = input.value
 
         group {
-            public(colorScalar, colorScalarLabel)
+            if(current.isForPreviz) {
+                public(thicknessVariable, lineThickness.label())
+            }
+
+            public(colorScalar, lineColor.label())
 
             if (!isDrawOnInput) {
                 private(output)
@@ -92,7 +98,11 @@ open class DrawContoursNode
                 input.value("copyTo", drawMat)
             }
 
-            Imgproc("drawContours", drawMat, contoursList.value, (-1).v, colorScalar, thickness.v)
+            Imgproc("drawContours", drawMat, contoursList.value, (-1).v, colorScalar,
+                if(current.isForPreviz)
+                    thicknessVariable
+                else thickness.v
+            )
         }
 
         session.outputMat = GenValue.Mat(drawMat, input.color, input.isBinary)

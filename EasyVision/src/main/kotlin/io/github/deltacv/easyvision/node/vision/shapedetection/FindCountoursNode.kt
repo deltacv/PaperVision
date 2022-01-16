@@ -2,6 +2,7 @@ package io.github.deltacv.easyvision.node.vision.shapedetection
 
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.misc.ListAttribute
+import io.github.deltacv.easyvision.attribute.rebuildOnChange
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
 import io.github.deltacv.easyvision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
@@ -26,8 +27,8 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
     val outputPoints = ListAttribute(OUTPUT, PointsAttribute, "$[att_contours]")
 
     override fun onEnable() {
-        + inputMat
-        + outputPoints
+        + inputMat.rebuildOnChange()
+        + outputPoints.rebuildOnChange()
     }
 
     override fun genCode(current: CodeGen.Current) = current {

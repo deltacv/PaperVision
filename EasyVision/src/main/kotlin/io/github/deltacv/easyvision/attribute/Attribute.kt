@@ -11,10 +11,15 @@ import io.github.deltacv.easyvision.serialization.ev.AttributeSerializationData
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import io.github.deltacv.easyvision.serialization.ev.BasicAttribData
 import io.github.deltacv.easyvision.util.event.EventHandler
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 enum class AttributeMode { INPUT, OUTPUT }
 
 abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializationData> {
+
+    @Transient private var getThisSupplier: (() -> Any)? = null
 
     private var serializedId: Int? = null
 
@@ -144,7 +149,35 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
 
     abstract fun value(current: CodeGen.Current): GenValue
 
-    open fun get(): Any? = null
+    fun thisGetTo(supplier: () -> Any) {
+        getThisSupplier = supplier
+    }
+
+    open fun thisGet(): Any? = throw IllegalStateException("This attribute can't return a get() value")
+
+    fun get(): Any? = when {
+        hasLink -> linkedAttribute()!!.get()
+        mode == AttributeMode.INPUT -> thisGet()
+        else -> (getThisSupplier ?: throw IllegalStateException("This attribute can't return a get() value")).invoke()
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    fun getIfPossible(orElse: () -> Unit): Any? {
+        contract {
+            callsInPlace(orElse, InvocationKind.AT_MOST_ONCE)
+        }
+
+        return try {
+            get()
+        } catch (ignored: IllegalStateException) {
+            orElse()
+            null
+        }
+    }
+
+    fun retriggerPrevizBuild() {
+
+    }
 
     protected fun getOutputValue(current: CodeGen.Current) = parentNode.getOutputValueOf(current, this)
 
@@ -170,3 +203,5 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
     override fun toString() = "Attribute(type=${this::class.java.typeName}, id=$id)"
 
 }
+
+fun <T: Attribute> T.rebuildOnChange(): T = apply { onChange { retriggerPrevizBuild() } }

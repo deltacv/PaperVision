@@ -32,7 +32,7 @@ class BooleanAttribute(
         }
     }
 
-    override fun get() = value.get()
+    override fun thisGet() = value.get()
 
     override fun value(current: CodeGen.Current): GenValue.Boolean {
         if(isInput) {

@@ -78,7 +78,7 @@ open class DrawRectanglesNode
         var drawMat = input.value
 
         group {
-            public(colorScalar)
+            public(colorScalar, lineColor.label())
 
             if (!isDrawOnInput) {
                 private(output)

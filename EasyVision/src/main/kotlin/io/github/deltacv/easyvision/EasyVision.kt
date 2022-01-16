@@ -144,7 +144,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         ImGui.popFont()
 
         if(ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
-            codeGenManager.build()
+            codeGenManager.build("mai", isForPreviz = true)
         }
 
         if(keyManager.pressed(Keys.ArrowUp)) {

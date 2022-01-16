@@ -8,6 +8,10 @@ import imgui.extension.imnodes.flag.ImNodesColorStyle
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
+import io.github.deltacv.easyvision.util.ElapsedTime
+import io.github.deltacv.easyvision.util.hexString
+import io.github.deltacv.eocvsim.ipc.message.sim.TunerChangeValueMessage
+import io.github.deltacv.eocvsim.ipc.message.sim.TunerChangeValuesMessage
 import io.github.deltacv.mai18n.tr
 
 interface Type {
@@ -30,12 +34,6 @@ interface Type {
 }
 
 abstract class TypedAttribute(val type: Type) : Attribute() {
-
-    init {
-        onChange {
-            println("$this change")
-        }
-    }
 
     abstract var variableName: String?
 
@@ -167,5 +165,30 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
 
         previousGet = currentGet
     }
+
+    private var cachedLabel: String? = null
+
+    @Suppress("UNCHECKED_CAST")
+    open fun label(): String {
+        if(cachedLabel == null) {
+            cachedLabel = hexString
+
+            onChange {
+                val value = getIfPossible { retriggerPrevizBuild() } ?: return@onChange
+                broadcastLabelMessageFor(cachedLabel!!, value)
+            }
+        }
+
+        return cachedLabel!!
+    }
+
+    protected fun broadcastLabelMessageFor(label: String, value: Any) =
+        EasyVision.eocvSimIpcClient.broadcastIfPossible(
+            when (value) {
+                is Array<*> -> TunerChangeValuesMessage(label, value)
+                is Iterable<*> -> TunerChangeValuesMessage(label, value.map { it as Any }.toTypedArray())
+                else -> TunerChangeValueMessage(label, 0, value)
+            }
+        )
 
 }
