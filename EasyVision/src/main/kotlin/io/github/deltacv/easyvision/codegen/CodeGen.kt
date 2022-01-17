@@ -31,6 +31,7 @@ class CodeGen(
     val currScopeViewportTapped = Current(this, viewportTappedScope, isForPreviz)
 
     val sessions = mutableMapOf<Node<*>, CodeGenSession>()
+    val busyNodes = mutableListOf<Node<*>>()
 
     fun gen() = language.gen(this)
 

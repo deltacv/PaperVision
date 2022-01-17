@@ -116,8 +116,6 @@ abstract class Node<S: CodeGenSession>(
         raise("Node doesn't have output attributes")
     }
 
-    private var isCurrentlyGenCode = false
-
     /**
      * Generates code if there's not a session in the current CodeGen
      * Automatically propagates to all the nodes attached to the output
@@ -131,13 +129,13 @@ abstract class Node<S: CodeGenSession>(
         if(session == null) {
             // prevents duplicate code in weird edge cases
             // (it's so hard to consider and test every possibility with nodes...)
-            if(!isCurrentlyGenCode) {
-                isCurrentlyGenCode = true
+            if(!codeGen.busyNodes.contains(this)) {
+                codeGen.busyNodes.add(this)
 
                 genSession = genCode(current)
                 codeGen.sessions[this] = genSession!!
 
-                isCurrentlyGenCode = false
+                codeGen.busyNodes.remove(this)
 
                 propagate(current)
             }

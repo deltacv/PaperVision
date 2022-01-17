@@ -44,6 +44,7 @@ import io.github.deltacv.easyvision.platform.PlatformSetupCallback
 import io.github.deltacv.easyvision.platform.PlatformWindow
 import io.github.deltacv.easyvision.serialization.ev.EasyVisionSerializer
 import io.github.deltacv.easyvision.util.IpcClientWatchDog
+import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.easyvision.util.loggerForThis
 import io.github.deltacv.eocvsim.ipc.IpcClient
 import io.github.deltacv.mai18n.LangManager
@@ -79,6 +80,8 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
     val nodeEditor = NodeEditor(this, keyManager)
     val nodeList = NodeList(this, keyManager)
+
+    val onUpdate = EventHandler("EasyVision-OnUpdate")
 
     lateinit var defaultFont: Font
         private set
@@ -119,6 +122,8 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
     }
 
     fun process() {
+        onUpdate.run()
+
         ImGui.setNextWindowPos(0f, 0f, ImGuiCond.Always)
 
         val size = window.size

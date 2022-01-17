@@ -156,8 +156,8 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
     open fun thisGet(): Any? = throw IllegalStateException("This attribute can't return a get() value")
 
     fun get(): Any? = when {
-        hasLink -> linkedAttribute()!!.get()
         mode == AttributeMode.INPUT -> thisGet()
+        hasLink -> linkedAttribute()!!.get()
         else -> (getThisSupplier ?: throw IllegalStateException("This attribute can't return a get() value")).invoke()
     }
 

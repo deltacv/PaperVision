@@ -53,6 +53,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
     }
 
     val editorPanning = ImVec2(0f, 0f)
+    val prevEditorPanning = ImVec2(0f, 0f)
 
     private var prevMouseX = 0f
     private var prevMouseY = 0f
@@ -81,6 +82,9 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
         if(easyVision.nodeList.isNodesListOpen) {
             ImNodes.clearLinkSelection()
             ImNodes.clearNodeSelection()
+        } else if(ImGui.isMouseDown(ImGuiMouseButton.Middle)) {
+            editorPanning.x += (ImGui.getMousePosX() - prevMouseX)
+            editorPanning.y += (ImGui.getMousePosY() - prevMouseY)
         } else if(!isNodeFocused || scrollTimer.millis <= 500) { // not hovering any node
             var doingKeys = false
 
@@ -104,29 +108,29 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
             if(doingKeys) {
                 scrollTimer.reset()
             } else {
-                if (ImGui.isMouseDown(ImGuiMouseButton.Middle)) {
-                    editorPanning.x += (ImGui.getMousePosX() - prevMouseX)
-                    editorPanning.y += (ImGui.getMousePosY() - prevMouseY)
+                val plusPan = ImGui.getIO().mouseWheel * PAN_CONSTANT
+
+                if (plusPan != 0f) {
+                    scrollTimer.reset()
+                }
+
+                if (keyManager.pressing(Keys.LeftShift) || keyManager.pressing(Keys.RightShift)) {
+                    editorPanning.x += plusPan
                 } else {
-                    val plusPan = ImGui.getIO().mouseWheel * PAN_CONSTANT
-
-                    if (plusPan != 0f) {
-                        scrollTimer.reset()
-                    }
-
-                    if (keyManager.pressing(Keys.LeftShift) || keyManager.pressing(Keys.RightShift)) {
-                        editorPanning.x += plusPan
-                    } else {
-                        editorPanning.y += plusPan
-                    }
+                    editorPanning.y += plusPan
                 }
             }
 
-            prevMouseX = ImGui.getMousePosX()
-            prevMouseY = ImGui.getMousePosY()
-
-            ImNodes.editorResetPanning(editorPanning.x, editorPanning.y)
+            if(editorPanning.x != prevEditorPanning.x || editorPanning.y != prevEditorPanning.y) {
+                ImNodes.editorResetPanning(editorPanning.x, editorPanning.y)
+            }
         }
+
+        prevEditorPanning.x = editorPanning.x
+        prevEditorPanning.y = editorPanning.y
+
+        prevMouseX = ImGui.getMousePosX()
+        prevMouseY = ImGui.getMousePosY()
 
         handleDeleteLink()
         handleCreateLink()
@@ -178,12 +182,14 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
 
             if(Node.checkRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
                 PopupBuilder.addWarningToolTip(tr("err_couldntlink_recursion"))
-                // remove the link if a recursion case was detected (e.g both nodes were attached to each other)
+                // remove the link if a recursion case was detected (e.g both nodes were attached to each other already)
                 link.delete()
             }
 
-            startAttrib.onChange.run()
-            endAttrib.onChange.run()
+            easyVision.onUpdate.doOnce {
+                startAttrib.onChange.run()
+                endAttrib.onChange.run()
+            }
         }
     }
 
