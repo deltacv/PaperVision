@@ -57,6 +57,12 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
 
     val nodeSize = ImVec2()
 
+    init {
+        onChange {
+            println("changed ${this::class.java.simpleName}")
+        }
+    }
+
     override fun draw() {
         ImNodes.pushColorStyle(ImNodesColorStyle.Pin, styleColor)
         ImNodes.pushColorStyle(ImNodesColorStyle.PinHovered, styleHoveredColor)

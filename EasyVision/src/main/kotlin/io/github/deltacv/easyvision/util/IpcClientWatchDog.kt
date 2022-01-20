@@ -4,6 +4,7 @@ import io.github.deltacv.eocvsim.ipc.IpcClient
 import io.github.deltacv.eocvsim.ipc.message.IpcMessage
 import io.github.deltacv.eocvsim.ipc.security.PassToken
 import org.slf4j.Logger
+import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToLong
 
@@ -32,6 +33,10 @@ class IpcClientWatchDog(
             watchdogThread.interrupt()
         }
     }
+
+
+    fun binaryHandler(opcode: Byte, callback: (Short, ByteBuffer) -> Unit) =
+        ipcClient.binaryHandler(opcode, callback)
 
     fun broadcast(message: IpcMessage) {
         if(ipcClient.isOpen) {

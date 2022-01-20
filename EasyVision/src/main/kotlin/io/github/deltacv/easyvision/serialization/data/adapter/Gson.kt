@@ -6,4 +6,5 @@ import io.github.deltacv.easyvision.serialization.data.adapter.DataSerializableA
 
 val gson = GsonBuilder()
     .registerTypeHierarchyAdapter(DataSerializable::class.java, DataSerializableAdapter)
+    .addSerializationExclusionStrategy(SerializeIgnoreExclusionStrategy)
     .create()

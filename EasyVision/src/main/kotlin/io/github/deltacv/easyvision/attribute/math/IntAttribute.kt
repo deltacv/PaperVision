@@ -34,7 +34,6 @@ class IntAttribute(
 
     override fun drawAttribute() {
         super.drawAttribute()
-        checkChange()
 
         if(!hasLink && mode == AttributeMode.INPUT) {
             sameLineIfNeeded()
@@ -47,6 +46,8 @@ class IntAttribute(
                 ImGui.sliderInt("###$sliderId", sliderValue.data, range!!.min, range!!.max)
                 value.set(sliderValue.get())
             }
+
+            checkChange()
 
             ImGui.popItemWidth()
 

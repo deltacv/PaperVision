@@ -27,10 +27,7 @@ import imgui.flag.ImGuiCond
 import imgui.flag.ImGuiMouseButton
 import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.easyvision.codegen.CodeGenManager
-import io.github.deltacv.easyvision.gui.Font
-import io.github.deltacv.easyvision.gui.FontManager
-import io.github.deltacv.easyvision.gui.NodeEditor
-import io.github.deltacv.easyvision.gui.NodeList
+import io.github.deltacv.easyvision.gui.*
 import io.github.deltacv.easyvision.gui.style.imnodes.ImNodesDarkStyle
 import io.github.deltacv.easyvision.gui.util.PopupBuilder
 import io.github.deltacv.easyvision.id.IdElementContainer
@@ -38,15 +35,11 @@ import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys
 import io.github.deltacv.easyvision.io.resourceToString
 import io.github.deltacv.easyvision.node.NodeScanner
-import io.github.deltacv.easyvision.platform.PlatformKeys
-import io.github.deltacv.easyvision.platform.PlatformSetup
-import io.github.deltacv.easyvision.platform.PlatformSetupCallback
-import io.github.deltacv.easyvision.platform.PlatformWindow
+import io.github.deltacv.easyvision.platform.*
 import io.github.deltacv.easyvision.serialization.ev.EasyVisionSerializer
 import io.github.deltacv.easyvision.util.IpcClientWatchDog
 import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.easyvision.util.loggerForThis
-import io.github.deltacv.eocvsim.ipc.IpcClient
 import io.github.deltacv.mai18n.LangManager
 
 class EasyVision(private val setupCall: PlatformSetupCallback) {
@@ -71,6 +64,12 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         private set
     lateinit var window: PlatformWindow
         private set
+    lateinit var textureFactory: PlatformTextureFactory
+        private set
+
+    val onUpdate = EventHandler("EasyVision-OnUpdate")
+
+    val imageQueue = ImageQueue(this)
 
     val keyManager = KeyManager()
     val codeGenManager = CodeGenManager(this)
@@ -80,8 +79,6 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
     val nodeEditor = NodeEditor(this, keyManager)
     val nodeList = NodeList(this, keyManager)
-
-    val onUpdate = EventHandler("EasyVision-OnUpdate")
 
     lateinit var defaultFont: Font
         private set
@@ -100,6 +97,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
         platformKeys = setup.keys ?: throw IllegalArgumentException("Platform ${setup.name} must provide PlatformKeys")
         window = setup.window ?: throw IllegalArgumentException("Platform ${setup.name} must provide a Window")
+        textureFactory = setup.textureFactory ?: throw IllegalArgumentException("Platform ${setup.name} must provide a TextureFactory")
 
         // disable annoying ini file creation (hopefully shouldn't break anything)
         ImGui.getIO().iniFilename = null
@@ -114,6 +112,10 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         defaultImGuiFont = fontManager.makeDefaultFont(13f)
 
         nodeList.init()
+
+        eocvSimIpcClient.binaryHandler(0xE) { id, buffer ->
+            imageQueue.offer(id.toInt(), 320, 240, buffer)
+        }
     }
 
     fun firstProcess() {
@@ -147,6 +149,12 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         ImGui.pushFont(defaultFont.imfont)
         PopupBuilder.draw()
         ImGui.popFont()
+
+        imageQueue[1]?.let {
+            ImGui.begin("image test")
+                ImGui.image(it.id, it.width.toFloat(), it.height.toFloat())
+            ImGui.end()
+        }
 
         if(ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
             codeGenManager.startPreviz("mai")

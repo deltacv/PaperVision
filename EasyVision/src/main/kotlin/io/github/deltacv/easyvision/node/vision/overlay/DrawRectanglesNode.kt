@@ -67,7 +67,9 @@ open class DrawRectanglesNode
 
         val input = inputMat.value(current)
         val rectanglesList = rectangles.value(current)
+
         val thickness = lineThickness.value(current).value
+        val thicknessVariable = uniqueVariable("rectsThickness", thickness.v)
 
         val output = uniqueVariable("${input.value.value!!}Rects", Mat.new())
 
@@ -78,6 +80,10 @@ open class DrawRectanglesNode
         var drawMat = input.value
 
         group {
+            if(current.isForPreviz) {
+                public(thicknessVariable, lineThickness.label())
+            }
+
             public(colorScalar, lineColor.label())
 
             if (!isDrawOnInput) {
@@ -92,7 +98,11 @@ open class DrawRectanglesNode
             }
 
             foreach(variable(OpenCvTypes.Rect, "rect"), rectanglesList.value) {
-                Imgproc("rectangle", drawMat, it, colorScalar, thickness.v)
+                Imgproc("rectangle", drawMat, it, colorScalar,
+                    if(current.isForPreviz)
+                        thicknessVariable
+                    else thickness.v
+                )
             }
         }
 

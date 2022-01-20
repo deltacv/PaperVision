@@ -7,6 +7,7 @@ import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import io.github.deltacv.easyvision.serialization.ev.LinkSerializationData
+import io.github.deltacv.easyvision.util.event.EventListener
 
 class Link(val a: Int, val b: Int) : DrawableIdElement, DataSerializable<LinkSerializationData> {
 
@@ -50,6 +51,7 @@ class Link(val a: Int, val b: Int) : DrawableIdElement, DataSerializable<LinkSer
         bAttrib.links.remove(this)
 
         links.removeId(id)
+        triggerOnChange()
     }
 
     override fun restore() {
@@ -57,6 +59,13 @@ class Link(val a: Int, val b: Int) : DrawableIdElement, DataSerializable<LinkSer
 
         aAttrib.links.add(this)
         bAttrib.links.add(this)
+
+        triggerOnChange()
+    }
+
+    internal fun triggerOnChange() {
+        aAttrib.onChange.run()
+        bAttrib.onChange.run()
     }
 
     companion object {

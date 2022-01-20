@@ -12,6 +12,7 @@ import io.github.deltacv.easyvision.attribute.AttributeMode
 import io.github.deltacv.easyvision.gui.util.PopupBuilder
 import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys
+import io.github.deltacv.easyvision.node.InvisibleNode
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.node.vision.InputMatNode
@@ -34,6 +35,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
 
     private val winSizeSupplier: () -> ImVec2 = { easyVision.window.size }
 
+    val originNode = InvisibleNode()
+
     var inputNode = InputMatNode(winSizeSupplier)
         set(value) {
             value.windowSizeSupplier = winSizeSupplier
@@ -50,6 +53,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
         ImNodes.createContext()
         inputNode.enable()
         outputNode.enable()
+        originNode.enable()
     }
 
     val editorPanning = ImVec2(0f, 0f)
@@ -64,6 +68,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
         ImNodes.editorContextSet(context)
 
         ImNodes.beginNodeEditor()
+
+        ImNodes.setNodeGridSpacePos(originNode.id, 0f, 0f)
 
         ImNodes.miniMap(0.15f, ImNodesMiniMapLocation.TopLeft)
 
@@ -123,6 +129,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
 
             if(editorPanning.x != prevEditorPanning.x || editorPanning.y != prevEditorPanning.y) {
                 ImNodes.editorResetPanning(editorPanning.x, editorPanning.y)
+            } else {
+                ImNodes.getNodeEditorSpacePos(originNode.id, editorPanning)
             }
         }
 
@@ -178,17 +186,15 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
                 it.delete() // delete the existing link(s) of the input attribute if there's any
             }
 
-            val link = Link(start, end).enable() // create the link and enable it
+            val link = Link(start, end)
+            link.enable() // create the link and enable it
 
             if(Node.checkRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
                 PopupBuilder.addWarningToolTip(tr("err_couldntlink_recursion"))
                 // remove the link if a recursion case was detected (e.g both nodes were attached to each other already)
                 link.delete()
-            }
-
-            easyVision.onUpdate.doOnce {
-                startAttrib.onChange.run()
-                endAttrib.onChange.run()
+            } else {
+                link.triggerOnChange()
             }
         }
     }

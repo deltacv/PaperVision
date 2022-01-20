@@ -2,6 +2,8 @@ package io.github.deltacv.easyvision.platform
 
 class PlatformSetup(val name: String) {
     var window: PlatformWindow? = null
+    var textureFactory: PlatformTextureFactory? = null
+
     var keys: PlatformKeys? = null
 }
 

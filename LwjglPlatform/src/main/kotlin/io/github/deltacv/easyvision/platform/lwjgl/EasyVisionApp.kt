@@ -6,6 +6,7 @@ import io.github.deltacv.easyvision.platform.lwjgl.glfw.GlfwKeys
 import io.github.deltacv.easyvision.platform.lwjgl.glfw.GlfwWindow
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.io.KeyAction
+import io.github.deltacv.easyvision.platform.lwjgl.texture.OpenGLTextureFactory
 import io.github.deltacv.easyvision.platform.platformSetup
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWKeyCallback
@@ -14,6 +15,7 @@ class EasyVisionApp : Application() {
 
     val setup = platformSetup("LWJGL") {
         window = glfwWindow
+        textureFactory = OpenGLTextureFactory
         keys = GlfwKeys
     }
 
