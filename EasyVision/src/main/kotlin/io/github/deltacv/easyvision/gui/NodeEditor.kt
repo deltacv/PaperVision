@@ -6,12 +6,15 @@ import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.ImNodesContext
 import imgui.extension.imnodes.flag.ImNodesMiniMapLocation
 import imgui.flag.ImGuiMouseButton
+import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImInt
 import io.github.deltacv.easyvision.EasyVision
+import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.AttributeMode
 import io.github.deltacv.easyvision.gui.util.PopupBuilder
 import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys
+import io.github.deltacv.easyvision.io.PipelineStream
 import io.github.deltacv.easyvision.node.InvisibleNode
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
@@ -49,14 +52,13 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
             field = value
         }
 
-    fun init() {
-        ImNodes.createContext()
-        inputNode.enable()
-        outputNode.enable()
-        originNode.enable()
-    }
+    lateinit var eyeFont: Font
+        private set
+
+    val pipelineStream = PipelineStream(easyVision, 320, 240)
 
     val editorPanning = ImVec2(0f, 0f)
+    val editorPanningDelta = ImVec2(0f, 0f)
     val prevEditorPanning = ImVec2(0f, 0f)
 
     private var prevMouseX = 0f
@@ -64,7 +66,25 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
 
     private val scrollTimer = ElapsedTime()
 
+    fun init() {
+        eyeFont = easyVision.fontManager.makeFont(
+            "/fonts/icons/Eye.ttf", "Eye", 15f
+        )
+
+        ImNodes.createContext()
+
+        inputNode.enable()
+        outputNode.enable()
+        originNode.enable()
+    }
+
     fun draw() {
+        ImGui.begin("Editor",
+            ImGuiWindowFlags.NoResize or ImGuiWindowFlags.NoMove
+                    or ImGuiWindowFlags.NoCollapse or ImGuiWindowFlags.NoBringToFrontOnFocus
+                    or ImGuiWindowFlags.NoTitleBar or ImGuiWindowFlags.NoDecoration
+        )
+
         ImNodes.editorContextSet(context)
 
         ImNodes.beginNodeEditor()
@@ -75,6 +95,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
 
         for(node in Node.nodes) {
             node.codeGenManager = easyVision.codeGenManager
+            node.editor = this
             node.draw()
         }
         for(link in Link.links) {
@@ -134,6 +155,9 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
             }
         }
 
+        editorPanningDelta.x = editorPanning.x - prevEditorPanning.x
+        editorPanningDelta.y = editorPanning.y - prevEditorPanning.y
+
         prevEditorPanning.x = editorPanning.x
         prevEditorPanning.y = editorPanning.y
 
@@ -143,6 +167,18 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
         handleDeleteLink()
         handleCreateLink()
         handleDeleteSelection()
+
+        ImGui.end()
+
+        for(display in ImageDisplayWindow.displayWindows) {
+            if(editorPanningDelta.x != 0f || editorPanningDelta.x != 0f) {
+                display.currentPosition = ImVec2(
+                    display.currentPosition.x + editorPanningDelta.x,
+                    display.currentPosition.y + editorPanningDelta.y
+                )
+            }
+            display.draw()
+        }
     }
 
     fun addNode(nodeClazz: Class<out Node<*>>): Node<*> {
@@ -150,6 +186,19 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
 
         instance.enable()
         return instance
+    }
+
+    fun startImageDisplayFor(attribute: Attribute, title: String): ImageDisplayWindow {
+        val window = ImageDisplayWindow(title, pipelineStream)
+        window.enable()
+
+        pipelineStream.startIfNeeded()
+
+        attribute.onDelete.doOnce {
+            window.delete()
+        }
+
+        return window
     }
 
     private val startAttr = ImInt()

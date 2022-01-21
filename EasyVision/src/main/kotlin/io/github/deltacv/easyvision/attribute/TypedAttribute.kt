@@ -107,14 +107,27 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
                 } else finalVarName)
             }
 
+            if(mode == AttributeMode.INPUT) {
+                drawAfterText()
+            }
+
             ImGui.text(t)
         } else if(!inputSameLine) {
             ImGui.text("")
+        } else if(mode == AttributeMode.INPUT) {
+            drawAfterText()
+        }
+
+        if(mode == AttributeMode.OUTPUT) {
+            drawAfterText()
         }
 
         if(inputSameLine) {
             ImGui.popFont()
         }
+    }
+
+    open fun drawAfterText() {
     }
 
     protected fun sameLineIfNeeded() {

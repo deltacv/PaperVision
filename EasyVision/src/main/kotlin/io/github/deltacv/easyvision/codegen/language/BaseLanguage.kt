@@ -64,6 +64,11 @@ open class LanguageBase(
     override fun methodCallDeclaration(methodName: String, vararg parameters: Value) =
         "$methodName(${parameters.csv()})${semicolonIfNecessary()}"
 
+    override fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value?) =
+        if(cvtColor != null)
+            methodCallDeclaration("streamFrame", id, mat, cvtColor)
+        else methodCallDeclaration("streamFrame", id, mat)
+
     override fun methodDeclaration(
         vis: Visibility,
         returnType: Type,

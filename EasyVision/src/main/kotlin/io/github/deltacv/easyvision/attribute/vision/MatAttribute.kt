@@ -1,15 +1,19 @@
 package io.github.deltacv.easyvision.attribute.vision
 
+import imgui.ImGui
 import io.github.deltacv.easyvision.attribute.TypedAttribute
 import io.github.deltacv.easyvision.attribute.AttributeMode
 import io.github.deltacv.easyvision.attribute.Type
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
+import io.github.deltacv.easyvision.gui.ImageDisplayWindow
 import io.github.deltacv.easyvision.gui.style.rgbaColor
+import io.github.deltacv.easyvision.gui.util.ExtraWidgets
 
 class MatAttribute(
     override val mode: AttributeMode,
-    override var variableName: String? = null
+    override var variableName: String? = null,
+    var allowPrevizButton: Boolean = true
 ) : TypedAttribute(Companion) {
 
     companion object: Type {
@@ -21,8 +25,58 @@ class MatAttribute(
         override fun new(mode: AttributeMode, variableName: String) = MatAttribute(mode, variableName)
     }
 
+    var isPrevizEnabled = false
+        private set
+    private var prevIsPrevizEnabled = false
+
+    var wasPrevizJustEnabled = false
+        private set
+
+    var displayWindow: ImageDisplayWindow? = null
+        private set
+
+    override fun drawAfterText() {
+        if(mode == AttributeMode.OUTPUT && allowPrevizButton && isOnEditor) {
+            ImGui.sameLine()
+
+            ImGui.pushFont(editor.eyeFont.imfont)
+                val text = if (isPrevizEnabled) "-" else "+"
+
+                isPrevizEnabled = ExtraWidgets.toggleButton(
+                    text, isPrevizEnabled
+                )
+            ImGui.popFont()
+        }
+
+        val wasButtonToggled = (isPrevizEnabled != prevIsPrevizEnabled)
+        wasPrevizJustEnabled = wasButtonToggled && isPrevizEnabled
+
+        if(wasPrevizJustEnabled) {
+            displayWindow = editor.startImageDisplayFor(this, "Preview###$id")
+        } else if(wasButtonToggled) {
+            displayWindow?.delete()
+            displayWindow = null
+        }
+
+        if(wasButtonToggled) {
+            onChange.run()
+        }
+
+        prevIsPrevizEnabled = isPrevizEnabled
+    }
+
     override fun value(current: CodeGen.Current) = value<GenValue.Mat>(
         current, "a Mat"
     ) { it is GenValue.Mat }
+
+    fun disablePrevizButton() = apply { allowPrevizButton = false }
+
+    override fun restore() {
+        super.restore()
+
+        isPrevizEnabled = false
+        prevIsPrevizEnabled = false
+        displayWindow = null
+    }
 
 }

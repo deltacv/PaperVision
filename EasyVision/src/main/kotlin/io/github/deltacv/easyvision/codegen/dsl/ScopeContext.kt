@@ -1,10 +1,12 @@
 package io.github.deltacv.easyvision.codegen.dsl
 
+import io.github.deltacv.easyvision.attribute.vision.MatAttribute
 import io.github.deltacv.easyvision.codegen.build.Scope
 import io.github.deltacv.easyvision.codegen.build.Value
 import io.github.deltacv.easyvision.codegen.Visibility
 import io.github.deltacv.easyvision.codegen.build.Type
 import io.github.deltacv.easyvision.codegen.build.Variable
+import io.github.deltacv.easyvision.node.vision.Colors
 
 class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
 
@@ -22,6 +24,16 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
 
     operator fun Value.invoke(method: String, vararg parameters: Value) {
         scope.methodCall(this, method, *parameters)
+    }
+
+    fun streamMat(id: Int, mat: Value, matColor: Colors = Colors.RGB) {
+        scope.streamMat(id, mat, matColor)
+    }
+
+    fun MatAttribute.streamIfEnabled(mat: Value, matColor: Colors = Colors.RGB) {
+        if(displayWindow != null) {
+            streamMat(displayWindow!!.id, mat, matColor)
+        }
     }
 
     infix fun String.local(v: Value) =

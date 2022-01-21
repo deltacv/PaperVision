@@ -25,7 +25,6 @@ package io.github.deltacv.easyvision
 import imgui.ImGui
 import imgui.flag.ImGuiCond
 import imgui.flag.ImGuiMouseButton
-import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.easyvision.codegen.CodeGenManager
 import io.github.deltacv.easyvision.gui.*
 import io.github.deltacv.easyvision.gui.style.imnodes.ImNodesDarkStyle
@@ -69,8 +68,6 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
     val onUpdate = EventHandler("EasyVision-OnUpdate")
 
-    val imageQueue = ImageQueue(this)
-
     val keyManager = KeyManager()
     val codeGenManager = CodeGenManager(this)
     val fontManager = FontManager()
@@ -79,6 +76,8 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
     val nodeEditor = NodeEditor(this, keyManager)
     val nodeList = NodeList(this, keyManager)
+
+    val eocvSimIpcClient get() = Companion.eocvSimIpcClient
 
     lateinit var defaultFont: Font
         private set
@@ -112,10 +111,6 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         defaultImGuiFont = fontManager.makeDefaultFont(13f)
 
         nodeList.init()
-
-        eocvSimIpcClient.binaryHandler(0xE) { id, buffer ->
-            imageQueue.offer(id.toInt(), 320, 240, buffer)
-        }
     }
 
     fun firstProcess() {
@@ -132,16 +127,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         ImGui.setNextWindowSize(size.x, size.y, ImGuiCond.Always)
 
         ImGui.pushFont(defaultFont.imfont)
-
-        ImGui.begin("Editor",
-            ImGuiWindowFlags.NoResize or ImGuiWindowFlags.NoMove
-                    or ImGuiWindowFlags.NoCollapse or ImGuiWindowFlags.NoBringToFrontOnFocus
-                    or ImGuiWindowFlags.NoTitleBar or ImGuiWindowFlags.NoDecoration
-        )
-
         nodeEditor.draw()
-
-        ImGui.end()
         ImGui.popFont()
 
         nodeList.draw()
@@ -149,12 +135,6 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         ImGui.pushFont(defaultFont.imfont)
         PopupBuilder.draw()
         ImGui.popFont()
-
-        imageQueue[1]?.let {
-            ImGui.begin("image test")
-                ImGui.image(it.id, it.width.toFloat(), it.height.toFloat())
-            ImGui.end()
-        }
 
         if(ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
             codeGenManager.startPreviz("mai")

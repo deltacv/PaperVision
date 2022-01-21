@@ -70,16 +70,8 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         var inputMat = input.value(current)
         inputMat.requireNonBinary(input)
         
-        var matColor = inputMat.color
-        var targetColor = lastColor
-
-        if(matColor != targetColor) {
-            if(matColor == Colors.RGBA && targetColor != Colors.RGB) {
-                matColor = Colors.RGB
-            } else if(matColor != Colors.RGB && targetColor == Colors.RGBA) {
-                targetColor = Colors.RGB
-            }
-        }
+        val matColor = inputMat.color
+        val targetColor = lastColor
         
         val needsCvt = matColor != targetColor
 
@@ -129,6 +121,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
             }
 
             Core("inRange", inputMat.value, lowerScalar, upperScalar, thresholdTargetMat)
+            output.streamIfEnabled(thresholdTargetMat, targetColor)
         }
 
         session.outputMat = GenValue.Mat(thresholdTargetMat, targetColor, true)

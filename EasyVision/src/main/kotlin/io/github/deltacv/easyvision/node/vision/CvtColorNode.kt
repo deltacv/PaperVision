@@ -38,16 +38,8 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
         val inputMat = input.value(current)
         inputMat.requireNonBinary(input)
 
-        var targetColor = convertTo.value(current).value
-        var matColor = inputMat.color
-
-        if(matColor != targetColor) {
-            if(matColor == Colors.RGBA && targetColor != Colors.RGB) {
-                matColor = Colors.RGB
-            } else if(matColor != Colors.RGB && targetColor == Colors.RGBA) {
-                targetColor = Colors.RGB
-            }
-        }
+        val targetColor = convertTo.value(current).value
+        val matColor = inputMat.color
 
         if(matColor != targetColor) {
             val mat = uniqueVariable("${targetColor.name.lowercase()}Mat", Mat.new())

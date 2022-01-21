@@ -1,4 +1,4 @@
-package io.github.deltacv.easyvision.gui
+package io.github.deltacv.easyvision.io
 
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.platform.PlatformTexture
@@ -6,7 +6,7 @@ import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 import java.util.concurrent.ArrayBlockingQueue
 
-class ImageQueue(
+class TextureProcessorQueue(
     val easyVision: EasyVision
 ) {
 
@@ -77,6 +77,14 @@ class ImageQueue(
     }
 
     operator fun get(id: Int) = textures[id]
+
+    fun clear() {
+        queuedTextures.clear()
+        for((_, texture) in textures) {
+            texture.delete()
+        }
+        textures.clear()
+    }
 
     data class FutureTexture(val id: Int, val width: Int, val height: Int, val data: ByteArray)
 

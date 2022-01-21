@@ -49,6 +49,7 @@ class MaskNode : DrawNode<MaskNode.Session>(){
         current.scope {
             output("release")
             Core("bitwise_and", input.value, input.value, output, mask.value)
+            outputMat.streamIfEnabled(output, input.color)
         }
 
         session.outputMat = GenValue.Mat(output, input.color)

@@ -42,6 +42,9 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
     val isInput by lazy { mode == AttributeMode.INPUT }
     val isOutput by lazy { !isInput }
 
+    val isOnEditor get() = parentNode.isOnEditor
+    val editor get() = parentNode.editor
+
     private var isFirstDraw = true
     private var cancelNextDraw = false
 
@@ -49,6 +52,7 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
         private set
 
     val onChange = EventHandler("OnChange-${this::class.simpleName}")
+    val onDelete = EventHandler("OnDelete-${this::class.simpleName}")
 
     abstract fun drawAttribute()
 
@@ -93,6 +97,7 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
     }
 
     override fun delete() {
+        onDelete.run()
         Node.attributes.removeId(id)
 
         for(link in links.toTypedArray()) {

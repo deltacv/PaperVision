@@ -3,6 +3,7 @@ package io.github.deltacv.easyvision.gui.util
 import imgui.ImFont
 import imgui.ImFontConfig
 import imgui.ImGui
+import imgui.flag.ImGuiMouseButton
 import imgui.internal.flag.ImGuiAxis
 import imgui.type.ImFloat
 import imgui.type.ImInt
@@ -53,32 +54,12 @@ object ExtraWidgets {
         return values[currentItem.get()]
     }
 
-    fun splitter(id: Int, splitVertically: Boolean, thickness: Float,
-                 size1: ImFloat, size2: ImFloat,
-                 minSize1: Float, minSize2: Float,
-                 splitterLongAxisSize: Float = -1.0f): Boolean {
+    fun toggleButton(label: String, currentState: Boolean): Boolean {
+        ImGui.button(label)
 
-        val cursorPos = ImGui.getCursorPos()
-
-        val minX = cursorPos.x + if(splitVertically) size1.get() else 0f
-        val minY = cursorPos.y + if(splitVertically) 0f else size1.get()
-
-        val maxX = minX + imgui.internal.ImGui.calcItemSizeX(
-            if(splitVertically) thickness else splitterLongAxisSize,
-            if(splitVertically) splitterLongAxisSize else thickness,
-            0f, 0f
-        )
-        val maxY = minY + imgui.internal.ImGui.calcItemSizeY(
-            if(splitVertically) splitterLongAxisSize else thickness,
-            if(splitVertically) thickness else splitterLongAxisSize,
-            0f, 0f
-        )
-
-        return imgui.internal.ImGui.splitterBehavior(
-            minX, minY, maxX, maxY, id,
-            if(splitVertically) ImGuiAxis.X else ImGuiAxis.Y,
-            size1, size2, minSize1, minSize2
-        )
+        return if(ImGui.isItemClicked(ImGuiMouseButton.Left)) {
+            !currentState
+        } else currentState
     }
 
 }

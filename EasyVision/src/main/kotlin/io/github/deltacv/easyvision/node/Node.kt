@@ -10,6 +10,8 @@ import io.github.deltacv.easyvision.codegen.CodeGenManager
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.exception.NodeGenException
+import io.github.deltacv.easyvision.gui.Font
+import io.github.deltacv.easyvision.gui.NodeEditor
 import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
@@ -37,6 +39,12 @@ abstract class Node<S: CodeGenSession>(
     // will be set on NodeEditor#draw
     lateinit var codeGenManager: CodeGenManager
         internal set
+
+    // will be set on NodeEditor#draw
+    lateinit var editor: NodeEditor
+        internal set
+
+    val isOnEditor get() = ::editor.isInitialized
 
     val onChange = EventHandler("${this::class.java.simpleName}-OnChange")
 
