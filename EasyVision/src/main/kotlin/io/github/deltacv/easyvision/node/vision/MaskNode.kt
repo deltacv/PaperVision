@@ -19,16 +19,18 @@ import io.github.deltacv.easyvision.node.RegisterNode
 )
 class MaskNode : DrawNode<MaskNode.Session>(){
 
-    val inputMat = MatAttribute(INPUT, "$[att_input]")
-    val maskMat  = MatAttribute(INPUT, "$[att_binarymask]")
+    val inputMat = MatAttribute(INPUT, "$[att_input]").rebuildOnChange()
+    val maskMat  = MatAttribute(INPUT, "$[att_binarymask]").rebuildOnChange()
 
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
+        .enablePrevizButton()
+        .rebuildOnChange()
 
     override fun onEnable() {
-        + inputMat.rebuildOnChange()
-        + maskMat.rebuildOnChange()
+        + inputMat
+        + maskMat
 
-        + outputMat.rebuildOnChange()
+        + outputMat
     }
 
     override fun genCode(current: CodeGen.Current) = current {

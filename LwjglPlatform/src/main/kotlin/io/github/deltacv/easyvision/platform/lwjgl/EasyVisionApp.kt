@@ -24,7 +24,6 @@ class EasyVisionApp : Application() {
 
     fun start() {
         launch(this)
-        easyVision.destroy() // launch won't return until the app is closed
     }
 
     override fun initImGui(config: Configuration) {
@@ -49,6 +48,10 @@ class EasyVisionApp : Application() {
         glfwWindow.cachedSize = null
 
         easyVision.process()
+    }
+
+    override fun postRun() {
+        easyVision.destroy()
     }
 
     private fun keyCallback(windowId: Long, key: Int, scancode: Int, action: Int, mods: Int) {

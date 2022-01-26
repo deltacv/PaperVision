@@ -39,7 +39,7 @@ import io.github.deltacv.easyvision.serialization.ev.EasyVisionSerializer
 import io.github.deltacv.easyvision.util.IpcClientWatchDog
 import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.easyvision.util.loggerForThis
-import io.github.deltacv.mai18n.LangManager
+import io.github.deltacv.mai18n.Language
 
 class EasyVision(private val setupCall: PlatformSetupCallback) {
 
@@ -72,7 +72,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
     val codeGenManager = CodeGenManager(this)
     val fontManager = FontManager()
 
-    val langManager = LangManager("/lang.csv", "en").makeTr()
+    val langManager = Language("/lang.csv", "en").makeTr()
 
     val nodeEditor = NodeEditor(this, keyManager)
     val nodeList = NodeList(this, keyManager)
@@ -127,13 +127,11 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         ImGui.setNextWindowSize(size.x, size.y, ImGuiCond.Always)
 
         ImGui.pushFont(defaultFont.imfont)
+
         nodeEditor.draw()
-        ImGui.popFont()
-
         nodeList.draw()
-
-        ImGui.pushFont(defaultFont.imfont)
         PopupBuilder.draw()
+
         ImGui.popFont()
 
         if(ImGui.isMouseReleased(ImGuiMouseButton.Right)) {

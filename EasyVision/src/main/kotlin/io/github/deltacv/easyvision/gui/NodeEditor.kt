@@ -21,6 +21,7 @@ import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.node.vision.InputMatNode
 import io.github.deltacv.easyvision.node.vision.OutputMatNode
 import io.github.deltacv.easyvision.util.ElapsedTime
+import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.easyvision.util.loggerForThis
 import io.github.deltacv.mai18n.tr
 
@@ -66,6 +67,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
 
     private val scrollTimer = ElapsedTime()
 
+    val onDraw = EventHandler("NodeEditor-OnDraw")
+
     fun init() {
         eyeFont = easyVision.fontManager.makeFont(
             "/fonts/icons/Eye.ttf", "Eye", 15f
@@ -79,6 +82,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
     }
 
     fun draw() {
+        onDraw.run()
+
         ImGui.begin("Editor",
             ImGuiWindowFlags.NoResize or ImGuiWindowFlags.NoMove
                     or ImGuiWindowFlags.NoCollapse or ImGuiWindowFlags.NoBringToFrontOnFocus
@@ -171,12 +176,13 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
         ImGui.end()
 
         for(display in ImageDisplayWindow.displayWindows) {
+            /*
             if(editorPanningDelta.x != 0f || editorPanningDelta.x != 0f) {
                 display.currentPosition = ImVec2(
                     display.currentPosition.x + editorPanningDelta.x,
                     display.currentPosition.y + editorPanningDelta.y
                 )
-            }
+            }*/
             display.draw()
         }
     }

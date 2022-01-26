@@ -18,7 +18,7 @@ dependencies {
 
     implementation "org.slf4j:slf4j-api:$slf4j_version"
 
-    implementation "com.github.deltacv:mai18n:1.0.0"
+    implementation "com.github.deltacv:mai18n:1.0.1"
     implementation("com.github.deltacv:Ipc:4.0.0") { changing = true }
     implementation "org.java-websocket:Java-WebSocket:1.5.2"
 

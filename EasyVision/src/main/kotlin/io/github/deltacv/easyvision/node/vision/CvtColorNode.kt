@@ -20,16 +20,19 @@ import io.github.deltacv.easyvision.node.RegisterNode
 )
 class CvtColorNode : DrawNode<CvtColorNode.Session>() {
 
-    val input  = MatAttribute(INPUT, "$[att_input]")
+    val input  = MatAttribute(INPUT, "$[att_input]").rebuildOnChange()
     val output = MatAttribute(OUTPUT, "$[att_output]")
+        .enablePrevizButton()
+        .rebuildOnChange()
 
     val convertTo = EnumAttribute(INPUT, Colors.values(), "$[att_convertto]")
+        .rebuildOnChange()
 
     override fun onEnable() {
-        + input.rebuildOnChange()
-        + convertTo.rebuildOnChange()
+        + input
+        + convertTo
 
-        + output.rebuildOnChange()
+        + output
     }
 
     override fun genCode(current: CodeGen.Current) = current {
@@ -51,6 +54,7 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
 
             current.scope { // add a cvtColor step in processFrame
                 Imgproc("cvtColor", inputMat.value, mat, cvtColorValue(matColor, targetColor))
+                output.streamIfEnabled(mat)
             }
 
             session.outputMatValue = GenValue.Mat(mat, targetColor) // store data in the current session

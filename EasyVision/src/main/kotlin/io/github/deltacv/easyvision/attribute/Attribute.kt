@@ -207,4 +207,10 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
 
 }
 
-fun <T: Attribute> T.rebuildOnChange(): T = apply { onChange { rebuildPreviz() } }
+fun <T: Attribute> T.rebuildOnChange(): T = apply {
+    onChange {
+        if(Node.attributes[id] != null) {
+            rebuildPreviz()
+        }
+    }
+}

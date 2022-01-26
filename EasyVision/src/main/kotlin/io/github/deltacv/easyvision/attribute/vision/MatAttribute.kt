@@ -9,11 +9,12 @@ import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.gui.ImageDisplayWindow
 import io.github.deltacv.easyvision.gui.style.rgbaColor
 import io.github.deltacv.easyvision.gui.util.ExtraWidgets
+import io.github.deltacv.easyvision.serialization.data.SerializeData
 
 class MatAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null,
-    var allowPrevizButton: Boolean = true
+    var allowPrevizButton: Boolean = false
 ) : TypedAttribute(Companion) {
 
     companion object: Type {
@@ -25,6 +26,7 @@ class MatAttribute(
         override fun new(mode: AttributeMode, variableName: String) = MatAttribute(mode, variableName)
     }
 
+    @SerializeData
     var isPrevizEnabled = false
         private set
     private var prevIsPrevizEnabled = false
@@ -59,7 +61,9 @@ class MatAttribute(
         }
 
         if(wasButtonToggled) {
-            onChange.run()
+            editor.onDraw.doOnce {
+                onChange.run()
+            }
         }
 
         prevIsPrevizEnabled = isPrevizEnabled
@@ -69,7 +73,7 @@ class MatAttribute(
         current, "a Mat"
     ) { it is GenValue.Mat }
 
-    fun disablePrevizButton() = apply { allowPrevizButton = false }
+    fun enablePrevizButton() = apply { allowPrevizButton = true }
 
     override fun restore() {
         super.restore()

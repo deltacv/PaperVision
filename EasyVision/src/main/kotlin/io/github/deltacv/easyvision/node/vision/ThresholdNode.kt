@@ -30,7 +30,10 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
     val input = MatAttribute(INPUT, "$[att_input]").rebuildOnChange()
     val scalar = ScalarRangeAttribute(INPUT, Colors.values()[0], "$[att_threshold]")
-    val output = MatAttribute(OUTPUT, "$[att_binaryoutput]").rebuildOnChange()
+
+    val output = MatAttribute(OUTPUT, "$[att_binaryoutput]")
+        .enablePrevizButton()
+        .rebuildOnChange()
 
     override fun onEnable() {
         + input
@@ -121,7 +124,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
             }
 
             Core("inRange", inputMat.value, lowerScalar, upperScalar, thresholdTargetMat)
-            output.streamIfEnabled(thresholdTargetMat, targetColor)
+            output.streamIfEnabled(thresholdTargetMat)
         }
 
         session.outputMat = GenValue.Mat(thresholdTargetMat, targetColor, true)

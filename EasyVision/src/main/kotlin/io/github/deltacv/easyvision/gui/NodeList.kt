@@ -74,10 +74,7 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
         val buttonSize = ImGui.getFrameHeight()
 
         val button = ImGui.button(if(isNodesListOpen) "x" else "+", buttonSize, buttonSize)
-
         ImGui.popFont()
-
-        ImGui.pushFont(easyVision.defaultFont.imfont)
 
         if (button != lastButton && button && !isNodesListOpen
             && NodeScanner.hasFinishedAsyncScan && openButtonTimeout.millis > 200
@@ -102,8 +99,6 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
         }
 
         lastButton = button
-
-        ImGui.popFont()
 
         ImGui.end()
     }

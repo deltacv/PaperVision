@@ -1,5 +1,6 @@
 package io.github.deltacv.easyvision.util
 
+import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.eocvsim.ipc.IpcClient
 import io.github.deltacv.eocvsim.ipc.message.IpcMessage
 import io.github.deltacv.eocvsim.ipc.security.PassToken
@@ -22,6 +23,8 @@ class IpcClientWatchDog(
 
     val ipcClient get() = runner.ipcClient
 
+    val onDisconnect get() = runner.onDisconnect
+
     fun start() {
         if(!watchdogThread.isAlive) {
             watchdogThread.start()
@@ -29,11 +32,8 @@ class IpcClientWatchDog(
     }
 
     fun stop() {
-        if(!watchdogThread.isInterrupted) {
-            watchdogThread.interrupt()
-        }
+        watchdogThread.interrupt()
     }
-
 
     fun binaryHandler(opcode: Byte, callback: (Short, ByteBuffer) -> Unit) =
         ipcClient.binaryHandler(opcode, callback)
@@ -66,6 +66,7 @@ class IpcClientWatchDog(
         val queue = ArrayList<IpcMessage>()
 
         val ipcClient = IpcClient(port, passToken)
+        val onDisconnect = EventHandler("IpcClient-WatchDog-OnDisconnect")
 
         private var accumulatedTimeout = 0L
         private var currentAttempts = 0
@@ -80,6 +81,8 @@ class IpcClientWatchDog(
             while(!Thread.currentThread().isInterrupted) {
                 try {
                     if((!ipcClient.isOpen || ipcClient.isClosed) && currentAttempts < attemptsBeforeGivingUp) {
+                        onDisconnect.run()
+
                         ipcClient.reconnectBlocking()
 
                         if(ipcClient.isOpen) {

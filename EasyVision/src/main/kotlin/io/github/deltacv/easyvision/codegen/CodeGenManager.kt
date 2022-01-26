@@ -6,9 +6,10 @@ import io.github.deltacv.easyvision.codegen.language.interpreted.JavascriptLangu
 import io.github.deltacv.easyvision.codegen.language.interpreted.PythonLanguage
 import io.github.deltacv.easyvision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.easyvision.util.ElapsedTime
+import io.github.deltacv.eocvsim.ipc.message.response.IpcBooleanResponse
 import io.github.deltacv.eocvsim.ipc.message.sim.ChangePipelineMessage
-import io.github.deltacv.eocvsim.ipc.message.sim.PipelineSource
 import io.github.deltacv.eocvsim.ipc.message.sim.PythonPipelineSourceMessage
+import io.github.deltacv.eocvsim.pipeline.PipelineSource
 
 class CodeGenManager(val easyVision: EasyVision) {
 
@@ -32,13 +33,11 @@ class CodeGenManager(val easyVision: EasyVision) {
         if(isForPreviz) {
             EasyVision.eocvSimIpcClient.broadcast(
                 PythonPipelineSourceMessage(name, code).onResponse {
-                    EasyVision.eocvSimIpcClient.broadcast(
-                        ChangePipelineMessage(
-                            name,
-                            PipelineSource.PYTHON_RUNTIME,
-                            true
+                    if(it is IpcBooleanResponse && !it.value) { // is not currently running
+                        EasyVision.eocvSimIpcClient.broadcast(
+                            ChangePipelineMessage(name, PipelineSource.PYTHON_RUNTIME,true)
                         )
-                    )
+                    }
                 }
             )
 
