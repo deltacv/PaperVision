@@ -27,10 +27,7 @@ class ImageDisplayWindow(
         }
 
         ImGui.begin(title)
-            stream.textureOf(id)?.let {
-                ImGui.image(it.id, stream.width.toFloat(), stream.height.toFloat())
-            }
-
+            stream.textureOf(id)?.draw()
             ImGui.getWindowPos(currentPosition)
         ImGui.end()
     }

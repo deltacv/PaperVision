@@ -1,6 +1,9 @@
 package io.github.deltacv.easyvision.io
 
 import io.github.deltacv.easyvision.EasyVision
+import io.github.deltacv.easyvision.platform.ColorSpace
+import io.github.deltacv.easyvision.platform.PlatformTexture
+import io.github.deltacv.easyvision.platform.animation.TimedTextureAnimation
 import io.github.deltacv.easyvision.util.loggerForThis
 import io.github.deltacv.eocvsim.ipc.message.response.IpcBooleanResponse
 import io.github.deltacv.eocvsim.ipc.message.response.IpcErrorResponse
@@ -8,12 +11,15 @@ import io.github.deltacv.eocvsim.ipc.message.response.IpcOkResponse
 import io.github.deltacv.eocvsim.ipc.message.sim.IsStreamingMessage
 import io.github.deltacv.eocvsim.ipc.message.sim.StartStreamingMessage
 import io.github.deltacv.eocvsim.ipc.message.sim.StopStreamingMessage
+import java.awt.image.BufferedImage
 import java.lang.IllegalStateException
 
 class PipelineStream(
     val easyVision: EasyVision,
-    val width: Int = 320,
-    val height: Int = 240
+    val width: Int = 160,
+    val height: Int = 120,
+    offlineImages: Array<BufferedImage>? = null,
+    offlineImagesFps: Double = 1.0
 ) {
 
     companion object {
@@ -31,7 +37,16 @@ class PipelineStream(
 
     val queue = TextureProcessorQueue(easyVision)
 
+    var offlineTexture: PlatformTexture? = null
+        private set
+
     init {
+        ipcClient.onConnect {
+            if(isStarted) {
+                startIfNeeded()
+            }
+        }
+
         ipcClient.onDisconnect {
             isStarting = false
         }
@@ -39,6 +54,34 @@ class PipelineStream(
         ipcClient.binaryHandler(opcode) { id, bytes ->
             if(isStarted) {
                 queue.offer(id.toInt(), width, height, bytes)
+            }
+        }
+
+        if(offlineImages != null && offlineImages.isNotEmpty()) {
+            if(offlineImages.size == 1) {
+                var img = offlineImages[0]
+
+                if (img.width != width || img.height != height) {
+                    img = img.scaleToFit(width, height)
+                }
+
+                offlineTexture = easyVision.textureFactory.create(width, height, img.bytes(), ColorSpace.BGR)
+            } else {
+                val textures = mutableListOf<PlatformTexture>()
+
+                for(image in offlineImages) {
+                    var img = image
+
+                    if (img.width != width || img.height != height) {
+                        img = img.scaleToFit(width, height)
+                    }
+
+                    textures.add(easyVision.textureFactory.create(width, height, img.bytes(), ColorSpace.BGR))
+                }
+
+                offlineTexture = TimedTextureAnimation(offlineImagesFps, textures.toTypedArray()).apply {
+                    enable()
+                }
             }
         }
     }
@@ -79,7 +122,7 @@ class PipelineStream(
         }
     }
 
-    fun textureOf(id: Int) = queue[id]
+    fun textureOf(id: Int) = queue[id] ?: offlineTexture
 
     fun clear() = queue.clear()
 

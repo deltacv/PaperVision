@@ -15,11 +15,13 @@ import io.github.deltacv.easyvision.gui.util.PopupBuilder
 import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys
 import io.github.deltacv.easyvision.io.PipelineStream
+import io.github.deltacv.easyvision.io.bufferedImageFromResource
 import io.github.deltacv.easyvision.node.InvisibleNode
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.node.vision.InputMatNode
 import io.github.deltacv.easyvision.node.vision.OutputMatNode
+import io.github.deltacv.easyvision.platform.PlatformTexture
 import io.github.deltacv.easyvision.util.ElapsedTime
 import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.easyvision.util.loggerForThis
@@ -56,7 +58,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
     lateinit var eyeFont: Font
         private set
 
-    val pipelineStream = PipelineStream(easyVision, 320, 240)
+    lateinit var pipelineStream: PipelineStream
+        private set
 
     val editorPanning = ImVec2(0f, 0f)
     val editorPanningDelta = ImVec2(0f, 0f)
@@ -73,6 +76,11 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
         eyeFont = easyVision.fontManager.makeFont(
             "/fonts/icons/Eye.ttf", "Eye", 15f
         )
+
+        pipelineStream = PipelineStream(easyVision, offlineImages = arrayOf(
+            bufferedImageFromResource("/img/TechnicalDifficulties.png"),
+            bufferedImageFromResource("/img/PleaseHangOn.png")
+        ))
 
         ImNodes.createContext()
 

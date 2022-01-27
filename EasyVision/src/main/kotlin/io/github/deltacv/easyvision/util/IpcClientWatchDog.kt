@@ -23,6 +23,7 @@ class IpcClientWatchDog(
 
     val ipcClient get() = runner.ipcClient
 
+    val onConnect get() = runner.onConnect
     val onDisconnect get() = runner.onDisconnect
 
     fun start() {
@@ -66,6 +67,8 @@ class IpcClientWatchDog(
         val queue = ArrayList<IpcMessage>()
 
         val ipcClient = IpcClient(port, passToken)
+
+        val onConnect = EventHandler("IpcClient-WatchDog-OnConnect")
         val onDisconnect = EventHandler("IpcClient-WatchDog-OnDisconnect")
 
         private var accumulatedTimeout = 0L
@@ -77,6 +80,9 @@ class IpcClientWatchDog(
             val timeout = (timeoutSecs * 1000).toLong()
 
             ipcClient.connectBlocking(timeout, TimeUnit.MILLISECONDS)
+            if(ipcClient.isOpen) {
+                onConnect.run()
+            }
 
             while(!Thread.currentThread().isInterrupted) {
                 try {
@@ -93,6 +99,8 @@ class IpcClientWatchDog(
 
                                 queue.clear()
                             }
+
+                            onConnect.run()
 
                             accumulatedTimeout = 0
                         } else {

@@ -35,6 +35,7 @@ import io.github.deltacv.easyvision.io.Keys
 import io.github.deltacv.easyvision.io.resourceToString
 import io.github.deltacv.easyvision.node.NodeScanner
 import io.github.deltacv.easyvision.platform.*
+import io.github.deltacv.easyvision.platform.animation.PlatformTextureAnimation
 import io.github.deltacv.easyvision.serialization.ev.EasyVisionSerializer
 import io.github.deltacv.easyvision.util.IpcClientWatchDog
 import io.github.deltacv.easyvision.util.event.EventHandler
