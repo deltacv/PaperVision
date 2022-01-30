@@ -10,6 +10,15 @@ class IdElementContainer<T> : Iterable<T> {
     var elements = ArrayList<T>()
         private set
 
+    @Suppress("UNCHECKED_CAST")
+    var inmutable: List<T> = elements.clone() as List<T>
+        private set
+
+    @Suppress("UNCHECKED_CAST")
+    private fun reallocateArray() {
+        inmutable = elements.clone() as List<T>
+    }
+
     fun requestId(element: T, id: Int) = lazy {
         if(id >= e.size) {
             // add null elements until the list has a size of "id"
@@ -20,7 +29,9 @@ class IdElementContainer<T> : Iterable<T> {
         }
 
         e.add(id, element)
+
         elements.add(element)
+        reallocateArray()
 
         e.lastIndexOf(element)
     }
@@ -31,7 +42,9 @@ class IdElementContainer<T> : Iterable<T> {
 
     fun nextId(element: T) = lazy {
         e.add(element)
+
         elements.add(element)
+        reallocateArray()
 
         e.lastIndexOf(element)
     }
@@ -43,6 +56,7 @@ class IdElementContainer<T> : Iterable<T> {
 
     fun removeId(id: Int) {
         elements.remove(e[id])
+        reallocateArray()
         e[id] = null
     }
 
@@ -57,13 +71,17 @@ class IdElementContainer<T> : Iterable<T> {
     operator fun set(id: Int, element: T) {
         e[id] = element
 
-        if(!elements.contains(element))
+        if(!elements.contains(element)) {
             elements.add(element)
+
+            reallocateArray()
+        }
     }
 
     fun clear() {
         e.clear()
         elements.clear()
+        reallocateArray()
     }
 
     override fun iterator() = elements.listIterator()

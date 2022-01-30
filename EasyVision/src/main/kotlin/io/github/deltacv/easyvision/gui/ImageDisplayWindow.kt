@@ -1,35 +1,21 @@
 package io.github.deltacv.easyvision.gui
 
-import imgui.ImGui
-import imgui.ImVec2
-import io.github.deltacv.easyvision.id.DrawableIdElement
+import imgui.flag.ImGuiWindowFlags
+import io.github.deltacv.easyvision.gui.util.Window
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.io.PipelineStream
 
 class ImageDisplayWindow(
-    val title: String,
+    override var title: String,
     val stream: PipelineStream
-) : DrawableIdElement {
+) : Window() {
+
+    override val windowFlags = ImGuiWindowFlags.NoResize
 
     override val id by displayWindows.nextId(this)
 
-    var currentPosition = ImVec2()
-        set(value) {
-            nextPosition = value
-            // dont assign the backing field lol
-        }
-
-    private var nextPosition: ImVec2? = null
-
-    override fun draw() {
-        if(nextPosition != null) {
-            ImGui.setNextWindowPos(nextPosition!!.x, nextPosition!!.y)
-        }
-
-        ImGui.begin(title)
-            stream.textureOf(id)?.draw()
-            ImGui.getWindowPos(currentPosition)
-        ImGui.end()
+    override fun drawContents() {
+        stream.textureOf(id)?.draw()
     }
 
     override fun delete() {

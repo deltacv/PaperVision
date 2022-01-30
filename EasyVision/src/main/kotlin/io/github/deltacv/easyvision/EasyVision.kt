@@ -25,10 +25,12 @@ package io.github.deltacv.easyvision
 import imgui.ImGui
 import imgui.flag.ImGuiCond
 import imgui.flag.ImGuiMouseButton
+import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.easyvision.codegen.CodeGenManager
 import io.github.deltacv.easyvision.gui.*
 import io.github.deltacv.easyvision.gui.style.imnodes.ImNodesDarkStyle
 import io.github.deltacv.easyvision.gui.util.PopupBuilder
+import io.github.deltacv.easyvision.gui.util.Window
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys
@@ -39,6 +41,7 @@ import io.github.deltacv.easyvision.platform.animation.PlatformTextureAnimation
 import io.github.deltacv.easyvision.serialization.ev.EasyVisionSerializer
 import io.github.deltacv.easyvision.util.IpcClientWatchDog
 import io.github.deltacv.easyvision.util.event.EventHandler
+import io.github.deltacv.easyvision.util.flags
 import io.github.deltacv.easyvision.util.loggerForThis
 import io.github.deltacv.mai18n.Language
 
@@ -84,6 +87,19 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         private set
 
     fun init() {
+        println( flags(
+            ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoMove,
+            ImGuiWindowFlags.NoCollapse, ImGuiWindowFlags.NoTitleBar,
+            ImGuiWindowFlags.NoDecoration
+        )
+        )
+
+        println(
+            ImGuiWindowFlags.NoResize or ImGuiWindowFlags.NoMove or
+            ImGuiWindowFlags.NoCollapse or ImGuiWindowFlags.NoTitleBar or
+                    ImGuiWindowFlags.NoDecoration
+        )
+
         EasyVisionSerializer.deserializeAndApply(resourceToString("/testproj.json"), nodeEditor)
 
         logger.info("Starting EasyVision...")
@@ -103,7 +119,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         ImGui.getIO().iniFilename = null
         ImGui.getIO().logFilename = null
 
-        nodeEditor.init()
+        nodeEditor.enable()
         langManager.loadIfNeeded()
 
         // initializing fonts right after the imgui context is created
@@ -111,7 +127,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         defaultFont = fontManager.makeFont("/fonts/Calcutta-Regular.otf", "Calcutta", 13f)
         defaultImGuiFont = fontManager.makeDefaultFont(13f)
 
-        nodeList.init()
+        nodeList.enable()
     }
 
     fun firstProcess() {
@@ -129,8 +145,10 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
         ImGui.pushFont(defaultFont.imfont)
 
-        nodeEditor.draw()
-        nodeList.draw()
+        for(window in Window.windows.inmutable) {
+            window.draw()
+        }
+
         PopupBuilder.draw()
 
         ImGui.popFont()

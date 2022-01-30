@@ -8,134 +8,40 @@ import imgui.flag.*
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.gui.util.Table
+import io.github.deltacv.easyvision.gui.util.Window
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys
 import io.github.deltacv.easyvision.node.*
+import io.github.deltacv.easyvision.platform.PlatformWindow
 import io.github.deltacv.easyvision.util.ElapsedTime
+import io.github.deltacv.easyvision.util.event.EventHandler
+import io.github.deltacv.easyvision.util.flags
 import kotlinx.coroutines.*
 
-class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
+class NodeList(val easyVision: EasyVision, val keyManager: KeyManager):   Window() {
 
     companion object {
         val listNodes = IdElementContainer<Node<*>>()
         val listAttributes = IdElementContainer<Attribute>()
 
-        val plusFontSize = 60f
+        const val plusFontSize = 60f
     }
-
-    lateinit var buttonFont: Font
 
     var isNodesListOpen = false
         private set
+    private var isCompletelyDeleted = false
 
-    private var lastButton = false
+    lateinit var buttonFont: Font
     private val openButtonTimeout = ElapsedTime()
-    private val hoveringPlusTime = ElapsedTime()
 
+    lateinit var floatingButton: FloatingButton
+        private set
+    lateinit var headers: Headers
+        private set
+    
     private lateinit var listContext: ImNodesContext
-
-    fun init() {
-        buttonFont = easyVision.fontManager.makeFont("/fonts/icons/Open-Close.ttf", "Icons-Open-Close", plusFontSize)
-    }
-
-    fun draw() {
-        val size = easyVision.window.size
-
-        if(!easyVision.nodeEditor.isNodeFocused && keyManager.released(Keys.Spacebar)) {
-            showList()
-        }
-
-        if(keyManager.released(Keys.Escape)) {
-            closeList()
-        }
-
-        // NODES LIST
-
-        if(isNodesListOpen) {
-            drawNodesList(size)
-        }
-
-        // OPEN/CLOSE BUTTON
-
-        ImGui.setNextWindowPos(size.x - plusFontSize * 1.8f, size.y - plusFontSize * 1.8f)
-
-        if(isNodesListOpen && !isHoveringScrollBar) {
-            ImGui.setNextWindowFocus()
-        }
-
-        ImGui.begin(
-            "floating", ImGuiWindowFlags.NoBackground or ImGuiWindowFlags.NoTitleBar
-                    or ImGuiWindowFlags.NoDecoration or ImGuiWindowFlags.NoMove
-        )
-
-        ImGui.pushFont(buttonFont.imfont)
-        val buttonSize = ImGui.getFrameHeight()
-
-        val button = ImGui.button(if(isNodesListOpen) "x" else "+", buttonSize, buttonSize)
-        ImGui.popFont()
-
-        if (button != lastButton && button && !isNodesListOpen
-            && NodeScanner.hasFinishedAsyncScan && openButtonTimeout.millis > 200
-        ) {
-            showList()
-        }
-
-        if(ImGui.isItemHovered()) {
-            if(hoveringPlusTime.millis > 500) {
-                val tooltipText = if(!NodeScanner.hasFinishedAsyncScan)
-                    "mis_searchingnodes_pleasewait"
-                else if(isNodesListOpen) "mis_nodeslist_close" else "mis_nodeslist_open"
-
-                ImGui.beginTooltip()
-                    ImGui.text(
-                        tr(tooltipText)
-                    )
-                ImGui.endTooltip()
-            }
-        } else {
-            hoveringPlusTime.reset()
-        }
-
-        lastButton = button
-
-        ImGui.end()
-    }
-
-    val nodes by lazy {
-        val map = mutableMapOf<Category, MutableList<Node<*>>>()
-
-        for((category, nodeClasses) in NodeScanner.waitAsyncScan()) {
-            val list = mutableListOf<Node<*>>()
-
-            for(nodeClass in nodeClasses) {
-                val instance = instantiateNode(nodeClass)
-
-                if(instance is DrawNode && !instance.annotationData.showInList) {
-                    continue
-                }
-
-                instance.nodesIdContainer = listNodes
-                instance.attributesIdContainer = listAttributes
-                //instance.drawAttributesCircles = false
-                instance.enable()
-
-                list.add(instance)
-            }
-
-            if(list.isNotEmpty()) {
-                map[category] = list
-            }
-        }
-
-        map
-    }
-
-    private val tablesCategories = mutableMapOf<Category, Table>()
-
-    var currentScroll = 0f
-    private var previousScroll = 0f
 
     var hoveredNode = -1
         private set
@@ -145,23 +51,62 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
     var isHoveringScrollBar = false
         private set
 
-    private val categoriesState = mutableMapOf<Category, Boolean>()
     private val drawnNodes = mutableListOf<Int>()
 
-    private fun drawNodesList(size: ImVec2) {
-        val scrollValue = when {
-            keyManager.pressing(Keys.ArrowUp) -> {
-                -0.8f
-            }
-            keyManager.pressing(Keys.ArrowDown) -> {
-                0.8f
-            }
-            else -> {
-                -ImGui.getIO().mouseWheel
+    override var title = "list"
+    override val windowFlags = flags(
+        ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoMove,
+        ImGuiWindowFlags.NoCollapse, ImGuiWindowFlags.NoTitleBar,
+        ImGuiWindowFlags.NoDecoration
+    )
+
+    override fun onEnable() {
+        easyVision.onUpdate {
+            if(isCompletelyDeleted) {
+                it.removeThis()
+            } else if(!easyVision.nodeEditor.isNodeFocused && keyManager.released(Keys.Spacebar)) {
+                showList()
             }
         }
 
-        var closeOnClick = true
+        buttonFont = easyVision.fontManager.makeFont("/fonts/icons/Open-Close.ttf", "Icons-Open-Close", plusFontSize)
+
+        floatingButton = FloatingButton(this, easyVision.window, buttonFont)
+        floatingButton.enable()
+
+        floatingButton.onPressed {
+            if (!isNodesListOpen && NodeScanner.hasFinishedAsyncScan && openButtonTimeout.millis > 200) {
+                showList()
+            }
+        }
+
+        headers = Headers(keyManager) { nodes }
+    }
+
+    override fun preDrawContents() {
+        if(!isNodesListOpen) {
+            return
+        }
+
+        val size = easyVision.window.size
+
+        ImGui.setNextWindowPos(0f, 0f)
+        ImGui.setNextWindowSize(size.x, size.y, ImGuiCond.Always)
+
+        ImGui.pushStyleColor(ImGuiCol.WindowBg, 0f, 0f, 0f, 0.55f) // transparent dark nodes list window
+    }
+
+    override fun drawContents() {
+        if(!isNodesListOpen) {
+            closeList()
+            return
+        }
+
+        val size = easyVision.window.size
+
+        if(keyManager.released(Keys.Escape)) {
+            closeList()
+        }
 
         ImNodes.editorContextSet(listContext)
 
@@ -173,23 +118,12 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
         ImNodes.clearNodeSelection()
         ImNodes.clearLinkSelection()
 
-        ImGui.setNextWindowPos(0f, 0f)
-        ImGui.setNextWindowSize(size.x, size.y, ImGuiCond.Always)
-
-        ImGui.pushStyleColor(ImGuiCol.WindowBg, 0f, 0f, 0f, 0.55f) // transparent dark nodes list window
-
-        ImGui.begin("nodes",
-            ImGuiWindowFlags.NoResize or ImGuiWindowFlags.NoMove
-                    or ImGuiWindowFlags.NoCollapse or ImGuiWindowFlags.NoTitleBar
-                    or ImGuiWindowFlags.NoDecoration
-        )
-
         ImNodes.beginNodeEditor()
         for(category in Category.values()) {
             if(nodes.containsKey(category)) {
-                val table = tablesCategories[category] ?: continue
+                val table = headers.tablesCategories[category] ?: continue
 
-                if (categoriesState[category] == true) {
+                if (headers.categoriesState[category] == true) {
                     for (node in nodes[category]!!) {
                         if(drawnNodes.contains(node.id)) {
                             if (!table.contains(node.id)) {
@@ -234,72 +168,11 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
                 }
             }
         }
+
         ImNodes.endNodeEditor()
-        ImGui.end()
         ImGui.popStyleColor()
 
         ImNodes.editorResetPanning(0f, 0f)
-
-        // HEADERS WINDOW
-
-        ImGui.setNextWindowPos(0f, 0f)
-        ImGui.setNextWindowSize(size.x, size.y, ImGuiCond.Always)
-
-        ImGui.pushStyleColor(ImGuiCol.WindowBg, 0f, 0f, 0f, 0.0f) // transparent headers window
-
-        ImGui.begin("headers",
-            ImGuiWindowFlags.NoResize or ImGuiWindowFlags.NoMove
-                    or ImGuiWindowFlags.NoCollapse or ImGuiWindowFlags.NoTitleBar
-                    or ImGuiWindowFlags.NoDecoration or ImGuiWindowFlags.AlwaysVerticalScrollbar
-        )
-
-        ImGui.setCursorPos(0f, 0f) // draw the node editor on top of the collapisng headers
-
-        for(category in Category.values()) {
-            if(nodes.containsKey(category)) {
-                if (!tablesCategories.containsKey(category)) {
-                    tablesCategories[category] = Table()
-                }
-
-                ImGui.pushStyleColor(ImGuiCol.Header, category.color)
-                ImGui.pushStyleColor(ImGuiCol.HeaderActive, category.colorSelected)
-                ImGui.pushStyleColor(ImGuiCol.HeaderHovered, category.colorSelected)
-
-                val isOpen = ImGui.collapsingHeader(
-                    tr(category.properName), ImGuiTreeNodeFlags.DefaultOpen
-                )
-                categoriesState[category] = isOpen
-
-                ImGui.popStyleColor()
-                ImGui.popStyleColor()
-                ImGui.popStyleColor()
-
-                if (ImGui.isItemHovered()) {
-                    closeOnClick = false
-                }
-
-                if(isOpen) {
-                    val table = tablesCategories[category]!!
-
-                    if(previousScroll != currentScroll) {
-                        currentScroll = ImGui.getScrollY() + scrollValue * 20.0f
-                        ImGui.setScrollY(currentScroll)
-                    } else {
-                        currentScroll = ImGui.getScrollY()
-                    }
-
-                    ImGui.newLine()
-                    ImGui.indent(10f)
-
-                    table.draw()
-
-                    ImGui.newLine()
-                    ImGui.unindent(10f)
-                }
-            }
-        }
-        ImGui.end()
-        ImGui.popStyleColor()
 
         val mousePos = ImGui.getMousePos()
 
@@ -309,11 +182,11 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
         isHoverManuallyDetected = false
 
         if(hoveredNode < 0) {
-            tableLoop@ for((_, table) in tablesCategories) {
+            tableLoop@ for((_, table) in headers.tablesCategories) {
                 for((id, rect) in table.currentRects) {
-                    // AABB collision check
+                    // AABB collision check with any node
                     if(mousePos.x > rect.min.x && mousePos.x < rect.max.x + 6 &&
-                            mousePos.y > rect.min.y && mousePos.y < rect.max.y) {
+                        mousePos.y > rect.min.y && mousePos.y < rect.max.y) {
                         hoveredNode = id
                         isHoverManuallyDetected = true
 
@@ -326,12 +199,14 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
         ImNodes.getStyle().gridSpacing = 32f // back to normal
         ImNodes.popColorStyle()
 
-        previousScroll = scrollValue
+        floatingButton.focus = isNodesListOpen && !isHoveringScrollBar
 
-        handleClick(closeOnClick)
+        headers.size = size
+
+        handleClick(!headers.isHeaderHovered)
     }
 
-   private fun handleClick(closeOnClick: Boolean) {
+    private fun handleClick(closeOnClick: Boolean) {
         if(ImGui.isMouseClicked(ImGuiMouseButton.Left)) {
             if(hoveredNode >= 0) {
                 val instance = easyVision.nodeEditor.addNode(
@@ -358,6 +233,17 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
         }
     }
 
+    override fun delete() {
+        super.delete()
+        headers.delete()
+    }
+
+
+    override fun restore() {
+        super.restore()
+        headers.restore()
+    }
+
     fun showList() {
         if(!isNodesListOpen) {
             if(::listContext.isInitialized) {
@@ -366,6 +252,7 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
             listContext = ImNodesContext()
 
             isNodesListOpen = true
+            restore()
         }
     }
 
@@ -373,7 +260,194 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager) {
         if(isNodesListOpen) {
             isNodesListOpen = false
             openButtonTimeout.reset()
+            delete()
         }
+    }
+
+    fun completelyDelete() {
+        isCompletelyDeleted = true
+
+        delete()
+        floatingButton.delete()
+    }
+
+    val nodes by lazy {
+        val map = mutableMapOf<Category, MutableList<Node<*>>>()
+
+        for((category, nodeClasses) in NodeScanner.waitAsyncScan()) {
+            val list = mutableListOf<Node<*>>()
+
+            for(nodeClass in nodeClasses) {
+                val instance = instantiateNode(nodeClass)
+
+                if(instance is DrawNode && !instance.annotationData.showInList) {
+                    continue
+                }
+
+                instance.nodesIdContainer = listNodes
+                instance.attributesIdContainer = listAttributes
+                //instance.drawAttributesCircles = false
+                instance.enable()
+
+                list.add(instance)
+            }
+
+            if(list.isNotEmpty()) {
+                map[category] = list
+            }
+        }
+
+        map
+    }
+
+    class FloatingButton(
+        val nodeList: NodeList,
+        val window: PlatformWindow,
+        val buttonFont: Font
+    ) : Window() {
+
+        override var title = "floating"
+        override val windowFlags = flags(
+            ImGuiWindowFlags.NoBackground, ImGuiWindowFlags.NoTitleBar,
+            ImGuiWindowFlags.NoDecoration, ImGuiWindowFlags.NoMove
+        )
+
+        private var lastButton = false
+        private val hoveringPlusTime = ElapsedTime()
+
+        val onPressed = EventHandler("FloatingButton-OnPressed")
+
+        override fun preDrawContents() {
+            position = ImVec2(
+                window.size.x - plusFontSize * 1.8f, window.size.y - plusFontSize * 1.8f
+            )
+        }
+
+        override fun drawContents() {
+            focus = false
+
+            ImGui.pushFont(buttonFont.imfont)
+            val buttonSize = ImGui.getFrameHeight()
+
+            val button = ImGui.button(if(nodeList.isNodesListOpen) "x" else "+", buttonSize, buttonSize)
+            ImGui.popFont()
+
+            if(ImGui.isItemHovered()) {
+                if(hoveringPlusTime.millis > 500) {
+                    val tooltipText = if(!NodeScanner.hasFinishedAsyncScan)
+                        "mis_searchingnodes_pleasewait"
+                    else if(nodeList.isNodesListOpen) "mis_nodeslist_close" else "mis_nodeslist_open"
+
+                    ImGui.beginTooltip()
+                        ImGui.text(tr(tooltipText))
+                    ImGui.endTooltip()
+                }
+            } else {
+                hoveringPlusTime.reset()
+            }
+
+            // falling edge detector
+            if(lastButton != button && button) {
+                onPressed.run()
+            }
+
+            lastButton = button
+        }
+
+    }
+
+    class Headers(
+        val keyManager: KeyManager,
+        val nodesSupplier: () -> Map<Category, List<Node<*>>>
+    ) : Window() {
+
+        override var title = "headers"
+        override val windowFlags = flags(
+            ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoMove,
+            ImGuiWindowFlags.NoCollapse, ImGuiWindowFlags.NoTitleBar,
+            ImGuiWindowFlags.NoDecoration, ImGuiWindowFlags.AlwaysVerticalScrollbar
+        )
+
+        val tablesCategories = mutableMapOf<Category, Table>()
+        val categoriesState = mutableMapOf<Category, Boolean>()
+
+        var currentScroll = 0f
+        private var previousScroll = 0f
+
+        var isHeaderHovered = false
+            private set
+
+        override fun preDrawContents() {
+            ImGui.setNextWindowPos(0f, 0f)
+            ImGui.pushStyleColor(ImGuiCol.WindowBg, 0f, 0f, 0f, 0.0f) // transparent headers window
+        }
+
+        override fun drawContents() {
+            val scrollValue = when {
+                keyManager.pressing(Keys.ArrowUp) -> {
+                    -0.8f
+                }
+                keyManager.pressing(Keys.ArrowDown) -> {
+                    0.8f
+                }
+                else -> {
+                    -ImGui.getIO().mouseWheel
+                }
+            }
+
+            ImGui.setCursorPos(0f, 0f) // draw the node editor on top of the collapisng headers
+
+            isHeaderHovered = false
+
+            for(category in Category.values()) {
+                if(nodesSupplier().containsKey(category)) {
+                    if (!tablesCategories.containsKey(category)) {
+                        tablesCategories[category] = Table()
+                    }
+
+                    ImGui.pushStyleColor(ImGuiCol.Header, category.color)
+                    ImGui.pushStyleColor(ImGuiCol.HeaderActive, category.colorSelected)
+                    ImGui.pushStyleColor(ImGuiCol.HeaderHovered, category.colorSelected)
+
+                    val isOpen = ImGui.collapsingHeader(
+                        tr(category.properName), ImGuiTreeNodeFlags.DefaultOpen
+                    )
+                    categoriesState[category] = isOpen
+
+                    ImGui.popStyleColor()
+                    ImGui.popStyleColor()
+                    ImGui.popStyleColor()
+
+                    if (ImGui.isItemHovered()) {
+                        isHeaderHovered = true
+                    }
+
+                    if(isOpen) {
+                        val table = tablesCategories[category]!!
+
+                        if(previousScroll != currentScroll) {
+                            currentScroll = ImGui.getScrollY() + scrollValue * 20.0f
+                            ImGui.setScrollY(currentScroll)
+                        } else {
+                            currentScroll = ImGui.getScrollY()
+                        }
+
+                        ImGui.newLine()
+                        ImGui.indent(10f)
+
+                        table.draw()
+
+                        ImGui.newLine()
+                        ImGui.unindent(10f)
+                    }
+                }
+            }
+
+            ImGui.popStyleColor()
+
+            previousScroll = scrollValue
+        }
+
     }
 
 }

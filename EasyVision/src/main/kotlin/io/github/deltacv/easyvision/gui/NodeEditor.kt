@@ -12,6 +12,7 @@ import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.AttributeMode
 import io.github.deltacv.easyvision.gui.util.PopupBuilder
+import io.github.deltacv.easyvision.gui.util.Window
 import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys
 import io.github.deltacv.easyvision.io.PipelineStream
@@ -24,10 +25,11 @@ import io.github.deltacv.easyvision.node.vision.OutputMatNode
 import io.github.deltacv.easyvision.platform.PlatformTexture
 import io.github.deltacv.easyvision.util.ElapsedTime
 import io.github.deltacv.easyvision.util.event.EventHandler
+import io.github.deltacv.easyvision.util.flags
 import io.github.deltacv.easyvision.util.loggerForThis
 import io.github.deltacv.mai18n.tr
 
-class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
+class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Window() {
 
     companion object {
         val KEY_PAN_CONSTANT = 5f
@@ -72,7 +74,15 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
 
     val onDraw = EventHandler("NodeEditor-OnDraw")
 
-    fun init() {
+
+    override var title = "Editor"
+    override val windowFlags = flags(
+        ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoMove,
+        ImGuiWindowFlags.NoCollapse, ImGuiWindowFlags.NoBringToFrontOnFocus,
+        ImGuiWindowFlags.NoTitleBar, ImGuiWindowFlags.NoDecoration
+    )
+
+    override fun onEnable() {
         eyeFont = easyVision.fontManager.makeFont(
             "/fonts/icons/Eye.ttf", "Eye", 15f
         )
@@ -89,14 +99,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
         originNode.enable()
     }
 
-    fun draw() {
+    override fun drawContents() {
         onDraw.run()
-
-        ImGui.begin("Editor",
-            ImGuiWindowFlags.NoResize or ImGuiWindowFlags.NoMove
-                    or ImGuiWindowFlags.NoCollapse or ImGuiWindowFlags.NoBringToFrontOnFocus
-                    or ImGuiWindowFlags.NoTitleBar or ImGuiWindowFlags.NoDecoration
-        )
 
         ImNodes.editorContextSet(context)
 
@@ -181,16 +185,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) {
         handleCreateLink()
         handleDeleteSelection()
 
-        ImGui.end()
-
         for(display in ImageDisplayWindow.displayWindows) {
-            /*
-            if(editorPanningDelta.x != 0f || editorPanningDelta.x != 0f) {
-                display.currentPosition = ImVec2(
-                    display.currentPosition.x + editorPanningDelta.x,
-                    display.currentPosition.y + editorPanningDelta.y
-                )
-            }*/
             display.draw()
         }
     }
