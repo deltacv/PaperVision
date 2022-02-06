@@ -87,19 +87,6 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         private set
 
     fun init() {
-        println( flags(
-            ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoMove,
-            ImGuiWindowFlags.NoCollapse, ImGuiWindowFlags.NoTitleBar,
-            ImGuiWindowFlags.NoDecoration
-        )
-        )
-
-        println(
-            ImGuiWindowFlags.NoResize or ImGuiWindowFlags.NoMove or
-            ImGuiWindowFlags.NoCollapse or ImGuiWindowFlags.NoTitleBar or
-                    ImGuiWindowFlags.NoDecoration
-        )
-
         EasyVisionSerializer.deserializeAndApply(resourceToString("/testproj.json"), nodeEditor)
 
         logger.info("Starting EasyVision...")

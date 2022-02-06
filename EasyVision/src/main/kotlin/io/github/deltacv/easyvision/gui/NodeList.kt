@@ -257,11 +257,9 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager):   Window
     }
 
     fun closeList() {
-        if(isNodesListOpen) {
-            isNodesListOpen = false
-            openButtonTimeout.reset()
-            delete()
-        }
+        isNodesListOpen = false
+        openButtonTimeout.reset()
+        delete()
     }
 
     fun completelyDelete() {

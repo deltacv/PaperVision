@@ -74,7 +74,6 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
     val onDraw = EventHandler("NodeEditor-OnDraw")
 
-
     override var title = "Editor"
     override val windowFlags = flags(
         ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoMove,
@@ -103,7 +102,6 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
         onDraw.run()
 
         ImNodes.editorContextSet(context)
-
         ImNodes.beginNodeEditor()
 
         ImNodes.setNodeGridSpacePos(originNode.id, 0f, 0f)
@@ -184,10 +182,6 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
         handleDeleteLink()
         handleCreateLink()
         handleDeleteSelection()
-
-        for(display in ImageDisplayWindow.displayWindows) {
-            display.draw()
-        }
     }
 
     fun addNode(nodeClazz: Class<out Node<*>>): Node<*> {

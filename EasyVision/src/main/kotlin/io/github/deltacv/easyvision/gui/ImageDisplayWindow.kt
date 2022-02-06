@@ -12,18 +12,20 @@ class ImageDisplayWindow(
 
     override val windowFlags = ImGuiWindowFlags.NoResize
 
-    override val id by displayWindows.nextId(this)
+    val displayId by displayWindows.nextId(this)
 
     override fun drawContents() {
-        stream.textureOf(id)?.draw()
+        stream.textureOf(displayId)?.draw()
     }
 
     override fun delete() {
-        displayWindows.removeId(id)
+        super.delete()
+        displayWindows.removeId(displayId)
     }
 
     override fun restore() {
-        displayWindows[id] = this
+        super.restore()
+        displayWindows[displayId] = this
     }
 
     companion object {
