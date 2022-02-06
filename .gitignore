@@ -101,7 +101,7 @@ fabric.properties
 *.log
 
 **/build/*
-!/EasyVision/src/main/kotlin/io/github/deltacv/easyvision/codegen/build
+!EasyVision/src/main/kotlin/io/github/deltacv/easyvision/codegen/build/*
 
 *.DS_Store
 
