@@ -41,7 +41,9 @@ class TextureProcessorQueue(
     }
 
     private fun returnReusableArray(array: ByteArray) {
-        reusableArrays[array.size]?.add(WeakReference(array))
+        synchronized(reusableArrays) {
+            reusableArrays[array.size]?.offer(WeakReference(array))
+        }
     }
 
     fun offer(id: Int, width: Int, height: Int, data: ByteBuffer) {
@@ -72,7 +74,7 @@ class TextureProcessorQueue(
                 Thread.yield()
             }
 
-            queuedTextures.add(FutureTexture(id, width, height, array))
+            queuedTextures.offer(FutureTexture(id, width, height, array))
         }
     }
 

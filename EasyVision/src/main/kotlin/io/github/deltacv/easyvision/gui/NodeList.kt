@@ -20,7 +20,7 @@ import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.easyvision.util.flags
 import kotlinx.coroutines.*
 
-class NodeList(val easyVision: EasyVision, val keyManager: KeyManager):   Window() {
+class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window() {
 
     companion object {
         val listNodes = IdElementContainer<Node<*>>()
@@ -33,7 +33,6 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager):   Window
         private set
     private var isCompletelyDeleted = false
 
-    lateinit var buttonFont: Font
     private val openButtonTimeout = ElapsedTime()
 
     lateinit var floatingButton: FloatingButton
@@ -69,9 +68,7 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager):   Window
             }
         }
 
-        buttonFont = easyVision.fontManager.makeFont("/fonts/icons/Open-Close.ttf", "Icons-Open-Close", plusFontSize)
-
-        floatingButton = FloatingButton(this, easyVision.window, buttonFont)
+        floatingButton = FloatingButton(this, easyVision.window, easyVision.fontManager)
         floatingButton.enable()
 
         floatingButton.onPressed {
@@ -259,6 +256,8 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager):   Window
     fun closeList() {
         isNodesListOpen = false
         openButtonTimeout.reset()
+        floatingButton.focus = false
+
         delete()
     }
 
@@ -301,7 +300,7 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager):   Window
     class FloatingButton(
         val nodeList: NodeList,
         val window: PlatformWindow,
-        val buttonFont: Font
+        fontManager: FontManager
     ) : Window() {
 
         override var title = "floating"
@@ -314,6 +313,8 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager):   Window
         private val hoveringPlusTime = ElapsedTime()
 
         val onPressed = EventHandler("FloatingButton-OnPressed")
+
+        val buttonFont = fontManager.makeFont("/fonts/icons/Open-Close.ttf", plusFontSize)
 
         override fun preDrawContents() {
             position = ImVec2(

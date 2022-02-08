@@ -111,7 +111,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
         // initializing fonts right after the imgui context is created
         // we can't create fonts mid-frame so that's kind of a problem
-        defaultFont = fontManager.makeFont("/fonts/Calcutta-Regular.otf", "Calcutta", 13f)
+        defaultFont = fontManager.makeFont("/fonts/Calcutta-Regular.otf", 13f)
         defaultImGuiFont = fontManager.makeDefaultFont(13f)
 
         nodeList.enable()

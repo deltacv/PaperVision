@@ -1,4 +1,4 @@
-package io.github.deltacv.easyvision.gui
+package io.github.deltacv.easyvision.gui.eocvsim
 
 import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.easyvision.gui.util.Window

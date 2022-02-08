@@ -6,7 +6,7 @@ import io.github.deltacv.easyvision.attribute.AttributeMode
 import io.github.deltacv.easyvision.attribute.Type
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.gui.ImageDisplayWindow
+import io.github.deltacv.easyvision.gui.eocvsim.ImageDisplayWindow
 import io.github.deltacv.easyvision.gui.style.rgbaColor
 import io.github.deltacv.easyvision.gui.util.ExtraWidgets
 import io.github.deltacv.easyvision.serialization.data.SerializeData

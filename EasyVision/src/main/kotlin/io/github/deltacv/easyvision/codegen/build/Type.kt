@@ -25,7 +25,7 @@ val Any.genType: Type get() = this::class.java.genType
 
 val Class<*>.genType: Type get() {
     if(!typeCache.containsKey(this)) {
-        typeCache[this] = Type(simpleName, packageName)
+        typeCache[this] = Type(simpleName, getPackage()?.name ?: "")
     }
 
     return typeCache[this]!!

@@ -11,6 +11,8 @@ import imgui.type.ImInt
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.AttributeMode
+import io.github.deltacv.easyvision.gui.eocvsim.ImageDisplayWindow
+import io.github.deltacv.easyvision.gui.eocvsim.InputSourcesWindow
 import io.github.deltacv.easyvision.gui.util.PopupBuilder
 import io.github.deltacv.easyvision.gui.util.Window
 import io.github.deltacv.easyvision.io.KeyManager
@@ -22,11 +24,9 @@ import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.node.vision.InputMatNode
 import io.github.deltacv.easyvision.node.vision.OutputMatNode
-import io.github.deltacv.easyvision.platform.PlatformTexture
 import io.github.deltacv.easyvision.util.ElapsedTime
 import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.easyvision.util.flags
-import io.github.deltacv.easyvision.util.loggerForThis
 import io.github.deltacv.mai18n.tr
 
 class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Window() {
@@ -57,6 +57,9 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
             field = value
         }
 
+    lateinit var inputSourcesWindow: InputSourcesWindow
+        private set
+
     lateinit var eyeFont: Font
         private set
 
@@ -74,7 +77,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
     val onDraw = EventHandler("NodeEditor-OnDraw")
 
-    override var title = "Editor"
+    override var title = "editor"
     override val windowFlags = flags(
         ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoMove,
         ImGuiWindowFlags.NoCollapse, ImGuiWindowFlags.NoBringToFrontOnFocus,
@@ -83,7 +86,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
     override fun onEnable() {
         eyeFont = easyVision.fontManager.makeFont(
-            "/fonts/icons/Eye.ttf", "Eye", 15f
+            "/fonts/icons/Eye.ttf", 15f
         )
 
         pipelineStream = PipelineStream(easyVision, offlineImages = arrayOf(
@@ -96,6 +99,10 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
         inputNode.enable()
         outputNode.enable()
         originNode.enable()
+
+        inputSourcesWindow = InputSourcesWindow(easyVision.fontManager)
+        inputSourcesWindow.enable()
+        inputSourcesWindow.attachToIpc(easyVision.eocvSimIpcClient)
     }
 
     override fun drawContents() {

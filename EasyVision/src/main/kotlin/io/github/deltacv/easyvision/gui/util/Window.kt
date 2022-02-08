@@ -4,6 +4,7 @@ import imgui.ImGui
 import imgui.ImVec2
 import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.id.IdElementContainer
+import io.github.deltacv.mai18n.tr
 
 abstract class Window : DrawableIdElement {
 
@@ -29,10 +30,13 @@ abstract class Window : DrawableIdElement {
         }
 
     private var realFocus = false
-    var focus = false // ignore warning
-        get() = realFocus
+    private var userFocus = false
 
-    private var isFirstDraw = true
+    var focus: Boolean
+        set(value) {
+            userFocus = value
+        }
+        get() = realFocus
 
     override fun draw() {
         preDrawContents()
@@ -44,21 +48,17 @@ abstract class Window : DrawableIdElement {
             ImGui.setNextWindowSize(nextSize!!.x, nextSize!!.y)
         }
 
-        if(focus) {
+        if(userFocus) {
             ImGui.setNextWindowFocus()
         }
 
-        ImGui.begin("$title###$id", windowFlags)
+        ImGui.begin("${tr(title)}###$id", windowFlags)
             drawContents()
 
-            //if(!isFirstDraw) {
-                ImGui.getWindowPos(position)
-                ImGui.getWindowSize(size)
-                realFocus = ImGui.isWindowFocused()
-            //}
+            ImGui.getWindowPos(position)
+            ImGui.getWindowSize(size)
+            realFocus = ImGui.isWindowFocused()
         ImGui.end()
-
-        isFirstDraw = false
     }
 
     open fun preDrawContents() { }

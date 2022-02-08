@@ -101,8 +101,6 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
             )
         )
 
-        // add necessary imports
-
         group {
             // lower color scalar
             public(lowerScalar, scalarLabels.first)
@@ -124,7 +122,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
             }
 
             Core("inRange", inputMat.value, lowerScalar, upperScalar, thresholdTargetMat)
-            output.streamIfEnabled(thresholdTargetMat)
+            output.streamIfEnabled(thresholdTargetMat, Colors.GRAY)
         }
 
         session.outputMat = GenValue.Mat(thresholdTargetMat, targetColor, true)
