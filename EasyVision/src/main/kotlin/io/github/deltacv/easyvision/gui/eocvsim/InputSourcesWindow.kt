@@ -11,6 +11,7 @@ import io.github.deltacv.eocvsim.ipc.message.response.IpcStringResponse
 import io.github.deltacv.eocvsim.ipc.message.response.sim.InputSourcesListResponse
 import io.github.deltacv.eocvsim.ipc.message.sim.GetCurrentInputSourceMessage
 import io.github.deltacv.eocvsim.ipc.message.sim.InputSourcesListMessage
+import io.github.deltacv.eocvsim.ipc.message.sim.SetInputSourceMessage
 
 class InputSourcesWindow(
     fontManager: FontManager
@@ -18,7 +19,11 @@ class InputSourcesWindow(
 
     var inputSources: Array<InputSourceData> = arrayOf()
 
+    private var previousInputSource: String? = null
     var currentInputSource: String? = null
+        private set
+
+    private var attachedIpc: IpcClientWatchDog? = null
         private set
 
     override var title = "$[win_inputsources]"
@@ -38,7 +43,7 @@ class InputSourcesWindow(
                     InputSourceType.VIDEO -> "v"
                 }
 
-                ImGui.text("$type ")
+                ImGui.text("$type-")
 
                 ImGui.popFont()
 
@@ -50,9 +55,15 @@ class InputSourcesWindow(
             }
             ImGui.endListBox()
         }
+
+        if(previousInputSource != currentInputSource && currentInputSource != null) {
+            attachedIpc?.broadcast(SetInputSourceMessage(currentInputSource!!))
+        }
+
+        previousInputSource = currentInputSource
     }
 
-    fun updateWithIpc(client: IpcClientWatchDog) {
+    private fun updateWithIpc(client: IpcClientWatchDog) {
         client.broadcast(InputSourcesListMessage().onResponseWith<InputSourcesListResponse> { sourcesResponse ->
             inputSources = sourcesResponse.sources
 
@@ -66,8 +77,12 @@ class InputSourcesWindow(
         updateWithIpc(client)
 
         client.onConnect {
-            updateWithIpc(client)
+            if(attachedIpc != client) {
+                it.removeThis()
+            } else updateWithIpc(client)
         }
+
+        attachedIpc = client
     }
 
 }

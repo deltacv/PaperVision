@@ -78,6 +78,8 @@ object NodeScanner {
 
     fun waitAsyncScan(): CategorizedNodes {
         if(job != null) {
+            println("${Thread.currentThread().name} is waiting for async scan")
+
             runBlocking {
                 job!!.join()
             }

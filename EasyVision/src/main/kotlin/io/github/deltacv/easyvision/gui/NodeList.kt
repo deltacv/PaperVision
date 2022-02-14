@@ -7,6 +7,7 @@ import imgui.extension.imnodes.flag.ImNodesColorStyle
 import imgui.flag.*
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.attribute.Attribute
+import io.github.deltacv.easyvision.gui.util.FrameWidthWindow
 import io.github.deltacv.easyvision.gui.util.Table
 import io.github.deltacv.easyvision.gui.util.Window
 import io.github.deltacv.mai18n.tr
@@ -301,16 +302,19 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window()
         val nodeList: NodeList,
         val window: PlatformWindow,
         fontManager: FontManager
-    ) : Window() {
+    ) : FrameWidthWindow() {
 
         override var title = "floating"
         override val windowFlags = flags(
             ImGuiWindowFlags.NoBackground, ImGuiWindowFlags.NoTitleBar,
-            ImGuiWindowFlags.NoDecoration, ImGuiWindowFlags.NoMove
+            ImGuiWindowFlags.NoDecoration, ImGuiWindowFlags.NoMove,
+            ImGuiWindowFlags.AlwaysAutoResize
         )
 
         private var lastButton = false
         private val hoveringPlusTime = ElapsedTime()
+
+        override var frameWidth = 0f
 
         val onPressed = EventHandler("FloatingButton-OnPressed")
 
@@ -326,9 +330,10 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window()
             focus = false
 
             ImGui.pushFont(buttonFont.imfont)
-            val buttonSize = ImGui.getFrameHeight()
 
-            val button = ImGui.button(if(nodeList.isNodesListOpen) "x" else "+", buttonSize, buttonSize)
+            frameWidth = ImGui.getFrameHeight()
+
+            val button = ImGui.button(if(nodeList.isNodesListOpen) "x" else "+", frameWidth, frameWidth)
             ImGui.popFont()
 
             if(ImGui.isItemHovered()) {

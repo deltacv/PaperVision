@@ -1,10 +1,13 @@
 package io.github.deltacv.easyvision.attribute
 
+import imgui.ImGui
+import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.exception.AttributeGenException
 import io.github.deltacv.easyvision.id.DrawableIdElement
+import io.github.deltacv.easyvision.id.DrawableIdElementBase
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.serialization.ev.AttributeSerializationData
@@ -17,21 +20,16 @@ import kotlin.contracts.contract
 
 enum class AttributeMode { INPUT, OUTPUT }
 
-abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializationData> {
+abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<AttributeSerializationData> {
+
+    override val idElementContainer get() = parentNode.attributesIdContainer
+    override val requestedId get() = serializedId
 
     @Transient private var getThisSupplier: (() -> Any)? = null
 
     private var serializedId: Int? = null
 
     abstract val mode: AttributeMode
-
-    override val id by lazy {
-        if(serializedId == null) {
-            parentNode.attributesIdContainer.nextId(this).value
-        } else {
-            parentNode.attributesIdContainer.requestId(this, serializedId!!).value
-        }
-    }
 
     lateinit var parentNode: Node<*>
         internal set
@@ -53,6 +51,8 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
 
     val onChange = EventHandler("OnChange-${this::class.simpleName}")
     val onDelete = EventHandler("OnDelete-${this::class.simpleName}")
+
+    val position = ImVec2()
 
     abstract fun drawAttribute()
 
@@ -83,6 +83,7 @@ abstract class Attribute : DrawableIdElement, DataSerializable<AttributeSerializ
             } else {
                 ImNodes.beginOutputAttribute(id)
             }
+            ImGui.getCursorPos(position)
         }
 
         drawAttribute()

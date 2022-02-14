@@ -2,17 +2,18 @@ package io.github.deltacv.easyvision.platform
 
 import imgui.ImGui
 import io.github.deltacv.easyvision.id.DrawableIdElement
+import io.github.deltacv.easyvision.id.DrawableIdElementBase
 import io.github.deltacv.easyvision.id.IdElementContainer
 import java.nio.ByteBuffer
 
-abstract class PlatformTexture : DrawableIdElement {
+abstract class PlatformTexture : DrawableIdElementBase<PlatformTexture>() {
+
+    override val idElementContainer = textures
 
     abstract val width: Int
     abstract val height: Int
 
     abstract val textureId: Int
-
-    override val id by textures.nextId { this }
 
     abstract fun set(bytes: ByteArray, colorSpace: ColorSpace = ColorSpace.RGB)
     abstract fun set(bytes: ByteBuffer, colorSpace: ColorSpace = ColorSpace.RGB)

@@ -1,6 +1,6 @@
 package io.github.deltacv.easyvision.id
 
-class IdElementContainer<T> : Iterable<T> {
+class IdElementContainer<T : IdElement> : Iterable<T> {
 
     private val e = ArrayList<T?>()
 
@@ -23,17 +23,31 @@ class IdElementContainer<T> : Iterable<T> {
         if(id >= e.size) {
             // add null elements until the list has a size of "id"
             // and add "element" to the list in the index "id"
-            for(i in e.size until id) {
+            for(i in e.size..id) {
                 e.add(null)
             }
         }
 
-        e.add(id, element)
+        e.set(id, element)
 
         elements.add(element)
         reallocateArray()
 
         e.lastIndexOf(element)
+    }
+
+    fun reserveId(id: Int): Int {
+        if(id >= e.size) {
+            // add null elements until the list has a size of "id"
+            // and add "element" to the list in the index "id"
+            for(i in e.size until id) {
+                e.add(null)
+            }
+        }
+
+        e.add(id, null)
+
+        return id
     }
 
     fun nextId(element: () -> T) = lazy {

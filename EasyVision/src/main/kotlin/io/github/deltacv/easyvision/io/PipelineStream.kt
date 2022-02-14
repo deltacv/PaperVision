@@ -90,7 +90,6 @@ class PipelineStream(
         ipcClient.broadcast(IsStreamingMessage().onResponse { isStartedResponse ->
             if(isStartedResponse is IpcBooleanResponse) {
                 isStarted = isStartedResponse.value
-                println(isStarted)
 
                 if(!isStarted && !isStarting) {
                     isStarting = true

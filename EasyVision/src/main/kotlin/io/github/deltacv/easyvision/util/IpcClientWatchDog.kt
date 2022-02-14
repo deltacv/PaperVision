@@ -9,6 +9,8 @@ import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToLong
 
+enum class PreviewState { NOT_CONNECTED, NOT_RUNNING, RUNNING }
+
 class IpcClientWatchDog(
     val port: Int = 11026,
     val passToken: PassToken? = null,
@@ -22,6 +24,8 @@ class IpcClientWatchDog(
     private val watchdogThread by lazy { Thread(runner, "IpcClientWatchDog-Thread") }
 
     val ipcClient get() = runner.ipcClient
+
+    val isConnected get() = ipcClient.isOpen
 
     val onConnect get() = runner.onConnect
     val onDisconnect get() = runner.onDisconnect

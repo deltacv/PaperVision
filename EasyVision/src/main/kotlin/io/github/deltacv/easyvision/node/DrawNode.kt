@@ -105,6 +105,4 @@ abstract class DrawNode<S: CodeGenSession>(
                               val category: Category,
                               val showInList: Boolean)
 
-    private class AttributeLabelListener
-
 }

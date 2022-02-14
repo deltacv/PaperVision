@@ -4,14 +4,17 @@ import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.flag.ImNodesColorStyle
 import io.github.deltacv.easyvision.attribute.TypedAttribute
 import io.github.deltacv.easyvision.id.DrawableIdElement
+import io.github.deltacv.easyvision.id.DrawableIdElementBase
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import io.github.deltacv.easyvision.serialization.ev.LinkSerializationData
 import io.github.deltacv.easyvision.util.event.EventListener
 
-class Link(val a: Int, val b: Int) : DrawableIdElement, DataSerializable<LinkSerializationData> {
-
-    override val id by links.nextId { this }
+class Link(
+    val a: Int,
+    val b: Int,
+    override val idElementContainer: IdElementContainer<Link> = links
+) : DrawableIdElementBase<Link>(), DataSerializable<LinkSerializationData> {
 
     val aAttrib by lazy { Node.attributes[a]!! }
     val bAttrib by lazy { Node.attributes[b]!! }

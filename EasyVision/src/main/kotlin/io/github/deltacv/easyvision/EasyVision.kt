@@ -25,23 +25,21 @@ package io.github.deltacv.easyvision
 import imgui.ImGui
 import imgui.flag.ImGuiCond
 import imgui.flag.ImGuiMouseButton
-import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.easyvision.codegen.CodeGenManager
 import io.github.deltacv.easyvision.gui.*
 import io.github.deltacv.easyvision.gui.style.imnodes.ImNodesDarkStyle
-import io.github.deltacv.easyvision.gui.util.PopupBuilder
+import io.github.deltacv.easyvision.gui.util.Popup
 import io.github.deltacv.easyvision.gui.util.Window
 import io.github.deltacv.easyvision.id.IdElementContainer
+import io.github.deltacv.easyvision.id.NoneIdElement
 import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys
 import io.github.deltacv.easyvision.io.resourceToString
 import io.github.deltacv.easyvision.node.NodeScanner
 import io.github.deltacv.easyvision.platform.*
-import io.github.deltacv.easyvision.platform.animation.PlatformTextureAnimation
 import io.github.deltacv.easyvision.serialization.ev.EasyVisionSerializer
 import io.github.deltacv.easyvision.util.IpcClientWatchDog
 import io.github.deltacv.easyvision.util.event.EventHandler
-import io.github.deltacv.easyvision.util.flags
 import io.github.deltacv.easyvision.util.loggerForThis
 import io.github.deltacv.mai18n.Language
 
@@ -56,7 +54,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         lateinit var defaultImGuiFont: Font
             private set
 
-        val miscIds = IdElementContainer<Any>()
+        val miscIds = IdElementContainer<NoneIdElement>()
 
         val eocvSimIpcClient = IpcClientWatchDog()
     }
@@ -106,13 +104,13 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         ImGui.getIO().iniFilename = null
         ImGui.getIO().logFilename = null
 
-        nodeEditor.enable()
-        langManager.loadIfNeeded()
-
         // initializing fonts right after the imgui context is created
         // we can't create fonts mid-frame so that's kind of a problem
         defaultFont = fontManager.makeFont("/fonts/Calcutta-Regular.otf", 13f)
         defaultImGuiFont = fontManager.makeDefaultFont(13f)
+
+        nodeEditor.enable()
+        langManager.loadIfNeeded()
 
         nodeList.enable()
     }
@@ -135,14 +133,11 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         for(window in Window.windows.inmutable) {
             window.draw()
         }
-
-        PopupBuilder.draw()
+        for(tooltip in Popup.popups.inmutable) {
+            tooltip.draw()
+        }
 
         ImGui.popFont()
-
-        if(ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
-            codeGenManager.startPreviz("mai")
-        }
 
         if(keyManager.pressed(Keys.ArrowUp)) {
             println(EasyVisionSerializer.serializeCurrent())

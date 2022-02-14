@@ -11,9 +11,13 @@ import imgui.type.ImInt
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.AttributeMode
+import io.github.deltacv.easyvision.codegen.CodeGenManager
+import io.github.deltacv.easyvision.codegen.EOCVSimPreviewState
+import io.github.deltacv.easyvision.codegen.EOCVSimPreviewState.*
 import io.github.deltacv.easyvision.gui.eocvsim.ImageDisplayWindow
 import io.github.deltacv.easyvision.gui.eocvsim.InputSourcesWindow
-import io.github.deltacv.easyvision.gui.util.PopupBuilder
+import io.github.deltacv.easyvision.gui.util.FrameWidthWindow
+import io.github.deltacv.easyvision.gui.util.Popup
 import io.github.deltacv.easyvision.gui.util.Window
 import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys
@@ -25,9 +29,9 @@ import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.node.vision.InputMatNode
 import io.github.deltacv.easyvision.node.vision.OutputMatNode
 import io.github.deltacv.easyvision.util.ElapsedTime
+import io.github.deltacv.easyvision.util.IpcClientWatchDog
 import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.easyvision.util.flags
-import io.github.deltacv.mai18n.tr
 
 class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Window() {
 
@@ -57,6 +61,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
             field = value
         }
 
+    lateinit var playButton: EOCVSimPlayButtonWindow
+        private set
     lateinit var inputSourcesWindow: InputSourcesWindow
         private set
 
@@ -100,6 +106,16 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
         outputNode.enable()
         originNode.enable()
 
+        playButton = EOCVSimPlayButtonWindow(
+            { easyVision.nodeList.floatingButton },
+            easyVision.defaultFont,
+            easyVision.eocvSimIpcClient,
+            easyVision.nodeEditor.pipelineStream,
+            easyVision.codeGenManager,
+            easyVision.fontManager
+        )
+        playButton.enable()
+
         inputSourcesWindow = InputSourcesWindow(easyVision.fontManager)
         inputSourcesWindow.enable()
         inputSourcesWindow.attachToIpc(easyVision.eocvSimIpcClient)
@@ -115,7 +131,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
         ImNodes.miniMap(0.15f, ImNodesMiniMapLocation.TopLeft)
 
-        for(node in Node.nodes) {
+        for(node in Node.nodes.inmutable) {
             node.codeGenManager = easyVision.codeGenManager
             node.editor = this
             node.draw()
@@ -202,8 +218,6 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
         val window = ImageDisplayWindow(title, pipelineStream)
         window.enable()
 
-        pipelineStream.startIfNeeded()
-
         attribute.onDelete.doOnce {
             window.delete()
         }
@@ -233,7 +247,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
             }
 
             if(!startAttrib.acceptLink(endAttrib) || !endAttrib.acceptLink(startAttrib)) {
-                PopupBuilder.addWarningToolTip(tr("err_couldntlink_didntmatch"))
+                Popup.warning("err_couldntlink_didntmatch")
                 return // one or both of the attributes didn't accept the link, abort.
             }
 
@@ -249,7 +263,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
             link.enable() // create the link and enable it
 
             if(Node.checkRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
-                PopupBuilder.addWarningToolTip(tr("err_couldntlink_recursion"))
+                Popup.warning("err_couldntlink_recursion")
                 // remove the link if a recursion case was detected (e.g both nodes were attached to each other already)
                 link.delete()
             } else {
@@ -293,6 +307,68 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
     fun destroy() {
         ImNodes.destroyContext()
+    }
+
+    class EOCVSimPlayButtonWindow(
+        val floatingButtonSupplier: () -> FrameWidthWindow,
+        val defaultFont: Font,
+        val ipcClient: IpcClientWatchDog,
+        val stream: PipelineStream,
+        val genManager: CodeGenManager,
+        fontManager: FontManager
+    ) : Window() {
+
+        override var title = "eocv sim control"
+        override val windowFlags = flags(
+            ImGuiWindowFlags.NoBackground, ImGuiWindowFlags.NoTitleBar,
+            ImGuiWindowFlags.NoDecoration, ImGuiWindowFlags.NoMove,
+            ImGuiWindowFlags.AlwaysAutoResize
+        )
+
+        private var lastButton = false
+
+        val playPauseDotsFont = fontManager.makeFont("/fonts/icons/Play-Pause-Dots.ttf", NodeList.plusFontSize * 0.65f)
+
+        override fun preDrawContents() {
+            val floatingButton = floatingButtonSupplier()
+
+            position = ImVec2(
+                floatingButton.position.x - NodeList.plusFontSize * 1.5f,
+                floatingButton.position.y,
+            )
+        }
+
+        override fun drawContents() {
+            val floatingButton = floatingButtonSupplier()
+
+            ImGui.pushFont(playPauseDotsFont.imfont)
+
+            val text = when(genManager.eocvSimState) {
+                RUNNING -> "-"
+                RUNNING_BUT_NOT_CONNECTED -> "."
+                else -> "+"
+            }
+
+            val button = ImGui.button(text, floatingButton.frameWidth, floatingButton.frameWidth)
+
+            if(lastButton != button && button) {
+                if(genManager.eocvSimState == RUNNING || genManager.eocvSimState == RUNNING_BUT_NOT_CONNECTED) {
+                    genManager.stopPreviz()
+                    stream.stop()
+                } else {
+                    genManager.startPreviz("e")
+
+                    if(ImageDisplayWindow.displayWindows.elements.isNotEmpty()) {
+                        stream.startIfNeeded()
+                    }
+                }
+            }
+
+            ImGui.popFont()
+
+            lastButton = button
+        }
+
     }
 
 }

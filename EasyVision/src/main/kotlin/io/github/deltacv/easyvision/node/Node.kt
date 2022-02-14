@@ -13,6 +13,7 @@ import io.github.deltacv.easyvision.exception.NodeGenException
 import io.github.deltacv.easyvision.gui.Font
 import io.github.deltacv.easyvision.gui.NodeEditor
 import io.github.deltacv.easyvision.id.DrawableIdElement
+import io.github.deltacv.easyvision.id.DrawableIdElementBase
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import io.github.deltacv.easyvision.serialization.ev.BasicNodeData
@@ -26,7 +27,10 @@ interface Type {
 
 abstract class Node<S: CodeGenSession>(
     private var allowDelete: Boolean = true
-) : DrawableIdElement, DataSerializable<NodeSerializationData> {
+) : DrawableIdElementBase<Node<*>>(), DataSerializable<NodeSerializationData> {
+
+    override val idElementContainer get() = nodesIdContainer
+    override val requestedId get() = serializedId
 
     var serializedId: Int? = null
         private set
@@ -50,14 +54,6 @@ abstract class Node<S: CodeGenSession>(
 
     private val attribOnChangeListener = EventListener {
         onChange.run()
-    }
-
-    override val id by lazy {
-        if(serializedId == null) {
-            nodesIdContainer.nextId(this).value
-        } else {
-            nodesIdContainer.requestId(this, serializedId!!).value
-        }
     }
 
     @Transient

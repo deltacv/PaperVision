@@ -143,7 +143,7 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
 
                 raiseAssert(
                     linkedAttrib != null,
-                    tr("err_musthave_attachedattrib", name)
+                    tr("err_musthave_attachedattrib")
                 )
 
                 val value = linkedAttrib!!.value(current)
