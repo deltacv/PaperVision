@@ -16,17 +16,17 @@ class Link(
     override val idElementContainer: IdElementContainer<Link> = links
 ) : DrawableIdElementBase<Link>(), DataSerializable<LinkSerializationData> {
 
-    val aAttrib by lazy { Node.attributes[a]!! }
-    val bAttrib by lazy { Node.attributes[b]!! }
+    val aAttrib by lazy { Node.attributes[a] }
+    val bAttrib by lazy { Node.attributes[b] }
 
     constructor(data: LinkSerializationData) : this(data.from, data.to)
 
     override fun draw() {
-        if(!aAttrib.links.contains(this))
-            aAttrib.links.add(this)
+        if(aAttrib?.links?.contains(this) == false)
+            aAttrib?.links?.add(this)
 
-        if(!bAttrib.links.contains(this))
-            bAttrib.links.add(this)
+        if(bAttrib?.links?.contains(this) == false)
+            bAttrib?.links?.add(this)
 
         val typedAttrib = when {
             aAttrib is TypedAttribute -> aAttrib as TypedAttribute
@@ -50,8 +50,8 @@ class Link(
     }
 
     override fun delete() {
-        aAttrib.links.remove(this)
-        bAttrib.links.remove(this)
+        aAttrib?.links?.remove(this)
+        bAttrib?.links?.remove(this)
 
         links.removeId(id)
         triggerOnChange()
@@ -60,15 +60,14 @@ class Link(
     override fun restore() {
         links[id] = this
 
-        aAttrib.links.add(this)
-        bAttrib.links.add(this)
+        aAttrib?.links?.add(this)
+        bAttrib?.links?.add(this)
 
         triggerOnChange()
     }
 
     internal fun triggerOnChange() {
-        aAttrib.onChange.run()
-        bAttrib.onChange.run()
+        aAttrib?.onChange?.run()
     }
 
     companion object {
@@ -78,8 +77,8 @@ class Link(
             val l = mutableListOf<Link>()
 
             for(link in links) {
-                val linkNodeA = link.aAttrib.parentNode
-                val linkNodeB = link.bAttrib.parentNode
+                val linkNodeA = link.aAttrib?.parentNode ?: continue
+                val linkNodeB = link.bAttrib?.parentNode ?: continue
 
                 if (
                     (a == linkNodeA && b == linkNodeB) || (b == linkNodeA && a == linkNodeB)

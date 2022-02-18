@@ -39,6 +39,7 @@ import io.github.deltacv.easyvision.node.NodeScanner
 import io.github.deltacv.easyvision.platform.*
 import io.github.deltacv.easyvision.serialization.ev.EasyVisionSerializer
 import io.github.deltacv.easyvision.util.IpcClientWatchDog
+import io.github.deltacv.easyvision.util.eocvsim.EOCVSimIpcManager
 import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.easyvision.util.loggerForThis
 import io.github.deltacv.mai18n.Language
@@ -55,8 +56,6 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
             private set
 
         val miscIds = IdElementContainer<NoneIdElement>()
-
-        val eocvSimIpcClient = IpcClientWatchDog()
     }
 
     val logger by loggerForThis()
@@ -79,7 +78,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
     val nodeEditor = NodeEditor(this, keyManager)
     val nodeList = NodeList(this, keyManager)
 
-    val eocvSimIpcClient get() = Companion.eocvSimIpcClient
+    val eocvSimIpc = EOCVSimIpcManager(this)
 
     lateinit var defaultFont: Font
         private set
@@ -89,7 +88,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
         logger.info("Starting EasyVision...")
 
-        eocvSimIpcClient.start()
+        eocvSimIpc.init()
 
         NodeScanner.startAsyncScan()
 
@@ -148,6 +147,6 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
     fun destroy() {
         nodeEditor.destroy()
-        eocvSimIpcClient.stop()
+        eocvSimIpc.stop()
     }
 }

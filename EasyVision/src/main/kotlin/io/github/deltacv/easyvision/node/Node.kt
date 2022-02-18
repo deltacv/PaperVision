@@ -18,6 +18,7 @@ import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import io.github.deltacv.easyvision.serialization.ev.BasicNodeData
 import io.github.deltacv.easyvision.serialization.ev.NodeSerializationData
+import io.github.deltacv.easyvision.util.eocvsim.EOCVSimIpcManager
 import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.easyvision.util.event.EventListener
 
@@ -41,7 +42,7 @@ abstract class Node<S: CodeGenSession>(
     var drawAttributesCircles = true
 
     // will be set on NodeEditor#draw
-    lateinit var codeGenManager: CodeGenManager
+    lateinit var eocvSimIpc: EOCVSimIpcManager
         internal set
 
     // will be set on NodeEditor#draw
@@ -51,6 +52,7 @@ abstract class Node<S: CodeGenSession>(
     val isOnEditor get() = ::editor.isInitialized
 
     val onChange = EventHandler("${this::class.java.simpleName}-OnChange")
+    val onDelete = EventHandler("OnDelete-${this::class.simpleName}")
 
     private val attribOnChangeListener = EventListener {
         onChange.run()
@@ -86,6 +88,7 @@ abstract class Node<S: CodeGenSession>(
             }
 
             nodes.removeId(id)
+            onDelete.run()
         }
     }
 
@@ -152,7 +155,7 @@ abstract class Node<S: CodeGenSession>(
         for(attribute in attribs) {
             if(attribute.mode == AttributeMode.OUTPUT) {
                 for(linkedAttribute in attribute.linkedAttributes()) {
-                    linkedAttribute.parentNode.onPropagateReceive(current)
+                    linkedAttribute?.parentNode?.onPropagateReceive(current)
                 }
             }
         }
@@ -225,10 +228,10 @@ abstract class Node<S: CodeGenSession>(
             var hasInputToOutput = false
 
             for(link in linksBetween) {
-                val aNode = link.aAttrib.parentNode
+                val aNode = link.aAttrib?.parentNode ?: continue
 
-                val fromAttrib = if(aNode == from) link.aAttrib else link.bAttrib
-                val toAttrib   = if(aNode == to) link.aAttrib else link.bAttrib
+                val fromAttrib = (if(aNode == from) link.aAttrib else link.bAttrib) ?: continue
+                val toAttrib   = (if(aNode == to) link.aAttrib else link.bAttrib) ?: continue
 
                 if(!hasOutputToInput)
                     hasOutputToInput = fromAttrib.mode == OUTPUT && toAttrib.mode == INPUT

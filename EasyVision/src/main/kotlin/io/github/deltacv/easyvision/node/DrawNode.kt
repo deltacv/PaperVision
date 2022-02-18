@@ -73,6 +73,8 @@ abstract class DrawNode<S: CodeGenSession>(
 
             if(pinToMouse != lastPinToMouse) {
                 val nodeDims = ImVec2()
+
+                // i have no idea why this is needed
                 ImNodes.getNodeDimensions(id, nodeDims)
 
                 pinToMouseOffset = ImVec2(

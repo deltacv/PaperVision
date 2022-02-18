@@ -10,6 +10,7 @@ cat_shape_det,Basic Shape Detection,Operaciones Basicas de Detectar Figuras
 cat_overlay,Overlay,Overlay
 cat_math,Math,Matematicas
 cat_misc,Miscellaneous,Miscelaneo
+nod_previewdisplay,Preview,Previsualizacion
 nod_pipelineinput,Pipeline Input,Entrada
 nod_pipelineoutput,Pipeline Output,Salida
 nod_binarymask,Binary Mask,Mascara Binaria

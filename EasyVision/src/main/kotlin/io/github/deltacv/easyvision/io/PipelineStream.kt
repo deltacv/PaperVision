@@ -33,7 +33,7 @@ class PipelineStream(
     var isStarted = false
         private set
 
-    val ipcClient get() = easyVision.eocvSimIpcClient
+    val ipcClient get() = easyVision.eocvSimIpc.ipcClient
 
     val queue = TextureProcessorQueue(easyVision)
 

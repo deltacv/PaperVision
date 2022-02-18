@@ -6,7 +6,7 @@ import io.github.deltacv.easyvision.attribute.AttributeMode
 import io.github.deltacv.easyvision.attribute.Type
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.gui.eocvsim.ImageDisplayWindow
+import io.github.deltacv.easyvision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.easyvision.gui.style.rgbaColor
 import io.github.deltacv.easyvision.gui.util.ExtraWidgets
 import io.github.deltacv.easyvision.serialization.data.SerializeData
@@ -34,7 +34,7 @@ class MatAttribute(
     var wasPrevizJustEnabled = false
         private set
 
-    var displayWindow: ImageDisplayWindow? = null
+    var displayWindow: ImageDisplayNode? = null
         private set
 
     override fun drawAfterText() {
@@ -54,7 +54,12 @@ class MatAttribute(
         wasPrevizJustEnabled = wasButtonToggled && isPrevizEnabled
 
         if(wasPrevizJustEnabled) {
-            displayWindow = editor.startImageDisplayFor(this, "Preview###$id")
+            displayWindow = editor.startImageDisplayFor(this)
+
+            displayWindow!!.onDelete.doOnce {
+                isPrevizEnabled = false
+                displayWindow = null
+            }
         } else if(wasButtonToggled) {
             displayWindow?.delete()
             displayWindow = null

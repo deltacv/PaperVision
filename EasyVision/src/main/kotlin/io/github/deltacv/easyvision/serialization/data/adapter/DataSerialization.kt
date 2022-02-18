@@ -13,7 +13,7 @@ fun DataSerializable<*>.toJsonObject(): JsonObject {
 
     for(field in this::class.java.declaredFields) {
         field.isAccessible = true
-        val value = field.get(this)
+        val value = field.get(this) ?: continue
 
         if(hasSuperclass(field.type, DataSerializable::class.java)) {
             obj.add(field.name, dataSerializableToJsonObject(value as DataSerializable<*>))

@@ -181,7 +181,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         }
     }
 
-    fun rebuildPreviz() = parentNode.codeGenManager.rebuildPreviz()
+    fun rebuildPreviz() = parentNode.eocvSimIpc.rebuildPreviz()
 
     protected fun getOutputValue(current: CodeGen.Current) = parentNode.getOutputValueOf(current, this)
 

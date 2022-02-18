@@ -198,7 +198,7 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
     }
 
     protected fun broadcastLabelMessageFor(label: String, value: Any) =
-        EasyVision.eocvSimIpcClient.broadcastIfPossible(
+        parentNode.eocvSimIpc.broadcastIfPossible(
             when (value) {
                 is Array<*> -> TunerChangeValuesMessage(label, value)
                 is Iterable<*> -> TunerChangeValuesMessage(label, value.map { it as Any }.toTypedArray())

@@ -19,6 +19,7 @@ import io.github.deltacv.easyvision.platform.PlatformWindow
 import io.github.deltacv.easyvision.util.ElapsedTime
 import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.easyvision.util.flags
+import io.github.deltacv.easyvision.util.loggerForThis
 import kotlinx.coroutines.*
 
 class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window() {
@@ -29,6 +30,8 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window()
 
         const val plusFontSize = 60f
     }
+
+    val logger by loggerForThis()
 
     var isNodesListOpen = false
         private set
@@ -276,9 +279,14 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window()
             val list = mutableListOf<Node<*>>()
 
             for(nodeClass in nodeClasses) {
-                val instance = instantiateNode(nodeClass)
+                if(nodeClass.getAnnotation(RegisterNode::class.java)?.showInList == false) {
+                    continue
+                }
 
-                if(instance is DrawNode && !instance.annotationData.showInList) {
+                val instance = try {
+                    instantiateNode(nodeClass)
+                } catch(e: UnsupportedOperationException) {
+                    logger.warn("Skipping node", e)
                     continue
                 }
 

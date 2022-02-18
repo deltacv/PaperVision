@@ -11,10 +11,8 @@ import imgui.type.ImInt
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.AttributeMode
-import io.github.deltacv.easyvision.codegen.CodeGenManager
-import io.github.deltacv.easyvision.codegen.EOCVSimPreviewState
-import io.github.deltacv.easyvision.codegen.EOCVSimPreviewState.*
-import io.github.deltacv.easyvision.gui.eocvsim.ImageDisplayWindow
+import io.github.deltacv.easyvision.util.eocvsim.EOCVSimPrevizState.*
+import io.github.deltacv.easyvision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.easyvision.gui.eocvsim.InputSourcesWindow
 import io.github.deltacv.easyvision.gui.util.FrameWidthWindow
 import io.github.deltacv.easyvision.gui.util.Popup
@@ -29,7 +27,7 @@ import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.node.vision.InputMatNode
 import io.github.deltacv.easyvision.node.vision.OutputMatNode
 import io.github.deltacv.easyvision.util.ElapsedTime
-import io.github.deltacv.easyvision.util.IpcClientWatchDog
+import io.github.deltacv.easyvision.util.eocvsim.EOCVSimIpcManager
 import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.easyvision.util.flags
 
@@ -109,16 +107,15 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
         playButton = EOCVSimPlayButtonWindow(
             { easyVision.nodeList.floatingButton },
             easyVision.defaultFont,
-            easyVision.eocvSimIpcClient,
+            easyVision.eocvSimIpc,
             easyVision.nodeEditor.pipelineStream,
-            easyVision.codeGenManager,
             easyVision.fontManager
         )
         playButton.enable()
 
         inputSourcesWindow = InputSourcesWindow(easyVision.fontManager)
         inputSourcesWindow.enable()
-        inputSourcesWindow.attachToIpc(easyVision.eocvSimIpcClient)
+        inputSourcesWindow.attachToIpc(easyVision.eocvSimIpc.ipcClient)
     }
 
     override fun drawContents() {
@@ -132,7 +129,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
         ImNodes.miniMap(0.15f, ImNodesMiniMapLocation.TopLeft)
 
         for(node in Node.nodes.inmutable) {
-            node.codeGenManager = easyVision.codeGenManager
+            node.eocvSimIpc = easyVision.eocvSimIpc
             node.editor = this
             node.draw()
         }
@@ -214,13 +211,19 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
         return instance
     }
 
-    fun startImageDisplayFor(attribute: Attribute, title: String): ImageDisplayWindow {
-        val window = ImageDisplayWindow(title, pipelineStream)
+    fun startImageDisplayFor(attribute: Attribute): ImageDisplayNode {
+        val window = ImageDisplayNode(pipelineStream)
+        window.pinToMouse = true
         window.enable()
 
         attribute.onDelete.doOnce {
             window.delete()
         }
+
+        val link = Link(attribute.id, window.inputId)
+        link.enable()
+
+        window.onDelete.doOnce { link.delete() }
 
         return window
     }
@@ -267,7 +270,9 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
                 // remove the link if a recursion case was detected (e.g both nodes were attached to each other already)
                 link.delete()
             } else {
-                link.triggerOnChange()
+                easyVision.onUpdate.doOnce {
+                    link.triggerOnChange()
+                }
             }
         }
     }
@@ -312,9 +317,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
     class EOCVSimPlayButtonWindow(
         val floatingButtonSupplier: () -> FrameWidthWindow,
         val defaultFont: Font,
-        val ipcClient: IpcClientWatchDog,
+        val eocvSimIpc: EOCVSimIpcManager,
         val stream: PipelineStream,
-        val genManager: CodeGenManager,
         fontManager: FontManager
     ) : Window() {
 
@@ -343,7 +347,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
             ImGui.pushFont(playPauseDotsFont.imfont)
 
-            val text = when(genManager.eocvSimState) {
+            val text = when(eocvSimIpc.previzState) {
                 RUNNING -> "-"
                 RUNNING_BUT_NOT_CONNECTED -> "."
                 else -> "+"
@@ -352,13 +356,13 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
             val button = ImGui.button(text, floatingButton.frameWidth, floatingButton.frameWidth)
 
             if(lastButton != button && button) {
-                if(genManager.eocvSimState == RUNNING || genManager.eocvSimState == RUNNING_BUT_NOT_CONNECTED) {
-                    genManager.stopPreviz()
+                if(eocvSimIpc.previzState == RUNNING || eocvSimIpc.previzState == RUNNING_BUT_NOT_CONNECTED) {
+                    eocvSimIpc.stopPrevizSession()
                     stream.stop()
                 } else {
-                    genManager.startPreviz("e")
+                    eocvSimIpc.startPrevizSession("e")
 
-                    if(ImageDisplayWindow.displayWindows.elements.isNotEmpty()) {
+                    if(ImageDisplayNode.displayWindows.elements.isNotEmpty()) {
                         stream.startIfNeeded()
                     }
                 }
