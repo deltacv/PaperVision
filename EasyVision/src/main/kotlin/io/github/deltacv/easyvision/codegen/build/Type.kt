@@ -2,7 +2,7 @@ package io.github.deltacv.easyvision.codegen.build
 
 import io.github.deltacv.easyvision.codegen.csv
 
-data class Type(val className: String, val packagePath: String = "", val generics: Array<Type>? = null) {
+open class Type(val className: String, val packagePath: String = "", val generics: Array<Type>? = null) {
 
     companion object {
         val NONE = Type("", "")
@@ -30,3 +30,4 @@ val Class<*>.genType: Type get() {
 
     return typeCache[this]!!
 }
+

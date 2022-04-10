@@ -1,4 +1,4 @@
-package io.github.deltacv.easyvision.node.vision
+package io.github.deltacv.easyvision.node.vision.imageproc
 
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.rebuildOnChange
@@ -14,23 +14,21 @@ import io.github.deltacv.easyvision.node.RegisterNode
 
 @RegisterNode(
     name = "nod_binarymask",
-    category = Category.COLOR_OP,
+    category = Category.IMAGE_PROC,
     description = "Takes a normal image and performs a mask based on a binary image, discards or includes areas from the normal image based on the binary image."
 )
 class MaskNode : DrawNode<MaskNode.Session>(){
 
-    val inputMat = MatAttribute(INPUT, "$[att_input]").rebuildOnChange()
-    val maskMat  = MatAttribute(INPUT, "$[att_binarymask]").rebuildOnChange()
+    val inputMat = MatAttribute(INPUT, "$[att_input]")
+    val maskMat  = MatAttribute(INPUT, "$[att_binarymask]")
 
-    val outputMat = MatAttribute(OUTPUT, "$[att_output]")
-        .enablePrevizButton()
-        .rebuildOnChange()
+    val outputMat = MatAttribute(OUTPUT, "$[att_output]").enablePrevizButton()
 
     override fun onEnable() {
-        + inputMat
-        + maskMat
+        + inputMat.rebuildOnChange()
+        + maskMat.rebuildOnChange()
 
-        + outputMat
+        + outputMat.rebuildOnChange()
     }
 
     override fun genCode(current: CodeGen.Current) = current {

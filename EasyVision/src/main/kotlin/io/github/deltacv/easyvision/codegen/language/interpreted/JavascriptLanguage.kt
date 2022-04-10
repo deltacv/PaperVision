@@ -62,7 +62,11 @@ object JavascriptLanguage : LanguageBase(genInClass = false, optimizeImports = f
         val builder = StringBuilder()
 
         for((i, value) in values.withIndex()) {
-            builder.append("$value: $i").appendLine()
+            builder.append("$value: $i")
+            if(i < values.size - 1) {
+                builder.append(",")
+            }
+            builder.appendLine()
         }
 
         return """var $name = {  
@@ -72,7 +76,7 @@ object JavascriptLanguage : LanguageBase(genInClass = false, optimizeImports = f
 
     override fun importDeclaration(importPath: String, className: String) = "importClass($importPath.$className)${semicolonIfNecessary()}"
 
-    override fun new(type: Type, vararg parameters: Value) = Value(
+    override fun new(type: Type, vararg parameters: ConValue) = ConValue(
         type, "new ${type.className}(${parameters.csv()})"
     )
 

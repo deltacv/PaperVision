@@ -1,4 +1,4 @@
-package io.github.deltacv.easyvision.node.vision
+package io.github.deltacv.easyvision.node.vision.imageproc
 
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.misc.EnumAttribute
@@ -12,27 +12,25 @@ import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
+import io.github.deltacv.easyvision.node.vision.Colors
 
 @RegisterNode(
     name = "nod_cvtcolor",
-    category = Category.COLOR_OP,
+    category = Category.IMAGE_PROC,
     description = "Converts a Mat from its current color space to the specified color space. If the mat is already in the specified color space, no conversion is made."
 )
 class CvtColorNode : DrawNode<CvtColorNode.Session>() {
 
-    val input  = MatAttribute(INPUT, "$[att_input]").rebuildOnChange()
-    val output = MatAttribute(OUTPUT, "$[att_output]")
-        .enablePrevizButton()
-        .rebuildOnChange()
+    val input  = MatAttribute(INPUT, "$[att_input]")
+    val output = MatAttribute(OUTPUT, "$[att_output]").enablePrevizButton()
 
     val convertTo = EnumAttribute(INPUT, Colors.values(), "$[att_convertto]")
-        .rebuildOnChange()
 
     override fun onEnable() {
-        + input
-        + convertTo
+        + input.rebuildOnChange()
+        + convertTo.rebuildOnChange()
 
-        + output
+        + output.rebuildOnChange()
     }
 
     override fun genCode(current: CodeGen.Current) = current {

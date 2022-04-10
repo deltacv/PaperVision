@@ -5,6 +5,8 @@ import io.github.deltacv.easyvision.codegen.build.*
 
 class CodeGenContext(val codeGen: CodeGen) : LanguageContext(codeGen.language) {
 
+    val isForPreviz get() = codeGen.isForPreviz
+
     fun enum(name: String, vararg values: String) {
         codeGen.classStartScope.enumClass(name, *values)
     }

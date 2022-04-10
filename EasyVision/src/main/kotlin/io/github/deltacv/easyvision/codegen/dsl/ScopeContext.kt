@@ -1,11 +1,7 @@
 package io.github.deltacv.easyvision.codegen.dsl
 
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
-import io.github.deltacv.easyvision.codegen.build.Scope
-import io.github.deltacv.easyvision.codegen.build.Value
-import io.github.deltacv.easyvision.codegen.Visibility
-import io.github.deltacv.easyvision.codegen.build.Type
-import io.github.deltacv.easyvision.codegen.build.Variable
+import io.github.deltacv.easyvision.codegen.build.*
 import io.github.deltacv.easyvision.node.vision.Colors
 
 class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
@@ -44,6 +40,13 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
 
     infix fun Variable.instanceSet(v: Value) =
         scope.instanceVariableSet(this, v)
+
+    fun ifCondition(condition: Condition, block: ScopeContext.() -> Unit) {
+        val ifScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
+        block(ifScope.context)
+
+        scope.ifCondition(condition, ifScope)
+    }
 
     fun foreach(variable: Value, list: Value, block: ScopeContext.(Value) -> Unit) {
         val loopScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)

@@ -13,12 +13,15 @@ interface Language : ValueBuilder {
     override val language get() = this
 
     val BooleanType get() = StandardTypes.cboolean
+
     val IntType get() = StandardTypes.cint
     val LongType get() = StandardTypes.clong
     val FloatType get() = StandardTypes.cfloat
     val DoubleType get() = StandardTypes.cdouble
 
     val VoidType get() = StandardTypes.cvoid
+
+    val nullValue get() = ConValue(VoidType, "null")
 
     val newImportBuilder: () -> ImportBuilder
 
@@ -39,7 +42,6 @@ interface Language : ValueBuilder {
 
     fun variableSetDeclaration(variable: Variable, v: Value): String
     fun instanceVariableSetDeclaration(variable: Variable, v: Value): String
-
     fun methodCallDeclaration(className: Type, methodName: String, vararg parameters: Value): String
     fun methodCallDeclaration(callee: Value, methodName: String, vararg parameters: Value): String
 
@@ -53,6 +55,8 @@ interface Language : ValueBuilder {
     ): Pair<String?, String>
 
     fun returnDeclaration(value: Value? = null): String
+
+    fun ifStatementDeclaration(condition: Condition): String
 
     fun foreachLoopDeclaration(variable: Value, iterable: Value): String
     fun whileLoopDeclaration(condition: Condition): String

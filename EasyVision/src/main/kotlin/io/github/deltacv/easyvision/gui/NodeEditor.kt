@@ -93,10 +93,12 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
             "/fonts/icons/Eye.ttf", 15f
         )
 
-        pipelineStream = PipelineStream(easyVision, offlineImages = arrayOf(
-            bufferedImageFromResource("/img/TechnicalDifficulties.png"),
-            bufferedImageFromResource("/img/PleaseHangOn.png")
-        ))
+        pipelineStream = PipelineStream(
+            easyVision, offlineImages = arrayOf(
+                bufferedImageFromResource("/img/TechnicalDifficulties.png"),
+                bufferedImageFromResource("/img/PleaseHangOn.png")
+            )
+        )
 
         ImNodes.createContext()
 
@@ -126,14 +128,14 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
         ImNodes.setNodeGridSpacePos(originNode.id, 0f, 0f)
 
-        ImNodes.miniMap(0.15f, ImNodesMiniMapLocation.TopLeft)
+        // ImNodes.miniMap(0.15f, ImNodesMiniMapLocation.TopLeft)
 
-        for(node in Node.nodes.inmutable) {
+        for (node in Node.nodes.inmutable) {
             node.eocvSimIpc = easyVision.eocvSimIpc
             node.editor = this
             node.draw()
         }
-        for(link in Link.links) {
+        for (link in Link.links) {
             link.draw()
         }
 
@@ -141,33 +143,36 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
         isNodeFocused = ImNodes.numSelectedNodes() > 0 || ImNodes.getHoveredNode() >= 0
 
-        if(easyVision.nodeList.isNodesListOpen) {
+        if (easyVision.nodeList.isNodesListOpen) {
             ImNodes.clearLinkSelection()
             ImNodes.clearNodeSelection()
-        } else if(ImGui.isMouseDown(ImGuiMouseButton.Middle)) {
+        } else if (
+            ImGui.isMouseDown(ImGuiMouseButton.Middle)
+            || (ImGui.isMouseDown(ImGuiMouseButton.Left) && keyManager.pressing(Keys.LeftControl))
+        ) {
             editorPanning.x += (ImGui.getMousePosX() - prevMouseX)
             editorPanning.y += (ImGui.getMousePosY() - prevMouseY)
-        } else if(!isNodeFocused || scrollTimer.millis <= 500) { // not hovering any node
+        } else if (!isNodeFocused || scrollTimer.millis <= 500) { // not hovering any node
             var doingKeys = false
 
             // scrolling
-            if(keyManager.pressing(Keys.ArrowLeft)) {
+            if (keyManager.pressing(Keys.ArrowLeft)) {
                 editorPanning.x += KEY_PAN_CONSTANT
                 doingKeys = true
-            } else if(keyManager.pressing(Keys.ArrowRight)) {
+            } else if (keyManager.pressing(Keys.ArrowRight)) {
                 editorPanning.x -= KEY_PAN_CONSTANT
                 doingKeys = true
             }
 
-            if(keyManager.pressing(Keys.ArrowUp)) {
+            if (keyManager.pressing(Keys.ArrowUp)) {
                 editorPanning.y += KEY_PAN_CONSTANT
                 doingKeys = true
-            } else if(keyManager.pressing(Keys.ArrowDown)) {
+            } else if (keyManager.pressing(Keys.ArrowDown)) {
                 editorPanning.y -= KEY_PAN_CONSTANT
                 doingKeys = true
             }
 
-            if(doingKeys) {
+            if (doingKeys) {
                 scrollTimer.reset()
             } else {
                 val plusPan = ImGui.getIO().mouseWheel * PAN_CONSTANT
@@ -182,12 +187,12 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
                     editorPanning.y += plusPan
                 }
             }
+        }
 
-            if(editorPanning.x != prevEditorPanning.x || editorPanning.y != prevEditorPanning.y) {
-                ImNodes.editorResetPanning(editorPanning.x, editorPanning.y)
-            } else {
-                ImNodes.getNodeEditorSpacePos(originNode.id, editorPanning)
-            }
+        if (editorPanning.x != prevEditorPanning.x || editorPanning.y != prevEditorPanning.y) {
+            ImNodes.editorResetPanning(editorPanning.x, editorPanning.y)
+        } else {
+            ImNodes.getNodeEditorSpacePos(originNode.id, editorPanning)
         }
 
         editorPanningDelta.x = editorPanning.x - prevEditorPanning.x
@@ -220,7 +225,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
             window.delete()
         }
 
-        val link = Link(attribute.id, window.inputId)
+        val link = Link(attribute.id, window.inputId, false)
         link.enable()
 
         window.onDelete.doOnce { link.delete() }
@@ -232,29 +237,36 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
     private val endAttr = ImInt()
 
     private fun handleCreateLink() {
-        if(ImNodes.isLinkCreated(startAttr, endAttr)) {
+        if (ImNodes.isLinkCreated(startAttr, endAttr)) {
             val start = startAttr.get()
             val end = endAttr.get()
 
-            val startAttrib = Node.attributes[start]!!
-            val endAttrib = Node.attributes[end]!!
+            val startAttrib = Node.attributes[start]
+            val endAttrib = Node.attributes[end]
 
-            val input  = if(startAttrib.mode == AttributeMode.INPUT) start else end
-            val output = if(startAttrib.mode == AttributeMode.OUTPUT) start else end
+            // one of the attributes was null so we can't perform additional checks to ensure stuff
+            // we will just go ahead and create the link hoping nothing breaks lol
+            if (startAttrib == null || endAttrib == null) {
+                Link(start, end).enable() // create the link and enable it
+                return
+            }
+
+            val input = if (startAttrib.mode == AttributeMode.INPUT) start else end
+            val output = if (startAttrib.mode == AttributeMode.OUTPUT) start else end
 
             val inputAttrib = Node.attributes[input]!!
             val outputAttrib = Node.attributes[output]!!
 
-            if(startAttrib.mode == endAttrib.mode) {
+            if (startAttrib.mode == endAttrib.mode) {
                 return // linked attributes cannot be of the same mode
             }
 
-            if(!startAttrib.acceptLink(endAttrib) || !endAttrib.acceptLink(startAttrib)) {
+            if (!startAttrib.acceptLink(endAttrib) || !endAttrib.acceptLink(startAttrib)) {
                 Popup.warning("err_couldntlink_didntmatch")
                 return // one or both of the attributes didn't accept the link, abort.
             }
 
-            if(startAttrib.parentNode == endAttrib.parentNode) {
+            if (startAttrib.parentNode == endAttrib.parentNode) {
                 return // we can't link a node to itself!
             }
 
@@ -265,7 +277,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
             val link = Link(start, end)
             link.enable() // create the link and enable it
 
-            if(Node.checkRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
+            if (Node.checkRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
                 Popup.warning("err_couldntlink_recursion")
                 // remove the link if a recursion case was detected (e.g both nodes were attached to each other already)
                 link.delete()
@@ -280,31 +292,35 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
     private fun handleDeleteLink() {
         val hoveredId = ImNodes.getHoveredLink()
 
-        if(ImGui.isMouseClicked(ImGuiMouseButton.Right) && hoveredId >= 0) {
+        if (ImGui.isMouseClicked(ImGuiMouseButton.Right) && hoveredId >= 0) {
             val hoveredLink = Link.links[hoveredId]
             hoveredLink?.delete()
         }
     }
 
     private fun handleDeleteSelection() {
-        if(keyManager.released(Keys.Delete)) {
-            if(ImNodes.numSelectedNodes() > 0) {
+        if (keyManager.released(Keys.Delete)) {
+            if (ImNodes.numSelectedNodes() > 0) {
                 val selectedNodes = IntArray(ImNodes.numSelectedNodes())
                 ImNodes.getSelectedNodes(selectedNodes)
 
-                for(node in selectedNodes) {
+                for (node in selectedNodes) {
                     try {
                         Node.nodes[node]?.delete()
-                    } catch(ignored: IndexOutOfBoundsException) {}
+                    } catch (ignored: IndexOutOfBoundsException) {
+                    }
                 }
             }
 
-            if(ImNodes.numSelectedLinks() > 0) {
+            if (ImNodes.numSelectedLinks() > 0) {
                 val selectedLinks = IntArray(ImNodes.numSelectedLinks())
                 ImNodes.getSelectedLinks(selectedLinks)
 
-                for(link in selectedLinks) {
-                    Link.links[link]?.delete()
+                for (link in selectedLinks) {
+                    Link.links[link]?.run {
+                        if(isDestroyableByUser)
+                            delete()
+                    }
                 }
             }
         }
@@ -347,7 +363,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
             ImGui.pushFont(playPauseDotsFont.imfont)
 
-            val text = when(eocvSimIpc.previzState) {
+            val text = when (eocvSimIpc.previzState) {
                 RUNNING -> "-"
                 RUNNING_BUT_NOT_CONNECTED -> "."
                 else -> "+"
@@ -355,14 +371,14 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
             val button = ImGui.button(text, floatingButton.frameWidth, floatingButton.frameWidth)
 
-            if(lastButton != button && button) {
-                if(eocvSimIpc.previzState == RUNNING || eocvSimIpc.previzState == RUNNING_BUT_NOT_CONNECTED) {
+            if (lastButton != button && button) {
+                if (eocvSimIpc.previzState == RUNNING || eocvSimIpc.previzState == RUNNING_BUT_NOT_CONNECTED) {
                     eocvSimIpc.stopPrevizSession()
                     stream.stop()
                 } else {
                     eocvSimIpc.startPrevizSession("e")
 
-                    if(ImageDisplayNode.displayWindows.elements.isNotEmpty()) {
+                    if (ImageDisplayNode.displayWindows.elements.isNotEmpty()) {
                         stream.startIfNeeded()
                     }
                 }
@@ -379,8 +395,11 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
 fun instantiateNode(nodeClazz: Class<out Node<*>>) = try {
     nodeClazz.getConstructor().newInstance()
-} catch(e: NoSuchMethodException) {
-    throw UnsupportedOperationException("Node ${nodeClazz.typeName} does not implement a constructor with no parameters", e)
-} catch(e: IllegalStateException) {
+} catch (e: NoSuchMethodException) {
+    throw UnsupportedOperationException(
+        "Node ${nodeClazz.typeName} does not implement a constructor with no parameters",
+        e
+    )
+} catch (e: IllegalStateException) {
     throw UnsupportedOperationException("Error while instantiating node ${nodeClazz.typeName}", e)
 }

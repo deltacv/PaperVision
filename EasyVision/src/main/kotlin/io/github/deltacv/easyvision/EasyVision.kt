@@ -142,6 +142,10 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
             println(EasyVisionSerializer.serializeCurrent())
         }
 
+        if(keyManager.pressed(Keys.Escape)) {
+            println(codeGenManager.build("test"))
+        }
+
         keyManager.update()
     }
 

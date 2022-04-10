@@ -1,4 +1,4 @@
-package io.github.deltacv.easyvision.node.vision
+package io.github.deltacv.easyvision.node.vision.imageproc
 
 import imgui.ImGui
 import imgui.type.ImInt
@@ -9,7 +9,6 @@ import io.github.deltacv.easyvision.attribute.vision.structs.ScalarRangeAttribut
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Core
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
@@ -19,11 +18,12 @@ import io.github.deltacv.easyvision.gui.util.ExtraWidgets
 import io.github.deltacv.easyvision.node.RegisterNode
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
+import io.github.deltacv.easyvision.node.vision.Colors
 import io.github.deltacv.easyvision.serialization.data.SerializeData
 
 @RegisterNode(
     name = "nod_colorthresh",
-    category = Category.COLOR_OP,
+    category = Category.IMAGE_PROC,
     description = "Performs a threshold in the input image and returns a binary image, discarding the pixels that were outside the range in the color space specified."
 )
 class ThresholdNode : DrawNode<ThresholdNode.Session>() {

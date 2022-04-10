@@ -99,7 +99,7 @@ open class DrawContoursNode
             }
 
             Imgproc("drawContours", drawMat, contoursList.value, (-1).v, colorScalar,
-                if(current.isForPreviz)
+                if(isForPreviz)
                     thicknessVariable
                 else thickness.v
             )

@@ -19,6 +19,8 @@ object PythonLanguage : LanguageBase(
     override fun and(left: Condition, right: Condition) = condition("(${left.value}) and (${right.value})")
     override fun or(left: Condition, right: Condition) = condition("(${left.value}) or (${right.value})")
 
+    override fun not(condition: Condition) = condition("not (${condition.value})")
+
     override fun instanceVariableDeclaration(
         vis: Visibility,
         variable: Variable,
@@ -58,6 +60,8 @@ object PythonLanguage : LanguageBase(
         )
     }
 
+    override fun ifStatementDeclaration(condition: Condition) = "if ${condition.value}"
+
     override fun foreachLoopDeclaration(variable: Value, iterable: Value) =
         "for ${variable.value} in ${iterable.value}"
 
@@ -94,9 +98,11 @@ object PythonLanguage : LanguageBase(
     override fun importDeclaration(importPath: String, className: String) =
         throw UnsupportedOperationException("importDeclaration(importPath, className) is not supported in Python")
 
-    override fun new(type: Type, vararg parameters: Value) = Value(
+    override fun new(type: Type, vararg parameters: ConValue) = ConValue(
         type, "${type.className}(${parameters.csv()})"
     )
+
+    override fun nullVal(type: Type) = ConValue(type, "None")
 
     class PythonImportBuilder(val lang: Language) : Language.ImportBuilder {
         private val imports = mutableMapOf<String, MutableList<String>>()

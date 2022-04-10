@@ -29,7 +29,7 @@ class EOCVSimIpcManager(
 
     fun init() {
         ipcClient.onDisconnect {
-            previzState = if (previzState == EOCVSimPrevizState.RUNNING) {
+            previzState = if(previzState == EOCVSimPrevizState.RUNNING) {
                 EOCVSimPrevizState.RUNNING_BUT_NOT_CONNECTED
             } else {
                 EOCVSimPrevizState.NOT_CONNECTED
@@ -56,6 +56,8 @@ class EOCVSimIpcManager(
         previzState = if(ipcClient.isConnected) {
             EOCVSimPrevizState.RUNNING
         } else EOCVSimPrevizState.RUNNING_BUT_NOT_CONNECTED
+
+        rebuildPreviz()
     }
 
     fun rebuildPreviz() {

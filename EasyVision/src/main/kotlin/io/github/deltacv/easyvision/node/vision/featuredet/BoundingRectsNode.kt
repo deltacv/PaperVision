@@ -1,4 +1,4 @@
-package io.github.deltacv.easyvision.node.vision.shapedetection
+package io.github.deltacv.easyvision.node.vision.featuredet
 
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.misc.ListAttribute
@@ -17,7 +17,7 @@ import io.github.deltacv.easyvision.node.RegisterNode
 
 @RegisterNode(
     name = "nod_boundingrect",
-    category = Category.SHAPE_DET,
+    category = Category.FEATURE_DET,
     description = "Calculates the bounding rectangles of a given list of points."
 )
 class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {

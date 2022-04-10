@@ -106,7 +106,7 @@ object KotlinLanguage : LanguageBase(usesSemicolon = false) {
 
     override fun enumClassDeclaration(name: String, vararg values: String) = "enum class $name { ${values.csv() } "
 
-    override fun new(type: Type, vararg parameters: Value) = Value(
+    override fun new(type: Type, vararg parameters: ConValue) = ConValue(
         type, "${type.shortNameWithGenerics}(${parameters.csv()})"
     )
 

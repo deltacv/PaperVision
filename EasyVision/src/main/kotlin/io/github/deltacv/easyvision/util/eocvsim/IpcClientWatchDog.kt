@@ -35,10 +35,10 @@ class IpcClientWatchDog(
     }
 
     fun stop() {
-        watchdogThread.interrupt()
+        runner.discourageAndStop()
     }
 
-    fun binaryHandler(opcode: Byte, callback: (Short, ByteBuffer) -> Unit) =
+    fun binaryHandler(opcode: Byte, callback: (Int, ByteBuffer) -> Unit) =
         ipcClient.binaryHandler(opcode, callback)
 
     fun broadcast(message: IpcMessage) {
@@ -73,6 +73,8 @@ class IpcClientWatchDog(
         val onConnect = EventHandler("IpcClient-WatchDog-OnConnect")
         val onDisconnect = EventHandler("IpcClient-WatchDog-OnDisconnect")
 
+        private var isStopping = false
+
         private var accumulatedTimeout = 0L
         private var currentAttempts = 0
 
@@ -86,7 +88,7 @@ class IpcClientWatchDog(
                 onConnect.run()
             }
 
-            while(!Thread.currentThread().isInterrupted) {
+            while(!Thread.currentThread().isInterrupted && !isStopping) {
                 try {
                     if((!ipcClient.isOpen || ipcClient.isClosed) && currentAttempts < attemptsBeforeGivingUp) {
                         onDisconnect.run()
@@ -121,12 +123,19 @@ class IpcClientWatchDog(
                 ipcClient.close()
             }
 
+            isStopping = false
+
             logger.info("Watchdog thread stopped")
         }
 
         fun encourage() {
             currentAttempts -= (currentAttempts * 0.5).toInt()
             accumulatedTimeout = 0
+        }
+
+        fun discourageAndStop() {
+            Thread.currentThread().interrupt()
+            isStopping = true
         }
 
     }

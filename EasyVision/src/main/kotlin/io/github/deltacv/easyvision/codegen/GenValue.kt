@@ -1,6 +1,7 @@
 package io.github.deltacv.easyvision.codegen
 
 import io.github.deltacv.easyvision.attribute.Attribute
+import io.github.deltacv.easyvision.codegen.build.ConValue
 import io.github.deltacv.easyvision.codegen.build.Value
 import io.github.deltacv.easyvision.node.vision.Colors
 import kotlin.reflect.KClass

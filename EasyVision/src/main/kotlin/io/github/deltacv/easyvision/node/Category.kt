@@ -2,7 +2,6 @@ package io.github.deltacv.easyvision.node
 
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.gui.style.hexColor
-import io.github.deltacv.easyvision.gui.style.rgbaColor
 
 enum class Category(val properName: String,
                     val color: Int = EasyVision.imnodesStyle.titleBar,
@@ -15,11 +14,11 @@ enum class Category(val properName: String,
     CODE("cat_coding"),
     HIGH_LEVEL_CV("cat_high_level_cv"),
 
-    COLOR_OP("cat_color_op",
+    IMAGE_PROC("cat_image_proc",
         hexColor("#ff6f00"), // material amber
         hexColor("#ffa000")),
 
-    SHAPE_DET("cat_shape_det",
+    FEATURE_DET("cat_feature_det",
         hexColor("#3949ab"), // material indigo
         hexColor("#5c6bc0")),
 

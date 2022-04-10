@@ -193,18 +193,20 @@ class Scope(
         builder.append("$tabs${language.enumClassDeclaration(name, *values)}")
     }
 
-    private fun loop(loopDeclaration: String, loopScope: Scope) {
+    private fun block(block: String, scope: Scope) {
         newStatement()
 
-        builder.append(language.block(loopDeclaration, loopScope, tabs))
+        builder.append(language.block(block, scope, tabs))
     }
 
-    fun whileLoop(condition: Condition, scope: Scope) = loop(language.whileLoopDeclaration(condition), scope)
+    fun ifCondition(condition: Condition, scope: Scope) = block(language.ifStatementDeclaration(condition), scope)
+
+    fun whileLoop(condition: Condition, scope: Scope) = block(language.whileLoopDeclaration(condition), scope)
 
     fun foreachLoop(variable: Value, iterable: Value, scope: Scope) {
         importValue(variable, iterable)
 
-        loop(
+        block(
             language.foreachLoopDeclaration(variable, iterable),
             scope
         )

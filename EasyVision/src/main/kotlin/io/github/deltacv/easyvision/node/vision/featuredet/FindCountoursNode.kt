@@ -1,4 +1,4 @@
-package io.github.deltacv.easyvision.node.vision.shapedetection
+package io.github.deltacv.easyvision.node.vision.featuredet
 
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.misc.ListAttribute
@@ -9,6 +9,7 @@ import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.MatOfPoint
 import io.github.deltacv.easyvision.codegen.build.v
@@ -18,7 +19,7 @@ import io.github.deltacv.easyvision.node.RegisterNode
 
 @RegisterNode(
     name = "nod_findcontours",
-    category = Category.SHAPE_DET,
+    category = Category.FEATURE_DET,
     description = "Finds all the contours (list of points) of a given binary image."
 )
 class FindContoursNode : DrawNode<FindContoursNode.Session>() {
@@ -49,7 +50,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
             list("clear")
             hierarchyMat("release")
 
-            "Imgproc.findContours"(input.value, list, hierarchyMat, "Imgproc.RETR_LIST".v, "Imgproc.CHAIN_APPROX_SIMPLE".v)
+            Imgproc("findContours", input.value, list, hierarchyMat, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE)
         }
 
         session.contoursList = GenValue.GLists.RuntimeListOf(list, GenValue.GPoints.Points::class)

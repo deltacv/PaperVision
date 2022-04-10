@@ -6,7 +6,6 @@ import io.github.deltacv.easyvision.codegen.build.*
 import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.csv
-import io.github.deltacv.easyvision.codegen.language.jvm.JavaLanguage
 
 open class LanguageBase(
     val usesSemicolon: Boolean = true,
@@ -19,6 +18,8 @@ open class LanguageBase(
     )
 
     override val excludedImports = mutableExcludedImports as List<Type>
+
+    override fun nullVal(type: Type) = ConValue(type, "null")
 
     override val newImportBuilder: () -> Language.ImportBuilder = { BaseImportBuilder(this) }
 
@@ -93,6 +94,8 @@ open class LanguageBase(
             "return ${value.value!!}"
         } else "return") + semicolonIfNecessary()
 
+    override fun ifStatementDeclaration(condition: Condition) = "if(${condition.value})"
+
     override fun foreachLoopDeclaration(variable: Value, iterable: Value) =
         "for(${variable.type.className} ${variable.value} : ${iterable.value})"
 
@@ -127,24 +130,24 @@ open class LanguageBase(
 
     open fun importDeclaration(importPath: String, className: String) = "import ${importPath}.${className}${semicolonIfNecessary()}"
 
-    override fun new(type: Type, vararg parameters: Value) = Value(
+    override fun new(type: Type, vararg parameters: ConValue) = ConValue(
         type, "new ${type.className}${if(type.hasGenerics) "<>" else ""}(${parameters.csv()})"
     )
 
-    override fun callValue(methodName: String, returnType: Type, vararg parameters: Value) = Value(
+    override fun callValue(methodName: String, returnType: Type, vararg parameters: Value) = ConValue(
         returnType, "$methodName(${parameters.csv()})"
     ).apply {
         additionalImports(*parameters)
     }
 
     override fun callValue(classType: Type, methodName: String, returnType: Type, vararg parameters: Value) =
-        Value(returnType, "${classType.className}.$methodName(${parameters.csv()})").apply {
+        ConValue(returnType, "${classType.className}.$methodName(${parameters.csv()})").apply {
             additionalImports(classType)
             additionalImports(*parameters)
         }
 
     override fun callValue(callee: Value, methodName: String, returnType: Type, vararg parameters: Value) =
-        Value(returnType, "${callee.value}.$methodName(${parameters.csv()})").apply {
+        ConValue(returnType, "${callee.value}.$methodName(${parameters.csv()})").apply {
             additionalImports(callee, *parameters)
         }
 

@@ -100,7 +100,6 @@ class EventHandler(val name: String) : Runnable {
 
     fun doOnce(runnable: Runnable) = doOnce { runnable.run() }
 
-
     fun doPersistent(listener: EventListener) {
         synchronized(lock) {
             internalListeners.add(listener)

@@ -13,6 +13,7 @@ import io.github.deltacv.easyvision.util.event.EventListener
 class Link(
     val a: Int,
     val b: Int,
+    val isDestroyableByUser: Boolean = true,
     override val idElementContainer: IdElementContainer<Link> = links
 ) : DrawableIdElementBase<Link>(), DataSerializable<LinkSerializationData> {
 
