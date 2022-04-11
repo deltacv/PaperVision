@@ -44,6 +44,8 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
         }
 
         current.scope {
+            biggestRect instanceSet biggestRect.nullVal
+
             foreach(variable(OpenCvTypes.Rect, "rect"), rectsList.value) {
                 ifCondition(
                     biggestRect equalsTo biggestRect.nullVal or

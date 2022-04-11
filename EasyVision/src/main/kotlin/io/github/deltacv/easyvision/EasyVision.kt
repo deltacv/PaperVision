@@ -26,6 +26,7 @@ import imgui.ImGui
 import imgui.flag.ImGuiCond
 import imgui.flag.ImGuiMouseButton
 import io.github.deltacv.easyvision.codegen.CodeGenManager
+import io.github.deltacv.easyvision.codegen.language.interpreted.PythonLanguage
 import io.github.deltacv.easyvision.gui.*
 import io.github.deltacv.easyvision.gui.style.imnodes.ImNodesDarkStyle
 import io.github.deltacv.easyvision.gui.util.Popup
@@ -143,7 +144,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         }
 
         if(keyManager.pressed(Keys.Escape)) {
-            println(codeGenManager.build("test"))
+            println(codeGenManager.build("test", language = PythonLanguage))
         }
 
         keyManager.update()
