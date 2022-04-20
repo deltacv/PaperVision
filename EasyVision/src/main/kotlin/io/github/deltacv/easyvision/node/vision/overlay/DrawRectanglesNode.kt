@@ -3,6 +3,7 @@ package io.github.deltacv.easyvision.node.vision.overlay
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.math.IntAttribute
 import io.github.deltacv.easyvision.attribute.misc.ListAttribute
+import io.github.deltacv.easyvision.attribute.rebuildOnChange
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
 import io.github.deltacv.easyvision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.easyvision.attribute.vision.structs.ScalarAttribute
@@ -37,8 +38,8 @@ open class DrawRectanglesNode
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
-        + inputMat
-        + rectangles
+        + inputMat.rebuildOnChange()
+        + rectangles.rebuildOnChange()
 
         + lineColor
         + lineThickness
@@ -46,7 +47,7 @@ open class DrawRectanglesNode
         lineThickness.value.set(1) // initial value
 
         if(!isDrawOnInput) {
-            + outputMat
+            + outputMat.enablePrevizButton()
         } else {
             inputMat.variableName = "$[att_drawon_image]"
         }
@@ -103,6 +104,10 @@ open class DrawRectanglesNode
                         thicknessVariable
                     else thickness.v
                 )
+            }
+
+            if(!isDrawOnInput) {
+                outputMat.streamIfEnabled(output, input.color)
             }
         }
 

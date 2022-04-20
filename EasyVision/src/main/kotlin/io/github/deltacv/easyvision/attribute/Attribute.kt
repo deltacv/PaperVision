@@ -6,7 +6,6 @@ import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.exception.AttributeGenException
-import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.id.DrawableIdElementBase
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
@@ -43,6 +42,8 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     val isOnEditor get() = parentNode.isOnEditor
     val editor get() = parentNode.editor
 
+    var showAttributesCircles = true
+
     private var isFirstDraw = true
     private var cancelNextDraw = false
 
@@ -77,7 +78,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
             isFirstDraw = false
         }
 
-        if(parentNode.drawAttributesCircles) {
+        if(parentNode.showAttributesCircles && showAttributesCircles) {
             if (mode == AttributeMode.INPUT) {
                 ImNodes.beginInputAttribute(id)
             } else {
@@ -88,7 +89,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
         drawAttribute()
 
-        if(parentNode.drawAttributesCircles) {
+        if(parentNode.showAttributesCircles && showAttributesCircles) {
             if (mode == AttributeMode.INPUT) {
                 ImNodes.endInputAttribute()
             } else {

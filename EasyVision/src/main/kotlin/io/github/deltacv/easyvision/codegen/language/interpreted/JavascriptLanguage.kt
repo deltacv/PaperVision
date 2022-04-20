@@ -76,7 +76,7 @@ object JavascriptLanguage : LanguageBase(genInClass = false, optimizeImports = f
 
     override fun importDeclaration(importPath: String, className: String) = "importClass($importPath.$className)${semicolonIfNecessary()}"
 
-    override fun new(type: Type, vararg parameters: ConValue) = ConValue(
+    override fun new(type: Type, vararg parameters: Value) = ConValue(
         type, "new ${type.className}(${parameters.csv()})"
     )
 

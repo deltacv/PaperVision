@@ -21,6 +21,13 @@ open class LanguageBase(
 
     override fun nullVal(type: Type) = ConValue(type, "null")
 
+    override fun arrayOf(type: Type) = Type("${type.className}[]", type.packagePath, type.generics)
+
+    // TODO: append generics properly
+    override fun newArrayOf(type: Type, size: Value) = ConValue(
+        type, "new ${type.className}${if(type.hasGenerics) "<>" else ""}[${size.value}]"
+    )
+
     override val newImportBuilder: () -> Language.ImportBuilder = { BaseImportBuilder(this) }
 
     override val Parameter.string get() = "${type.shortNameWithGenerics} $name"
@@ -130,7 +137,7 @@ open class LanguageBase(
 
     open fun importDeclaration(importPath: String, className: String) = "import ${importPath}.${className}${semicolonIfNecessary()}"
 
-    override fun new(type: Type, vararg parameters: ConValue) = ConValue(
+    override fun new(type: Type, vararg parameters: Value) = ConValue(
         type, "new ${type.className}${if(type.hasGenerics) "<>" else ""}(${parameters.csv()})"
     )
 
@@ -150,6 +157,8 @@ open class LanguageBase(
         ConValue(returnType, "${callee.value}.$methodName(${parameters.csv()})").apply {
             additionalImports(callee, *parameters)
         }
+
+    override fun propertyValue(from: Value, property: String, type: Type) = ConValue(type, "${from.value}.property")
 
     override fun gen(codeGen: CodeGen): String = codeGen.run {
         val mainScope = Scope(0, language, importScope)

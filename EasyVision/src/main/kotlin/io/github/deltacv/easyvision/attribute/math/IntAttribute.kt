@@ -1,6 +1,7 @@
 package io.github.deltacv.easyvision.attribute.math
 
 import imgui.ImGui
+import imgui.flag.ImGuiInputTextFlags
 import imgui.type.ImInt
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.attribute.AttributeMode
@@ -27,6 +28,12 @@ class IntAttribute(
     private val sliderValue = ImInt()
     private var nextValue: Int? = null
 
+    var disableInput = false
+        set(value) {
+            showAttributesCircles = !value
+            field = value
+        }
+
     @SerializeData
     private var range: Range2i? = null
 
@@ -41,7 +48,7 @@ class IntAttribute(
             ImGui.pushItemWidth(110.0f)
 
             if(range == null) {
-                ImGui.inputInt("", value)
+                ImGui.inputInt("", value, 1, 100, if(disableInput) ImGuiInputTextFlags.ReadOnly else 0)
             } else {
                 ImGui.sliderInt("###$sliderId", sliderValue.data, range!!.min, range!!.max)
                 value.set(sliderValue.get())
@@ -81,6 +88,6 @@ class IntAttribute(
         }
     }
 
-    data class Data(val value: Int = 0) : AttributeSerializationData()
+    data class Data(var value: Int = 0) : AttributeSerializationData()
 
 }

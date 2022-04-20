@@ -58,6 +58,10 @@ class IpcClientWatchDog(
         }
     }
 
+    fun encourage() {
+        runner.encourage()
+    }
+
     private class Runner(
         val port: Int,
         passToken: PassToken?,

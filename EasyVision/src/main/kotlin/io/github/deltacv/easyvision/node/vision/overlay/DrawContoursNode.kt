@@ -47,7 +47,7 @@ open class DrawContoursNode
         lineThickness.value.set(1) // initial value
 
         if(!isDrawOnInput) {
-            + outputMat
+            + outputMat.enablePrevizButton()
         } else {
             inputMat.variableName = "$[att_drawon_image]"
         }
@@ -103,6 +103,10 @@ open class DrawContoursNode
                     thicknessVariable
                 else thickness.v
             )
+
+            if(!isDrawOnInput) {
+                outputMat.streamIfEnabled(output, input.color)
+            }
         }
 
         session.outputMat = GenValue.Mat(drawMat, input.color, input.isBinary)

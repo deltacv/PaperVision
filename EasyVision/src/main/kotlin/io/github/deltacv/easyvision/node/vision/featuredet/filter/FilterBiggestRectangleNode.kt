@@ -1,4 +1,4 @@
-package io.github.deltacv.easyvision.node.vision.featuredet
+package io.github.deltacv.easyvision.node.vision.featuredet.filter
 
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.misc.ListAttribute
@@ -19,13 +19,12 @@ import io.github.deltacv.easyvision.node.RegisterNode
 )
 class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>() {
 
-    val input = ListAttribute(INPUT, RectAttribute,"Rectangles").rebuildOnChange()
-
-    val output = RectAttribute(OUTPUT, "Biggest Rect").rebuildOnChange()
+    val input = ListAttribute(INPUT, RectAttribute,"$[att_rects]")
+    val output = RectAttribute(OUTPUT, "$[att_biggestrect]")
 
     override fun onEnable() {
-        + input
-        + output
+        + input.rebuildOnChange()
+        + output.rebuildOnChange()
     }
 
     override fun genCode(current: CodeGen.Current) = current {

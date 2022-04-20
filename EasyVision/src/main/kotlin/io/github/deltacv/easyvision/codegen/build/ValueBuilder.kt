@@ -65,13 +65,19 @@ interface ValueBuilder {
         "(${value})"
     } else value
 
-    fun new(type: Type, vararg parameters: ConValue): ConValue
+    fun new(type: Type, vararg parameters: Value): Value
+
+    fun arrayOf(type: Type): Type
+
+    fun newArrayOf(type: Type, size: Value): Value
 
     fun value(type: Type, value: String) = ConValue(type, value)
 
     fun callValue(methodName: String, returnType: Type, vararg parameters: Value): Value
     fun callValue(classType: Type, methodName: String, returnType: Type, vararg parameters: Value): Value
     fun callValue(callee: Value, methodName: String, returnType: Type, vararg parameters: Value): Value
+
+    fun propertyValue(from: Value, property: String, type: Type): Value
 
     fun enumValue(type: Type, constantName: String) = ConValue(type, "$type.$constantName")
 

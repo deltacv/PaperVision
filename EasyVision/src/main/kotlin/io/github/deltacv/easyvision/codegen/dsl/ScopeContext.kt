@@ -35,6 +35,8 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
     infix fun String.local(v: Value) =
         scope.localVariable(Variable(this, v))
 
+    fun local(v: Variable) = scope.localVariable(v)
+
     infix fun Variable.set(v: Value) =
         scope.variableSet(this, v)
 

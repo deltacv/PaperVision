@@ -98,7 +98,7 @@ object PythonLanguage : LanguageBase(
     override fun importDeclaration(importPath: String, className: String) =
         throw UnsupportedOperationException("importDeclaration(importPath, className) is not supported in Python")
 
-    override fun new(type: Type, vararg parameters: ConValue) = ConValue(
+    override fun new(type: Type, vararg parameters: Value) = ConValue(
         type, "${type.className}(${parameters.csv()})"
     )
 

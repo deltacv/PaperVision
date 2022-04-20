@@ -26,18 +26,18 @@ enum class BlurAlgorithm { Gaussian, Box, Median, Bilateral }
 )
 class BlurNode : DrawNode<BlurNode.Session>() {
 
-    val input = MatAttribute(INPUT, "$[att_input]").rebuildOnChange()
+    val input = MatAttribute(INPUT, "$[att_input]")
 
     val blurAlgo = EnumAttribute(INPUT, values(), "$[att_bluralgo]")
     val blurValue = IntAttribute(INPUT, "$[att_value]")
 
-    val output = MatAttribute(OUTPUT, "$[att_output]").enablePrevizButton()
+    val output = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
         + input.rebuildOnChange()
         + blurAlgo
         + blurValue
-        + output
+        + output.enablePrevizButton()
     }
 
     override fun genCode(current: CodeGen.Current) = current {
@@ -77,6 +77,9 @@ class BlurNode : DrawNode<BlurNode.Session>() {
                     Imgproc("bilateralFilter", inputMat.value, outputMat, (-1).v, blurValVariable, blurValVariable)
                 }
             }
+
+
+            output.streamIfEnabled(outputMat, inputMat.color)
         }
 
         session.outputMatValue = GenValue.Mat(outputMat, inputMat.color)

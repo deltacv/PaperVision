@@ -64,10 +64,14 @@ open class LanguageContext(val language: Language) {
     fun float(value: Value) = ConValue(language.FloatType, value.value)
     fun double(value: Value) = ConValue(language.DoubleType, value.value)
 
-    fun new(type: Type, vararg parameters: ConValue) = language.new(type, *parameters)
+    fun new(type: Type, vararg parameters: Value) = language.new(type, *parameters)
 
     @JvmName("newExt")
-    fun Type.new(vararg parameters: ConValue) = new(this, *parameters)
+    fun Type.new(vararg parameters: Value) = new(this, *parameters)
+
+    fun Type.arrayType() = language.arrayOf(this)
+
+    fun Type.newArray(size: Value) = language.newArrayOf(this, size)
 
     fun value(type: Type, value: String) = language.value(type, value)
 
@@ -79,6 +83,8 @@ open class LanguageContext(val language: Language) {
 
     fun Value.callValue(methodName: String, returnType: Type, vararg parameters: Value) =
         language.callValue(this, methodName, returnType, *parameters)
+
+    operator fun Value.get(property: String, type: Type) = language.propertyValue(this, property, type)
 
     fun enumValue(type: Type, constantName: String) = language.enumValue(type, constantName)
 

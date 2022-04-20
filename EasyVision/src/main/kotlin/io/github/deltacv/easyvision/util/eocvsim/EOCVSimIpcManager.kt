@@ -57,6 +57,8 @@ class EOCVSimIpcManager(
             EOCVSimPrevizState.RUNNING
         } else EOCVSimPrevizState.RUNNING_BUT_NOT_CONNECTED
 
+        ipcClient.encourage()
+
         rebuildPreviz()
     }
 

@@ -6,13 +6,10 @@ import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.AttributeMode
 import io.github.deltacv.easyvision.codegen.CodeGen
-import io.github.deltacv.easyvision.codegen.CodeGenManager
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.exception.NodeGenException
-import io.github.deltacv.easyvision.gui.Font
 import io.github.deltacv.easyvision.gui.NodeEditor
-import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.id.DrawableIdElementBase
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
@@ -39,7 +36,7 @@ abstract class Node<S: CodeGenSession>(
     var nodesIdContainer = nodes
     var attributesIdContainer = attributes
 
-    var drawAttributesCircles = true
+    var showAttributesCircles = true
 
     // will be set on NodeEditor#draw
     lateinit var eocvSimIpc: EOCVSimIpcManager

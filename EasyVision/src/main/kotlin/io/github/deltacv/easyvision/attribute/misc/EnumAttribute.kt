@@ -30,22 +30,25 @@ class EnumAttribute<T: Enum<T>>(
     }.toTypedArray()
 
     @SerializeData
-    val currentItem = ImInt()
+    val currentIndex = ImInt()
+
+    val currentValue get() = values[currentIndex.get()]
 
     override fun drawAttribute() {
         super.drawAttribute()
-        checkChange()
 
         if(!hasLink) {
             ImGui.pushItemWidth(110.0f)
-            ImGui.combo("", currentItem, valuesStrings)
+            ImGui.combo("", currentIndex, valuesStrings)
             ImGui.popItemWidth()
         }
+
+        checkChange()
     }
 
     override fun acceptLink(other: Attribute) = other is EnumAttribute<*> && values[0]::class == other.values[0]::class
 
-    override fun thisGet() = values[currentItem.get()]
+    override fun thisGet() = values[currentIndex.get()]
 
     @Suppress("UNCHECKED_CAST")
     override fun value(current: CodeGen.Current): GenValue.Enum<T> {
@@ -72,7 +75,7 @@ class EnumAttribute<T: Enum<T>>(
 
                 return valueEnum as GenValue.Enum<T>
             } else {
-                val value = values[currentItem.get()]
+                val value = values[currentIndex.get()]
 
                 return GenValue.Enum(value, value::class.java)
             }
