@@ -11,6 +11,9 @@ open class LanguageContext(val language: Language) {
     val Float.v get() = ConValue(language.FloatType, toString())
     val Double.v get() = ConValue(language.DoubleType, toString())
 
+    val trueValue get() = language.trueValue
+    val falseValue get() = language.falseValue
+
     val IntType get() = language.IntType
     val LongType get() = language.LongType
     val FloatType get() = language.FloatType
@@ -60,9 +63,16 @@ open class LanguageContext(val language: Language) {
     infix fun Double.between(right: Double) = language.division(this.v, right.v)
 
     fun int(value: Value) = ConValue(language.IntType, value.value)
+    fun int(value: Int) = ConValue(language.IntType, value.toString())
+
     fun long(value: Value) = ConValue(language.LongType, value.value)
+    fun long(value: Long) = ConValue(language.LongType, value.toString())
+
     fun float(value: Value) = ConValue(language.FloatType, value.value)
+    fun float(value: Float) = ConValue(language.FloatType, value.toString())
+
     fun double(value: Value) = ConValue(language.DoubleType, value.value)
+    fun double(value: Double) = ConValue(language.DoubleType, value.toString())
 
     fun new(type: Type, vararg parameters: Value) = language.new(type, *parameters)
 
@@ -84,7 +94,8 @@ open class LanguageContext(val language: Language) {
     fun Value.callValue(methodName: String, returnType: Type, vararg parameters: Value) =
         language.callValue(this, methodName, returnType, *parameters)
 
-    operator fun Value.get(property: String, type: Type) = language.propertyValue(this, property, type)
+    fun Value.propertyValue(property: String, type: Type) = language.propertyValue(this, property, type)
+    operator fun Value.get(index: Value, type: Type) = language.arrayValue(this, index, type)
 
     fun enumValue(type: Type, constantName: String) = language.enumValue(type, constantName)
 

@@ -8,6 +8,9 @@ interface ValueBuilder {
 
     val language: Language
 
+    val trueValue: Value
+    val falseValue: Value
+
     fun nullVal(type: Type): Value
 
     fun lessThan(left: Value, right: Value) = condition("${left.value} < ${right.value}")
@@ -78,6 +81,7 @@ interface ValueBuilder {
     fun callValue(callee: Value, methodName: String, returnType: Type, vararg parameters: Value): Value
 
     fun propertyValue(from: Value, property: String, type: Type): Value
+    fun arrayValue(from: Value, index: Value, type: Type): Value
 
     fun enumValue(type: Type, constantName: String) = ConValue(type, "$type.$constantName")
 

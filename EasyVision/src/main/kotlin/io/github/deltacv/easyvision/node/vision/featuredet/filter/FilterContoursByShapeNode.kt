@@ -10,6 +10,7 @@ import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.codegen.build.ConValue
+import io.github.deltacv.easyvision.codegen.build.Value
 import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
@@ -83,49 +84,60 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
 
         val shapeValue = shape.value(current).value
         val sidesValue = sides.value(current)
+        val accuracyValue = accuracy.value(current).value
 
         val list = uniqueVariable("filtered${shapeValue.name}Contours", JavaTypes.ArrayList(OpenCvTypes.MatOfPoint).new())
 
+        val ints = uniqueVariable("ints", OpenCvTypes.MatOfInt.new())
+        val convexHull = uniqueVariable("convexHull", OpenCvTypes.MatOfPoint2f.new())
+        val contours2f = uniqueVariable("contours2f", OpenCvTypes.MatOfPoint2f.new())
+        val approxPolyDp = uniqueVariable("approxPolyDp", OpenCvTypes.MatOfPoint2f.new())
+
         group {
+            private(ints)
+            private(convexHull)
+            private(approxPolyDp)
+            private(contours2f)
+
             private(list)
         }
 
         current.scope {
-            val convexHull = uniqueVariable("convexHull", OpenCvTypes.MatOfPoint2f.new())
-            local(convexHull)
-
-            val contours2f = uniqueVariable("matOfPoint2f", OpenCvTypes.MatOfPoint2f.new())
-            local(contours2f)
-
-            val approxPolyDp = uniqueVariable("approxPolyDp", OpenCvTypes.MatOfPoint2f.new())
-            local(approxPolyDp)
-
-            val ints = uniqueVariable("ints", OpenCvTypes.MatOfInt.new())
-            local(ints)
-
             foreach(variable(OpenCvTypes.MatOfPoint, "contour"), inputContours.value) {
                 Imgproc("convexHull", it, ints)
 
+                separate()
+
                 val arrIndex = uniqueVariable("arrIndex", ints.callValue("toArray", IntType.arrayType()))
                 val arrContour = uniqueVariable("arrContour", it.callValue("toArray", OpenCvTypes.Point.arrayType()))
-                val arrPoints = uniqueVariable("arrPoints", OpenCvTypes.Point.newArray(arrIndex["length", IntType]))
+                val arrPoints = uniqueVariable("arrPoints", OpenCvTypes.Point.newArray(arrIndex.propertyValue("length", IntType)))
 
-                group {
-                    local(arrIndex)
-                    local(arrContour)
-                    local(arrPoints)
+                local(arrIndex)
+                local(arrContour)
+                local(arrPoints)
+
+                separate()
+
+                forLoop(variable(IntType, "i"), int(0), arrIndex.propertyValue("length", IntType)) { i: Value ->
+                    arrPoints[i] = arrContour[arrIndex[i, IntType], OpenCvTypes.Point]
                 }
 
-                group {
-                    convexHull("fromArray", arrPoints)
-                }
+                separate()
 
-                group {
-                    convexHull("release")
-                    contours2f("release")
-                    approxPolyDp("release")
-                    ints("release")
-                }
+                convexHull("fromArray", arrPoints)
+
+                separate()
+
+                contours2f("fromArray", it.callValue("toArray", OpenCvTypes.Point.arrayType()))
+
+                Imgproc("approxPolyDp", convexHull, (double(100.0) - double(accuracyValue.toDouble())) / double(100.0) * Imgproc.callValue("arcLength", DoubleType, contours2f, trueValue))
+
+                separate()
+
+                ints("release")
+                convexHull("release")
+                contours2f("release")
+                approxPolyDp("release")
             }
         }
 

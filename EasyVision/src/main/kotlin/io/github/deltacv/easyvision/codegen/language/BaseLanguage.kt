@@ -61,6 +61,9 @@ open class LanguageBase(
 
     override fun variableSetDeclaration(variable: Variable, v: Value) = "${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
 
+    override fun arrayVariableSetDeclaration(variable: Variable, index: Value, v: Value) =
+        "${variable.name}[${index.value}] = ${v.value}${semicolonIfNecessary()}"
+
     override fun instanceVariableSetDeclaration(variable: Variable, v: Value) = "this.${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
 
     override fun methodCallDeclaration(className: Type, methodName: String, vararg parameters: Value) =
@@ -102,6 +105,14 @@ open class LanguageBase(
         } else "return") + semicolonIfNecessary()
 
     override fun ifStatementDeclaration(condition: Condition) = "if(${condition.value})"
+
+    override fun forLoopDeclaration(variable: Value, start: Value, max: Value, step: Value?): String {
+        val stepStr = if(step == null || step.value == "1") {
+            "++"
+        } else " += ${step.value}"
+
+        return "for(${variable.type.className} ${variable.value} = ${start.value} ; ${variable.value} < ${max.value} ; ${variable.value}$stepStr)"
+    }
 
     override fun foreachLoopDeclaration(variable: Value, iterable: Value) =
         "for(${variable.type.className} ${variable.value} : ${iterable.value})"
@@ -158,7 +169,11 @@ open class LanguageBase(
             additionalImports(callee, *parameters)
         }
 
-    override fun propertyValue(from: Value, property: String, type: Type) = ConValue(type, "${from.value}.property")
+    override fun propertyValue(from: Value, property: String, type: Type) = ConValue(type, "${from.value}.${property}")
+
+    override fun arrayValue(from: Value, index: Value, type: Type) = ConValue(
+        type, "${from.value}[${index.value}]"
+    )
 
     override fun gen(codeGen: CodeGen): String = codeGen.run {
         val mainScope = Scope(0, language, importScope)
@@ -214,6 +229,9 @@ open class LanguageBase(
 
         mainScope.get()
     }
+
+    override val trueValue = ConValue(BooleanType, "true")
+    override val falseValue = ConValue(BooleanType, "false")
 
     protected fun semicolonIfNecessary() = if(usesSemicolon) ";" else ""
 

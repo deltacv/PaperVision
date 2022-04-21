@@ -144,7 +144,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         }
 
         if(keyManager.pressed(Keys.Escape)) {
-            println(codeGenManager.build("test", language = PythonLanguage))
+            println(codeGenManager.build("test"))
         }
 
         keyManager.update()

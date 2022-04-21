@@ -97,6 +97,14 @@ class Scope(
         builder.append("$tabs${language.variableSetDeclaration(variable, v)}")
     }
 
+
+    fun arraySet(variable: Variable, index: Value, v: Value) {
+        newStatement()
+        importValue(v)
+
+        builder.append("$tabs${language.arrayVariableSetDeclaration(variable, index, v)}")
+    }
+
     fun instanceVariableSet(variable: Variable, v: Value) {
         newStatement()
         importValue(v)
@@ -210,6 +218,12 @@ class Scope(
             language.foreachLoopDeclaration(variable, iterable),
             scope
         )
+    }
+
+    fun forLoop(variable: Value, start: Value, max: Value, step: Value?, scope: Scope) {
+        importValue(variable)
+
+        block(language.forLoopDeclaration(variable, start, max, step), scope)
     }
 
     fun scope(scope: Scope, trimIndent: Boolean = false) {

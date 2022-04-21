@@ -14,6 +14,9 @@ object PythonLanguage : LanguageBase(
 
     override val Parameter.string get() = name
 
+    override val trueValue = ConValue(BooleanType, "True")
+    override val falseValue = ConValue(BooleanType, "False")
+
     override val newImportBuilder = { PythonImportBuilder(this) }
 
     override fun and(left: Condition, right: Condition) = condition("(${left.value}) and (${right.value})")

@@ -41,6 +41,7 @@ interface Language : ValueBuilder {
     fun localVariableDeclaration(variable: Variable, isFinal: Boolean = false): String
 
     fun variableSetDeclaration(variable: Variable, v: Value): String
+    fun arrayVariableSetDeclaration(variable: Variable, index: Value, v: Value): String
     fun instanceVariableSetDeclaration(variable: Variable, v: Value): String
     fun methodCallDeclaration(className: Type, methodName: String, vararg parameters: Value): String
     fun methodCallDeclaration(callee: Value, methodName: String, vararg parameters: Value): String
@@ -58,6 +59,7 @@ interface Language : ValueBuilder {
 
     fun ifStatementDeclaration(condition: Condition): String
 
+    fun forLoopDeclaration(variable: Value, start: Value, max: Value, step: Value?): String
     fun foreachLoopDeclaration(variable: Value, iterable: Value): String
     fun whileLoopDeclaration(condition: Condition): String
 
