@@ -1,7 +1,7 @@
 package io.github.deltacv.easyvision.util.eocvsim
 
 import io.github.deltacv.easyvision.EasyVision
-import io.github.deltacv.easyvision.codegen.language.interpreted.PythonLanguage
+import io.github.deltacv.easyvision.codegen.language.interpreted.JythonLanguage
 import io.github.deltacv.easyvision.util.IpcClientWatchDog
 import io.github.deltacv.easyvision.util.loggerForThis
 import io.github.deltacv.eocvsim.ipc.message.IpcMessage
@@ -65,7 +65,7 @@ class EOCVSimIpcManager(
     fun rebuildPreviz() {
         if(!previzState.running) return
 
-        val code = easyVision.codeGenManager.build(previzSessionName!!, PythonLanguage, true)
+        val code = easyVision.codeGenManager.build(previzSessionName!!, JythonLanguage, true)
         val name = previzSessionName!!
 
         if (ipcClient.isConnected) {

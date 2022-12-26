@@ -8,11 +8,15 @@ object OpenCvTypes {
     val OpenCvPipeline = Type("OpenCvPipeline", "org.openftc.easyopencv")
 
     object Imgproc : Type("Imgproc", "org.opencv.imgproc") {
-
-        val RETR_LIST = ConValue(StandardTypes.cint, "Imgproc.RETR_LIST")
-        val CHAIN_APPROX_SIMPLE = ConValue(StandardTypes.cint, "Imgproc.CHAIN_APPROX_SIMPLE")
-
+        val RETR_LIST = ConValue(StandardTypes.cint, "Imgproc.RETR_LIST").apply {
+            additionalImports(this)
+        }
+        val CHAIN_APPROX_SIMPLE = ConValue(StandardTypes.cint, "Imgproc.CHAIN_APPROX_SIMPLE").apply {
+            additionalImports(this)
+        }
     }
+
+    object CvType : Type("CvType", "org.opencv.core")
 
     val Core = Type("Core", "org.opencv.core")
 

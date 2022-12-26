@@ -81,6 +81,8 @@ open class LanguageContext(val language: Language) {
 
     fun Type.arrayType() = language.arrayOf(this)
 
+    fun Value.arraySize() = language.arraySize(this)
+
     fun Type.newArray(size: Value) = language.newArrayOf(this, size)
 
     fun value(type: Type, value: String) = language.value(type, value)
@@ -100,6 +102,8 @@ open class LanguageContext(val language: Language) {
     fun enumValue(type: Type, constantName: String) = language.enumValue(type, constantName)
 
     fun cvtColorValue(a: Colors, b: Colors) = language.cvtColorValue(a, b)
+
+    fun cvTypeValue(cvType: String) = language.cvTypeValue(cvType)
 
     fun variable(name: String, value: Value) = Variable(name, value)
     fun variable(type: Type, name: String) = Variable(type, name)

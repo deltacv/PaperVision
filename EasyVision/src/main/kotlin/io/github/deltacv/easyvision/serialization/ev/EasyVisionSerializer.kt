@@ -19,6 +19,14 @@ object EasyVisionSerializer {
         return DataSerializer.serialize(serializables)
     }
 
+    fun serializeToTree(nodes: List<Node<*>>, links: List<Link>): JsonElement {
+        val serializables = mutableMapOf<String, List<DataSerializable<*>>>()
+        serializables["nodes"] = nodes
+        serializables["links"] = links
+
+        return DataSerializer.serializeToTree(serializables)
+    }
+
     fun serializeCurrent() = serialize(
         nodes = Node.nodes.elements,
         links = Link.links.elements

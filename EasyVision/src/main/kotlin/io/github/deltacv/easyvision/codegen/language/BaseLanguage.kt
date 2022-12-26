@@ -21,11 +21,19 @@ open class LanguageBase(
 
     override fun nullVal(type: Type) = ConValue(type, "null")
 
-    override fun arrayOf(type: Type) = Type("${type.className}[]", type.packagePath, type.generics)
+    override fun arrayOf(type: Type): Type {
+        var originalType = type
+
+        while(originalType.actualImport != null) {
+            originalType = originalType.actualImport!!
+        }
+
+        return Type("${type.className}[]", type.packagePath, type.generics, isArray = true, actualImport = originalType)
+    }
 
     // TODO: append generics properly
     override fun newArrayOf(type: Type, size: Value) = ConValue(
-        type, "new ${type.className}${if(type.hasGenerics) "<>" else ""}[${size.value}]"
+        arrayOf(type), "new ${type.className}${if(type.hasGenerics) "<>" else ""}[${size.value}]"
     )
 
     override val newImportBuilder: () -> Language.ImportBuilder = { BaseImportBuilder(this) }
@@ -116,7 +124,6 @@ open class LanguageBase(
 
     override fun foreachLoopDeclaration(variable: Value, iterable: Value) =
         "for(${variable.type.className} ${variable.value} : ${iterable.value})"
-
     override fun whileLoopDeclaration(condition: Condition) = "while(${condition.value})"
 
     override fun classDeclaration(
@@ -174,6 +181,8 @@ open class LanguageBase(
     override fun arrayValue(from: Value, index: Value, type: Type) = ConValue(
         type, "${from.value}[${index.value}]"
     )
+
+    override fun arraySize(array: Value) = ConValue(IntType, "${array.value}.length")
 
     override fun gen(codeGen: CodeGen): String = codeGen.run {
         val mainScope = Scope(0, language, importScope)
@@ -239,10 +248,12 @@ open class LanguageBase(
         private val imports = mutableMapOf<String, MutableList<String>>()
 
         override fun import(type: Type) {
-            if(lang.isImportExcluded(type)) return
+            val actualType = type.actualImport ?: type
 
-            if(imports.containsKey(type.packagePath)) {
-                val importsOfThis = imports[type.packagePath]!!
+            if(lang.isImportExcluded(actualType)) return
+
+            if(imports.containsKey(actualType.packagePath)) {
+                val importsOfThis = imports[actualType.packagePath]!!
 
                 if(importsOfThis.size > 2 && lang.optimizeImports) {
                     importsOfThis.clear()
@@ -250,12 +261,12 @@ open class LanguageBase(
                 } else {
                     if(importsOfThis.size == 1 && importsOfThis[0] == "*") return
 
-                    if(!importsOfThis.contains(type.className)) {
-                        importsOfThis.add(type.className)
+                    if(!importsOfThis.contains(actualType.className)) {
+                        importsOfThis.add(actualType.className)
                     }
                 }
             } else {
-                imports[type.packagePath] = mutableListOf(type.className)
+                imports[actualType.packagePath] = mutableListOf(actualType.className)
             }
         }
 

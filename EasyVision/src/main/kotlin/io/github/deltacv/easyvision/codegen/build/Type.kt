@@ -2,13 +2,20 @@ package io.github.deltacv.easyvision.codegen.build
 
 import io.github.deltacv.easyvision.codegen.csv
 
-open class Type(val className: String, val packagePath: String = "", val generics: Array<Type>? = null) {
+open class Type(
+    val className: String,
+    val packagePath: String = "",
+    val generics: Array<Type>? = null,
+
+    val actualImport: Type? = null,
+    val isArray: Boolean = false
+) {
 
     companion object {
         val NONE = Type("", "")
     }
 
-    val hasGenerics get() = generics != null && generics.isNotEmpty()
+    val hasGenerics get() = !generics.isNullOrEmpty()
 
     val shouldImport get() = className != packagePath
 
@@ -16,6 +23,8 @@ open class Type(val className: String, val packagePath: String = "", val generic
         if(generics != null)
             "$className<${generics.csv()}>"
         else className
+
+    override fun toString() = "Type(className=$className, packagePath=$packagePath, actualImport=$actualImport, isArray=$isArray)"
 
 }
 

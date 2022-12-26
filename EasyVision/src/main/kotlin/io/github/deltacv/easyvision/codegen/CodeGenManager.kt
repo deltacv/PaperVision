@@ -2,11 +2,9 @@ package io.github.deltacv.easyvision.codegen
 
 import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.codegen.language.Language
-import io.github.deltacv.easyvision.codegen.language.interpreted.PythonLanguage
 import io.github.deltacv.easyvision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.easyvision.exception.AttributeGenException
 import io.github.deltacv.easyvision.gui.util.Popup
-import io.github.deltacv.easyvision.util.eocvsim.EOCVSimPrevizState
 import io.github.deltacv.easyvision.util.loggerForThis
 
 class CodeGenManager(val easyVision: EasyVision) {

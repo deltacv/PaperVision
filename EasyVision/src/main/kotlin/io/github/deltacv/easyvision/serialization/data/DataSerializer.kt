@@ -18,6 +18,10 @@ object DataSerializer {
         return gson.toJson(serializables)
     }
 
+    fun serializeToTree(serializables: Map<String, List<DataSerializable<*>>>): JsonElement {
+        return gson.toJsonTree(serializables)
+    }
+
     fun deserialize(data: String): Map<String, List<DataSerializable<*>>> {
         return gson.fromJson(data, type)
     }

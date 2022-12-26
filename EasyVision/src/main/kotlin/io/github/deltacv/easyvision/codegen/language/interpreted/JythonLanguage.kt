@@ -6,7 +6,7 @@ import io.github.deltacv.easyvision.codegen.csv
 import io.github.deltacv.easyvision.codegen.language.Language
 import io.github.deltacv.easyvision.codegen.language.LanguageBase
 
-object PythonLanguage : LanguageBase(
+object JythonLanguage : LanguageBase(
     usesSemicolon = false,
     genInClass = false,
     optimizeImports = false
@@ -18,6 +18,11 @@ object PythonLanguage : LanguageBase(
     override val falseValue = ConValue(BooleanType, "False")
 
     override val newImportBuilder = { PythonImportBuilder(this) }
+
+    object jarray {
+        val array = Type("array", "jarray")
+        val zeros = Type("zeros", "jarray")
+    }
 
     override fun and(left: Condition, right: Condition) = condition("(${left.value}) and (${right.value})")
     override fun or(left: Condition, right: Condition) = condition("(${left.value}) or (${right.value})")
@@ -65,6 +70,9 @@ object PythonLanguage : LanguageBase(
 
     override fun ifStatementDeclaration(condition: Condition) = "if ${condition.value}"
 
+    override fun forLoopDeclaration(variable: Value, start: Value, max: Value, step: Value?) =
+        "for ${variable.value} in range(${start.value}, ${max.value}${step?.let { ", $it" } ?: ""})"
+
     override fun foreachLoopDeclaration(variable: Value, iterable: Value) =
         "for ${variable.value} in ${iterable.value}"
 
@@ -92,6 +100,24 @@ object PythonLanguage : LanguageBase(
             |}""".trimMargin()
     }
 
+    override fun newArrayOf(type: Type, size: Value): ConValue {
+        val t = when(type) {
+            BooleanType -> "z"
+            IntType -> "i"
+            LongType -> "l"
+            FloatType -> "f"
+            DoubleType -> "d"
+
+            else -> type.className
+        }
+
+        return ConValue(arrayOf(type), "zeros(${size.value}, $t)").apply {
+            additionalImports(jarray.zeros)
+        }
+    }
+
+    override fun arraySize(array: Value) = ConValue(IntType, "len(${array.value})")
+
     override fun block(start: String, body: Scope, tabs: String): String {
         val bodyStr = body.get()
 
@@ -111,14 +137,16 @@ object PythonLanguage : LanguageBase(
         private val imports = mutableMapOf<String, MutableList<String>>()
 
         override fun import(type: Type) {
-            if(lang.isImportExcluded(type)) return
+            val actualType = type.actualImport ?: type
 
-            val classNames = imports[type.packagePath]
+            if(lang.isImportExcluded(actualType) || !actualType.shouldImport) return
+
+            val classNames = imports[actualType.packagePath]
 
             if(classNames == null) {
-                imports[type.packagePath] = mutableListOf(type.className)
-            } else if(!classNames.contains(type.className)){
-                classNames.add(type.className)
+                imports[actualType.packagePath] = mutableListOf(actualType.className)
+            } else if(!classNames.contains(actualType.className)){
+                classNames.add(actualType.className)
             }
         }
 

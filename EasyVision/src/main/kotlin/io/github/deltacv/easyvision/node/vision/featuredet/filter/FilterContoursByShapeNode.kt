@@ -14,6 +14,7 @@ import io.github.deltacv.easyvision.codegen.build.Value
 import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Size
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
@@ -88,58 +89,38 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
 
         val list = uniqueVariable("filtered${shapeValue.name}Contours", JavaTypes.ArrayList(OpenCvTypes.MatOfPoint).new())
 
-        val ints = uniqueVariable("ints", OpenCvTypes.MatOfInt.new())
-        val convexHull = uniqueVariable("convexHull", OpenCvTypes.MatOfPoint2f.new())
         val contours2f = uniqueVariable("contours2f", OpenCvTypes.MatOfPoint2f.new())
         val approxPolyDp = uniqueVariable("approxPolyDp", OpenCvTypes.MatOfPoint2f.new())
+        val approxPolyDp2f = uniqueVariable("approxPolyDp2f", OpenCvTypes.MatOfPoint2f.new())
 
         group {
-            private(ints)
-            private(convexHull)
             private(approxPolyDp)
+            private(approxPolyDp2f)
             private(contours2f)
 
             private(list)
         }
 
         current.scope {
+            list("clear")
+
             foreach(variable(OpenCvTypes.MatOfPoint, "contour"), inputContours.value) {
-                Imgproc("convexHull", it, ints)
+                it("convertTo", contours2f, cvTypeValue("CV_32FC2"))
 
-                separate()
+                Imgproc("approxPolyDP", contours2f, approxPolyDp2f, ((double(100.1) - int(accuracyValue)) / double(100.0)) * Imgproc.callValue("arcLength", DoubleType, contours2f, trueValue), trueValue)
+                approxPolyDp2f("convertTo", approxPolyDp, cvTypeValue("CV_32S"))
 
-                val arrIndex = uniqueVariable("arrIndex", ints.callValue("toArray", IntType.arrayType()))
-                val arrContour = uniqueVariable("arrContour", it.callValue("toArray", OpenCvTypes.Point.arrayType()))
-                val arrPoints = uniqueVariable("arrPoints", OpenCvTypes.Point.newArray(arrIndex.propertyValue("length", IntType)))
-
-                local(arrIndex)
-                local(arrContour)
-                local(arrPoints)
-
-                separate()
-
-                forLoop(variable(IntType, "i"), int(0), arrIndex.propertyValue("length", IntType)) { i: Value ->
-                    arrPoints[i] = arrContour[arrIndex[i, IntType], OpenCvTypes.Point]
+                ifCondition(approxPolyDp.callValue("size", Size).propertyValue("height", IntType) equalsTo sidesValue.value.v) {
+                    list("add", it)
                 }
 
-                separate()
-
-                convexHull("fromArray", arrPoints)
-
-                separate()
-
-                contours2f("fromArray", it.callValue("toArray", OpenCvTypes.Point.arrayType()))
-
-                Imgproc("approxPolyDp", convexHull, (double(100.0) - double(accuracyValue.toDouble())) / double(100.0) * Imgproc.callValue("arcLength", DoubleType, contours2f, trueValue))
-
-                separate()
-
-                ints("release")
-                convexHull("release")
                 contours2f("release")
                 approxPolyDp("release")
+                approxPolyDp2f("release")
             }
         }
+
+        session.output = GenValue.GLists.RuntimeListOf(list, GenValue.GPoints.RuntimePoints::class)
 
         session
     }
@@ -148,7 +129,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return GenValue.GLists.RuntimeListOf(ConValue(OpenCvTypes.MatOfPoint, "shaped"), GenValue.GPoints.Points::class)
+            return genSession!!.output
         }
 
         noValue(attrib)
@@ -160,6 +141,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
     }
 
     class Session : CodeGenSession {
+        lateinit var output: GenValue.GLists.RuntimeListOf<GenValue.GPoints.RuntimePoints>
     }
 
 }

@@ -74,6 +74,8 @@ interface ValueBuilder {
 
     fun newArrayOf(type: Type, size: Value): Value
 
+    fun arraySize(array: Value): Value
+
     fun value(type: Type, value: String) = ConValue(type, value)
 
     fun callValue(methodName: String, returnType: Type, vararg parameters: Value): Value
@@ -97,6 +99,12 @@ interface ValueBuilder {
 
         return ConValue(language.IntType, "Imgproc.COLOR_${newA.name}2${newB.name}").apply {
             additionalImports(OpenCvTypes.Imgproc)
+        }
+    }
+
+    fun cvTypeValue(cvType: String): Value {
+        return ConValue(language.IntType, "CvType.$cvType").apply {
+            additionalImports(OpenCvTypes.CvType)
         }
     }
 
