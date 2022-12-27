@@ -24,6 +24,7 @@ package io.github.deltacv.easyvision
 
 import imgui.ImGui
 import imgui.flag.ImGuiCond
+import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.codegen.CodeGenManager
 import io.github.deltacv.easyvision.codegen.language.interpreted.JythonLanguage
 import io.github.deltacv.easyvision.gui.*
@@ -31,10 +32,13 @@ import io.github.deltacv.easyvision.gui.style.imnodes.ImNodesDarkStyle
 import io.github.deltacv.easyvision.gui.util.Popup
 import io.github.deltacv.easyvision.gui.util.Window
 import io.github.deltacv.easyvision.id.IdElementContainer
+import io.github.deltacv.easyvision.id.IdElementContainerStack
 import io.github.deltacv.easyvision.id.NoneIdElement
 import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys
 import io.github.deltacv.easyvision.io.resourceToString
+import io.github.deltacv.easyvision.node.Link
+import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.node.NodeScanner
 import io.github.deltacv.easyvision.platform.*
 import io.github.deltacv.easyvision.serialization.ev.EasyVisionSerializer
@@ -74,16 +78,24 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
     val langManager = Language("/lang.csv", "en").makeTr()
 
-    val nodeEditor = NodeEditor(this, keyManager)
-    val nodeList = NodeList(this, keyManager)
+    val nodeEditor by lazy { NodeEditor(this, keyManager) }
+    val nodeList by lazy { NodeList(this, keyManager) }
 
     val eocvSimIpc = EOCVSimIpcManager(this)
+
+    val nodes = IdElementContainer<Node<*>>()
+    val attributes = IdElementContainer<Attribute>()
+    val links = IdElementContainer<Link>()
 
     lateinit var defaultFont: Font
         private set
 
     fun init() {
-        EasyVisionSerializer.deserializeAndApply(resourceToString("/testproj.json"), nodeEditor)
+        IdElementContainerStack.push(nodes)
+        IdElementContainerStack.push(attributes)
+        IdElementContainerStack.push(links)
+
+        EasyVisionSerializer.deserializeAndApply(resourceToString("/testproj.json"), this)
 
         logger.info("Starting EasyVision...")
 
@@ -111,6 +123,10 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         langManager.loadIfNeeded()
 
         nodeList.enable()
+
+        IdElementContainerStack.pop<Node<*>>()
+        IdElementContainerStack.pop<Attribute>()
+        IdElementContainerStack.pop<Link>()
     }
 
     fun firstProcess() {
@@ -119,6 +135,10 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
     }
 
     fun process() {
+        IdElementContainerStack.push(nodes)
+        IdElementContainerStack.push(attributes)
+        IdElementContainerStack.push(links)
+
         onUpdate.run()
 
         ImGui.setNextWindowPos(0f, 0f, ImGuiCond.Always)
@@ -138,7 +158,7 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         ImGui.popFont()
 
         if(keyManager.pressed(Keys.ArrowUp)) {
-            println(EasyVisionSerializer.serializeCurrent())
+            println(EasyVisionSerializer.serialize(nodes.elements, links.elements))
         }
 
         if(keyManager.pressed(Keys.Escape)) {
@@ -146,6 +166,10 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         }
 
         keyManager.update()
+
+        IdElementContainerStack.pop<Node<*>>()
+        IdElementContainerStack.pop<Attribute>()
+        IdElementContainerStack.pop<Link>()
     }
 
     fun destroy() {

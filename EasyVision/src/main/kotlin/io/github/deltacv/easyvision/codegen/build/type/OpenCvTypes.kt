@@ -14,6 +14,10 @@ object OpenCvTypes {
         val CHAIN_APPROX_SIMPLE = ConValue(StandardTypes.cint, "Imgproc.CHAIN_APPROX_SIMPLE").apply {
             additionalImports(this)
         }
+
+        val MORPH_RECT = ConValue(StandardTypes.cint, "Imgproc.MORPH_RECT").apply {
+            additionalImports(this)
+        }
     }
 
     object CvType : Type("CvType", "org.opencv.core")

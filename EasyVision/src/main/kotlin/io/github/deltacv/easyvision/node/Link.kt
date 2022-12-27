@@ -2,10 +2,12 @@ package io.github.deltacv.easyvision.node
 
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.flag.ImNodesColorStyle
+import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.TypedAttribute
 import io.github.deltacv.easyvision.id.DrawableIdElement
 import io.github.deltacv.easyvision.id.DrawableIdElementBase
 import io.github.deltacv.easyvision.id.IdElementContainer
+import io.github.deltacv.easyvision.id.IdElementContainerStack
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import io.github.deltacv.easyvision.serialization.ev.LinkSerializationData
 import io.github.deltacv.easyvision.util.event.EventListener
@@ -14,11 +16,13 @@ class Link(
     val a: Int,
     val b: Int,
     val isDestroyableByUser: Boolean = true,
-    override val idElementContainer: IdElementContainer<Link> = links
 ) : DrawableIdElementBase<Link>(), DataSerializable<LinkSerializationData> {
 
-    val aAttrib by lazy { Node.attributes[a] }
-    val bAttrib by lazy { Node.attributes[b] }
+    val attribIdElementContainer = IdElementContainerStack.peekNonNull<Attribute>()
+    override val idElementContainer = IdElementContainerStack.peekNonNull<Link>()
+
+    val aAttrib by lazy { attribIdElementContainer[a] }
+    val bAttrib by lazy { attribIdElementContainer[b] }
 
     constructor(data: LinkSerializationData) : this(data.from, data.to)
 
@@ -54,12 +58,12 @@ class Link(
         aAttrib?.links?.remove(this)
         bAttrib?.links?.remove(this)
 
-        links.removeId(id)
+        idElementContainer.removeId(id)
         triggerOnChange()
     }
 
     override fun restore() {
-        links[id] = this
+        idElementContainer[id] = this
 
         aAttrib?.links?.add(this)
         bAttrib?.links?.add(this)
@@ -72,12 +76,10 @@ class Link(
     }
 
     companion object {
-        val links = IdElementContainer<Link>()
-
         fun getLinksBetween(a: Node<*>, b: Node<*>): List<Link> {
             val l = mutableListOf<Link>()
 
-            for(link in links) {
+            for(link in IdElementContainerStack.peekNonNull<Link>()) {
                 val linkNodeA = link.aAttrib?.parentNode ?: continue
                 val linkNodeB = link.bAttrib?.parentNode ?: continue
 

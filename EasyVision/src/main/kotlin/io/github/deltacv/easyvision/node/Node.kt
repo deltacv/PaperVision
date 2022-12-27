@@ -12,6 +12,8 @@ import io.github.deltacv.easyvision.exception.NodeGenException
 import io.github.deltacv.easyvision.gui.NodeEditor
 import io.github.deltacv.easyvision.id.DrawableIdElementBase
 import io.github.deltacv.easyvision.id.IdElementContainer
+import io.github.deltacv.easyvision.id.IdElementContainerStack
+import io.github.deltacv.easyvision.node.vision.OutputMatNode
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
 import io.github.deltacv.easyvision.serialization.ev.BasicNodeData
 import io.github.deltacv.easyvision.serialization.ev.NodeSerializationData
@@ -27,14 +29,11 @@ abstract class Node<S: CodeGenSession>(
     private var allowDelete: Boolean = true
 ) : DrawableIdElementBase<Node<*>>(), DataSerializable<NodeSerializationData> {
 
-    override val idElementContainer get() = nodesIdContainer
+    override val idElementContainer = IdElementContainerStack.peekNonNull<Node<*>>()
     override val requestedId get() = serializedId
 
     var serializedId: Int? = null
         private set
-
-    var nodesIdContainer = nodes
-    var attributesIdContainer = attributes
 
     var showAttributesCircles = true
 
@@ -84,7 +83,7 @@ abstract class Node<S: CodeGenSession>(
                 attribs.remove(attribute)
             }
 
-            nodes.removeId(id)
+            idElementContainer.removeId(id)
             onDelete.run()
         }
     }
@@ -100,7 +99,7 @@ abstract class Node<S: CodeGenSession>(
                 attribs.add(attribute)
             }
 
-            nodes[id] = this
+            idElementContainer[id] = this
         }
     }
 
@@ -148,12 +147,41 @@ abstract class Node<S: CodeGenSession>(
         }
     }
 
+    fun hasDeadEnd(): Boolean {
+        for(attribute in nodeAttributes) {
+            for(linkedAttribute in attribute.linkedAttributes()) {
+               if(linkedAttribute != null) {
+                   return if(linkedAttribute.parentNode is OutputMatNode) {
+                       false
+                   } else {
+                       linkedAttribute.parentNode.hasDeadEnd()
+                   }
+               }
+            }
+        }
+
+        return true
+    }
+
     fun propagate(current: CodeGen.Current) {
+        val outputAttributes = mutableListOf<Attribute>()
+
         for(attribute in attribs) {
             if(attribute.mode == AttributeMode.OUTPUT) {
-                for(linkedAttribute in attribute.linkedAttributes()) {
-                    linkedAttribute?.parentNode?.onPropagateReceive(current)
-                }
+                outputAttributes.add(attribute)
+            }
+        }
+
+        outputAttributes.sortBy {
+            val deadEnd = it.parentNode.hasDeadEnd()
+            println("${it.parentNode} $deadEnd")
+
+            deadEnd
+        }
+
+        for(attribute in outputAttributes) {
+            for(linkedAttribute in attribute.linkedAttributes()) {
+                linkedAttribute?.parentNode?.onPropagateReceive(current)
             }
         }
     }
@@ -212,9 +240,6 @@ abstract class Node<S: CodeGenSession>(
     override fun toString() = "Node(type=${this::class.java.typeName}, id=$id)"
 
     companion object {
-        val nodes = IdElementContainer<Node<*>>()
-        val attributes = IdElementContainer<Attribute>()
-
         @JvmStatic protected val INPUT = AttributeMode.INPUT
         @JvmStatic protected val OUTPUT = AttributeMode.OUTPUT
 

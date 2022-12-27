@@ -54,7 +54,9 @@ class IntAttribute(
                 value.set(sliderValue.get())
             }
 
-            checkChange()
+            if(!ImGui.isItemFocused()) {
+                checkChange()
+            }
 
             ImGui.popItemWidth()
 

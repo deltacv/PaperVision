@@ -32,20 +32,18 @@ import io.github.deltacv.easyvision.util.event.EventHandler
 import io.github.deltacv.easyvision.util.flags
 
 class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Window() {
-
     companion object {
         val KEY_PAN_CONSTANT = 5f
         val PAN_CONSTANT = 25f
     }
 
     val context = ImNodesContext()
-
     var isNodeFocused = false
         private set
 
     private val winSizeSupplier: () -> ImVec2 = { easyVision.window.size }
 
-    val originNode = InvisibleNode()
+    val originNode by lazy { InvisibleNode() }
 
     var inputNode = InputMatNode(winSizeSupplier)
         set(value) {
@@ -87,6 +85,10 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
         ImGuiWindowFlags.NoCollapse, ImGuiWindowFlags.NoBringToFrontOnFocus,
         ImGuiWindowFlags.NoTitleBar, ImGuiWindowFlags.NoDecoration
     )
+
+    val nodes get() = easyVision.nodes
+    val attributes get() = easyVision.attributes
+    val links get() = easyVision.links
 
     override fun onEnable() {
         eyeFont = easyVision.fontManager.makeFont(
@@ -130,12 +132,12 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
         // ImNodes.miniMap(0.15f, ImNodesMiniMapLocation.TopLeft)
 
-        for (node in Node.nodes.inmutable) {
+        for (node in nodes.inmutable) {
             node.eocvSimIpc = easyVision.eocvSimIpc
             node.editor = this
             node.draw()
         }
-        for (link in Link.links) {
+        for (link in links) {
             link.draw()
         }
 
@@ -241,8 +243,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
             val start = startAttr.get()
             val end = endAttr.get()
 
-            val startAttrib = Node.attributes[start]
-            val endAttrib = Node.attributes[end]
+            val startAttrib = attributes[start]
+            val endAttrib = attributes[end]
 
             // one of the attributes was null so we can't perform additional checks to ensure stuff
             // we will just go ahead and create the link hoping nothing breaks lol
@@ -254,8 +256,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
             val input = if (startAttrib.mode == AttributeMode.INPUT) start else end
             val output = if (startAttrib.mode == AttributeMode.OUTPUT) start else end
 
-            val inputAttrib = Node.attributes[input]!!
-            val outputAttrib = Node.attributes[output]!!
+            val inputAttrib = attributes[input]!!
+            val outputAttrib = attributes[output]!!
 
             if (startAttrib.mode == endAttrib.mode) {
                 return // linked attributes cannot be of the same mode
@@ -293,7 +295,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
         val hoveredId = ImNodes.getHoveredLink()
 
         if (ImGui.isMouseClicked(ImGuiMouseButton.Right) && hoveredId >= 0) {
-            val hoveredLink = Link.links[hoveredId]
+            val hoveredLink = links[hoveredId]
             hoveredLink?.delete()
         }
     }
@@ -306,7 +308,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
                 for (node in selectedNodes) {
                     try {
-                        Node.nodes[node]?.delete()
+                        nodes[node]?.delete()
                     } catch (ignored: IndexOutOfBoundsException) {
                     }
                 }
@@ -317,7 +319,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
                 ImNodes.getSelectedLinks(selectedLinks)
 
                 for (link in selectedLinks) {
-                    Link.links[link]?.run {
+                    links[link]?.run {
                         if(isDestroyableByUser)
                             delete()
                     }

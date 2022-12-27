@@ -1,6 +1,7 @@
 package io.github.deltacv.easyvision.serialization.ev
 
 import com.google.gson.JsonElement
+import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.gui.NodeEditor
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
@@ -27,12 +28,7 @@ object EasyVisionSerializer {
         return DataSerializer.serializeToTree(serializables)
     }
 
-    fun serializeCurrent() = serialize(
-        nodes = Node.nodes.elements,
-        links = Link.links.elements
-    )
-
-    private fun deserialize(obj: JsonElement?, json: String?, apply: Boolean, nodeEditor: NodeEditor?): EasyVisionData {
+    private fun deserialize(obj: JsonElement?, json: String?, easyVision: EasyVision?): EasyVisionData {
         val data = if(obj != null) {
             DataSerializer.deserialize(obj)
         } else {
@@ -42,10 +38,10 @@ object EasyVisionSerializer {
         val nodes = mutableListOf<Node<*>>()
         val links = mutableListOf<Link>()
 
-        if(apply) {
-            Node.nodes.clear()
-            Node.attributes.clear()
-            Link.links.clear()
+        easyVision?.apply {
+            nodes.clear()
+            attributes.clear()
+            links.clear()
         }
 
         val nodesData = data["nodes"]
@@ -53,14 +49,14 @@ object EasyVisionSerializer {
             for(node in nodesData) {
                 if(node is Node<*>) {
                     // applying the inputmatnode and outputmatnode positions in case they passed a node editor
-                    if(nodeEditor != null) {
+                    if(easyVision != null) {
                         when (node) {
-                            is InputMatNode -> nodeEditor.inputNode = node
-                            is OutputMatNode -> nodeEditor.outputNode = node
+                            is InputMatNode -> easyVision.nodeEditor.inputNode = node
+                            is OutputMatNode -> easyVision.nodeEditor.outputNode = node
                         }
                     }
 
-                    if(apply) {
+                    if(easyVision != null) {
                         node.enable()
                     }
                     nodes.add(node)
@@ -72,7 +68,7 @@ object EasyVisionSerializer {
         if(linksData != null) {
             for(link in linksData) {
                 if(link is Link) {
-                    if(apply) {
+                    if(easyVision != null) {
                         link.enable()
                     }
                     links.add(link)
@@ -83,11 +79,11 @@ object EasyVisionSerializer {
         return EasyVisionData(nodes, links)
     }
 
-    fun deserialize(json: String) = deserialize(null, json, false, null)
-    fun deserialize(obj: JsonElement) = deserialize(obj, null, false, null)
+    fun deserialize(json: String) = deserialize(null, json, null)
+    fun deserialize(obj: JsonElement) = deserialize(obj, null, null)
 
-    fun deserializeAndApply(json: String, nodeEditor: NodeEditor) = deserialize(null, json, true, nodeEditor)
-    fun deserializeAndApply(obj: JsonElement, nodeEditor: NodeEditor) = deserialize(obj, null, true, nodeEditor)
+    fun deserializeAndApply(json: String, easyVision: EasyVision) = deserialize(null, json, easyVision)
+    fun deserializeAndApply(obj: JsonElement, easyVision: EasyVision) = deserialize(obj, null, easyVision)
 
 }
 

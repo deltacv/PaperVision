@@ -3,10 +3,12 @@ package io.github.deltacv.easyvision.gui.eocvsim
 import imgui.ImGui
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.flag.ImNodesColorStyle
+import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.NoSession
 import io.github.deltacv.easyvision.id.IdElementContainer
+import io.github.deltacv.easyvision.id.IdElementContainerStack
 import io.github.deltacv.easyvision.io.PipelineStream
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
@@ -25,7 +27,7 @@ class ImageDisplayNode(
 
     val displayId by displayWindows.nextId(this)
 
-    val inputId by attributes.nextId()
+    val inputId by IdElementContainerStack.peekNonNull<Attribute>().nextId()
 
     override fun drawNode() {
         ImNodes.pushColorStyle(ImNodesColorStyle.Pin, MatAttribute.styleColor)

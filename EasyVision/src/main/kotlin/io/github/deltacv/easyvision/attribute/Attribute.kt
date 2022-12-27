@@ -7,6 +7,7 @@ import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.exception.AttributeGenException
 import io.github.deltacv.easyvision.id.DrawableIdElementBase
+import io.github.deltacv.easyvision.id.IdElementContainerStack
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
 import io.github.deltacv.easyvision.serialization.ev.AttributeSerializationData
@@ -21,7 +22,7 @@ enum class AttributeMode { INPUT, OUTPUT }
 
 abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<AttributeSerializationData> {
 
-    override val idElementContainer get() = parentNode.attributesIdContainer
+    override val idElementContainer get() = IdElementContainerStack.peekNonNull<Attribute>()
     override val requestedId get() = serializedId
 
     @Transient private var getThisSupplier: (() -> Any)? = null
@@ -100,7 +101,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
     override fun delete() {
         onDelete.run()
-        Node.attributes.removeId(id)
+        idElementContainer.removeId(id)
 
         for(link in links.toTypedArray()) {
             link.delete()
@@ -109,7 +110,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     }
 
     override fun restore() {
-        Node.attributes[id] = this
+        idElementContainer[id] = this
     }
 
     fun linkedAttribute(): Attribute? {
@@ -211,7 +212,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
 fun <T: Attribute> T.rebuildOnChange(): T = apply {
     onChange {
-        if(Node.attributes[id] != null) {
+        if(idElementContainer[id] != null) {
             rebuildPreviz()
         }
     }

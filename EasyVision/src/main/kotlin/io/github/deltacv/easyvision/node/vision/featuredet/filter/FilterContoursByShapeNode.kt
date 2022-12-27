@@ -21,7 +21,7 @@ import io.github.deltacv.easyvision.node.RegisterNode
 import io.github.deltacv.easyvision.util.Range2i
 
 enum class Shape(val sides: Int?) {
-    Triangle(3), Rectangle(4), Square(4), Polygon(null)
+    Circle(0), Triangle(3), Rectangle(4), Square(4), Polygon(null)
 }
 
 @RegisterNode(
@@ -40,6 +40,8 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
 
     val output = ListAttribute(OUTPUT, PointsAttribute,"$[att_filteredcontours]")
 
+    private var previousSides = 0
+
     override fun onEnable() {
         + input.rebuildOnChange()
 
@@ -50,28 +52,45 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
         + sides.rebuildOnChange()
 
         sides.onChange {
-            for((i, shapeE) in Shape.values().withIndex()) {
-                if(sides.thisGet() == shapeE.sides) {
-                    shape.currentIndex.set(i)
-                    return@onChange
+            if (sides.thisGet() < 3  && previousSides >= 3) {
+                sides.value.set(0)
+                shape.currentIndex.set(Shape.Circle.ordinal)
+            } else if (sides.thisGet() in 1..2) {
+                sides.value.set(3)
+                shape.currentIndex.set(Shape.Triangle.ordinal)
+            } else {
+                for ((i, shapeE) in Shape.values().withIndex()) {
+                    if (sides.thisGet() == shapeE.sides) {
+                        shape.currentIndex.set(i)
+                        return@onChange
+                    }
                 }
+
+                shape.currentIndex.set(Shape.Polygon.ordinal)
             }
 
-            shape.currentIndex.set(Shape.Polygon.ordinal)
+            previousSides = sides.value.get()
         }
 
         + accuracy
-        accuracy.sliderMode(Range2i(0, 100))
+        accuracy.sliderMode(Range2i(1, 100))
 
         + output.rebuildOnChange()
 
         refreshSidesField()
     }
 
+    private var firstDraw = true
+
     override fun draw() {
         super.draw()
 
-        if(sides.thisGet() < 3) sides.value.set(3)
+        if(firstDraw) {
+            previousSides = sides.value.get()
+            firstDraw = false
+        }
+
+        if(sides.thisGet() < 0) sides.value.set(0)
     }
 
     override fun genCode(current: CodeGen.Current) = current {
@@ -107,12 +126,18 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
             foreach(variable(OpenCvTypes.MatOfPoint, "contour"), inputContours.value) {
                 it("convertTo", contours2f, cvTypeValue("CV_32FC2"))
 
-                Imgproc("approxPolyDP", contours2f, approxPolyDp2f, ((double(100.1) - int(accuracyValue)) / double(100.0)) * Imgproc.callValue("arcLength", DoubleType, contours2f, trueValue), trueValue)
+                separate()
+
+                Imgproc("approxPolyDP", contours2f, approxPolyDp2f, ((double(100.0) - int(accuracyValue)) / double(100.0)) * Imgproc.callValue("arcLength", DoubleType, contours2f, trueValue), trueValue)
                 approxPolyDp2f("convertTo", approxPolyDp, cvTypeValue("CV_32S"))
+
+                separate()
 
                 ifCondition(approxPolyDp.callValue("size", Size).propertyValue("height", IntType) equalsTo sidesValue.value.v) {
                     list("add", it)
                 }
+
+                separate()
 
                 contours2f("release")
                 approxPolyDp("release")
@@ -137,7 +162,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
 
     private fun refreshSidesField() {
         sides.showAttributesCircles = shape.currentValue == Shape.Polygon
-        sides.value.set(shape.currentValue.sides ?: 5)
+        sides.value.set(shape.currentValue.sides ?: if(sides.value.get() >= 5) sides.value.get() else 5)
     }
 
     class Session : CodeGenSession {

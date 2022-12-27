@@ -169,7 +169,7 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
 
     private var previousGet: Any? = null
 
-    protected fun checkChange() {
+    protected open fun checkChange() {
         if(mode == AttributeMode.INPUT) {
             val currentGet = get()
 

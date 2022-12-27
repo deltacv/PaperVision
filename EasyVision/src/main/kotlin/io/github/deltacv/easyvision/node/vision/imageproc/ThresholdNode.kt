@@ -28,17 +28,15 @@ import io.github.deltacv.easyvision.serialization.data.SerializeData
 )
 class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
-    val input = MatAttribute(INPUT, "$[att_input]").rebuildOnChange()
+    val input = MatAttribute(INPUT, "$[att_input]")
     val scalar = ScalarRangeAttribute(INPUT, Colors.values()[0], "$[att_threshold]")
 
     val output = MatAttribute(OUTPUT, "$[att_binaryoutput]")
-        .enablePrevizButton()
-        .rebuildOnChange()
 
     override fun onEnable() {
-        + input
+        + input.rebuildOnChange()
         + scalar
-        + output
+        + output.enablePrevizButton().rebuildOnChange()
     }
 
     @SerializeData

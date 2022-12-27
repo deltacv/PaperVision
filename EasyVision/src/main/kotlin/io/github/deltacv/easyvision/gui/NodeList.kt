@@ -12,6 +12,7 @@ import io.github.deltacv.easyvision.gui.util.Table
 import io.github.deltacv.easyvision.gui.util.Window
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.easyvision.id.IdElementContainer
+import io.github.deltacv.easyvision.id.IdElementContainerStack
 import io.github.deltacv.easyvision.io.KeyManager
 import io.github.deltacv.easyvision.io.Keys
 import io.github.deltacv.easyvision.node.*
@@ -25,11 +26,11 @@ import kotlinx.coroutines.*
 class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window() {
 
     companion object {
-        val listNodes = IdElementContainer<Node<*>>()
-        val listAttributes = IdElementContainer<Attribute>()
-
         const val plusFontSize = 60f
     }
+
+    val listNodes = IdElementContainer<Node<*>>()
+    val listAttributes = IdElementContainer<Attribute>()
 
     val logger by loggerForThis()
 
@@ -81,7 +82,13 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window()
             }
         }
 
+        IdElementContainerStack.push(listNodes)
+        IdElementContainerStack.push(listAttributes)
+
         headers = Headers(keyManager) { nodes }
+
+        IdElementContainerStack.pop<Node<*>>()
+        IdElementContainerStack.pop<Attribute>()
     }
 
     override fun preDrawContents() {
@@ -102,6 +109,9 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window()
             closeList()
             return
         }
+
+        IdElementContainerStack.push(listNodes)
+        IdElementContainerStack.push(listAttributes)
 
         val size = easyVision.window.size
 
@@ -204,6 +214,9 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window()
 
         headers.size = size
 
+        IdElementContainerStack.pop<Node<*>>()
+        IdElementContainerStack.pop<Attribute>()
+
         handleClick(!headers.isHeaderHovered)
     }
 
@@ -290,8 +303,6 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window()
                     continue
                 }
 
-                instance.nodesIdContainer = listNodes
-                instance.attributesIdContainer = listAttributes
                 //instance.drawAttributesCircles = false
                 instance.enable()
 

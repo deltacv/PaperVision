@@ -17,6 +17,7 @@ nod_binarymask,Binary Mask,Mascara Binaria
 nod_colorthresh,Color Threshold,Umbral de Color
 nod_cvtcolor,Convert Color,Convertir Color
 nod_blur,Blur,Difuminado
+nod_erodedilate,Erode and Dilate,Erosionar y Dilatar
 nod_boundingrect,Bounding Rectangles,Rectangulos Delimitantes
 nod_findcontours,Simple Find Contours,Deteccion de Contornos
 nod_filtercontours_byshape,Filter Contours by Shape, Filtrar Contornos por Figura
@@ -50,6 +51,8 @@ att_result,Result,Resultado
 att_shape,Shape,Figura
 att_sides,Sides,Lados
 att_accuracy,Accuracy,Precision
+att_erode,Erode,Erosion
+att_dilate,Dilate,Dilatacion
 err_musthave_attachedattrib,Must have an output attribute attached,Debe tener un atributo de salida conectado
 err_attachedattrib_isnot,Attribute attached is not $[0],El atributo conectado no es $[0]
 err_valreturned_isnot,Value returned from the node is not $[0],El valor retornado del nodo no es $[0]
