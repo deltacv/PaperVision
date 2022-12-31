@@ -239,8 +239,8 @@ open class LanguageBase(
         mainScope.get()
     }
 
-    override val trueValue = ConValue(BooleanType, "true")
-    override val falseValue = ConValue(BooleanType, "false")
+    override val trueValue by lazy { ConValue(BooleanType, "true") }
+    override val falseValue by lazy { ConValue(BooleanType, "false") }
 
     protected fun semicolonIfNecessary() = if(usesSemicolon) ";" else ""
 

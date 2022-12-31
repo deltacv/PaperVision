@@ -62,7 +62,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == outputRects) {
-            return genSession!!.outputRects
+            return lastGenSession!!.outputRects
         }
 
         noValue(attrib)

@@ -14,7 +14,6 @@ import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Scalar
-import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
@@ -118,7 +117,7 @@ open class DrawRectanglesNode
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         if(attrib == outputMat) {
-            return genSession!!.outputMat
+            return lastGenSession!!.outputMat
         }
 
         noValue(attrib)

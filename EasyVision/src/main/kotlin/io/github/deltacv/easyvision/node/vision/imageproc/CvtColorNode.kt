@@ -69,7 +69,7 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return genSession!!.outputMatValue
+            return lastGenSession!!.outputMatValue
         }
 
         noValue(attrib)

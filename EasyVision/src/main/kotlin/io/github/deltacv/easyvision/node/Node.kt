@@ -5,13 +5,10 @@ import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.AttributeMode
-import io.github.deltacv.easyvision.codegen.CodeGen
-import io.github.deltacv.easyvision.codegen.CodeGenSession
-import io.github.deltacv.easyvision.codegen.GenValue
+import io.github.deltacv.easyvision.codegen.*
 import io.github.deltacv.easyvision.exception.NodeGenException
 import io.github.deltacv.easyvision.gui.NodeEditor
 import io.github.deltacv.easyvision.id.DrawableIdElementBase
-import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.id.IdElementContainerStack
 import io.github.deltacv.easyvision.node.vision.OutputMatNode
 import io.github.deltacv.easyvision.serialization.data.DataSerializable
@@ -27,7 +24,7 @@ interface Type {
 
 abstract class Node<S: CodeGenSession>(
     private var allowDelete: Boolean = true
-) : DrawableIdElementBase<Node<*>>(), DataSerializable<NodeSerializationData> {
+) : DrawableIdElementBase<Node<*>>(), GenNode<S>, DataSerializable<NodeSerializationData> {
 
     override val idElementContainer = IdElementContainerStack.peekNonNull<Node<*>>()
     override val requestedId get() = serializedId
@@ -47,6 +44,10 @@ abstract class Node<S: CodeGenSession>(
 
     val isOnEditor get() = ::editor.isInitialized
 
+    override val genOptions = CodeGenOptions()
+
+    override var lastGenSession: S? = null
+
     val onChange = EventHandler("${this::class.java.simpleName}-OnChange")
     val onDelete = EventHandler("OnDelete-${this::class.simpleName}")
 
@@ -58,9 +59,6 @@ abstract class Node<S: CodeGenSession>(
     private val attribs = mutableListOf<Attribute>() // internal mutable list
 
     val nodeAttributes = attribs as List<Attribute> // public read-only
-
-    var genSession: S? = null
-        private set
 
     protected fun drawAttributes() {
         for((i, attribute) in nodeAttributes.withIndex()) {
@@ -113,48 +111,25 @@ abstract class Node<S: CodeGenSession>(
 
     operator fun Attribute.unaryPlus() = addAttribute(this)
 
-    abstract fun genCode(current: CodeGen.Current): S
-
-    open fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    open override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         raise("Node doesn't have output attributes")
     }
 
-    /**
-     * Generates code if there's not a session in the current CodeGen
-     * Automatically propagates to all the nodes attached to the output
-     * attributes after genCode finishes. Called by default on onPropagateReceive()
-    */
-    @Suppress("UNCHECKED_CAST")
-    fun genCodeIfNecessary(current: CodeGen.Current) {
-        val codeGen = current.codeGen
-        val session = codeGen.sessions[this]
-
-        if(session == null) {
-            // prevents duplicate code in weird edge cases
-            // (it's so hard to consider and test every possibility with nodes...)
-            if(!codeGen.busyNodes.contains(this)) {
-                codeGen.busyNodes.add(this)
-
-                genSession = genCode(current)
-                codeGen.sessions[this] = genSession!!
-
-                codeGen.busyNodes.remove(this)
-
-                propagate(current)
-            }
-        } else {
-            genSession = session as S
-        }
-    }
-
-    fun hasDeadEnd(): Boolean {
+    fun hasDeadEnd(initialNode: Node<*> = this): Boolean {
+        nodeAttributesLoop@
         for(attribute in nodeAttributes) {
+            if(attribute.mode == AttributeMode.INPUT) {
+                continue
+            }
+
             for(linkedAttribute in attribute.linkedAttributes()) {
                if(linkedAttribute != null) {
-                   return if(linkedAttribute.parentNode is OutputMatNode) {
-                       false
-                   } else {
-                       linkedAttribute.parentNode.hasDeadEnd()
+                   if(linkedAttribute.mode == AttributeMode.OUTPUT || linkedAttribute.parentNode == initialNode) {
+                       continue // uh oh
+                   }
+
+                   if(linkedAttribute.parentNode is OutputMatNode || !linkedAttribute.parentNode.hasDeadEnd(initialNode)) {
+                       return false // not a dead end
                    }
                }
             }
@@ -163,27 +138,32 @@ abstract class Node<S: CodeGenSession>(
         return true
     }
 
-    fun propagate(current: CodeGen.Current) {
-        val outputAttributes = mutableListOf<Attribute>()
+    override fun propagate(current: CodeGen.Current) {
+        val linkedNodes = mutableListOf<Node<*>>()
 
         for(attribute in attribs) {
             if(attribute.mode == AttributeMode.OUTPUT) {
-                outputAttributes.add(attribute)
+                for(linkedAttribute in attribute.linkedAttributes()) {
+                    if(linkedAttribute != null && !linkedNodes.contains(linkedAttribute.parentNode)) {
+                        linkedNodes.add(linkedAttribute.parentNode)
+                    }
+                }
             }
         }
 
-        outputAttributes.sortBy {
-            val deadEnd = it.parentNode.hasDeadEnd()
-            println("${it.parentNode} $deadEnd")
+        val deadEndNodes = mutableListOf<Node<*>>()
+        val completePathNodes = mutableListOf<Node<*>>()
 
-            deadEnd
-        }
-
-        for(attribute in outputAttributes) {
-            for(linkedAttribute in attribute.linkedAttributes()) {
-                linkedAttribute?.parentNode?.onPropagateReceive(current)
+        for(linkedNode in linkedNodes) {
+            if(linkedNode.hasDeadEnd()) {
+                deadEndNodes.add(linkedNode)
+            } else {
+                completePathNodes.add(linkedNode)
             }
         }
+
+        completePathNodes.forEach { it.receivePropagation(current) }
+        deadEndNodes.forEach { it.receivePropagation(current) }
     }
 
     open fun makeSerializationData() = BasicNodeData(id, ImVec2().apply {
@@ -213,10 +193,6 @@ abstract class Node<S: CodeGenSession>(
         data.nodePos = pos
 
         return data
-    }
-
-    open fun onPropagateReceive(current: CodeGen.Current) {
-        genCodeIfNecessary(current)
     }
 
     fun raise(message: String): Nothing = throw NodeGenException(this, message)

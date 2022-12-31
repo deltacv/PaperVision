@@ -59,6 +59,12 @@ class OutputMatNode @JvmOverloads constructor(
     var windowSizeSupplier: (() -> ImVec2)? = null
 ) : DrawNode<NoSession>(allowDelete = false) {
 
+    init {
+        genOptions {
+            genAtTheEnd = true
+        }
+    }
+
     override fun init() {
         windowSizeSupplier?.let {
             val nodeSize = ImVec2()
@@ -77,7 +83,7 @@ class OutputMatNode @JvmOverloads constructor(
 
     override fun genCode(current: CodeGen.Current) = current {
         current.scope {
-            returnMethod(input.value(current).value) // start code gen!
+            returnMethod(input.value(current).value)
             appendWhiteline = false
         }
 

@@ -9,8 +9,6 @@ import io.github.deltacv.easyvision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.codegen.build.ConValue
-import io.github.deltacv.easyvision.codegen.build.Value
 import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
@@ -154,7 +152,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return genSession!!.output
+            return lastGenSession!!.output
         }
 
         noValue(attrib)

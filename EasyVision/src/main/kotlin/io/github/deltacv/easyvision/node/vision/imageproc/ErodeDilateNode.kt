@@ -2,10 +2,8 @@ package io.github.deltacv.easyvision.node.vision.imageproc
 
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.math.IntAttribute
-import io.github.deltacv.easyvision.attribute.misc.ListAttribute
 import io.github.deltacv.easyvision.attribute.rebuildOnChange
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
-import io.github.deltacv.easyvision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
@@ -33,10 +31,10 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
         + inputMat.rebuildOnChange()
 
         + erodeValue
-        erodeValue.sliderMode(Range2i(1, 100))
+        erodeValue.sliderMode(Range2i(0, 100))
 
         + dilateValue
-        dilateValue.sliderMode(Range2i(1, 100))
+        dilateValue.sliderMode(Range2i(0, 100))
 
         + outputMat.enablePrevizButton().rebuildOnChange()
     }
@@ -108,7 +106,7 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == outputMat) {
-            return genSession!!.outputMatValue
+            return lastGenSession!!.outputMatValue
         }
 
         noValue(attrib)

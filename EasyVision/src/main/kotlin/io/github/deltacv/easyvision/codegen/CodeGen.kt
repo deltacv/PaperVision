@@ -1,11 +1,8 @@
 package io.github.deltacv.easyvision.codegen
 
-import io.github.deltacv.easyvision.codegen.build.Parameter
 import io.github.deltacv.easyvision.codegen.build.Scope
-import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.dsl.CodeGenContext
 import io.github.deltacv.easyvision.codegen.language.Language
-import io.github.deltacv.easyvision.node.Node
 
 enum class Visibility {
     PUBLIC, PRIVATE, PROTECTED
@@ -30,8 +27,16 @@ class CodeGen(
     val viewportTappedScope     = Scope(2, language, importScope, isForPreviz)
     val currScopeViewportTapped = Current(this, viewportTappedScope, isForPreviz)
 
-    val sessions = mutableMapOf<Node<*>, CodeGenSession>()
-    val busyNodes = mutableListOf<Node<*>>()
+    val sessions = mutableMapOf<GenNode<*>, CodeGenSession>()
+    val busyNodes = mutableListOf<GenNode<*>>()
+
+    val endingNodes = mutableListOf<GenNode<*>>()
+
+    enum class Stage {
+        CREATION, INITIAL_GEN, PRE_END, ENDED_SUCCESS, ENDED_ERROR
+    }
+
+    var stage = Stage.CREATION
 
     fun gen() = language.gen(this)
 
@@ -42,6 +47,14 @@ class CodeGen(
     data class Current internal constructor(val codeGen: CodeGen, val scope: Scope, val isForPreviz: Boolean) {
         operator fun <T> invoke(scopeBlock: CodeGenContext.() -> T) = codeGen.invoke(scopeBlock)
     }
+
+}
+
+class CodeGenOptions {
+
+    var genAtTheEnd = false
+
+    inline operator fun invoke(block: CodeGenOptions.() -> Unit) = block()
 
 }
 

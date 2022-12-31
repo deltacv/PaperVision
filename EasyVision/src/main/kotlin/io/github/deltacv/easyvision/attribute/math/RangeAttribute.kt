@@ -15,10 +15,8 @@ class RangeAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null
 ) : TypedAttribute(Companion) {
-
     companion object : Type {
         override val name = "Range"
-
         override fun new(mode: AttributeMode, variableName: String) = RangeAttribute(mode, variableName)
     }
 

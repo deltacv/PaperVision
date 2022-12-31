@@ -50,6 +50,8 @@ class IntAttribute(
             if(range == null) {
                 ImGui.inputInt("", value, 1, 100, if(disableInput) ImGuiInputTextFlags.ReadOnly else 0)
             } else {
+                sliderValue.set(range!!.clip(sliderValue.get()))
+
                 ImGui.sliderInt("###$sliderId", sliderValue.data, range!!.min, range!!.max)
                 value.set(sliderValue.get())
             }

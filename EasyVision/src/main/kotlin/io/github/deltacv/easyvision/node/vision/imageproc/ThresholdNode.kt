@@ -13,7 +13,6 @@ import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Core
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Scalar
-import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.gui.util.ExtraWidgets
 import io.github.deltacv.easyvision.node.RegisterNode
 import io.github.deltacv.easyvision.node.Category
@@ -132,7 +131,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return genSession!!.outputMat
+            return lastGenSession!!.outputMat
         }
 
         noValue(attrib)

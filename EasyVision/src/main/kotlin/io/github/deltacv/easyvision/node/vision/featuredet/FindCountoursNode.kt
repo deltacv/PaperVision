@@ -12,7 +12,6 @@ import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.MatOfPoint
-import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
@@ -62,7 +61,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == outputPoints) {
-            return genSession!!.contoursList
+            return lastGenSession!!.contoursList
         }
 
         noValue(attrib)

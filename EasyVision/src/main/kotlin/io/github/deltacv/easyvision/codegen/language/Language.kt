@@ -72,7 +72,6 @@ interface Language : ValueBuilder {
     fun block(start: String, body: Scope, tabs: String): String
 
     fun gen(codeGen: CodeGen): String
-
     interface ImportBuilder {
         fun import(type: Type)
 

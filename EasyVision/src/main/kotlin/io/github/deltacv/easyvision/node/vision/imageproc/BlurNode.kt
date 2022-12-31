@@ -11,7 +11,6 @@ import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Size
-import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
@@ -91,7 +90,7 @@ class BlurNode : DrawNode<BlurNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return genSession!!.outputMatValue
+            return lastGenSession!!.outputMatValue
         }
 
         noValue(attrib)

@@ -24,15 +24,31 @@ class CodeGenManager(val easyVision: EasyVision) {
 
         val codeGen = CodeGen(name, language, isForPreviz)
 
+        val current = codeGen.currScopeProcessFrame
+
         try {
-            easyVision.nodeEditor.inputNode.startGen(codeGen.currScopeProcessFrame)
+            codeGen.stage = CodeGen.Stage.INITIAL_GEN
+
+            easyVision.nodeEditor.inputNode.startGen(current)
         } catch (attrEx: AttributeGenException) {
+            codeGen.stage = CodeGen.Stage.ENDED_ERROR
+
             Popup(attrEx.message, attrEx.attribute.position, 8.0, label = "Gen-Error").enable()
             logger.warn("Code gen stopped due to attribute exception", attrEx)
             return ""
         }
 
-        return codeGen.gen()
+        codeGen.stage = CodeGen.Stage.PRE_END
+
+        for(node in codeGen.endingNodes) {
+            node.genCodeIfNecessary(current)
+        }
+
+        val result = codeGen.gen()
+
+        codeGen.stage = CodeGen.Stage.ENDED_SUCCESS
+
+        return result
     }
 
 }

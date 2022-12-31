@@ -37,7 +37,7 @@ class SumIntegerNode : DrawNode<SumIntegerNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == result) {
-            return genSession!!.result
+            return lastGenSession!!.result
         }
 
         noValue(attrib)
