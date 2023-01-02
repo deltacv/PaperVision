@@ -22,7 +22,7 @@ enum class AttributeMode { INPUT, OUTPUT }
 
 abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<AttributeSerializationData> {
 
-    override val idElementContainer get() = IdElementContainerStack.peekNonNull<Attribute>()
+    override val idElementContainer get() = IdElementContainerStack.threadStack.peekNonNull<Attribute>()
     override val requestedId get() = serializedId
 
     @Transient private var getThisSupplier: (() -> Any)? = null

@@ -2,7 +2,7 @@ package io.github.deltacv.easyvision.codegen.build
 
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.language.Language
-import io.github.deltacv.easyvision.node.vision.Colors
+import io.github.deltacv.easyvision.node.vision.ColorSpace
 
 interface ValueBuilder {
 
@@ -68,6 +68,9 @@ interface ValueBuilder {
         "(${value})"
     } else value
 
+    fun string(value: String): Value
+    fun string(value: Value): Value
+
     fun new(type: Type, vararg parameters: Value): Value
 
     fun arrayOf(type: Type): Type
@@ -87,14 +90,14 @@ interface ValueBuilder {
 
     fun enumValue(type: Type, constantName: String) = ConValue(type, "$type.$constantName")
 
-    fun cvtColorValue(a: Colors, b: Colors): ConValue {
+    fun cvtColorValue(a: ColorSpace, b: ColorSpace): ConValue {
         var newA = a
         var newB = b
 
-        if(a == Colors.RGBA && b != Colors.RGB) {
-            newA = Colors.RGB
-        } else if(a != Colors.RGB && b == Colors.RGBA) {
-            newB = Colors.RGB
+        if(a == ColorSpace.RGBA && b != ColorSpace.RGB) {
+            newA = ColorSpace.RGB
+        } else if(a != ColorSpace.RGB && b == ColorSpace.RGBA) {
+            newB = ColorSpace.RGB
         }
 
         return ConValue(language.IntType, "Imgproc.COLOR_${newA.name}2${newB.name}").apply {

@@ -27,7 +27,7 @@ class ImageDisplayNode(
 
     val displayId by displayWindows.nextId(this)
 
-    val inputId by IdElementContainerStack.peekNonNull<Attribute>().nextId()
+    val inputId by IdElementContainerStack.threadStack.peekNonNull<Attribute>().nextId()
 
     override fun drawNode() {
         ImNodes.pushColorStyle(ImNodesColorStyle.Pin, MatAttribute.styleColor)

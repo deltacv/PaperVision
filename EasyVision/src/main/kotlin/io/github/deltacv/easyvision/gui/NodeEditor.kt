@@ -4,7 +4,6 @@ import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.ImNodesContext
-import imgui.extension.imnodes.flag.ImNodesMiniMapLocation
 import imgui.flag.ImGuiMouseButton
 import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImInt
@@ -75,6 +74,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
     private var prevMouseX = 0f
     private var prevMouseY = 0f
 
+    private var rightClickedWhileHoveringNode = false
+
     private val scrollTimer = ElapsedTime()
 
     val onDraw = EventHandler("NodeEditor-OnDraw")
@@ -110,7 +111,6 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
         playButton = EOCVSimPlayButtonWindow(
             { easyVision.nodeList.floatingButton },
-            easyVision.defaultFont,
             easyVision.eocvSimIpc,
             easyVision.nodeEditor.pipelineStream,
             easyVision.fontManager
@@ -143,18 +143,28 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
         ImNodes.endNodeEditor()
 
-        isNodeFocused = ImNodes.numSelectedNodes() > 0 || ImNodes.getHoveredNode() >= 0
+        isNodeFocused = ImNodes.getHoveredNode() >= 0
+
+        val isFreeToMove = (!isNodeFocused || scrollTimer.millis <= 500)
+
+        if(rightClickedWhileHoveringNode) {
+            if(ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
+                rightClickedWhileHoveringNode = false
+            }
+        } else {
+            rightClickedWhileHoveringNode = ImGui.isMouseClicked(ImGuiMouseButton.Right) && !isFreeToMove
+        }
 
         if (easyVision.nodeList.isNodesListOpen) {
             ImNodes.clearLinkSelection()
             ImNodes.clearNodeSelection()
         } else if (
             ImGui.isMouseDown(ImGuiMouseButton.Middle)
-            || (ImGui.isMouseDown(ImGuiMouseButton.Left) && keyManager.pressing(Keys.LeftControl))
+            || (ImGui.isMouseDown(ImGuiMouseButton.Right) && (!rightClickedWhileHoveringNode || keyManager.pressing(Keys.LeftControl)))
         ) {
             editorPanning.x += (ImGui.getMousePosX() - prevMouseX)
             editorPanning.y += (ImGui.getMousePosY() - prevMouseY)
-        } else if (!isNodeFocused || scrollTimer.millis <= 500) { // not hovering any node
+        } else if(isFreeToMove) { // not hovering any node
             var doingKeys = false
 
             // scrolling
@@ -194,7 +204,7 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
         if (editorPanning.x != prevEditorPanning.x || editorPanning.y != prevEditorPanning.y) {
             ImNodes.editorResetPanning(editorPanning.x, editorPanning.y)
         } else {
-            ImNodes.getNodeEditorSpacePos(originNode.id, editorPanning)
+            ImNodes.editorContextGetPanning(editorPanning)
         }
 
         editorPanningDelta.x = editorPanning.x - prevEditorPanning.x
@@ -334,7 +344,6 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
 
     class EOCVSimPlayButtonWindow(
         val floatingButtonSupplier: () -> FrameWidthWindow,
-        val defaultFont: Font,
         val eocvSimIpc: EOCVSimIpcManager,
         val stream: PipelineStream,
         fontManager: FontManager

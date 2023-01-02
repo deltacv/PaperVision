@@ -19,7 +19,7 @@ import io.github.deltacv.easyvision.EasyVision
 //
 // later on, we get the position of the dummy element of each cell and set it to the corresponding
 // node, which is independent of our table, i could *technically* make the calculations myself to place
-// the nodes in they corresponding positions without this bad hack, but hey if imgui can do it for us
+// the nodes in their corresponding positions without this bad hack, but hey if imgui can do it for us
 // why not use it instead?
 //
 // ...i hate this so much

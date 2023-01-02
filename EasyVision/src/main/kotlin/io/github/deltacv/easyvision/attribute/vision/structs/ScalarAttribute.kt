@@ -5,18 +5,16 @@ import io.github.deltacv.easyvision.EasyVision
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.AttributeMode
 import io.github.deltacv.easyvision.attribute.TypedAttribute
-import io.github.deltacv.easyvision.attribute.math.DoubleAttribute
 import io.github.deltacv.easyvision.attribute.math.IntAttribute
 import io.github.deltacv.easyvision.attribute.misc.ListAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.node.vision.Colors
-import io.github.deltacv.easyvision.util.Range2d
+import io.github.deltacv.easyvision.node.vision.ColorSpace
 import io.github.deltacv.easyvision.util.Range2i
 
 class ScalarAttribute(
     mode: AttributeMode,
-    color: Colors,
+    color: ColorSpace,
     variableName: String? = null
 ) : ListAttribute(mode, IntAttribute, variableName, color.channels, sameLine = true) {
 

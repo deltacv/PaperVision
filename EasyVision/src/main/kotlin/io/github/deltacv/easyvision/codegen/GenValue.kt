@@ -1,14 +1,13 @@
 package io.github.deltacv.easyvision.codegen
 
 import io.github.deltacv.easyvision.attribute.Attribute
-import io.github.deltacv.easyvision.codegen.build.ConValue
 import io.github.deltacv.easyvision.codegen.build.Value
-import io.github.deltacv.easyvision.node.vision.Colors
+import io.github.deltacv.easyvision.node.vision.ColorSpace
 import kotlin.reflect.KClass
 
 sealed class GenValue {
 
-    data class Mat(val value: Value, val color: Colors, val isBinary: kotlin.Boolean = false) : GenValue() {
+    data class Mat(val value: Value, val color: ColorSpace, val isBinary: kotlin.Boolean = false) : GenValue() {
         fun requireBinary(attribute: Attribute) {
             attribute.warnAssert(
                 isBinary,
@@ -46,6 +45,8 @@ sealed class GenValue {
     data class Int(val value: kotlin.Int) : GenValue()
     data class Float(val value: kotlin.Float) : GenValue()
     data class Double(val value: kotlin.Double) : GenValue()
+
+    data class String(val value: kotlin.String) : GenValue()
 
     data class Scalar(
         val a: kotlin.Double,

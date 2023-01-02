@@ -17,7 +17,7 @@ import io.github.deltacv.easyvision.gui.util.ExtraWidgets
 import io.github.deltacv.easyvision.node.RegisterNode
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
-import io.github.deltacv.easyvision.node.vision.Colors
+import io.github.deltacv.easyvision.node.vision.ColorSpace
 import io.github.deltacv.easyvision.serialization.data.SerializeData
 
 @RegisterNode(
@@ -28,7 +28,7 @@ import io.github.deltacv.easyvision.serialization.data.SerializeData
 class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
     val input = MatAttribute(INPUT, "$[att_input]")
-    val scalar = ScalarRangeAttribute(INPUT, Colors.values()[0], "$[att_threshold]")
+    val scalar = ScalarRangeAttribute(INPUT, ColorSpace.values()[0], "$[att_threshold]")
 
     val output = MatAttribute(OUTPUT, "$[att_binaryoutput]")
 
@@ -41,7 +41,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
     @SerializeData
     private var colorValue = ImInt()
 
-    private var lastColor = Colors.values()[0]
+    private var lastColor = ColorSpace.values()[0]
 
     override fun drawNode() {
         input.drawHere()
@@ -50,7 +50,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         ImGui.text("(Enum) Color Space")
 
         ImGui.pushItemWidth(110.0f)
-        val color = ExtraWidgets.enumCombo(Colors.values(), colorValue)
+        val color = ExtraWidgets.enumCombo(ColorSpace.values(), colorValue)
         ImGui.popItemWidth()
 
         ImGui.newLine()
@@ -119,7 +119,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
             }
 
             Core("inRange", inputMat.value, lowerScalar, upperScalar, thresholdTargetMat)
-            output.streamIfEnabled(thresholdTargetMat, Colors.GRAY)
+            output.streamIfEnabled(thresholdTargetMat, ColorSpace.GRAY)
         }
 
         session.outputMat = GenValue.Mat(thresholdTargetMat, targetColor, true)

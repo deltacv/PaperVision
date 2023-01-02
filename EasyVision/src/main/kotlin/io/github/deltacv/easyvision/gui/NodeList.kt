@@ -82,13 +82,13 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window()
             }
         }
 
-        IdElementContainerStack.push(listNodes)
-        IdElementContainerStack.push(listAttributes)
+        IdElementContainerStack.threadStack.push(listNodes)
+        IdElementContainerStack.threadStack.push(listAttributes)
 
         headers = Headers(keyManager) { nodes }
 
-        IdElementContainerStack.pop<Node<*>>()
-        IdElementContainerStack.pop<Attribute>()
+        IdElementContainerStack.threadStack.pop<Node<*>>()
+        IdElementContainerStack.threadStack.pop<Attribute>()
     }
 
     override fun preDrawContents() {
@@ -110,8 +110,8 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window()
             return
         }
 
-        IdElementContainerStack.push(listNodes)
-        IdElementContainerStack.push(listAttributes)
+        IdElementContainerStack.threadStack.push(listNodes)
+        IdElementContainerStack.threadStack.push(listAttributes)
 
         val size = easyVision.window.size
 
@@ -214,8 +214,8 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window()
 
         headers.size = size
 
-        IdElementContainerStack.pop<Node<*>>()
-        IdElementContainerStack.pop<Attribute>()
+        IdElementContainerStack.threadStack.pop<Node<*>>()
+        IdElementContainerStack.threadStack.pop<Attribute>()
 
         handleClick(!headers.isHeaderHovered)
     }

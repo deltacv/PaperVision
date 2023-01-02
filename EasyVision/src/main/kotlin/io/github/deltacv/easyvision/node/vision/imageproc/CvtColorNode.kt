@@ -12,7 +12,7 @@ import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
-import io.github.deltacv.easyvision.node.vision.Colors
+import io.github.deltacv.easyvision.node.vision.ColorSpace
 
 @RegisterNode(
     name = "nod_cvtcolor",
@@ -24,7 +24,7 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
     val input  = MatAttribute(INPUT, "$[att_input]")
     val output = MatAttribute(OUTPUT, "$[att_output]").enablePrevizButton()
 
-    val convertTo = EnumAttribute(INPUT, Colors.values(), "$[att_convertto]")
+    val convertTo = EnumAttribute(INPUT, ColorSpace.values(), "$[att_convertto]")
 
     override fun onEnable() {
         + input.rebuildOnChange()

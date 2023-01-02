@@ -3,7 +3,7 @@ package io.github.deltacv.easyvision.codegen.build
 import io.github.deltacv.easyvision.codegen.dsl.ScopeContext
 import io.github.deltacv.easyvision.codegen.*
 import io.github.deltacv.easyvision.codegen.language.Language
-import io.github.deltacv.easyvision.node.vision.Colors
+import io.github.deltacv.easyvision.node.vision.ColorSpace
 
 class Scope(
     val tabsCount: Int = 1,
@@ -127,17 +127,17 @@ class Scope(
         builder.append("$tabs${language.methodCallDeclaration(callee, methodName, *parameters)}")
     }
 
-    fun streamMat(id: Int, mat: Value, matColor: Colors = Colors.RGB) {
+    fun streamMat(id: Int, mat: Value, matColor: ColorSpace = ColorSpace.RGB) {
         if(isForPreviz) {
             newStatement()
 
-            val cvtCode = if(matColor != Colors.RGB) {
-                language.cvtColorValue(matColor, Colors.RGB)
+            val cvtCode = if(matColor != ColorSpace.RGB) {
+                language.cvtColorValue(matColor, ColorSpace.RGB)
             } else null
 
             if (cvtCode != null) importValue(cvtCode)
 
-            builder.append("$tabs${language.streamMatCallDeclaration(id.v, mat, cvtCode)}")
+            builder.append("$tabs${language.streamMatCallDeclaration(language.int(id), mat, cvtCode)}")
         }
     }
 
@@ -148,10 +148,25 @@ class Scope(
         builder.append("$tabs${language.methodCallDeclaration(methodName, *parameters)}")
     }
 
+
+    fun constructor(
+        vis: Visibility, className: String,
+        body: Scope, vararg parameters: Parameter
+    ) {
+        newLineIfNotBlank()
+
+        for(parameter in parameters) {
+            importType(parameter.type)
+        }
+
+        builder.append(language.block(language.constructorDeclaration(vis, className, *parameters), body, tabs))
+    }
+
     fun method(
         vis: Visibility, returnType: Type, name: String, body: Scope,
         vararg parameters: Parameter,
-        isStatic: Boolean = false, isFinal: Boolean = false, isOverride: Boolean = false
+        isStatic: Boolean = false, isFinal: Boolean = false,
+        isSynchronized: Boolean = false, isOverride: Boolean = false
     ) {
         newLineIfNotBlank()
 
@@ -161,7 +176,7 @@ class Scope(
 
         val methodDeclaration = language.methodDeclaration(
             vis, returnType, name, *parameters,
-            isStatic = isStatic, isFinal = isFinal, isOverride = isOverride
+            isStatic = isStatic, isFinal = isFinal, isSynchronized = isSynchronized, isOverride = isOverride
         )
 
         if(methodDeclaration.first?.trim()?.isNotEmpty() == true) {
@@ -180,17 +195,18 @@ class Scope(
         builder.append("$tabs${language.returnDeclaration(value)}")
     }
 
-    fun clazz(vis: Visibility, name: String, body: Scope,
-              extends: Type? = null, implements: Array<Type>? = null,
-              isStatic: Boolean = false, isFinal: Boolean = false) {
-
-        newStatement()
-
+    fun clazz(
+        vis: Visibility, name: String, body: Scope,
+        extends: Type? = null, vararg implements: Type,
+        isStatic: Boolean = false, isFinal: Boolean = false
+    ) {
         if(extends != null) importType(extends)
-        if(implements != null) importType(*implements)
+        importType(*implements)
+
+        newLineIfNotBlank()
 
         builder.append(language.block(
-            language.classDeclaration(vis, name, body, extends, implements, isStatic, isFinal),
+            language.classDeclaration(vis, name, body, extends, *implements, isStatic = isStatic, isFinal = isFinal),
             body, tabs
         ))
     }
@@ -273,4 +289,8 @@ class Scope(
 
 }
 
-data class Parameter(val type: Type, val name: String, val isFinal: Boolean = false)
+data class Parameter(override val type: Type, val name: String, val isFinal: Boolean = false) : Value() {
+
+    override val value = name
+
+}

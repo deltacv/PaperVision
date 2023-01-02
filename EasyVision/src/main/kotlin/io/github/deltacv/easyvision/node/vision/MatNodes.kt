@@ -9,7 +9,8 @@ import io.github.deltacv.easyvision.attribute.vision.MatAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.codegen.NoSession
-import io.github.deltacv.easyvision.codegen.build.v
+import io.github.deltacv.easyvision.codegen.build.Variable
+import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.RegisterNode
 
@@ -44,7 +45,7 @@ class InputMatNode @JvmOverloads constructor(
         propagate(current)
     }
 
-    val value = GenValue.Mat("input".v, Colors.RGBA)
+    val value = GenValue.Mat(Variable(OpenCvTypes.Mat, "input"), ColorSpace.RGBA)
 
     override fun getOutputValueOf(current: CodeGen.Current,
                                   attrib: Attribute) = value

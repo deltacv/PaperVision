@@ -9,12 +9,12 @@ import io.github.deltacv.easyvision.attribute.math.RangeAttribute
 import io.github.deltacv.easyvision.attribute.misc.ListAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
-import io.github.deltacv.easyvision.node.vision.Colors
+import io.github.deltacv.easyvision.node.vision.ColorSpace
 import io.github.deltacv.easyvision.util.hexString
 
 class ScalarRangeAttribute(
     mode: AttributeMode,
-    color: Colors,
+    color: ColorSpace,
     variableName: String? = null
 ) : ListAttribute(mode, RangeAttribute, variableName, color.channels, sameLine = true) {
 

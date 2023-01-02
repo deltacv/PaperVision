@@ -11,6 +11,7 @@ import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
+import io.github.deltacv.easyvision.node.vision.ColorSpace
 import io.github.deltacv.easyvision.util.Range2i
 
 @RegisterNode(
@@ -56,8 +57,8 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
         val output = uniqueVariable("${input.value.value!!}ErodedDilated", OpenCvTypes.Mat.new())
 
         group {
-            private(erodeValVariable)
-            private(dilateValVariable)
+            private(erodeValVariable, erodeValue.label())
+            private(dilateValVariable, dilateValue.label())
             private(element)
             private(output)
         }
@@ -95,6 +96,8 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
 
                 element("release")
             }
+
+            outputMat.streamIfEnabled(output, ColorSpace.GRAY)
         }
 
         session.outputMatValue = GenValue.Mat(output, input.color, input.isBinary)

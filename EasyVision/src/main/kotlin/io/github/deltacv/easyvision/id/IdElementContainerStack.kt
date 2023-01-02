@@ -1,6 +1,17 @@
 package io.github.deltacv.easyvision.id
 
-object IdElementContainerStack {
+class IdElementContainerStack {
+
+    companion object {
+        // map of thread-dependent IdElementContainerStack-s
+        private val threadStacks = mutableMapOf<Thread, IdElementContainerStack>()
+
+        // function that returns a thread-dependent IdElementContainerStack, based on the current thread
+        val threadStack: IdElementContainerStack
+            get() = threadStacks.getOrPut(Thread.currentThread()) { IdElementContainerStack() }
+
+        fun getStackOfThread(thread: Thread) = threadStacks[thread]
+    }
 
     private val stacks = mutableMapOf<Class<out IdElement>, ArrayDeque<IdElementContainer<*>>>()
 

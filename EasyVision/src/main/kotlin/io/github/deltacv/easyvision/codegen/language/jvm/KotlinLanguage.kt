@@ -60,13 +60,15 @@ object KotlinLanguage : LanguageBase(usesSemicolon = false) {
         vararg parameters: Parameter,
         isStatic: Boolean,
         isFinal: Boolean,
+        isSynchronized: Boolean,
         isOverride: Boolean
     ): Pair<String?, String> {
         val visibility = if(vis != Visibility.PUBLIC) "${vis.name.lowercase()} " else ""
         val open = if(!isFinal) "open " else ""
         val returnTypeStr = if(returnType != VoidType) ": ${returnType.className}" else ""
 
-        return Pair("",
+        return Pair(
+            if(isSynchronized) "@Synchronized" else "",
             "${if(isOverride) "override " else ""}$visibility${open}fun $name(${parameters.csv()})$returnTypeStr"
         )
     }
@@ -80,7 +82,7 @@ object KotlinLanguage : LanguageBase(usesSemicolon = false) {
         name: String,
         body: Scope,
         extends: Type?,
-        implements: Array<Type>?,
+        vararg implements: Type,
         isStatic: Boolean,
         isFinal: Boolean
     ): String {
@@ -91,10 +93,8 @@ object KotlinLanguage : LanguageBase(usesSemicolon = false) {
 
         if(extends != null) extendsAndImplementsList.add("${extends.shortNameWithGenerics}()")
 
-        if(implements != null) {
-            for(type in implements) {
-                extendsAndImplementsList.add(type.shortNameWithGenerics)
-            }
+        for(type in implements) {
+            extendsAndImplementsList.add(type.shortNameWithGenerics)
         }
 
         val extendsAndImplements = if(extendsAndImplementsList.isNotEmpty()) {

@@ -2,7 +2,7 @@ package io.github.deltacv.easyvision.codegen.dsl
 
 import io.github.deltacv.easyvision.codegen.build.*
 import io.github.deltacv.easyvision.codegen.language.Language
-import io.github.deltacv.easyvision.node.vision.Colors
+import io.github.deltacv.easyvision.node.vision.ColorSpace
 
 open class LanguageContext(val language: Language) {
 
@@ -62,19 +62,22 @@ open class LanguageContext(val language: Language) {
     infix fun Float.between(right: Float) = language.division(this.v, right.v)
     infix fun Double.between(right: Double) = language.division(this.v, right.v)
 
-    fun int(value: Value) = ConValue(language.IntType, value.value)
-    fun int(value: Int) = ConValue(language.IntType, value.toString())
+    fun int(value: Value) = language.int(value)
+    fun int(value: Int) = language.int(value)
 
-    fun long(value: Value) = ConValue(language.LongType, value.value)
-    fun long(value: Long) = ConValue(language.LongType, value.toString())
+    fun long(value: Value) = language.long(value)
+    fun long(value: Long) = language.long(value)
 
-    fun float(value: Value) = ConValue(language.FloatType, value.value)
-    fun float(value: Float) = ConValue(language.FloatType, value.toString())
+    fun float(value: Value) = language.float(value)
+    fun float(value: Float) = language.float(value)
 
-    fun double(value: Value) = ConValue(language.DoubleType, value.value)
-    fun double(value: Double) = ConValue(language.DoubleType, value.toString())
+    fun double(value: Value) = language.double(value)
+    fun double(value: Double) = language.double(value)
 
     fun new(type: Type, vararg parameters: Value) = language.new(type, *parameters)
+
+    fun string(value: String) = language.string(value)
+    fun string(value: Value) = language.string(value)
 
     @JvmName("newExt")
     fun Type.new(vararg parameters: Value) = new(this, *parameters)
@@ -101,7 +104,7 @@ open class LanguageContext(val language: Language) {
 
     fun enumValue(type: Type, constantName: String) = language.enumValue(type, constantName)
 
-    fun cvtColorValue(a: Colors, b: Colors) = language.cvtColorValue(a, b)
+    fun cvtColorValue(a: ColorSpace, b: ColorSpace) = language.cvtColorValue(a, b)
 
     fun cvTypeValue(cvType: String) = language.cvTypeValue(cvType)
 

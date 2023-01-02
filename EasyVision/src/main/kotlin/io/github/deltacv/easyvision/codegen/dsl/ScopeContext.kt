@@ -1,8 +1,9 @@
 package io.github.deltacv.easyvision.codegen.dsl
 
 import io.github.deltacv.easyvision.attribute.vision.MatAttribute
+import io.github.deltacv.easyvision.codegen.Visibility
 import io.github.deltacv.easyvision.codegen.build.*
-import io.github.deltacv.easyvision.node.vision.Colors
+import io.github.deltacv.easyvision.node.vision.ColorSpace
 
 class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
 
@@ -38,11 +39,11 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         scope.newLineIfNotBlank()
     }
 
-    fun streamMat(id: Int, mat: Value, matColor: Colors = Colors.RGB) {
+    fun streamMat(id: Int, mat: Value, matColor: ColorSpace = ColorSpace.RGB) {
         scope.streamMat(id, mat, matColor)
     }
 
-    fun MatAttribute.streamIfEnabled(mat: Value, matColor: Colors = Colors.RGB) {
+    fun MatAttribute.streamIfEnabled(mat: Value, matColor: ColorSpace = ColorSpace.RGB) {
         if(displayWindow != null) {
             streamMat(displayWindow!!.displayId, mat, matColor)
         }
@@ -52,6 +53,12 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         scope.localVariable(Variable(this, v))
 
     fun local(v: Variable) = scope.localVariable(v)
+
+
+    fun instanceVariable(
+        vis: Visibility, variable: Variable, label: String? = null,
+        isStatic: Boolean = false, isFinal: Boolean = false
+    ) = scope.instanceVariable(vis, variable, label, isStatic, isFinal)
 
     infix fun Variable.set(v: Value) =
         scope.variableSet(this, v)
@@ -88,6 +95,39 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
     fun forLoop(variable: Value, start: Value, max: Value, block: ScopeContext.(Value) -> Unit) =
         forLoop(variable, start, max, null, block)
 
+    fun constructor(
+        vis: Visibility, clazz: Type, vararg parameters: Parameter, block: ScopeContext.() -> Unit
+    ) {
+        val constructorScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
+        block(constructorScope.context)
+
+        scope.constructor(vis, clazz.className, constructorScope, *parameters)
+    }
+
+    fun method(
+        vis: Visibility, returnType: Type, name: String,
+        vararg parameters: Parameter, isStatic: Boolean = false,
+        isFinal: Boolean = false, isOverride: Boolean = false,
+        isSynchronized: Boolean = false, block: ScopeContext.() -> Unit
+    ) {
+        val methodScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
+        block(methodScope.context)
+
+        scope.method(vis, returnType, name, methodScope, *parameters, isStatic = isStatic, isFinal = isFinal, isSynchronized = isSynchronized, isOverride = isOverride)
+    }
+
     fun returnMethod(value: Value? = null) = scope.returnMethod(value)
+
+    fun clazz(
+        vis: Visibility, name: String,
+        extends: Type? = null, vararg implements: Type,
+        isStatic: Boolean = false, isFinal: Boolean = false,
+        block: ScopeContext.() -> Unit
+    ) {
+        val clazzScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
+        block(clazzScope.context)
+
+        scope.clazz(vis, name, clazzScope, extends, *implements, isStatic = isStatic, isFinal = isFinal)
+    }
 
 }

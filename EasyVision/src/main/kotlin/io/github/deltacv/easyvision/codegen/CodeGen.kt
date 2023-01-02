@@ -32,6 +32,8 @@ class CodeGen(
 
     val endingNodes = mutableListOf<GenNode<*>>()
 
+    private val flags = mutableListOf<String>()
+
     enum class Stage {
         CREATION, INITIAL_GEN, PRE_END, ENDED_SUCCESS, ENDED_ERROR
     }
@@ -40,8 +42,11 @@ class CodeGen(
 
     fun gen() = language.gen(this)
 
-    private val context = CodeGenContext(this)
+    fun addFlag(flag: String) = if(!flags.contains(flag)) flags.add(flag) else false
+    fun hasFlag(flag: String) = flags.contains(flag)
+    fun flags() = flags.toTypedArray()
 
+    val context = CodeGenContext(this)
     operator fun <T> invoke(block: CodeGenContext.() -> T) = block(context)
 
     data class Current internal constructor(val codeGen: CodeGen, val scope: Scope, val isForPreviz: Boolean) {

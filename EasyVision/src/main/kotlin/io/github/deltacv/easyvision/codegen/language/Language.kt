@@ -34,6 +34,19 @@ interface Language : ValueBuilder {
 
     fun isImportExcluded(import: Type) = excludedImports.contains(import)
 
+
+    fun int(value: Value) = ConValue(language.IntType, value.value)
+    fun int(value: Int) = ConValue(language.IntType, value.toString())
+
+    fun long(value: Value) = ConValue(LongType, value.value)
+    fun long(value: Long) = ConValue(LongType, value.toString())
+
+    fun float(value: Value) = ConValue(FloatType, value.value)
+    fun float(value: Float) = ConValue(FloatType, value.toString())
+
+    fun double(value: Value) = ConValue(DoubleType, value.value)
+    fun double(value: Double) = ConValue(DoubleType, value.toString())
+
     fun instanceVariableDeclaration(
         vis: Visibility, variable: Variable, label: String? = null,
         isStatic: Boolean = false, isFinal: Boolean = false): Pair<String?, String>
@@ -50,9 +63,11 @@ interface Language : ValueBuilder {
 
     fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value? = null): String
 
+    fun constructorDeclaration(vis: Visibility, className: String, vararg parameters: Parameter): String
+
     fun methodDeclaration(
         vis: Visibility, returnType: Type, name: String, vararg parameters: Parameter,
-        isStatic: Boolean = false, isFinal: Boolean = false, isOverride: Boolean = false
+        isStatic: Boolean = false, isFinal: Boolean = false, isSynchronized: Boolean = false, isOverride: Boolean = false
     ): Pair<String?, String>
 
     fun returnDeclaration(value: Value? = null): String
@@ -64,7 +79,7 @@ interface Language : ValueBuilder {
     fun whileLoopDeclaration(condition: Condition): String
 
     fun classDeclaration(vis: Visibility, name: String, body: Scope,
-              extends: Type? = null, implements: Array<Type>? = null,
+              extends: Type? = null, vararg implements: Type,
               isStatic: Boolean = false, isFinal: Boolean = false) : String
 
     fun enumClassDeclaration(name: String, vararg values: String): String

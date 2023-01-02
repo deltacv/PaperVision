@@ -35,6 +35,8 @@ object DataSerializer {
 @Target(AnnotationTarget.FIELD)
 annotation class SerializeData
 
-
 @Target(AnnotationTarget.CLASS)
 annotation class SerializeIgnore
+
+@Target(AnnotationTarget.CLASS)
+annotation class SerializationName(val name: String)

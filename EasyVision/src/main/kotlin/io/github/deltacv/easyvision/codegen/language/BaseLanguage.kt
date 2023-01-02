@@ -88,6 +88,9 @@ open class LanguageBase(
             methodCallDeclaration("streamFrame", id, mat, cvtColor)
         else methodCallDeclaration("streamFrame", id, mat)
 
+    override fun constructorDeclaration(vis: Visibility, className: String, vararg parameters: Parameter) =
+        "${vis.name.lowercase()} $className(${parameters.csv()})"
+
     override fun methodDeclaration(
         vis: Visibility,
         returnType: Type,
@@ -95,15 +98,18 @@ open class LanguageBase(
         vararg parameters: Parameter,
         isStatic: Boolean,
         isFinal: Boolean,
+        isSynchronized: Boolean,
         isOverride: Boolean
     ): Pair<String?, String> {
+        val synchronized = if(isSynchronized) "synchronized " else ""
+
         val static = if(isStatic) "static " else ""
         val final = if(isFinal) "final " else ""
 
         return Pair(if(isOverride) {
             "@Override"
         } else null,
-            "${vis.name.lowercase()} $static$final${returnType.className} $name(${parameters.csv()})"
+            "${vis.name.lowercase()} $synchronized$static$final${returnType.shortNameWithGenerics} $name(${parameters.csv()})"
         )
     }
 
@@ -131,7 +137,7 @@ open class LanguageBase(
         name: String,
         body: Scope,
         extends: Type?,
-        implements: Array<Type>?,
+        vararg implements: Type,
         isStatic: Boolean,
         isFinal: Boolean
     ): String {
@@ -139,7 +145,7 @@ open class LanguageBase(
         val final = if(isFinal) "final " else ""
 
         val e = if(extends != null) "extends ${extends.shortNameWithGenerics} " else ""
-        val i = if(implements?.isNotEmpty() == true) "implements ${implements.csv()} " else ""
+        val i = if(implements.isNotEmpty()) "implements ${implements.csv()} " else ""
 
         return "${vis.name.lowercase()} $static${final}class $name $e$i"
     }
@@ -154,6 +160,10 @@ open class LanguageBase(
     }
 
     open fun importDeclaration(importPath: String, className: String) = "import ${importPath}.${className}${semicolonIfNecessary()}"
+
+    override fun string(value: String) = ConValue(JavaTypes.String, "\"$value\"")
+
+    override fun string(value: Value) = string(value.value!!)
 
     override fun new(type: Type, vararg parameters: Value) = ConValue(
         type, "new ${type.className}${if(type.hasGenerics) "<>" else ""}(${parameters.csv()})"

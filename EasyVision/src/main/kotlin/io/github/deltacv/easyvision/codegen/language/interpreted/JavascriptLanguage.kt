@@ -36,6 +36,7 @@ object JavascriptLanguage : LanguageBase(genInClass = false, optimizeImports = f
         vararg parameters: Parameter,
         isStatic: Boolean,
         isFinal: Boolean,
+        isSynchronized: Boolean,
         isOverride: Boolean
     ): Pair<String?, String> {
         return Pair("",
@@ -51,7 +52,7 @@ object JavascriptLanguage : LanguageBase(genInClass = false, optimizeImports = f
         name: String,
         body: Scope,
         extends: Type?,
-        implements: Array<Type>?,
+        vararg implements: Type,
         isStatic: Boolean,
         isFinal: Boolean
     ): String {

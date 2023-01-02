@@ -34,7 +34,6 @@ class InputSourcesWindow(
     override fun drawContents() {
         if(ImGui.beginListBox("###$id")) {
             for (inputSource in inputSources) {
-
                 ImGui.pushFont(sourcesFont.imfont)
 
                 val type = when(inputSource.type) {

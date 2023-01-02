@@ -91,9 +91,9 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         private set
 
     fun init() {
-        IdElementContainerStack.push(nodes)
-        IdElementContainerStack.push(attributes)
-        IdElementContainerStack.push(links)
+        IdElementContainerStack.threadStack.push(nodes)
+        IdElementContainerStack.threadStack.push(attributes)
+        IdElementContainerStack.threadStack.push(links)
 
         EasyVisionSerializer.deserializeAndApply(resourceToString("/testproj.json"), this)
 
@@ -124,9 +124,9 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
         nodeList.enable()
 
-        IdElementContainerStack.pop<Node<*>>()
-        IdElementContainerStack.pop<Attribute>()
-        IdElementContainerStack.pop<Link>()
+        IdElementContainerStack.threadStack.pop<Node<*>>()
+        IdElementContainerStack.threadStack.pop<Attribute>()
+        IdElementContainerStack.threadStack.pop<Link>()
     }
 
     fun firstProcess() {
@@ -135,9 +135,9 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
     }
 
     fun process() {
-        IdElementContainerStack.push(nodes)
-        IdElementContainerStack.push(attributes)
-        IdElementContainerStack.push(links)
+        IdElementContainerStack.threadStack.push(nodes)
+        IdElementContainerStack.threadStack.push(attributes)
+        IdElementContainerStack.threadStack.push(links)
 
         onUpdate.run()
 
@@ -167,9 +167,9 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
         keyManager.update()
 
-        IdElementContainerStack.pop<Node<*>>()
-        IdElementContainerStack.pop<Attribute>()
-        IdElementContainerStack.pop<Link>()
+        IdElementContainerStack.threadStack.pop<Node<*>>()
+        IdElementContainerStack.threadStack.pop<Attribute>()
+        IdElementContainerStack.threadStack.pop<Link>()
     }
 
     fun destroy() {

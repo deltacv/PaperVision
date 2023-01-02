@@ -61,6 +61,7 @@ object JythonLanguage : LanguageBase(
         vararg parameters: Parameter,
         isStatic: Boolean,
         isFinal: Boolean,
+        isSynchronized: Boolean,
         isOverride: Boolean
     ): Pair<String?, String> {
         return Pair("",
@@ -81,7 +82,7 @@ object JythonLanguage : LanguageBase(
         name: String,
         body: Scope,
         extends: Type?,
-        implements: Array<Type>?,
+        vararg implements: Type,
         isStatic: Boolean,
         isFinal: Boolean
     ): String {

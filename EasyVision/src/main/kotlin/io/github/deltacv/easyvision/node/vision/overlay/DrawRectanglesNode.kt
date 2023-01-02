@@ -17,7 +17,7 @@ import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Scalar
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
-import io.github.deltacv.easyvision.node.vision.Colors
+import io.github.deltacv.easyvision.node.vision.ColorSpace
 
 @RegisterNode(
     name = "nod_drawrects",
@@ -31,7 +31,7 @@ open class DrawRectanglesNode
     val inputMat = MatAttribute(INPUT, "$[att_input]")
     val rectangles = ListAttribute(INPUT, RectAttribute, "$[att_rects]")
 
-    val lineColor = ScalarAttribute(INPUT, Colors.RGB, "$[att_linecolor]")
+    val lineColor = ScalarAttribute(INPUT, ColorSpace.RGB, "$[att_linecolor]")
     val lineThickness = IntAttribute(INPUT, "$[att_linethickness]")
 
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")

@@ -26,7 +26,7 @@ abstract class Node<S: CodeGenSession>(
     private var allowDelete: Boolean = true
 ) : DrawableIdElementBase<Node<*>>(), GenNode<S>, DataSerializable<NodeSerializationData> {
 
-    override val idElementContainer = IdElementContainerStack.peekNonNull<Node<*>>()
+    override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Node<*>>()
     override val requestedId get() = serializedId
 
     var serializedId: Int? = null
