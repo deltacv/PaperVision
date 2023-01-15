@@ -22,6 +22,11 @@ enum class Category(val properName: String,
         hexColor("#3949ab"), // material indigo
         hexColor("#5c6bc0")),
 
+
+    CLASSIFICATION("cat_class",
+        hexColor("#3949ab"), // material indigo
+        hexColor("#5c6bc0")),
+
     OVERLAY("cat_overlay",
         hexColor("#00897b"), // material teal
         hexColor("#26a69a")),

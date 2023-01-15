@@ -248,6 +248,12 @@ open class ListAttribute(
 
     open fun onElementCreation(element: Attribute) {}
 
+    fun forEach(callback: (Attribute) -> Unit) = listAttributes.forEach(callback)
+
+    inline fun <reified T> forEach(callback: (T) -> Unit) = listAttributes.forEach {
+        if(it is T) callback(it)
+    }
+
     override fun makeSerializationData(): AttributeSerializationData {
         val objects = mutableListOf<JsonObject>()
 

@@ -29,6 +29,8 @@ interface ValueBuilder {
 
     fun condition(value: String) = Condition(language.BooleanType, value)
 
+    fun condition(value: Value) = Condition(language.BooleanType, value.value!!)
+
     fun sum(a: Value, b: Value) =
         operation(
             determineRelevantNumberType(a.type, b.type),

@@ -1,8 +1,9 @@
 package io.github.deltacv.easyvision.io
 
 import io.github.deltacv.easyvision.EasyVision
+import io.github.deltacv.easyvision.platform.PlatformKeys
 
-class KeyManager {
+class KeyManager(val keys: PlatformKeys) {
 
     private val pressedKeys = mutableMapOf<Int, Boolean>()
     private val pressingKeys = mutableMapOf<Int, Boolean>()
@@ -54,5 +55,3 @@ class KeyManager {
 }
 
 enum class KeyAction { PRESS, PRESSING, RELEASE, UNKNOWN }
-
-val Keys = EasyVision.platformKeys

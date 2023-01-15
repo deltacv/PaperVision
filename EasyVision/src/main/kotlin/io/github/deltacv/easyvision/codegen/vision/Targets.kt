@@ -56,6 +56,28 @@ fun CodeGen.Current.enableTargets() = this {
 
                 separate()
 
+                val targetsWithLabel = Variable("targetsWithLabel", JavaTypes.ArrayList(TargetType).new())
+
+                method(Visibility.PUBLIC, JavaTypes.ArrayList(TargetType), "getTargetsWithLabel", labelParameter, isSynchronized = true) {
+                    local(targetsWithLabel)
+
+                    separate()
+
+                    foreach(Variable(TargetType, "target"), targets) {
+                        val label = it.propertyValue("label", JavaTypes.String)
+
+                        ifCondition(label.callValue("equals", BooleanType, labelParameter).condition()) {
+                            targetsWithLabel("add", it)
+                        }
+                    }
+
+                    separate()
+
+                    returnMethod(targetsWithLabel)
+                }
+
+                separate()
+
                 clazz(Visibility.PUBLIC, TargetType.className) {
                     val labelVariable = Variable("label", ConValue(JavaTypes.String, null))
                     val rectVariable = Variable("rect", ConValue(OpenCvTypes.Rect, null))

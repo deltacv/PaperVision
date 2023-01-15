@@ -14,7 +14,6 @@ class TextureProcessorQueue(
 
     private val queuedTextures = ArrayBlockingQueue<FutureTexture>(5)
     private val textures = mutableMapOf<Int, PlatformTexture>()
-
     init {
         easyVision.onUpdate {
             while(queuedTextures.isNotEmpty()) {

@@ -14,6 +14,7 @@ open class LanguageContext(val language: Language) {
     val trueValue get() = language.trueValue
     val falseValue get() = language.falseValue
 
+    val BooleanType get() = language.BooleanType
     val IntType get() = language.IntType
     val LongType get() = language.LongType
     val FloatType get() = language.FloatType
@@ -34,6 +35,14 @@ open class LanguageContext(val language: Language) {
 
     infix fun Condition.and(right: Condition) = language.and(this, right)
     infix fun Condition.or(right: Condition) = language.or(this, right)
+
+    fun Value.condition(): Condition {
+        require(type == language.BooleanType) {
+            "Cannot convert value of type $type to condition (needs the Language's BooleanType)"
+        }
+
+        return language.condition(this)
+    }
 
     // NUMBER OPERATORS
 

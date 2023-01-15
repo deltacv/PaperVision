@@ -20,25 +20,22 @@ class IntAttribute(
 
     companion object: Type {
         override val name = "Int"
-
         override fun new(mode: AttributeMode, variableName: String) = IntAttribute(mode, variableName)
     }
 
     val value = ImInt()
     private val sliderValue = ImInt()
     private var nextValue: Int? = null
-
     var disableInput = false
         set(value) {
             showAttributesCircles = !value
             field = value
         }
 
-    @SerializeData
     private var range: Range2i? = null
+    private var sliders = false
 
     private val sliderId by EasyVision.miscIds.nextId()
-
     override fun drawAttribute() {
         super.drawAttribute()
 
@@ -47,7 +44,11 @@ class IntAttribute(
 
             ImGui.pushItemWidth(110.0f)
 
-            if(range == null) {
+            if(!sliders) {
+                range?.let {
+                    value.set(it.clip(value.get()))
+                }
+
                 ImGui.inputInt("", value, 1, 100, if(disableInput) ImGuiInputTextFlags.ReadOnly else 0)
             } else {
                 sliderValue.set(range!!.clip(sliderValue.get()))
@@ -72,10 +73,12 @@ class IntAttribute(
 
     fun sliderMode(range: Range2i) {
         this.range = range
+        sliders = true
     }
 
-    fun normalMode() {
-        this.range = null
+    fun normalMode(range: Range2i? = null) {
+        this.range = range
+        sliders = false
     }
 
     override fun thisGet() = value.get()

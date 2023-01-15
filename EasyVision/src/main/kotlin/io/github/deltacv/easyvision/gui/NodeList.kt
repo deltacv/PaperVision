@@ -14,7 +14,6 @@ import io.github.deltacv.mai18n.tr
 import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.id.IdElementContainerStack
 import io.github.deltacv.easyvision.io.KeyManager
-import io.github.deltacv.easyvision.io.Keys
 import io.github.deltacv.easyvision.node.*
 import io.github.deltacv.easyvision.platform.PlatformWindow
 import io.github.deltacv.easyvision.util.ElapsedTime
@@ -33,6 +32,8 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window()
     val listAttributes = IdElementContainer<Attribute>()
 
     val logger by loggerForThis()
+
+    val Keys = keyManager.keys
 
     var isNodesListOpen = false
         private set
@@ -399,6 +400,8 @@ class NodeList(val easyVision: EasyVision, val keyManager: KeyManager): Window()
 
         var isHeaderHovered = false
             private set
+
+        val Keys = keyManager.keys
 
         override fun preDrawContents() {
             ImGui.setNextWindowPos(0f, 0f)

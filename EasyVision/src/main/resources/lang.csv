@@ -20,7 +20,8 @@ nod_blur,Blur,Difuminado
 nod_erodedilate,Erode and Dilate,Erosionar y Dilatar
 nod_boundingrect,Bounding Rectangles,Rectangulos Delimitantes
 nod_findcontours,Simple Find Contours,Deteccion de Contornos
-nod_filtercontours_byshape,Filter Contours by Shape, Filtrar Contornos por Figura
+nod_groupcontours_byshape,Group Contours by Shape, Agrupar Contornos por Figura
+nod_grouprects_byposition,Group Rectangles by Position,Agrupar Rectangulos por Posicion
 nod_filterbiggest_rect,Filter Biggest Rectangle,Filtar Rectangulo Mas Grande
 nod_drawcontours,Draw Contours,Dibujar Contornos
 nod_drawcontours_onimage,Draw Contours on Image,Dibujar Contornos en Imagen

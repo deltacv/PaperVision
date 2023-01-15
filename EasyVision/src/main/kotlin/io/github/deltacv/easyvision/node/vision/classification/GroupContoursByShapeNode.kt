@@ -1,4 +1,4 @@
-package io.github.deltacv.easyvision.node.vision.featuredet.filter
+package io.github.deltacv.easyvision.node.vision.classification
 
 import io.github.deltacv.easyvision.attribute.Attribute
 import io.github.deltacv.easyvision.attribute.math.IntAttribute
@@ -23,11 +23,11 @@ enum class Shape(val sides: Int?) {
 }
 
 @RegisterNode(
-    name = "nod_filtercontours_byshape",
-    category = Category.FEATURE_DET,
+    name = "nod_groupcontours_byshape",
+    category = Category.CLASSIFICATION,
     description = "Finds all the contours (list of points) of a given binary image."
 )
-class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() {
+class GroupContoursByShapeNode : DrawNode<GroupContoursByShapeNode.Session>() {
 
     val input = ListAttribute(INPUT, PointsAttribute,"$[att_contours]")
 

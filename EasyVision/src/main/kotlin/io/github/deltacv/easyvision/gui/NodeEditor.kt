@@ -17,7 +17,6 @@ import io.github.deltacv.easyvision.gui.util.FrameWidthWindow
 import io.github.deltacv.easyvision.gui.util.Popup
 import io.github.deltacv.easyvision.gui.util.Window
 import io.github.deltacv.easyvision.io.KeyManager
-import io.github.deltacv.easyvision.io.Keys
 import io.github.deltacv.easyvision.io.PipelineStream
 import io.github.deltacv.easyvision.io.bufferedImageFromResource
 import io.github.deltacv.easyvision.node.InvisibleNode
@@ -90,6 +89,8 @@ class NodeEditor(val easyVision: EasyVision, val keyManager: KeyManager) : Windo
     val nodes get() = easyVision.nodes
     val attributes get() = easyVision.attributes
     val links get() = easyVision.links
+
+    val Keys get() = keyManager.keys
 
     override fun onEnable() {
         eyeFont = easyVision.fontManager.makeFont(

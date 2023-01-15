@@ -35,7 +35,6 @@ import io.github.deltacv.easyvision.id.IdElementContainer
 import io.github.deltacv.easyvision.id.IdElementContainerStack
 import io.github.deltacv.easyvision.id.NoneIdElement
 import io.github.deltacv.easyvision.io.KeyManager
-import io.github.deltacv.easyvision.io.Keys
 import io.github.deltacv.easyvision.io.resourceToString
 import io.github.deltacv.easyvision.node.Link
 import io.github.deltacv.easyvision.node.Node
@@ -50,9 +49,6 @@ import io.github.deltacv.mai18n.Language
 class EasyVision(private val setupCall: PlatformSetupCallback) {
 
     companion object {
-        lateinit var platformKeys: PlatformKeys
-            private set
-
         var imnodesStyle = ImNodesDarkStyle
 
         lateinit var defaultImGuiFont: Font
@@ -72,7 +68,8 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
     val onUpdate = EventHandler("EasyVision-OnUpdate")
 
-    val keyManager = KeyManager()
+    lateinit var keyManager: KeyManager
+        private set
     val codeGenManager = CodeGenManager(this)
     val fontManager = FontManager()
 
@@ -95,8 +92,6 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         IdElementContainerStack.threadStack.push(attributes)
         IdElementContainerStack.threadStack.push(links)
 
-        EasyVisionSerializer.deserializeAndApply(resourceToString("/testproj.json"), this)
-
         logger.info("Starting EasyVision...")
 
         eocvSimIpc.init()
@@ -106,13 +101,15 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
         logger.info("Using the ${setupCall.name} platform")
         setup = setupCall.setup()
 
-        platformKeys = setup.keys ?: throw IllegalArgumentException("Platform ${setup.name} must provide PlatformKeys")
+        keyManager = KeyManager(setup.keys ?: throw IllegalArgumentException("Platform ${setup.name} must provide PlatformKeys"))
         window = setup.window ?: throw IllegalArgumentException("Platform ${setup.name} must provide a Window")
         textureFactory = setup.textureFactory ?: throw IllegalArgumentException("Platform ${setup.name} must provide a TextureFactory")
 
         // disable annoying ini file creation (hopefully shouldn't break anything)
         ImGui.getIO().iniFilename = null
         ImGui.getIO().logFilename = null
+
+        EasyVisionSerializer.deserializeAndApply(resourceToString("/testproj.json"), this)
 
         // initializing fonts right after the imgui context is created
         // we can't create fonts mid-frame so that's kind of a problem
@@ -157,11 +154,11 @@ class EasyVision(private val setupCall: PlatformSetupCallback) {
 
         ImGui.popFont()
 
-        if(keyManager.pressed(Keys.ArrowUp)) {
+        if(keyManager.pressed(keyManager.keys.ArrowUp)) {
             println(EasyVisionSerializer.serialize(nodes.elements, links.elements))
         }
 
-        if(keyManager.pressed(Keys.Escape)) {
+        if(keyManager.pressed(keyManager.keys.Escape)) {
             println(codeGenManager.build("test"))
         }
 
