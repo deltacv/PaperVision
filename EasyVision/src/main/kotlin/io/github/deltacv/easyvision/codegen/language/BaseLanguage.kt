@@ -187,6 +187,7 @@ open class LanguageBase(
         }
 
     override fun propertyValue(from: Value, property: String, type: Type) = ConValue(type, "${from.value}.${property}")
+    override fun propertyVariable(from: Value, property: String, type: Type) = Variable(type, "${from.value}.${property}")
 
     override fun arrayValue(from: Value, index: Value, type: Type) = ConValue(
         type, "${from.value}[${index.value}]"

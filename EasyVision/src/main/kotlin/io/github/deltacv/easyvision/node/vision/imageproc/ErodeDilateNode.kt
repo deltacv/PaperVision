@@ -21,7 +21,7 @@ import io.github.deltacv.easyvision.util.Range2i
 )
 class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
 
-    val inputMat = MatAttribute(INPUT, "$[att_input]")
+    val inputMat = MatAttribute(INPUT, "$[att_binaryinput]")
 
     val erodeValue = IntAttribute(INPUT, "$[att_erode]")
     val dilateValue = IntAttribute(INPUT, "$[att_dilate]")

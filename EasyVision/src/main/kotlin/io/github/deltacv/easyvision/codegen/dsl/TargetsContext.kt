@@ -21,6 +21,10 @@ class TargetsContext(private val context: LanguageContext) {
     fun ScopeContext.addTargets(label: Value, rects: Value) {
         "addTarget"(label, rects)
     }
+
+    fun ScopeContext.clearTargets() {
+        "clearTargets"()
+    }
 }
 
 fun <T> CodeGen.Current.targets(enableTargetsIfNeeded: Boolean = true, block: TargetsContext.() -> T): T {

@@ -21,7 +21,9 @@ nod_erodedilate,Erode and Dilate,Erosionar y Dilatar
 nod_boundingrect,Bounding Rectangles,Rectangulos Delimitantes
 nod_findcontours,Simple Find Contours,Deteccion de Contornos
 nod_groupcontours_byshape,Group Contours by Shape, Agrupar Contornos por Figura
-nod_grouprects_byposition,Group Rectangles by Position,Agrupar Rectangulos por Posicion
+nod_grouprects_insidearea,Group Rectangles Inside Area,Agrupar Rectangulos Dentro de Area
+nod_exporttarget,Export Target,Exportar Objetivo
+nod_exporttargets,Export Targets,Exportar Objetivos
 nod_filterbiggest_rect,Filter Biggest Rectangle,Filtar Rectangulo Mas Grande
 nod_drawcontours,Draw Contours,Dibujar Contornos
 nod_drawcontours_onimage,Draw Contours on Image,Dibujar Contornos en Imagen
@@ -54,6 +56,14 @@ att_sides,Sides,Lados
 att_accuracy,Accuracy,Precision
 att_erode,Erode,Erosion
 att_dilate,Dilate,Dilatacion
+att_source,Source,Fuente
+att_areaorientation,Area Orientation,Orientacion de Area
+att_areastart_positionpercentage,Area Start Position (%),Posicion Inicial de Area (%)
+att_areaend_positionpercentage,Area End Position (%),Posicion Final de Area (%)
+att_groupedrects,Grouped Rects,Rectangulos Agrupados
+att_rectsinside,Rects Inside,Rectangulos Dentro
+att_targets,Targets,Objetivos
+att_label,Label,Etiqueta
 err_musthave_attachedattrib,Must have an output attribute attached,Debe tener un atributo de salida conectado
 err_attachedattrib_isnot,Attribute attached is not $[0],El atributo conectado no es $[0]
 err_valreturned_isnot,Value returned from the node is not $[0],El valor retornado del nodo no es $[0]

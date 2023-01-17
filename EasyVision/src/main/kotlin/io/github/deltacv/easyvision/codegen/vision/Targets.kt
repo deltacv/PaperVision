@@ -12,6 +12,10 @@ import io.github.deltacv.easyvision.codegen.dsl.targets
 fun CodeGen.Current.enableTargets() = this {
     if(!codeGen.hasFlag("targetsEnabled")) {
         targets(enableTargetsIfNeeded = false) {
+            scope {
+                clearTargets()
+            }
+
             group {
                 private(targets)
             }
@@ -46,6 +50,17 @@ fun CodeGen.Current.enableTargets() = this {
                     foreach(Variable(OpenCvTypes.Rect, "rect"), rectArrayListTargetsParameter) {
                         "addTarget"(labelParameter, it)
                     }
+                }
+
+                separate()
+
+                method(
+                    Visibility.PRIVATE,
+                    VoidType,
+                    "clearTargets",
+                    isSynchronized = true
+                ) {
+                    targets("clear")
                 }
 
                 separate()

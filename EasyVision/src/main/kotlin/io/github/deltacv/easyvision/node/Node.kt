@@ -109,6 +109,14 @@ abstract class Node<S: CodeGenSession>(
         }
     }
 
+    fun removeAttribute(attribute: Attribute) {
+        if(attribs.contains(attribute)) {
+            //attribute.parentNode = null
+            attribute.onChange.removePersistentListener(attribOnChangeListener)
+            attribs.remove(attribute)
+        }
+    }
+
     operator fun Attribute.unaryPlus() = addAttribute(this)
 
     open override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {

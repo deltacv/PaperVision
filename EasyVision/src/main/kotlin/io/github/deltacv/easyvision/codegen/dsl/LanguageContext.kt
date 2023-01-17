@@ -109,6 +109,8 @@ open class LanguageContext(val language: Language) {
         language.callValue(this, methodName, returnType, *parameters)
 
     fun Value.propertyValue(property: String, type: Type) = language.propertyValue(this, property, type)
+    fun Value.propertyVariable(property: String, type: Type) = language.propertyVariable(this, property, type)
+
     operator fun Value.get(index: Value, type: Type) = language.arrayValue(this, index, type)
 
     fun enumValue(type: Type, constantName: String) = language.enumValue(type, constantName)

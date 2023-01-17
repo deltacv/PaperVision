@@ -49,7 +49,7 @@ class ScalarAttribute(
     }
 
     override fun value(current: CodeGen.Current): GenValue.Scalar {
-        val values = (super.value(current) as GenValue.GLists.List).elements
+        val values = (super.value(current) as GenValue.GList.List).elements
         val ZERO = GenValue.Int(0)
 
         val value = GenValue.Scalar(

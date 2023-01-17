@@ -6,9 +6,7 @@ import io.github.deltacv.easyvision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.GenValue
 import io.github.deltacv.easyvision.codegen.NoSession
-import io.github.deltacv.easyvision.codegen.build.v
 import io.github.deltacv.easyvision.codegen.dsl.targets
-import io.github.deltacv.easyvision.codegen.vision.enableTargets
 import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
@@ -32,7 +30,7 @@ class ExportTargetsNode : DrawNode<NoSession>() {
     override fun genCode(current: CodeGen.Current) = current {
         val targetsValue = inputTargets.value(current)
 
-        if(targetsValue !is GenValue.GLists.RuntimeListOf<*>) {
+        if(targetsValue !is GenValue.GList.RuntimeListOf<*>) {
             raise("") // TODO: Handle non-runtime lists
         }
 

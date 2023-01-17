@@ -152,7 +152,7 @@ open class ListAttribute(
         isDrawAttributeTextOverriden = false
     }
 
-    override fun value(current: CodeGen.Current): GenValue {
+    override fun value(current: CodeGen.Current): GenValue.GList {
         return if (mode == AttributeMode.INPUT) {
             if (hasLink) {
                 val linkedAttrib = linkedAttribute()
@@ -164,24 +164,24 @@ open class ListAttribute(
 
                 val value = linkedAttrib!!.value(current)
                 raiseAssert(
-                    value is GenValue.GLists.ListOf<*> || value is GenValue.GLists.RuntimeListOf<*>,
+                    value is GenValue.GList.ListOf<*> || value is GenValue.GList.RuntimeListOf<*>,
                     "Attribute attached is not a list"
                 )
 
-                value
+                value as GenValue.GList
             } else {
                 // get the values of all the attributes and return a
                 // GenValue.List with the attribute values in an array
-                GenValue.GLists.List(listAttributes.map { it.value(current) }.toTypedArray())
+                GenValue.GList.List(listAttributes.map { it.value(current) }.toTypedArray())
             }
         } else {
             val value = getOutputValue(current)
             raiseAssert(
-                value is GenValue.GLists,
+                value is GenValue.GList,
                 "Value returned from the node is not a list"
             )
 
-            value
+            value as GenValue.GList
         }
     }
 
@@ -250,6 +250,7 @@ open class ListAttribute(
 
     fun forEach(callback: (Attribute) -> Unit) = listAttributes.forEach(callback)
 
+    @JvmName("forEachTyped")
     inline fun <reified T> forEach(callback: (T) -> Unit) = listAttributes.forEach {
         if(it is T) callback(it)
     }

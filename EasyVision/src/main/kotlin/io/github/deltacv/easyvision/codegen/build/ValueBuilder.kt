@@ -88,6 +88,8 @@ interface ValueBuilder {
     fun callValue(callee: Value, methodName: String, returnType: Type, vararg parameters: Value): Value
 
     fun propertyValue(from: Value, property: String, type: Type): Value
+    fun propertyVariable(from: Value, property: String, type: Type): Variable
+
     fun arrayValue(from: Value, index: Value, type: Type): Value
 
     fun enumValue(type: Type, constantName: String) = ConValue(type, "$type.$constantName")

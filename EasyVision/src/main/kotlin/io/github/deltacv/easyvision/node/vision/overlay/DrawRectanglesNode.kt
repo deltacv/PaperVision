@@ -73,7 +73,7 @@ open class DrawRectanglesNode
 
         val output = uniqueVariable("${input.value.value!!}Rects", Mat.new())
 
-        if(rectanglesList !is GenValue.GLists.RuntimeListOf<*>) {
+        if(rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
             rectangles.raise("") // TODO: Handle non-runtime lists
         }
 

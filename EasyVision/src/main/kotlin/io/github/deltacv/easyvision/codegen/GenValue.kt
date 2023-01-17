@@ -30,14 +30,14 @@ sealed class GenValue {
         data class RuntimePoints(val value: Value) : GPoints()
     }
 
-    sealed class GRects : GenValue() {
-        data class Rect(val x: Double, val y: Double, val w: Double, val h: Double) : GRects()
+    sealed class GRect : GenValue() {
+        data class Rect(val x: Double, val y: Double, val w: Double, val h: Double) : GRect()
         data class RotatedRect(val x: Double, val y: Double,
                                val w: Double, val h: Double,
-                               val angle: Double) : GRects()
+                               val angle: Double) : GRect()
 
-        data class RuntimeRect(val value: Value) : GRects()
-        data class RuntimeRotatedRect(val value: Value) : GRects()
+        data class RuntimeRect(val value: Value) : GRect()
+        data class RuntimeRotatedRect(val value: Value) : GRect()
     }
 
     data class Enum<E: kotlin.Enum<E>>(val value: E, val clazz: Class<*>) : GenValue()
@@ -76,11 +76,11 @@ sealed class GenValue {
         object False : Boolean(false)
     }
     
-    sealed class GLists : GenValue() {
-        open class ListOf<T : GenValue>(val elements: Array<T>) : GLists()
-        data class List(val elems: Array<GenValue>) : ListOf<GenValue>(elems)
+    sealed class GList : GenValue() {
+        open class ListOf<T : GenValue>(val elements: Array<T>) : GList()
+        class List(elements: Array<GenValue>) : ListOf<GenValue>(elements)
 
-        data class RuntimeListOf<T : GenValue>(val value: Value, val typeClass: KClass<T>) : GLists()
+        data class RuntimeListOf<T : GenValue>(val value: Value, val typeClass: KClass<T>) : GList()
     }
 
     object None : GenValue()

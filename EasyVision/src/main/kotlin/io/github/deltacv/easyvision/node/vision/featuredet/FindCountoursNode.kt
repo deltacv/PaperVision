@@ -52,7 +52,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
             Imgproc("findContours", input.value, list, hierarchyMat, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE)
         }
 
-        session.contoursList = GenValue.GLists.RuntimeListOf(list, GenValue.GPoints.Points::class)
+        session.contoursList = GenValue.GList.RuntimeListOf(list, GenValue.GPoints.Points::class)
 
         session
     }
@@ -68,7 +68,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
     }
 
     class Session : CodeGenSession {
-        lateinit var contoursList: GenValue.GLists.RuntimeListOf<GenValue.GPoints.Points>
+        lateinit var contoursList: GenValue.GList.RuntimeListOf<GenValue.GPoints.Points>
     }
 
 }

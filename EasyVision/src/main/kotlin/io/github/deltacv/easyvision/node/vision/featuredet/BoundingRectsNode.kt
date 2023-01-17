@@ -35,7 +35,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
         val input = inputContours.value(current)
 
-        if(input !is GenValue.GLists.RuntimeListOf<*>) {
+        if(input !is GenValue.GList.RuntimeListOf<*>) {
             raise("") // TODO: Handle non-runtime lists
         }
 
@@ -53,7 +53,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
             }
         }
 
-        session.outputRects = GenValue.GLists.RuntimeListOf(rectsList, GenValue.GRects.RuntimeRect::class)
+        session.outputRects = GenValue.GList.RuntimeListOf(rectsList, GenValue.GRect.RuntimeRect::class)
 
         session
     }
@@ -69,7 +69,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
     }
 
     class Session : CodeGenSession {
-        lateinit var outputRects: GenValue.GLists.RuntimeListOf<GenValue.GRects.RuntimeRect>
+        lateinit var outputRects: GenValue.GList.RuntimeListOf<GenValue.GRect.RuntimeRect>
     }
 
 }

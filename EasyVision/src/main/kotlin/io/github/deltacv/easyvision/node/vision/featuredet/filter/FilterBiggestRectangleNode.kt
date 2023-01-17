@@ -32,7 +32,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
 
         val rectsList = input.value(current)
 
-        if(rectsList !is GenValue.GLists.RuntimeListOf<*>) {
+        if(rectsList !is GenValue.GList.RuntimeListOf<*>) {
             raise("") // TODO: Handle non-runtime lists
         }
 
@@ -55,7 +55,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
             }
         }
 
-        session.biggestRect = GenValue.GRects.RuntimeRect(biggestRect)
+        session.biggestRect = GenValue.GRect.RuntimeRect(biggestRect)
 
         session
     }
@@ -71,7 +71,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
     }
 
     class Session : CodeGenSession {
-        lateinit var biggestRect: GenValue.GRects.RuntimeRect
+        lateinit var biggestRect: GenValue.GRect.RuntimeRect
     }
 
 }

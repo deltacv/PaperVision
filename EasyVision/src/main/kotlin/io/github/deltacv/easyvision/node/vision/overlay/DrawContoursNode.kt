@@ -73,7 +73,7 @@ open class DrawContoursNode
 
         val output = uniqueVariable("${input.value.value!!}Contours", Mat.new())
 
-        if(contoursList !is GenValue.GLists.RuntimeListOf<*>) {
+        if(contoursList !is GenValue.GList.RuntimeListOf<*>) {
             contours.raise("Given list is not a runtime type (TODO)") // TODO: Handle non-runtime lists
         }
 

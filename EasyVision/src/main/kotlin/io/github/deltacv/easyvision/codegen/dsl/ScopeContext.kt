@@ -54,7 +54,6 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
 
     fun local(v: Variable) = scope.localVariable(v)
 
-
     fun instanceVariable(
         vis: Visibility, variable: Variable, label: String? = null,
         isStatic: Boolean = false, isFinal: Boolean = false

@@ -96,7 +96,7 @@ class GroupContoursByShapeNode : DrawNode<GroupContoursByShapeNode.Session>() {
 
         val inputContours = input.value(current)
 
-        if(inputContours !is GenValue.GLists.RuntimeListOf<*>){
+        if(inputContours !is GenValue.GList.RuntimeListOf<*>){
             raise("")
         }
 
@@ -143,7 +143,7 @@ class GroupContoursByShapeNode : DrawNode<GroupContoursByShapeNode.Session>() {
             }
         }
 
-        session.output = GenValue.GLists.RuntimeListOf(list, GenValue.GPoints.RuntimePoints::class)
+        session.output = GenValue.GList.RuntimeListOf(list, GenValue.GPoints.RuntimePoints::class)
 
         session
     }
@@ -164,7 +164,7 @@ class GroupContoursByShapeNode : DrawNode<GroupContoursByShapeNode.Session>() {
     }
 
     class Session : CodeGenSession {
-        lateinit var output: GenValue.GLists.RuntimeListOf<GenValue.GPoints.RuntimePoints>
+        lateinit var output: GenValue.GList.RuntimeListOf<GenValue.GPoints.RuntimePoints>
     }
 
 }
