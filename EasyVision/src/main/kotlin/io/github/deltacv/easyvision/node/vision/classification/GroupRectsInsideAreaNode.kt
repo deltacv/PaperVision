@@ -133,21 +133,19 @@ class GroupRectsInsideAreaNode : DrawNode<GroupRectsInsideAreaNode.Session>() {
             }
 
             if(areaRect.hasLink) {
-                areaRectVariable("set", int(0), int(0), int(0), int(0))
-
                 when(areaOrientationValue.value) {
                     Orientation.Horizontal -> {
-                        areaRectVariable.propertyVariable("x", IntType) set start
+                        areaRectVariable.propertyVariable("x", IntType) set int(start)
                         areaRectVariable.propertyVariable("y", IntType) set int(0)
-                        areaRectVariable.propertyVariable("width", IntType) set end - start
-                        areaRectVariable.propertyVariable("height", IntType) set imageSize.propertyValue("height", IntType)
+                        areaRectVariable.propertyVariable("width", IntType) set int(end - start)
+                        areaRectVariable.propertyVariable("height", IntType) set int(imageSize.propertyValue("height", IntType))
                     }
 
                     Orientation.Vertical -> {
                         areaRectVariable.propertyVariable("x", IntType) set int(0)
-                        areaRectVariable.propertyVariable("y", IntType) set start
-                        areaRectVariable.propertyVariable("width", IntType) set imageSize.propertyValue("width", IntType)
-                        areaRectVariable.propertyVariable("height", IntType) set end - start
+                        areaRectVariable.propertyVariable("y", IntType) set int(start)
+                        areaRectVariable.propertyVariable("width", IntType) set int(imageSize.propertyValue("width", IntType))
+                        areaRectVariable.propertyVariable("height", IntType) set int(end - start)
                     }
                 }
             }

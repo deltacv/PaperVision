@@ -83,6 +83,8 @@ interface ValueBuilder {
 
     fun value(type: Type, value: String) = ConValue(type, value)
 
+    fun castValue(value: Value, castTo: Type): Value
+
     fun callValue(methodName: String, returnType: Type, vararg parameters: Value): Value
     fun callValue(classType: Type, methodName: String, returnType: Type, vararg parameters: Value): Value
     fun callValue(callee: Value, methodName: String, returnType: Type, vararg parameters: Value): Value

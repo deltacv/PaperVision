@@ -101,6 +101,8 @@ object JythonLanguage : LanguageBase(
             |}""".trimMargin()
     }
 
+    override fun castValue(value: Value, castTo: Type) = ConValue(castTo, value.value)
+
     override fun newArrayOf(type: Type, size: Value): ConValue {
         val t = when(type) {
             BooleanType -> "z"

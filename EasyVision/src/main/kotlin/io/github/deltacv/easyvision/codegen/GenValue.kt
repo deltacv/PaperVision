@@ -53,7 +53,7 @@ sealed class GenValue {
         val b: kotlin.Double,
         val c: kotlin.Double,
         val d: kotlin.Double
-    ) : GenValue() {
+    ) : GList.ListOf<GenValue.Double>(arrayOf(Double(a), Double(b), Double(c), Double(d), )) {
         companion object {
             val ZERO = Scalar(0.0, 0.0, 0.0, 0.0)
         }
@@ -65,7 +65,7 @@ sealed class GenValue {
         }
     }
 
-    data class ScalarRange(val a: Range, val b: Range, val c: Range, val d: Range) : GenValue() {
+    data class ScalarRange(val a: Range, val b: Range, val c: Range, val d: Range) : GList.ListOf<Range>(arrayOf(a, b, c, d)) {
         companion object {
             val ZERO = ScalarRange(Range.ZERO, Range.ZERO, Range.ZERO, Range.ZERO)
         }

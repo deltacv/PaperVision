@@ -36,7 +36,7 @@ class ExportTargetsNode : DrawNode<NoSession>() {
 
         current.targets {
             current.scope {
-                addTarget(string(label.value(current).value), targetsValue.value)
+                addTargets(string(label.value(current).value), targetsValue.value)
             }
         }
 

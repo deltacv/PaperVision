@@ -35,16 +35,16 @@ interface Language : ValueBuilder {
     fun isImportExcluded(import: Type) = excludedImports.contains(import)
 
 
-    fun int(value: Value) = ConValue(language.IntType, value.value)
+    fun int(value: Value) = castValue(value, language.IntType)
     fun int(value: Int) = ConValue(language.IntType, value.toString())
 
-    fun long(value: Value) = ConValue(LongType, value.value)
+    fun long(value: Value) = castValue(value, language.LongType)
     fun long(value: Long) = ConValue(LongType, value.toString())
 
-    fun float(value: Value) = ConValue(FloatType, value.value)
+    fun float(value: Value) = castValue(value, language.FloatType)
     fun float(value: Float) = ConValue(FloatType, value.toString())
 
-    fun double(value: Value) = ConValue(DoubleType, value.value)
+    fun double(value: Value) = castValue(value, language.DoubleType)
     fun double(value: Double) = ConValue(DoubleType, value.toString())
 
     fun instanceVariableDeclaration(

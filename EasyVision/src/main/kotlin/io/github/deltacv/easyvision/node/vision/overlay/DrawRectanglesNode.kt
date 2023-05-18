@@ -10,6 +10,7 @@ import io.github.deltacv.easyvision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.easyvision.codegen.CodeGen
 import io.github.deltacv.easyvision.codegen.CodeGenSession
 import io.github.deltacv.easyvision.codegen.GenValue
+import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.easyvision.codegen.build.type.OpenCvTypes.Mat
@@ -18,6 +19,7 @@ import io.github.deltacv.easyvision.node.Category
 import io.github.deltacv.easyvision.node.DrawNode
 import io.github.deltacv.easyvision.node.RegisterNode
 import io.github.deltacv.easyvision.node.vision.ColorSpace
+import io.github.deltacv.easyvision.node.vision.classification.Shape
 
 @RegisterNode(
     name = "nod_drawrects",
@@ -25,8 +27,7 @@ import io.github.deltacv.easyvision.node.vision.ColorSpace
     description = "Draws the rectangles on a copy of the given image and outputs the result."
 )
 open class DrawRectanglesNode
-@JvmOverloads constructor(val isDrawOnInput: Boolean = false)
-    : DrawNode<DrawRectanglesNode.Session>()  {
+@JvmOverloads constructor(val isDrawOnInput: Boolean = false) : DrawNode<DrawRectanglesNode.Session>() {
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")
     val rectangles = ListAttribute(INPUT, RectAttribute, "$[att_rects]")
@@ -37,16 +38,16 @@ open class DrawRectanglesNode
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
-        + inputMat.rebuildOnChange()
-        + rectangles.rebuildOnChange()
+        +inputMat.rebuildOnChange()
+        +rectangles.rebuildOnChange()
 
-        + lineColor
-        + lineThickness
+        +lineColor
+        +lineThickness
 
         lineThickness.value.set(1) // initial value
 
-        if(!isDrawOnInput) {
-            + outputMat.enablePrevizButton()
+        if (!isDrawOnInput) {
+            +outputMat.enablePrevizButton()
         } else {
             inputMat.variableName = "$[att_drawon_image]"
         }
@@ -56,7 +57,8 @@ open class DrawRectanglesNode
         val session = Session()
 
         val color = lineColor.value(current)
-        val colorScalar = uniqueVariable("rectsColor",
+        val colorScalar = uniqueVariable(
+            "rectsColor",
             Scalar.new(
                 color.a.v,
                 color.b.v,
@@ -66,21 +68,17 @@ open class DrawRectanglesNode
         )
 
         val input = inputMat.value(current)
-        val rectanglesList = rectangles.value(current)
+        var rectanglesList = rectangles.value(current)
 
         val thickness = lineThickness.value(current).value
         val thicknessVariable = uniqueVariable("rectsThickness", thickness.v)
 
         val output = uniqueVariable("${input.value.value!!}Rects", Mat.new())
 
-        if(rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
-            rectangles.raise("") // TODO: Handle non-runtime lists
-        }
-
         var drawMat = input.value
 
         group {
-            if(current.isForPreviz) {
+            if (current.isForPreviz) {
                 public(thicknessVariable, lineThickness.label())
             }
 
@@ -92,20 +90,46 @@ open class DrawRectanglesNode
         }
 
         current.scope {
-            if(!isDrawOnInput) {
+            if (!isDrawOnInput) {
                 drawMat = output
                 input.value("copyTo", drawMat)
             }
 
-            foreach(variable(OpenCvTypes.Rect, "rect"), rectanglesList.value) {
-                Imgproc("rectangle", drawMat, it, colorScalar,
-                    if(current.isForPreviz)
-                        thicknessVariable
-                    else thickness.v
-                )
+            if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
+                for (rectangle in (rectanglesList as GenValue.GList.ListOf<*>).elements) {
+                    if (rectangle is GenValue.GRect.Rect) {
+                        Imgproc(
+                            "rectangle", drawMat,
+                            OpenCvTypes.Rect.new(
+                                double(rectangle.x.value), double(rectangle.y.value),
+                                double(rectangle.w.value), double(rectangle.h.value)
+                            ),
+                            colorScalar,
+                            if (current.isForPreviz)
+                                thicknessVariable
+                            else thickness.v
+                        )
+                    } else if (rectangle is GenValue.GRect.RuntimeRect) {
+                        Imgproc(
+                            "rectangle", drawMat, rectangle.value, colorScalar,
+                            if (current.isForPreviz)
+                                thicknessVariable
+                            else thickness.v
+                        )
+                    }
+                }
+            } else {
+                foreach(variable(OpenCvTypes.Rect, "rect"), rectanglesList.value) {
+                    Imgproc(
+                        "rectangle", drawMat, it, colorScalar,
+                        if (current.isForPreviz)
+                            thicknessVariable
+                        else thickness.v
+                    )
+                }
             }
 
-            if(!isDrawOnInput) {
+            if (!isDrawOnInput) {
                 outputMat.streamIfEnabled(output, input.color)
             }
         }
@@ -116,7 +140,7 @@ open class DrawRectanglesNode
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        if(attrib == outputMat) {
+        if (attrib == outputMat) {
             return lastGenSession!!.outputMat
         }
 

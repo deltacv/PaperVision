@@ -7,7 +7,7 @@ import io.github.deltacv.easyvision.codegen.build.Variable
 import io.github.deltacv.easyvision.codegen.build.type.JavaTypes
 import io.github.deltacv.easyvision.codegen.vision.enableTargets
 
-class TargetsContext(private val context: LanguageContext) {
+class TargetsContext(context: LanguageContext) {
     val TargetType = Type("Target", "")
 
     val targets = context.run {
@@ -19,7 +19,7 @@ class TargetsContext(private val context: LanguageContext) {
     }
 
     fun ScopeContext.addTargets(label: Value, rects: Value) {
-        "addTarget"(label, rects)
+        "addTargets"(label, rects)
     }
 
     fun ScopeContext.clearTargets() {

@@ -64,6 +64,7 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
         }
 
         current.scope {
+            input.value("copyTo", output)
 
             ifCondition(erodeValVariable greaterThan int(0)) {
                 element instanceSet OpenCvTypes.Imgproc.callValue(

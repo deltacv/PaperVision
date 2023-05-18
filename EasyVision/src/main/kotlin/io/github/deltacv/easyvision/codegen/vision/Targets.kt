@@ -65,8 +65,8 @@ fun CodeGen.Current.enableTargets() = this {
 
                 separate()
 
-                method(Visibility.PUBLIC, JavaTypes.ArrayList(TargetType), "getTargets", isSynchronized = true) {
-                    returnMethod(targets.callValue("clone", JavaTypes.ArrayList(TargetType)))
+                method(Visibility.PUBLIC, TargetType.arrayType(), "getTargets", isSynchronized = true) {
+                    returnMethod(targets.callValue("toArray", JavaTypes.ArrayList(TargetType), TargetType.newArray(int(0))))
                 }
 
                 separate()
