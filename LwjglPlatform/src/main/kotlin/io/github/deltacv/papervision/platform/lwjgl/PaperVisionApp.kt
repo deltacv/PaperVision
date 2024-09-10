@@ -1,0 +1,87 @@
+package io.github.deltacv.papervision.platform.lwjgl
+
+import imgui.app.Configuration
+import io.github.deltacv.papervision.PaperVision
+import io.github.deltacv.papervision.io.KeyAction
+import io.github.deltacv.papervision.platform.lwjgl.glfw.GlfwKeys
+import io.github.deltacv.papervision.platform.lwjgl.glfw.GlfwWindow
+import io.github.deltacv.papervision.platform.lwjgl.texture.OpenGLTextureFactory
+import io.github.deltacv.papervision.platform.platformSetup
+import org.lwjgl.glfw.GLFW.*
+import org.lwjgl.glfw.GLFWKeyCallback
+
+class PaperVisionApp(val daemon: Boolean) : Window() {
+
+    val setup = platformSetup("LWJGL") {
+        window = glfwWindow
+        textureFactory = OpenGLTextureFactory
+        keys = GlfwKeys
+    }
+
+    val glfwWindow = GlfwWindow { handle }
+
+    val paperVision = PaperVision(setup, daemon)
+
+    fun start() {
+        val config = Configuration().apply {
+            title = ""
+        }
+
+        init(config, daemon)
+        run()
+        postRun()
+        dispose()
+    }
+
+    override fun initImGui(config: Configuration) {
+        super.initImGui(config)
+
+        paperVision.init()
+    }
+
+    private var hasProcessed = false
+    private var prevKeyCallback: GLFWKeyCallback? = null
+
+    override fun process() {
+        if(!hasProcessed) {
+            paperVision.firstProcess()
+            hasProcessed = true
+        }
+
+        if (prevKeyCallback == null) {
+            // register a new key callback that will call the previous callback and handle some special keys
+            prevKeyCallback = glfwSetKeyCallback(handle, ::keyCallback)
+        }
+        glfwWindow.cachedSize = null
+
+        paperVision.process()
+    }
+
+    fun postRun() {
+        paperVision.destroy()
+    }
+
+    override fun windowCloseAction(): Boolean {
+        if(daemon) {
+            glfwWindow.visible = false
+            glfwSetWindowShouldClose(handle, false)
+            return false
+        } else {
+            return true
+        }
+    }
+
+    private fun keyCallback(windowId: Long, key: Int, scancode: Int, action: Int, mods: Int) {
+        if (prevKeyCallback != null) {
+            prevKeyCallback!!.invoke(windowId, key, scancode, action, mods) //invoke the imgui callback
+        }
+
+        // thanks.
+        paperVision.keyManager.updateKey(scancode, when(action) { // mapping the glfw action Int to a KeyAction
+            GLFW_PRESS -> KeyAction.PRESS
+            GLFW_REPEAT -> KeyAction.PRESSING
+            GLFW_RELEASE -> KeyAction.RELEASE
+            else -> KeyAction.UNKNOWN
+        })
+    }
+}

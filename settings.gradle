@@ -1,5 +1,8 @@
-rootProject.name = 'EasyVision'
+rootProject.name = 'PaperVision'
 
-include ':EasyVision'
+include 'PaperVision'
 include 'LwjglPlatform'
+include 'EOCVSimPlugin'
+include 'NodeAnnotationProcessor'
+include 'Common'
 

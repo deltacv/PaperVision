@@ -1,15 +1,14 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
-    id 'java'
     id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 apply from: '../build.common.gradle'
 
 dependencies {
-    implementation project(":EasyVision")
+    implementation project(":PaperVision")
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
     implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
     implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
@@ -26,12 +25,12 @@ dependencies {
 }
 
 task(runEv, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.github.deltacv.easyvision.platform.lwjgl.AppMain'
+    main = 'io.github.deltacv.papervision.platform.lwjgl.AppMain'
     classpath = sourceSets.main.runtimeClasspath
 }
 
 tasks.withType(Jar) {
     manifest {
-        attributes['Main-Class'] = 'io.github.deltacv.easyvision.platform.lwjgl.AppMain'
+        attributes['Main-Class'] = 'io.github.deltacv.papervision.platform.lwjgl.AppMain'
     }
 }

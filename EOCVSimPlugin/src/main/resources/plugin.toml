@@ -1,0 +1,9 @@
+name = "PaperVision"
+author = "deltacv"
+version = "1.0.0"
+api-version = "3.6.0"
+
+super-access = true
+super-access-reason = "gg ez"
+
+main = "io.github.deltacv.papervision.plugin.PaperVisionEOCVSimPlugin"
