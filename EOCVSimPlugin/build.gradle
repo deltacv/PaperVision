@@ -5,8 +5,19 @@ plugins {
 
 apply from: '../build.common.gradle'
 
+shadowJar {
+    baseName "PaperVisionPlugin"
+
+    configurations = [project.configurations.runtimeClasspath]
+    exclude "META-INF/*.SF"
+    exclude "META-INF/*.DSA"
+    exclude "META-INF/*.RSA"
+    // Exclude Kotlin standard library to avoid classloader conflicts
+    exclude "kotlin/**"
+}
+
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib"
 
     implementation project(":LwjglPlatform")
     compileOnly project(":PaperVision")
@@ -14,5 +25,9 @@ dependencies {
     compileOnly 'com.github.deltacv.EOCV-Sim:EOCV-Sim:3.6.0'
     compileOnly "io.github.spair:imgui-java-app:$imgui_version"
 
-    implementation 'org.python:jython-slim:2.7.4'
+    implementation 'party.iroiro.luajava:luajava:4.0.2'
+    implementation 'party.iroiro.luajava:luajit:4.0.2'
+    implementation 'party.iroiro.luajava:luajit-platform:4.0.2:natives-desktop'
+
+    implementation "org.slf4j:slf4j-api:$slf4j_version"
 }

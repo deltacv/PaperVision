@@ -1,6 +1,5 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 apply from: '../build.common.gradle'
@@ -8,12 +7,7 @@ apply from: '../build.common.gradle'
 dependencies {
     implementation project(":PaperVision")
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
-
-    implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version"
-
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib"
     implementation "io.github.spair:imgui-java-app:$imgui_version"
 
     implementation platform('org.lwjgl:lwjgl-bom:3.2.3')
@@ -21,16 +15,5 @@ dependencies {
 
     ['natives-linux', 'natives-windows', 'natives-macos'].each {
         implementation "org.lwjgl:lwjgl-stb::$it"
-    }
-}
-
-task(runEv, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.github.deltacv.papervision.platform.lwjgl.AppMain'
-    classpath = sourceSets.main.runtimeClasspath
-}
-
-tasks.withType(Jar) {
-    manifest {
-        attributes['Main-Class'] = 'io.github.deltacv.papervision.platform.lwjgl.AppMain'
     }
 }

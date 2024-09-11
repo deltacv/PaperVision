@@ -42,6 +42,7 @@ import io.github.deltacv.papervision.serialization.ev.EasyVisionSerializer
 import io.github.deltacv.papervision.util.event.EventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 import io.github.deltacv.mai18n.Language
+import io.github.deltacv.papervision.codegen.language.interpreted.LuaLanguage
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.style.hexColor
 import io.github.deltacv.papervision.node.NodeRegistry
@@ -166,7 +167,7 @@ class PaperVision(
         }
 
         if(keyManager.pressed(keyManager.keys.Escape)) {
-            println(codeGenManager.build("test"))
+            println(codeGenManager.build("test", language = LuaLanguage))
         }
 
         keyManager.update()

@@ -5,4 +5,4 @@ include 'LwjglPlatform'
 include 'EOCVSimPlugin'
 include 'NodeAnnotationProcessor'
 include 'Common'
-
+include 'LwjglPlatform:Standalone'

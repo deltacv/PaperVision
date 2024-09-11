@@ -1,6 +1,7 @@
 package io.github.deltacv.papervision.plugin
 
 import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
+import io.github.deltacv.papervision.util.event.EventListener
 import java.util.concurrent.Executors
 
 /**
@@ -14,7 +15,7 @@ import java.util.concurrent.Executors
  */
 object PaperVisionDaemon {
 
-    private val executorService = Executors.newSingleThreadExecutor()
+    private val executorService = Executors.newFixedThreadPool(2)
 
     private val app by lazy { PaperVisionApp(true) }
     val paperVision get() = app.paperVision
@@ -29,6 +30,11 @@ object PaperVisionDaemon {
 
     fun invokeOnMainLoop(runnable: Runnable) =
         paperVision.onUpdate.doOnce(runnable)
+
+    fun attachToMainLoop(listener: EventListener) =
+        paperVision.onUpdate(listener)
+
+    fun invokeLater(runnable: Runnable) = executorService.submit(runnable)
 
     /**
      * Stops the PaperVision process by shutting down the executor service.
