@@ -9,6 +9,8 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.util.hexString
 import io.github.deltacv.mai18n.tr
+import io.github.deltacv.papervision.engine.client.message.TunerChangeValueMessage
+import io.github.deltacv.papervision.engine.client.message.TunerChangeValuesMessage
 
 interface Type {
     val name: String
@@ -195,6 +197,16 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
         return cachedLabel!!
     }
 
-    protected fun broadcastLabelMessageFor(label: String, value: Any) { }
+    protected fun broadcastLabelMessageFor(label: String, value: Any) {
+        if(!isOnEditor) return
+
+        parentNode.editor.paperVision.engineClient.sendMessage(
+            when (value) {
+                is Array<*> -> TunerChangeValuesMessage(label, value)
+                is Iterable<*> -> TunerChangeValuesMessage(label, value.map { it as Any }.toTypedArray())
+                else -> TunerChangeValueMessage(label, 0, value)
+            }
+        )
+    }
 
 }

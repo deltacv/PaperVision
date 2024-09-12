@@ -2,6 +2,7 @@ package io.github.deltacv.papervision.platform.lwjgl
 
 import imgui.app.Configuration
 import io.github.deltacv.papervision.PaperVision
+import io.github.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
 import io.github.deltacv.papervision.io.KeyAction
 import io.github.deltacv.papervision.platform.lwjgl.glfw.GlfwKeys
 import io.github.deltacv.papervision.platform.lwjgl.glfw.GlfwWindow
@@ -10,17 +11,21 @@ import io.github.deltacv.papervision.platform.platformSetup
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWKeyCallback
 
-class PaperVisionApp(val daemon: Boolean) : Window() {
+class PaperVisionApp(
+    val daemon: Boolean,
+    val bridge: PaperVisionEngineBridge? = null
+) : Window() {
 
     val setup = platformSetup("LWJGL") {
         window = glfwWindow
         textureFactory = OpenGLTextureFactory
         keys = GlfwKeys
+        engineBridge = bridge
     }
 
     val glfwWindow = GlfwWindow { handle }
 
-    val paperVision = PaperVision(setup, daemon)
+    val paperVision = PaperVision(setup)
 
     fun start() {
         val config = Configuration().apply {

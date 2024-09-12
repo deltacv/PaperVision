@@ -10,6 +10,8 @@ import imgui.type.ImInt
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
+import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
+import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
 import io.github.deltacv.papervision.util.eocvsim.EOCVSimPrevizState.*
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.papervision.gui.util.FrameWidthWindow
@@ -59,9 +61,6 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
     lateinit var eyeFont: Font
         private set
 
-    lateinit var pipelineStream: PipelineStream
-        private set
-
     val editorPanning = ImVec2(0f, 0f)
     val editorPanningDelta = ImVec2(0f, 0f)
     val prevEditorPanning = ImVec2(0f, 0f)
@@ -93,13 +92,6 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
             "/fonts/icons/Eye.ttf", 15f
         )
 
-        pipelineStream = PipelineStream(
-            paperVision, offlineImages = arrayOf(
-                bufferedImageFromResource("/img/TechnicalDifficulties.png"),
-                bufferedImageFromResource("/img/PleaseHangOn.png")
-            )
-        )
-
         ImNodes.createContext()
 
         inputNode.enable()
@@ -108,7 +100,7 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
 
         playButton = EOCVSimPlayButtonWindow(
             { paperVision.nodeList.floatingButton },
-            paperVision.nodeEditor.pipelineStream,
+            paperVision.previzManager,
             paperVision.fontManager
         )
         playButton.enable()
@@ -220,7 +212,11 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
     }
 
     fun startImageDisplayFor(attribute: Attribute): ImageDisplayNode {
-        val window = ImageDisplayNode(pipelineStream)
+        val window = ImageDisplayNode(paperVision.previzManager.stream)
+        paperVision.previzManager.onPrevizStart {
+            window.stream = paperVision.previzManager.stream
+        }
+
         window.pinToMouse = true
         window.enable()
 
@@ -335,7 +331,7 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
 
     class EOCVSimPlayButtonWindow(
         val floatingButtonSupplier: () -> FrameWidthWindow,
-        val stream: PipelineStream,
+        val previzManager: ClientPrevizManager,
         fontManager: FontManager
     ) : Window() {
 
@@ -364,15 +360,18 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
 
             ImGui.pushFont(playPauseDotsFont.imfont)
 
-            val text = "+" /*when (.previzState) {
-                RUNNING -> "-"
-                RUNNING_BUT_NOT_CONNECTED -> "."
-                else -> "+"
-            }*/
+            val text = if(previzManager.previzRunning) {
+                "-"
+            } else "+"
 
             val button = ImGui.button(text, floatingButton.frameWidth, floatingButton.frameWidth)
 
             if (lastButton != button && button) {
+                if(!previzManager.previzRunning) {
+                    previzManager.startPreviz("epico")
+                } else {
+                    previzManager.stopPreviz()
+                }
             }
 
             ImGui.popFont()

@@ -36,6 +36,8 @@ open class LanguageContext(val language: Language) {
     infix fun Condition.and(right: Condition) = language.and(this, right)
     infix fun Condition.or(right: Condition) = language.or(this, right)
 
+    fun Value.castTo(type: Type) = language.castValue(this, type)
+
     fun Value.condition(): Condition {
         require(type == language.BooleanType) {
             "Cannot convert value of type $type to condition (needs the Language's BooleanType)"

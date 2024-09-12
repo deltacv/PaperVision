@@ -29,9 +29,8 @@ allprojects {
 
     repositories {
         mavenCentral()
+        mavenLocal()
 
         maven { url 'https://jitpack.io' }
-        maven { url 'https://maven.openimaj.org/' }
-        maven { url 'https://maven.ecs.soton.ac.uk/content/repositories/thirdparty/' }
     }
 }

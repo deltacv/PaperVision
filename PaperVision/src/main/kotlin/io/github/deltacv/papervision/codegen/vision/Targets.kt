@@ -66,7 +66,24 @@ fun CodeGen.Current.enableTargets() = this {
                 separate()
 
                 method(Visibility.PUBLIC, TargetType.arrayType(), "getTargets", isSynchronized = true) {
-                    returnMethod(targets.callValue("toArray", JavaTypes.ArrayList(TargetType), TargetType.newArray(int(0))))
+                    val array = Variable("array", TargetType.newArray(targets.callValue("size", IntType)))
+                    local(array)
+
+                    separate()
+
+                    ifCondition(targets.callValue("isEmpty", BooleanType).condition()) {
+                        returnMethod(array)
+                    }
+
+                    separate()
+
+                    forLoop(Variable(IntType, "i"), int(0), targets.callValue("size", IntType) - int(1)) {
+                        array.arraySet(it, targets.callValue("get", TargetType, it).castTo(TargetType))
+                    }
+
+                    separate()
+
+                    returnMethod(array)
                 }
 
                 separate()

@@ -1,8 +1,10 @@
 rootProject.name = 'PaperVision'
 
 include 'PaperVision'
-include 'LwjglPlatform'
+include 'PaperVision:NodeAnnotationProcessor'
+include 'Shared'
+
 include 'EOCVSimPlugin'
-include 'NodeAnnotationProcessor'
-include 'Common'
+
+include 'LwjglPlatform'
 include 'LwjglPlatform:Standalone'

@@ -2,20 +2,23 @@ package io.github.deltacv.papervision.io
 
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.platform.PlatformTexture
+import io.github.deltacv.papervision.platform.PlatformTextureFactory
+import io.github.deltacv.papervision.util.event.EventHandler
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 import java.util.concurrent.ArrayBlockingQueue
 
 class TextureProcessorQueue(
-    val paperVision: PaperVision
+    val textureFactory: PlatformTextureFactory
 ) {
 
     private val reusableArrays = mutableMapOf<Int, ArrayBlockingQueue<WeakReference<ByteArray>>>()
 
     private val queuedTextures = ArrayBlockingQueue<FutureTexture>(5)
     private val textures = mutableMapOf<Int, PlatformTexture>()
-    init {
-        paperVision.onUpdate {
+
+    fun subscribeTo(handler: EventHandler) {
+        handler {
             while(queuedTextures.isNotEmpty()) {
                 val futureTex = queuedTextures.poll()
 
@@ -31,7 +34,7 @@ class TextureProcessorQueue(
                     }
                 }
 
-                textures[futureTex.id] = paperVision.textureFactory.create(
+                textures[futureTex.id] = textureFactory.create(
                     futureTex.width, futureTex.height, futureTex.data
                 )
                 returnReusableArray(futureTex.data)
@@ -69,7 +72,7 @@ class TextureProcessorQueue(
         System.arraycopy(data.array(), data.position(), array, 0, size)
 
         synchronized(queuedTextures) {
-            while(queuedTextures.remainingCapacity() == 0) {
+            if(queuedTextures.remainingCapacity() == 0) {
                 Thread.yield()
             }
 

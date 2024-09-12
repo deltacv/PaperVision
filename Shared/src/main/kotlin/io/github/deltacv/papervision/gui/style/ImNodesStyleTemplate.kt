@@ -1,8 +1,5 @@
 package io.github.deltacv.papervision.gui.style
 
-import imgui.extension.imnodes.ImNodes
-import imgui.extension.imnodes.flag.ImNodesColorStyle
-
 interface ImNodesStyleTemplate : Style {
     val nodeBackground: Int
     val nodeBackgroundHovered: Int

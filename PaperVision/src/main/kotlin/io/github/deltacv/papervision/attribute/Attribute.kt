@@ -183,7 +183,11 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         }
     }
 
-    fun rebuildPreviz() { }
+    fun rebuildPreviz() {
+        if(!isOnEditor) return
+
+        parentNode.editor.paperVision.previzManager.refreshPreviz()
+    }
 
     protected fun getOutputValue(current: CodeGen.Current) = parentNode.getOutputValueOf(current, this)
 

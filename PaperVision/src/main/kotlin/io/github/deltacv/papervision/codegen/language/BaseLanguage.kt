@@ -235,15 +235,17 @@ open class LanguageBase(
             classBodyScope.scope(classEndScope)
         }
 
+        val pipelineClass = if(isForPreviz) OpenCvTypes.StreamableOpenCvPipeline else OpenCvTypes.OpenCvPipeline
+
         if(genInClass) {
-            importScope.importType(OpenCvTypes.OpenCvPipeline)
+            importScope.importType(pipelineClass)
         }
 
         mainScope.scope(importScope)
         mainScope.newStatement()
 
         if(genInClass) {
-            mainScope.clazz(Visibility.PUBLIC, className, classBodyScope, extends = OpenCvTypes.OpenCvPipeline)
+            mainScope.clazz(Visibility.PUBLIC, className, classBodyScope, extends = pipelineClass)
         } else {
             mainScope.scope(classBodyScope, trimIndent = true)
         }

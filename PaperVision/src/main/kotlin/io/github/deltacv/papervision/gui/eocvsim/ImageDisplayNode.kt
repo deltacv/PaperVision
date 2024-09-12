@@ -22,7 +22,7 @@ import io.github.deltacv.papervision.serialization.data.SerializeIgnore
 )
 @SerializeIgnore
 class ImageDisplayNode(
-    val stream: PipelineStream
+    var stream: PipelineStream
 ) : DrawNode<NoSession>() {
 
     val displayId by displayWindows.nextId(this)

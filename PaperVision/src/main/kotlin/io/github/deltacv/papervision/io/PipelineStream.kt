@@ -1,33 +1,32 @@
 package io.github.deltacv.papervision.io
 
-import io.github.deltacv.papervision.PaperVision
+import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
+import io.github.deltacv.papervision.engine.message.ByteMessageTag
+import io.github.deltacv.papervision.engine.message.ByteMessages
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.animation.TimedTextureAnimation
 import io.github.deltacv.papervision.util.loggerForThis
 import java.awt.image.BufferedImage
-import java.lang.IllegalStateException
+import java.nio.ByteBuffer
+import kotlin.math.log
 
 class PipelineStream(
-    val paperVision: PaperVision,
+    val sessionName: String,
+    val engineClient: PaperVisionEngineClient,
+    val queue: TextureProcessorQueue,
     val width: Int = 160,
     val height: Int = 120,
     offlineImages: Array<BufferedImage>? = null,
     offlineImagesFps: Double = 1.0
 ) {
-
-    companion object {
-        const val opcode: Byte = 0xE
-    }
     
     val logger by loggerForThis()
 
-    var isStarting = false
-        private set
     var isStarted = false
         private set
 
-    val queue = TextureProcessorQueue(paperVision)
+    val tag = ByteMessageTag.fromString(sessionName)
 
     var offlineTexture: PlatformTexture? = null
         private set
@@ -41,7 +40,7 @@ class PipelineStream(
                     img = img.scaleToFit(width, height)
                 }
 
-                offlineTexture = paperVision.textureFactory.create(width, height, img.bytes(), ColorSpace.BGR)
+                offlineTexture = queue.textureFactory.create(width, height, img.bytes(), ColorSpace.BGR)
             } else {
                 val textures = mutableListOf<PlatformTexture>()
 
@@ -52,7 +51,7 @@ class PipelineStream(
                         img = img.scaleToFit(width, height)
                     }
 
-                    textures.add(paperVision.textureFactory.create(width, height, img.bytes(), ColorSpace.BGR))
+                    textures.add(queue.textureFactory.create(width, height, img.bytes(), ColorSpace.BGR))
                 }
 
                 offlineTexture = TimedTextureAnimation(offlineImagesFps, textures.toTypedArray()).apply {
@@ -62,10 +61,21 @@ class PipelineStream(
         }
     }
 
-    fun startIfNeeded() {
+    fun start() {
+        logger.info("Starting pipeline stream of $sessionName")
+
+        engineClient.setByteMessageHandlerOf(tag) {
+            val id = ByteMessages.idFromBytes(it)
+            val message = ByteMessages.messageFromBytes(it)
+
+            queue.offer(id, width, height, ByteBuffer.wrap(message))
+        }
+
+        isStarted = false
     }
 
     fun stop() {
+        isStarted = false
     }
 
     fun textureOf(id: Int) = queue[id] ?: offlineTexture

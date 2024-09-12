@@ -6,6 +6,7 @@ import io.github.deltacv.papervision.codegen.build.Type
 object OpenCvTypes {
 
     val OpenCvPipeline = Type("OpenCvPipeline", "org.openftc.easyopencv")
+    val StreamableOpenCvPipeline = Type("StreamableOpenCvPipeline", "io.github.deltacv.eocvsim.pipeline")
 
     object Imgproc : Type("Imgproc", "org.opencv.imgproc") {
         val RETR_LIST = ConValue(StandardTypes.cint, "Imgproc.RETR_LIST").apply {

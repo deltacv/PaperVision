@@ -5,7 +5,7 @@ plugins {
 apply from: '../build.common.gradle'
 
 dependencies {
-    implementation project(":PaperVision")
+    api project(":PaperVision")
 
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib"
     implementation "io.github.spair:imgui-java-app:$imgui_version"

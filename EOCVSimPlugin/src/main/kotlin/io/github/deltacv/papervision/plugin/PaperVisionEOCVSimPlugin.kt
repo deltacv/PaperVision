@@ -1,21 +1,30 @@
 package io.github.deltacv.papervision.plugin
 
-import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
-import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
-import io.github.deltacv.papervision.codegen.language.interpreted.LuaLanguage
-import io.github.deltacv.papervision.plugin.eocvsim.LuaOpenCvPipeline
-import io.github.deltacv.papervision.plugin.eocvsim.LuaOpenCvPipelineInstantiator
+import io.github.deltacv.papervision.engine.LocalPaperVisionEngine
+import io.github.deltacv.papervision.engine.bridge.LocalPaperVisionEngineBridge
+import io.github.deltacv.papervision.engine.client.message.*
+import io.github.deltacv.papervision.engine.client.response.BooleanResponse
+import io.github.deltacv.papervision.engine.client.response.ErrorResponse
+import io.github.deltacv.papervision.engine.client.response.OkResponse
+import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
+import io.github.deltacv.papervision.plugin.eocvsim.PrevizSession
+import org.opencv.core.Size
 import javax.swing.JButton
 import javax.swing.JPanel
 
-
 class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
-    val logger by loggerForThis()
+    val engine = LocalPaperVisionEngine()
+
+    var currentPrevizSession: PrevizSession? = null
+
+    private val sessionStreamResolutions = mutableMapOf<String, Size>()
 
     override fun onLoad() {
-        PaperVisionDaemon.launchDaemonPaperVision()
+        PaperVisionDaemon.launchDaemonPaperVision {
+            PaperVisionApp(true, LocalPaperVisionEngineBridge(engine))
+        }
 
         eocvSim.visualizer.onPluginGuiAttachment.doOnce {
             val panel = JPanel()
@@ -29,27 +38,52 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
             eocvSim.visualizer.pipelineOpModeSwitchablePanel.add("PaperVision", panel)
         }
-
-        eocvSim.onMainUpdate.doOnce {
-            eocvSim.pipelineManager.addPipelineClass(LuaOpenCvPipeline::class.java, PipelineSource.CLASSPATH)
-        }
-
-        PaperVisionDaemon.attachToMainLoop {
-            if(PaperVisionDaemon.paperVision.keyManager.released(PaperVisionDaemon.paperVision.setup.keys!!.Escape)) {
-                eocvSim.pipelineManager.onUpdate.doOnce {
-                    val source = PaperVisionDaemon.paperVision.codeGenManager.build("kkk", LuaLanguage)
-
-                    eocvSim.pipelineManager.addInstantiator(LuaOpenCvPipeline::class.java, LuaOpenCvPipelineInstantiator(source) )
-
-                    eocvSim.pipelineManager.forceChangePipeline(
-                        eocvSim.pipelineManager.getIndexOf(LuaOpenCvPipeline::class.java, PipelineSource.CLASSPATH)
-                    )
-                }
-            }
-        }
     }
 
     override fun onEnable() {
+        engine.setMessageHandlerOf<TunerChangeValueMessage> {
+            eocvSim.tunerManager.getTunableFieldWithLabel(message.label)?.setFieldValue(message.index, message.value)
+            respond(OkResponse())
+        }
+
+        engine.setMessageHandlerOf<TunerChangeValuesMessage> {
+            for(i in message.values.indices) {
+                eocvSim.tunerManager.getTunableFieldWithLabel(message.label)?.setFieldValue(i, message.values[i])
+            }
+
+            respond(OkResponse())
+        }
+
+        engine.setMessageHandlerOf<PrevizPingPongMessage> {
+            respond(BooleanResponse(
+                currentPrevizSession?.sessionName == message.previzName && currentPrevizSession?.previzRunning ?: false)
+            )
+        }
+
+        engine.setMessageHandlerOf<PrevizSetStreamResolutionMessage> {
+            sessionStreamResolutions[message.previzName] = Size(message.width.toDouble(), message.height.toDouble())
+            respond(OkResponse())
+        }
+
+        engine.setMessageHandlerOf<PrevizSourceCodeMessage> {
+            if(currentPrevizSession == null || currentPrevizSession?.sessionName != message.previzName) {
+                currentPrevizSession = PrevizSession(
+                    message.previzName,
+                    engine, eocvSim,
+                    sessionStreamResolutions[message.previzName] ?: Size(320.0, 240.0)
+                )
+
+                currentPrevizSession!!.startPreviz(message.sourceCode)
+            }
+
+            currentPrevizSession!!.refreshPreviz(message.sourceCode)
+            respond(OkResponse())
+        }
+
+        eocvSim.onMainUpdate {
+            PaperVisionDaemon.watchdog()
+            engine.process()
+        }
     }
 
     override fun onDisable() {
