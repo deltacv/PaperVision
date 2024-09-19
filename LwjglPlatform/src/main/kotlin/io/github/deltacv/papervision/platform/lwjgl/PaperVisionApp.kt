@@ -13,7 +13,8 @@ import org.lwjgl.glfw.GLFWKeyCallback
 
 class PaperVisionApp(
     val daemon: Boolean,
-    val bridge: PaperVisionEngineBridge? = null
+    val bridge: PaperVisionEngineBridge? = null,
+    val windowCloseListener: (() -> Boolean)? = null
 ) : Window() {
 
     val setup = platformSetup("LWJGL") {
@@ -30,6 +31,7 @@ class PaperVisionApp(
     fun start() {
         val config = Configuration().apply {
             title = ""
+            isFullScreen = true
         }
 
         init(config, daemon)
@@ -67,12 +69,16 @@ class PaperVisionApp(
     }
 
     override fun windowCloseAction(): Boolean {
+        val shouldHide = windowCloseListener?.invoke() ?: true
+
         if(daemon) {
-            glfwWindow.visible = false
+            if(shouldHide) {
+                glfwWindow.visible = false
+            }
             glfwSetWindowShouldClose(handle, false)
             return false
         } else {
-            return true
+            return shouldHide
         }
     }
 

@@ -20,6 +20,8 @@ interface DrawableIdElement : IdElement {
 
     fun enable()
 
+    fun pollChange(): Boolean
+
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -40,7 +42,7 @@ abstract class DrawableIdElementBase<T : DrawableIdElementBase<T>> : DrawableIdE
     }
 
     override fun enable() {
-        if(internalId == null) {
+        if(internalId == null || !idElementContainer.has(id, this as T)) {
             internalId = provideId()
 
             onEnable()
@@ -59,5 +61,7 @@ abstract class DrawableIdElementBase<T : DrawableIdElementBase<T>> : DrawableIdE
     override fun restore() {
         idElementContainer[id] = this as T
     }
+
+    override fun pollChange() = false
 
 }

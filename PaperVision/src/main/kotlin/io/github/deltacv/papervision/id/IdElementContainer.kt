@@ -28,12 +28,12 @@ class IdElementContainer<T : IdElement> : Iterable<T> {
             }
         }
 
-        e.set(id, element)
+        e[id] = element
 
         elements.add(element)
         reallocateArray()
 
-        e.lastIndexOf(element)
+       id
     }
 
     fun reserveId(id: Int): Int {
@@ -47,8 +47,14 @@ class IdElementContainer<T : IdElement> : Iterable<T> {
 
         e.add(id, null)
 
+        reallocateArray()
+
         return id
     }
+
+    fun has(id: Int, elem: T) = try {
+        get(id) == elem
+    } catch(_: Exception) { false }
 
     fun nextId(element: () -> T) = lazy {
         nextId(element()).value
@@ -65,6 +71,7 @@ class IdElementContainer<T : IdElement> : Iterable<T> {
 
     fun nextId() = lazy {
         e.add(null)
+        reallocateArray()
         e.lastIndexOf(null)
     }
 

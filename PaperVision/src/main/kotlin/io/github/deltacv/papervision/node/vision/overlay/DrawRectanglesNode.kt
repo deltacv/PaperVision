@@ -36,16 +36,16 @@ open class DrawRectanglesNode
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
-        +inputMat.rebuildOnChange()
-        +rectangles.rebuildOnChange()
+        + inputMat.rebuildOnChange()
+        + rectangles.rebuildOnChange()
 
-        +lineColor
-        +lineThickness
+        + lineColor
+        + lineThickness
 
         lineThickness.value.set(1) // initial value
 
         if (!isDrawOnInput) {
-            +outputMat.enablePrevizButton()
+            + outputMat.enablePrevizButton().rebuildOnChange()
         } else {
             inputMat.variableName = "$[att_drawon_image]"
         }
@@ -66,7 +66,7 @@ open class DrawRectanglesNode
         )
 
         val input = inputMat.value(current)
-        var rectanglesList = rectangles.value(current)
+        val rectanglesList = rectangles.value(current)
 
         val thickness = lineThickness.value(current).value
         val thicknessVariable = uniqueVariable("rectsThickness", thickness.v)

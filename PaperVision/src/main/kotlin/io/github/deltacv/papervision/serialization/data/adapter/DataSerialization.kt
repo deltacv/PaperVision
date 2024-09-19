@@ -6,6 +6,7 @@ import com.google.gson.JsonSerializationContext
 import io.github.deltacv.papervision.node.hasSuperclass
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.data.SerializeData
+import io.github.deltacv.papervision.serialization.data.SerializeIgnore
 
 fun DataSerializable<*>.toJsonObject(): JsonObject {
     val obj = JsonObject()
@@ -14,8 +15,15 @@ fun DataSerializable<*>.toJsonObject(): JsonObject {
         field.isAccessible = true
         val value = field.get(this) ?: continue
 
+        if(field.isAnnotationPresent(SerializeIgnore::class.java) || field.type.isAnnotationPresent(SerializeIgnore::class.java)) {
+            continue
+        }
+
         if(hasSuperclass(field.type, DataSerializable::class.java)) {
-            obj.add(field.name, dataSerializableToJsonObject(value as DataSerializable<*>))
+            if(!(value as DataSerializable<*>).shouldSerialize) {
+                continue
+            }
+            obj.add(field.name, dataSerializableToJsonObject(value))
         } else if(field.isAnnotationPresent(SerializeData::class.java)) {
             obj.add(field.name, gson.toJsonTree(value))
         }

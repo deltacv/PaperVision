@@ -9,6 +9,7 @@ import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.mai18n.tr
 import java.lang.IllegalArgumentException
+import java.util.concurrent.ArrayBlockingQueue
 
 abstract class DrawNode<S: CodeGenSession>(
     allowDelete: Boolean = true
@@ -22,6 +23,8 @@ abstract class DrawNode<S: CodeGenSession>(
 
     private var isFirstDraw = true
 
+    private var changeQueue = ArrayBlockingQueue<Boolean>(50)
+
     val annotationData by lazy {
         val annotation = this.javaClass.getAnnotation(PaperNode::class.java)
             ?: throw IllegalArgumentException("Node ${javaClass.typeName} needs to have a @RegisterNode annotation")
@@ -29,13 +32,29 @@ abstract class DrawNode<S: CodeGenSession>(
         AnnotationData(annotation.name, annotation.description, annotation.category, annotation.showInList)
     }
 
+    init {
+        onChange {
+            changeQueue.add(true)
+        }
+    }
+
     var titleColor = annotationData.category.color
     var titleHoverColor = annotationData.category.colorSelected
+
+    override fun onEnable() {
+        for(attribute in nodeAttributes) {
+            attribute.onChange  { onChange.run() }
+        }
+    }
 
     open fun init() {}
 
     override fun draw() {
         val title = annotationData.name
+
+        if(changeQueue.remainingCapacity() <= 1) {
+            changeQueue.poll()
+        }
 
         ImNodes.pushColorStyle(ImNodesColorStyle.TitleBar, titleColor)
         ImNodes.pushColorStyle(ImNodesColorStyle.TitleBarHovered, titleHoverColor)
@@ -50,14 +69,14 @@ abstract class DrawNode<S: CodeGenSession>(
             drawAttributes()
         ImNodes.endNode()
 
-        ImNodes.popColorStyle()
-        ImNodes.popColorStyle()
-        ImNodes.popColorStyle()
-
         if(isFirstDraw) {
             init()
             isFirstDraw = false
         }
+
+        ImNodes.popColorStyle()
+        ImNodes.popColorStyle()
+        ImNodes.popColorStyle()
 
         nextNodePosition?.let {
             ImNodes.setNodeScreenSpacePos(id, it.x, it.y)
@@ -97,6 +116,8 @@ abstract class DrawNode<S: CodeGenSession>(
     }
 
     open fun drawNode() { }
+
+    override fun pollChange() = changeQueue.poll() ?: false
 
     data class AnnotationData(val name: String,
                               val description: String,

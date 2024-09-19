@@ -46,7 +46,7 @@ open class DrawContoursNode
         lineThickness.value.set(1) // initial value
 
         if(!isDrawOnInput) {
-            + outputMat.enablePrevizButton()
+            + outputMat.enablePrevizButton().rebuildOnChange()
         } else {
             inputMat.variableName = "$[att_drawon_image]"
         }
@@ -104,7 +104,7 @@ open class DrawContoursNode
             )
 
             if(!isDrawOnInput) {
-                outputMat.streamIfEnabled(output, input.color)
+                outputMat.streamIfEnabled(drawMat, input.color)
             }
         }
 

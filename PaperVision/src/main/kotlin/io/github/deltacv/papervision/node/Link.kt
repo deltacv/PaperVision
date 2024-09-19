@@ -7,19 +7,20 @@ import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.serialization.data.DataSerializable
-import io.github.deltacv.papervision.serialization.ev.LinkSerializationData
+import io.github.deltacv.papervision.serialization.LinkSerializationData
 
 class Link(
     val a: Int,
     val b: Int,
     val isDestroyableByUser: Boolean = true,
+    override val shouldSerialize: Boolean = true
 ) : DrawableIdElementBase<Link>(), DataSerializable<LinkSerializationData> {
 
     val attribIdElementContainer = IdElementContainerStack.threadStack.peekNonNull<Attribute>()
     override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Link>()
 
-    val aAttrib by lazy { attribIdElementContainer[a] }
-    val bAttrib by lazy { attribIdElementContainer[b] }
+    val aAttrib get() = attribIdElementContainer[a]
+    val bAttrib get() = attribIdElementContainer[b]
 
     constructor(data: LinkSerializationData) : this(data.from, data.to)
 
@@ -49,6 +50,9 @@ class Link(
             ImNodes.popColorStyle()
             ImNodes.popColorStyle()
         }
+    }
+
+    override fun onEnable() {
     }
 
     override fun delete() {

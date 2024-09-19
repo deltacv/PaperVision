@@ -1,7 +1,9 @@
 package io.github.deltacv.papervision.plugin
 
-import com.github.serivesmejia.eocvsim.util.exception.handling.EOCVSimUncaughtExceptionHandler
+import com.google.gson.JsonElement
 import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
+import io.github.deltacv.papervision.serialization.PaperVisionSerializer
+import io.github.deltacv.papervision.util.event.EventHandler
 import io.github.deltacv.papervision.util.event.EventListener
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
@@ -22,20 +24,47 @@ object PaperVisionDaemon {
     private lateinit var app: PaperVisionApp
     val paperVision get() = app.paperVision
 
+    val onAppInstantiate = EventHandler("PaperVisionDaemon-onAppInstantiate")
+
     lateinit var paperVisionFuture: Future<*>
+        private set
+
+    var paperVisionWatchdogGrowled = false
         private set
 
     fun launchDaemonPaperVision(instantiator: () -> PaperVisionApp) {
         paperVisionFuture = executorService.submit {
             app = instantiator()
+            onAppInstantiate.run()
             app.start()
         }
+    }
 
-        executorService.submit {
-            while(!paperVisionFuture.isDone) {
-                Thread.sleep(100)
+    fun openProject(json: JsonElement) {
+        paperVision.onUpdate.doOnce {
+            PaperVisionSerializer.deserializeAndApply(json, paperVision)
+
+            if(!app.glfwWindow.visible) {
+                app.glfwWindow.visible = true
             }
         }
+    }
+
+    fun currentProjectJson() = PaperVisionSerializer.serialize(
+        paperVision.nodes.inmutable, paperVision.links.inmutable
+    )
+
+
+    fun currentProjectJsonTree() = PaperVisionSerializer.serializeToTree(
+        paperVision.nodes.inmutable, paperVision.links.inmutable
+    )
+
+    fun showPaperVision() {
+        app.glfwWindow.visible = true
+    }
+
+    fun hidePaperVision() {
+        app.glfwWindow.visible = false
     }
 
     fun invokeOnMainLoop(runnable: Runnable) =
@@ -44,11 +73,15 @@ object PaperVisionDaemon {
     fun attachToMainLoop(listener: EventListener) =
         paperVision.onUpdate(listener)
 
-    fun watchdog() {
-        if(paperVisionFuture.isDone) paperVisionFuture.get()
-    }
+    fun attachToEditorChange(listener: EventListener) =
+        paperVision.nodeEditor.onEditorChange(listener)
 
-    fun invokeLater(runnable: Runnable) = executorService.submit(runnable)
+    fun watchdog() {
+        if(paperVisionFuture.isDone && !paperVisionWatchdogGrowled) {
+            paperVisionWatchdogGrowled = true
+            paperVisionFuture.get()
+        }
+    }
 
     /**
      * Stops the PaperVision process by shutting down the executor service.

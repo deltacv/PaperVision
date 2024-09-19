@@ -258,7 +258,6 @@ class NodeList(
         headers.delete()
     }
 
-
     override fun restore() {
         super.restore()
         headers.restore()

@@ -5,6 +5,7 @@ import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.exception.AttributeGenException
 import io.github.deltacv.papervision.gui.util.Popup
+import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.util.loggerForThis
 
 class CodeGenManager(val paperVision: PaperVision) {
@@ -16,7 +17,7 @@ class CodeGenManager(val paperVision: PaperVision) {
         language: Language = JavaLanguage,
         isForPreviz: Boolean = false
     ): String {
-        for(popup in Popup.popups.inmutable) {
+        for(popup in IdElementContainerStack.threadStack.peekNonNull<Popup>().inmutable) {
             if(popup.label == "Gen-Error") {
                 popup.delete()
             }

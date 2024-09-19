@@ -12,15 +12,14 @@ import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.data.adapter.dataSerializableToJsonObject
 import io.github.deltacv.papervision.serialization.data.adapter.jsonObjectToDataSerializable
-import io.github.deltacv.papervision.serialization.ev.AttributeSerializationData
+import io.github.deltacv.papervision.serialization.AttributeSerializationData
 
 open class ListAttribute(
     override val mode: AttributeMode,
     val elementType: Type,
     override var variableName: String? = null,
     length: Int? = null,
-    val allowAddOrDelete: Boolean = true,
-    var sameLine: Boolean = false
+    val allowAddOrDelete: Boolean = true
 ) : TypedAttribute(Companion) {
 
     companion object : Type {

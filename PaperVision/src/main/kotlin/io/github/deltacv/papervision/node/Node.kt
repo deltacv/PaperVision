@@ -12,8 +12,8 @@ import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.data.DataSerializable
-import io.github.deltacv.papervision.serialization.ev.BasicNodeData
-import io.github.deltacv.papervision.serialization.ev.NodeSerializationData
+import io.github.deltacv.papervision.serialization.BasicNodeData
+import io.github.deltacv.papervision.serialization.NodeSerializationData
 import io.github.deltacv.papervision.util.event.EventHandler
 import io.github.deltacv.papervision.util.event.EventListener
 
@@ -37,7 +37,7 @@ abstract class Node<S: CodeGenSession>(
     lateinit var editor: NodeEditor
         internal set
 
-    val isOnEditor get() = ::editor.isInitialized
+    val isOnEditor get() = ::editor.isInitialized && idElementContainer.contains(this)
 
     override val genOptions = CodeGenOptions()
 
@@ -67,33 +67,41 @@ abstract class Node<S: CodeGenSession>(
 
     override fun delete() {
         if(allowDelete) {
-            for (attribute in nodeAttributes.toTypedArray()) {
-                for(link in attribute.links.toTypedArray()) {
-                    link.delete()
-                }
+            forceDelete()
+        }
+    }
 
-                attribute.delete()
-                attribs.remove(attribute)
+    fun forceDelete() {
+        for (attribute in nodeAttributes.toTypedArray()) {
+            for(link in attribute.links.toTypedArray()) {
+                link.delete()
             }
 
-            idElementContainer.removeId(id)
-            onDelete.run()
+            attribute.delete()
+            attribs.remove(attribute)
         }
+
+        idElementContainer.removeId(id)
+        onDelete.run()
     }
 
     override fun restore() {
         if(allowDelete) {
-            for (attribute in nodeAttributes.toTypedArray()) {
-                for(link in attribute.links.toTypedArray()) {
-                    link.restore()
-                }
+            forceRestore()
+        }
+    }
 
-                attribute.restore()
-                attribs.add(attribute)
+    fun forceRestore() {
+        for (attribute in nodeAttributes.toTypedArray()) {
+            for(link in attribute.links.toTypedArray()) {
+                link.restore()
             }
 
-            idElementContainer[id] = this
+            attribute.restore()
+            attribs.add(attribute)
         }
+
+        idElementContainer[id] = this
     }
 
     fun addAttribute(attribute: Attribute) {
@@ -114,7 +122,7 @@ abstract class Node<S: CodeGenSession>(
 
     operator fun Attribute.unaryPlus() = addAttribute(this)
 
-    open override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         raise("Node doesn't have output attributes")
     }
 

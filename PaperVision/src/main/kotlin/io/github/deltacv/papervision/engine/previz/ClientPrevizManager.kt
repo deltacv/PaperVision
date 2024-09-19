@@ -82,7 +82,9 @@ class ClientPrevizManager(
         })
     }
 
-    fun refreshPreviz() = refreshPreviz(codeGenManager.build(previzName!!, JavaLanguage, true))
+    fun refreshPreviz() = previzName?.let{
+        refreshPreviz(codeGenManager.build(it, JavaLanguage, true))
+    }
 
     fun refreshPreviz(sourceCode: String) {
         if(previzRunning)

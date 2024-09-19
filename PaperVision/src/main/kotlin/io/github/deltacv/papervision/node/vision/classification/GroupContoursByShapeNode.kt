@@ -29,14 +29,14 @@ enum class Shape(val sides: Int?) {
 )
 class GroupContoursByShapeNode : DrawNode<GroupContoursByShapeNode.Session>() {
 
-    val input = ListAttribute(INPUT, PointsAttribute,"$[att_contours]")
+    val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
 
     val shape = EnumAttribute(INPUT, Shape.values(), "$[att_shape]")
     val sides = IntAttribute(INPUT, "$[att_sides]")
 
     val accuracy = IntAttribute(INPUT, "$[att_accuracy]")
 
-    val output = ListAttribute(OUTPUT, PointsAttribute,"$[att_filteredcontours]")
+    val output = ListAttribute(OUTPUT, PointsAttribute, "$[att_filteredcontours]")
 
     private var previousSides = 0
 

@@ -23,11 +23,16 @@ dependencies {
     implementation project(":LwjglPlatform")
 
     // compileOnly 'com.github.deltacv.EOCV-Sim:EOCV-Sim:3.6.0'
-    compileOnly 'com.github.deltacv:EOCV-Sim:4.0.0-dev-240912-0046'
+    compileOnly 'com.github.deltacv:EOCV-Sim:4.0.0-dev-240917-1612'
 
     compileOnly "io.github.spair:imgui-java-app:$imgui_version"
 
     implementation 'org.codehaus.janino:janino:3.1.12'
 
     implementation "org.slf4j:slf4j-api:$slf4j_version"
+
+    implementation "io.javalin:javalin:6.3.0"
+    implementation 'com.google.code.gson:gson:2.8.9'
+
+    implementation 'org.java-websocket:Java-WebSocket:1.5.7'
 }

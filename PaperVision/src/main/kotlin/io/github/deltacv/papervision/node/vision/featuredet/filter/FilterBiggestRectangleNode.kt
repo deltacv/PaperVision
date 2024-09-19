@@ -19,7 +19,7 @@ import io.github.deltacv.papervision.node.PaperNode
 )
 class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>() {
 
-    val input = ListAttribute(INPUT, RectAttribute,"$[att_rects]")
+    val input = ListAttribute(INPUT, RectAttribute, "$[att_rects]")
     val output = RectAttribute(OUTPUT, "$[att_biggestrect]")
 
     override fun onEnable() {

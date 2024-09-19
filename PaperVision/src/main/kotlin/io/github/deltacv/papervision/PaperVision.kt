@@ -34,11 +34,10 @@ import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.id.NoneIdElement
 import io.github.deltacv.papervision.io.KeyManager
-import io.github.deltacv.papervision.io.resourceToString
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.platform.*
-import io.github.deltacv.papervision.serialization.ev.EasyVisionSerializer
+import io.github.deltacv.papervision.serialization.PaperVisionSerializer
 import io.github.deltacv.papervision.util.event.EventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 import io.github.deltacv.mai18n.Language
@@ -46,9 +45,9 @@ import io.github.deltacv.papervision.engine.bridge.NoOpPaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
 import io.github.deltacv.papervision.gui.style.CurrentStyles
+import io.github.deltacv.papervision.gui.util.Popup.Companion.WARN
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.node.NodeRegistry
-import org.w3c.dom.Text
 
 class PaperVision(
     private val setupCall: PlatformSetupCallback
@@ -97,6 +96,11 @@ class PaperVision(
     val nodes = IdElementContainer<Node<*>>()
     val attributes = IdElementContainer<Attribute>()
     val links = IdElementContainer<Link>()
+    val windows = IdElementContainer<Window>()
+
+    val popups = IdElementContainer<Popup>().apply {
+        reserveId(WARN)
+    }
 
     lateinit var engineClient: PaperVisionEngineClient
 
@@ -110,6 +114,8 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(nodes)
         IdElementContainerStack.threadStack.push(attributes)
         IdElementContainerStack.threadStack.push(links)
+        IdElementContainerStack.threadStack.push(windows)
+        IdElementContainerStack.threadStack.push(popups)
 
         logger.info("Starting PaperVision...")
 
@@ -124,15 +130,13 @@ class PaperVision(
         textureProcessorQueue.subscribeTo(onUpdate)
 
         engineClient = PaperVisionEngineClient(setup.engineBridge ?: NoOpPaperVisionEngineBridge)
-        previzManager = ClientPrevizManager(320, 240, codeGenManager, textureProcessorQueue, engineClient)
+        previzManager = ClientPrevizManager(160, 120, codeGenManager, textureProcessorQueue, engineClient)
 
         engineClient.connect()
 
         // disable annoying ini file creation (hopefully shouldn't break anything)
         ImGui.getIO().iniFilename = null
         ImGui.getIO().logFilename = null
-
-        EasyVisionSerializer.deserializeAndApply(resourceToString("/testproj.json"), this)
 
         // initializing fonts right after the imgui context is created
         // we can't create fonts mid-frame so that's kind of a problem
@@ -147,6 +151,8 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<Node<*>>()
         IdElementContainerStack.threadStack.pop<Attribute>()
         IdElementContainerStack.threadStack.pop<Link>()
+        IdElementContainerStack.threadStack.pop<Window>()
+        IdElementContainerStack.threadStack.pop<Popup>()
     }
 
     fun firstProcess() {
@@ -162,6 +168,8 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(nodes)
         IdElementContainerStack.threadStack.push(attributes)
         IdElementContainerStack.threadStack.push(links)
+        IdElementContainerStack.threadStack.push(windows)
+        IdElementContainerStack.threadStack.push(popups)
 
         onUpdate.run()
 
@@ -174,17 +182,17 @@ class PaperVision(
 
         ImGui.pushFont(defaultFont.imfont)
 
-        for(window in Window.windows.inmutable) {
+        for(window in windows.inmutable) {
             window.draw()
         }
-        for(tooltip in Popup.popups.inmutable) {
+        for(tooltip in popups.inmutable) {
             tooltip.draw()
         }
 
         ImGui.popFont()
 
         if(keyManager.pressed(keyManager.keys.ArrowUp)) {
-            println(EasyVisionSerializer.serialize(nodes.elements, links.elements))
+            println(PaperVisionSerializer.serialize(nodes.elements, links.elements))
         }
 
         keyManager.update()
@@ -194,6 +202,8 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<Node<*>>()
         IdElementContainerStack.threadStack.pop<Attribute>()
         IdElementContainerStack.threadStack.pop<Link>()
+        IdElementContainerStack.threadStack.pop<Window>()
+        IdElementContainerStack.threadStack.pop<Popup>()
     }
 
     fun destroy() {

@@ -35,7 +35,8 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
         val PAN_CONSTANT = 25f
     }
 
-    val context = ImNodesContext()
+    var context = ImNodesContext()
+        private set
     var isNodeFocused = false
         private set
 
@@ -73,6 +74,7 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
     private val scrollTimer = ElapsedTime()
 
     val onDraw = EventHandler("NodeEditor-OnDraw")
+    val onEditorChange = EventHandler("NodeEditor-OnChange")
 
     override var title = "editor"
     override val windowFlags = flags(
@@ -94,9 +96,9 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
 
         ImNodes.createContext()
 
+        originNode.enable()
         inputNode.enable()
         outputNode.enable()
-        originNode.enable()
 
         playButton = EOCVSimPlayButtonWindow(
             { paperVision.nodeList.floatingButton },
@@ -107,9 +109,10 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
     }
 
     override fun drawContents() {
+        ImNodes.editorContextSet(context)
+
         onDraw.run()
 
-        ImNodes.editorContextSet(context)
         ImNodes.beginNodeEditor()
 
         ImNodes.setNodeGridSpacePos(originNode.id, 0f, 0f)
@@ -119,9 +122,15 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
         for (node in nodes.inmutable) {
             node.editor = this
             node.draw()
+            if(node.pollChange()) {
+                onEditorChange.run()
+            }
         }
         for (link in links) {
             link.draw()
+            if(link.pollChange()) {
+                onEditorChange.run()
+            }
         }
 
         ImNodes.endNodeEditor()
@@ -214,6 +223,7 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
     fun startImageDisplayFor(attribute: Attribute): ImageDisplayNode {
         val window = ImageDisplayNode(paperVision.previzManager.stream)
         paperVision.previzManager.onPrevizStart {
+            // automagically update the stream when the previz starts
             window.stream = paperVision.previzManager.stream
         }
 
@@ -224,7 +234,7 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
             window.delete()
         }
 
-        val link = Link(attribute.id, window.inputId, false)
+        val link = Link(attribute.id, window.inputId, false, shouldSerialize = false)
         link.enable()
 
         window.onDelete.doOnce { link.delete() }
@@ -327,6 +337,10 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
 
     fun destroy() {
         ImNodes.destroyContext()
+    }
+
+    fun recreateContext() {
+        context = ImNodesContext()
     }
 
     class EOCVSimPlayButtonWindow(

@@ -13,13 +13,14 @@ fun jsonObjectToDataSerializable(
     context: JsonDeserializationContext? = null,
     inst: DataSerializable<Any>? = null
 ): DataSerializable<*> {
+    val classLoader = DataSerializable::class.java.classLoader
     val jsonObject = json.asJsonObject
 
-    val dataClass = Class.forName(jsonObject.get("dataClass").asString)
+    val dataClass = classLoader.loadClass(jsonObject.get("dataClass").asString)
     val dataObj = jsonObject.get("data") ?: JsonObject()
     val dataInstance = context?.deserialize(dataObj, dataClass) ?: gson.fromJson(dataObj, dataClass)
 
-    val objectClass = Class.forName(jsonObject.get("objectClass").asString)
+    val objectClass = classLoader.loadClass(jsonObject.get("objectClass").asString)
 
     val objectInstance = inst
         ?: try {

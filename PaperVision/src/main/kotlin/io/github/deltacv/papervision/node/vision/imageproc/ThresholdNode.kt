@@ -57,6 +57,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
         if(color != lastColor) {
             scalar.color = color
+            scalar.rebuildPreviz()
         }
 
         lastColor = color

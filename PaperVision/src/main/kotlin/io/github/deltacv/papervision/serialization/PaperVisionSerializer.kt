@@ -1,4 +1,4 @@
-package io.github.deltacv.papervision.serialization.ev
+package io.github.deltacv.papervision.serialization
 
 import com.google.gson.JsonElement
 import io.github.deltacv.papervision.PaperVision
@@ -9,25 +9,25 @@ import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.data.DataSerializer
 
-object EasyVisionSerializer {
+object PaperVisionSerializer {
 
     fun serialize(nodes: List<Node<*>>, links: List<Link>): String {
         val serializables = mutableMapOf<String, List<DataSerializable<*>>>()
-        serializables["nodes"] = nodes
-        serializables["links"] = links
+        serializables["nodes"] = nodes.filter { it.shouldSerialize }
+        serializables["links"] = links.filter { it.shouldSerialize }
 
         return DataSerializer.serialize(serializables)
     }
 
     fun serializeToTree(nodes: List<Node<*>>, links: List<Link>): JsonElement {
         val serializables = mutableMapOf<String, List<DataSerializable<*>>>()
-        serializables["nodes"] = nodes
-        serializables["links"] = links
+        serializables["nodes"] = nodes.filter { it.shouldSerialize }
+        serializables["links"] = links.filter { it.shouldSerialize }
 
         return DataSerializer.serializeToTree(serializables)
     }
 
-    private fun deserialize(obj: JsonElement?, json: String?, paperVision: PaperVision?): EasyVisionData {
+    private fun deserialize(obj: JsonElement?, json: String?, paperVision: PaperVision?): PaperVisionData {
         val data = if(obj != null) {
             DataSerializer.deserialize(obj)
         } else {
@@ -37,11 +37,19 @@ object EasyVisionSerializer {
         val nodes = mutableListOf<Node<*>>()
         val links = mutableListOf<Link>()
 
-        paperVision?.apply {
-            nodes.clear()
-            attributes.clear()
-            links.clear()
+        paperVision?.let {
+            for(node in it.nodes.inmutable) {
+                if(node != it.nodeEditor.originNode) // everything freaking breaks if we delete this thing
+                    node.forceDelete()
+            }
+
+            for(link in it.links.inmutable) {
+                link.delete()
+            }
         }
+
+        var createdOutputNode = false
+        var createdInputNode = false
 
         val nodesData = data["nodes"]
         if(nodesData != null) {
@@ -50,17 +58,33 @@ object EasyVisionSerializer {
                     // applying the inputmatnode and outputmatnode positions in case they passed a node editor
                     if(paperVision != null) {
                         when (node) {
-                            is InputMatNode -> paperVision.nodeEditor.inputNode = node
-                            is OutputMatNode -> paperVision.nodeEditor.outputNode = node
+                            is InputMatNode -> {
+                                paperVision.nodeEditor.inputNode = node
+                                createdInputNode = true
+                            }
+                            is OutputMatNode -> {
+                                paperVision.nodeEditor.outputNode = node
+                                createdOutputNode = true
+                            }
                         }
-                    }
-
-                    if(paperVision != null) {
                         node.enable()
                     }
+
                     nodes.add(node)
                 }
             }
+        }
+
+        paperVision?.let {
+            if(!createdInputNode) {
+                it.nodeEditor.inputNode = InputMatNode().apply { enable() }
+            }
+            if(!createdOutputNode) {
+                it.nodeEditor.outputNode = OutputMatNode().apply { enable() }
+            }
+
+            it.nodeEditor.inputNode.ensureAttributeExists()
+            it.nodeEditor.outputNode.ensureAttributeExists()
         }
 
         val linksData = data["links"]
@@ -75,7 +99,7 @@ object EasyVisionSerializer {
             }
         }
 
-        return EasyVisionData(nodes, links)
+        return PaperVisionData(nodes, links)
     }
 
     fun deserialize(json: String) = deserialize(null, json, null)
@@ -86,4 +110,4 @@ object EasyVisionSerializer {
 
 }
 
-data class EasyVisionData(@JvmField val nodes: List<Node<*>>, @JvmField val links: List<Link>)
+data class PaperVisionData(@JvmField val nodes: List<Node<*>>, @JvmField val links: List<Link>)

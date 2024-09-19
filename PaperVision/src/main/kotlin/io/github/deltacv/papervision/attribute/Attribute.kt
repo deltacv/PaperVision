@@ -10,10 +10,11 @@ import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
-import io.github.deltacv.papervision.serialization.ev.AttributeSerializationData
+import io.github.deltacv.papervision.serialization.AttributeSerializationData
 import io.github.deltacv.papervision.serialization.data.DataSerializable
-import io.github.deltacv.papervision.serialization.ev.BasicAttribData
+import io.github.deltacv.papervision.serialization.BasicAttribData
 import io.github.deltacv.papervision.util.event.EventHandler
+import java.util.concurrent.ArrayBlockingQueue
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -51,10 +52,16 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     var wasLastDrawCancelled = false
         private set
 
-    val onChange = EventHandler("OnChange-${this::class.simpleName}")
+    val onChange = EventHandler("OnChange-${this::class.simpleName}").apply {
+        doPersistent {
+            changeQueue.add(true)
+        }
+    }
     val onDelete = EventHandler("OnDelete-${this::class.simpleName}")
 
     val position = ImVec2()
+
+    internal val changeQueue = ArrayBlockingQueue<Boolean>(50)
 
     abstract fun drawAttribute()
 
@@ -70,6 +77,10 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
             return
         }
 
+        if(changeQueue.remainingCapacity() <= 1) {
+            changeQueue.poll()
+        }
+
         if(wasLastDrawCancelled) {
             wasLastDrawCancelled = false
         }
@@ -77,6 +88,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         if(isFirstDraw) {
             enable()
             isFirstDraw = false
+            onChange.run()
         }
 
         if(parentNode.showAttributesCircles && showAttributesCircles) {
@@ -186,7 +198,10 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     fun rebuildPreviz() {
         if(!isOnEditor) return
 
-        parentNode.editor.paperVision.previzManager.refreshPreviz()
+        // schedule for a frame later
+        editor.paperVision.onUpdate.doOnce {
+            parentNode.editor.paperVision.previzManager.refreshPreviz()
+        }
     }
 
     protected fun getOutputValue(current: CodeGen.Current) = parentNode.getOutputValueOf(current, this)
@@ -209,6 +224,8 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
         return data
     }
+
+    override fun pollChange() = changeQueue.poll() ?: false
 
     override fun toString() = "Attribute(type=${this::class.java.typeName}, id=$id)"
 

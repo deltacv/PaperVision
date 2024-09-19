@@ -10,6 +10,7 @@ import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
 import io.github.deltacv.papervision.serialization.data.SerializeData
+import io.github.deltacv.papervision.serialization.data.SerializeIgnore
 
 class MatAttribute(
     override val mode: AttributeMode,
@@ -26,14 +27,17 @@ class MatAttribute(
         override fun new(mode: AttributeMode, variableName: String) = MatAttribute(mode, variableName)
     }
 
-    @SerializeData
+    @SerializeIgnore
     var isPrevizEnabled = false
         private set
+
     private var prevIsPrevizEnabled = false
 
+    @SerializeIgnore
     var wasPrevizJustEnabled = false
         private set
 
+    @SerializeIgnore
     var displayWindow: ImageDisplayNode? = null
         private set
 

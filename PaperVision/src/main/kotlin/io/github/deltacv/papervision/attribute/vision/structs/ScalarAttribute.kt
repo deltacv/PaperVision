@@ -16,7 +16,7 @@ class ScalarAttribute(
     mode: AttributeMode,
     color: ColorSpace,
     variableName: String? = null
-) : ListAttribute(mode, IntAttribute, variableName, color.channels, sameLine = true) {
+) : ListAttribute(mode, IntAttribute, variableName, color.channels) {
 
     var color = color
         set(value) {

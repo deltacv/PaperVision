@@ -17,7 +17,7 @@ import io.github.deltacv.papervision.node.Category
 )
 class SumIntegerNode : DrawNode<SumIntegerNode.Session>() {
 
-    val numbers = ListAttribute(INPUT, IntAttribute, "$[att_numbers]", sameLine = true)
+    val numbers = ListAttribute(INPUT, IntAttribute, "$[att_numbers]")
     val result  = IntAttribute(OUTPUT, "$[att_result]")
 
     override fun onEnable() {

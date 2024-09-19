@@ -6,10 +6,7 @@ import io.github.deltacv.papervision.engine.PaperVisionEngine
 import io.github.deltacv.papervision.engine.message.ByteMessageTag
 import io.github.deltacv.vision.external.util.extension.aspectRatio
 import io.github.deltacv.vision.external.util.extension.clipTo
-import org.opencv.core.Mat
-import org.opencv.core.Point
-import org.opencv.core.Rect
-import org.opencv.core.Size
+import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
 import org.openftc.easyopencv.MatRecycler
 
@@ -19,8 +16,11 @@ class EOCVSimEngineImageStreamer(
     resolution: Size
 ) : ImageStreamer {
 
-    val matRecycler = MatRecycler(2)
+    val matRecycler = MatRecycler(3)
     private var bytes = ByteArray(resolution.width.toInt() * resolution.height.toInt() * 3)
+
+    private val latestMat = Mat()
+    private val maskMatMap = mutableMapOf<Int, Mat>()
 
     var resolution = resolution
         set(value) {
@@ -69,19 +69,21 @@ class EOCVSimEngineImageStreamer(
 
                     val resizedImg = matRecycler.takeMatOrNull()
 
-                    Imgproc.resize(image, resizedImg, newSize, 0.0, 0.0, Imgproc.INTER_AREA)
+                    try {
+                        Imgproc.resize(image, resizedImg, newSize, 0.0, 0.0, Imgproc.INTER_AREA)
 
-                    //get submat of the exact required size and offset position from the "videoMat",
-                    //which has the user-defined size of the current video.
-                    val submat = scaledImg.submat(Rect(Point(xOffset, yOffset), newSize))
+                        //get submat of the exact required size and offset position from the "videoMat",
+                        //which has the user-defined size of the current video.
+                        val submat = scaledImg.submat(Rect(Point(xOffset, yOffset), newSize))
 
-                    //then we copy our adjusted mat into the gotten submat. since a submat is just
-                    //a reference to the parent mat, when we copy here our data will be actually
-                    //copied to the actual mat, and so our new mat will be of the correct size and
-                    //centered with the required offset
-                    resizedImg.copyTo(submat)
-
-                    resizedImg.returnMat()
+                        //then we copy our adjusted mat into the gotten submat. since a submat is just
+                        //a reference to the parent mat, when we copy here our data will be actually
+                        //copied to the actual mat, and so our new mat will be of the correct size and
+                        //centered with the required offset
+                        resizedImg.copyTo(submat)
+                    } finally {
+                        resizedImg.returnMat()
+                    }
                 }
             }
 
@@ -94,11 +96,33 @@ class EOCVSimEngineImageStreamer(
             return
         }
 
-        synchronized(bytes) {
-            scaledImg.get(0, 0, bytes)
-            scaledImg.returnMat()
+        fun sendBytes() {
+            synchronized(bytes) {
+                scaledImg.get(0, 0, bytes)
+                engine.sendBytes(byteTag, id, bytes)
+            }
+        }
 
-            engine.sendBytes(byteTag, id, bytes)
+        try {
+            val latestToCurrentMaskMat = maskMatMap.getOrPut(id) { Mat() }
+
+            if (!latestMat.empty() && latestMat.size() == scaledImg.size()) {
+                latestToCurrentMaskMat.release()
+
+                Core.bitwise_xor(latestMat, scaledImg, latestToCurrentMaskMat)
+                Core.extractChannel(latestToCurrentMaskMat, latestToCurrentMaskMat, 0)
+
+                if (Core.countNonZero(latestToCurrentMaskMat) == 0) {
+                    return
+                } else {
+                    sendBytes()
+                }
+            } else {
+                sendBytes()
+            }
+        } finally {
+            scaledImg.copyTo(latestMat) // update latest mat
+            scaledImg.returnMat()
         }
     }
 

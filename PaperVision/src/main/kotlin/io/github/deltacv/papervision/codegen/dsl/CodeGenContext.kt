@@ -26,11 +26,11 @@ class CodeGenContext(val codeGen: CodeGen) : LanguageContext(codeGen.language) {
     fun public(variable: Variable, label: String? = null) =
         codeGen.classStartScope.instanceVariable(Visibility.PUBLIC, variable, label)
 
-    fun private(variable: Variable, label: String? = null) =
-        codeGen.classStartScope.instanceVariable(Visibility.PRIVATE, variable, label)
+    fun private(variable: Variable) =
+        codeGen.classStartScope.instanceVariable(Visibility.PRIVATE, variable, null)
 
-    fun protected(variable: Variable, label: String? = null) =
-        codeGen.classStartScope.instanceVariable(Visibility.PROTECTED, variable, label)
+    fun protected(variable: Variable) =
+        codeGen.classStartScope.instanceVariable(Visibility.PROTECTED, variable, null)
 
     private var isFirstGroup = true
 

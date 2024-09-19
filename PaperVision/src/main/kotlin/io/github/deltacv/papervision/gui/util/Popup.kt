@@ -6,17 +6,19 @@ import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.mai18n.tr
+import io.github.deltacv.papervision.id.IdElementContainerStack
 
 open class Popup(
     val text: String,
     val position: ImVec2,
     val timeSecs: Double,
     val label: String? = null,
-    override val requestedId: Int? = null,
-    override val idElementContainer: IdElementContainer<Popup> = popups
+    override val requestedId: Int? = null
 ) : DrawableIdElementBase<Popup>() {
 
     private val timer = ElapsedTime()
+
+    override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Popup>()
 
     override fun onEnable() {
         timer.reset()
@@ -43,10 +45,6 @@ open class Popup(
 
         fun warning(text: String, secsPerCharacter: Double = 0.16) {
             Popup(text, ImGui.getMousePos(), text.length * secsPerCharacter, requestedId = WARN).enable()
-        }
-
-        val popups = IdElementContainer<Popup>().apply {
-            reserveId(WARN)
         }
     }
 

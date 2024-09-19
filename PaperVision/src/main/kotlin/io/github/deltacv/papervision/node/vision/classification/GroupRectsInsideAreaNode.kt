@@ -28,7 +28,7 @@ enum class Orientation { Vertical, Horizontal }
 class GroupRectsInsideAreaNode : DrawNode<GroupRectsInsideAreaNode.Session>() {
 
     val source = MatAttribute(INPUT,"$[att_source]")
-    val input = ListAttribute(INPUT, RectAttribute,"$[att_rects]")
+    val input = ListAttribute(INPUT, RectAttribute, "$[att_rects]")
 
     val areaOrientation = EnumAttribute(INPUT, Orientation.values(), "$[att_areaorientation]")
 
@@ -36,7 +36,7 @@ class GroupRectsInsideAreaNode : DrawNode<GroupRectsInsideAreaNode.Session>() {
     val areaEndPositionPercentage = IntAttribute(INPUT, "$[att_areaend_positionpercentage]")
 
     val areaRect = RectAttribute(OUTPUT, "$[att_arearect]")
-    val output = ListAttribute(OUTPUT, RectAttribute,"$[att_rectsinside]")
+    val output = ListAttribute(OUTPUT, RectAttribute, "$[att_rectsinside]")
 
     override fun onEnable() {
         + source.rebuildOnChange()

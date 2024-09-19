@@ -57,8 +57,8 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
         val output = uniqueVariable("${input.value.value!!}ErodedDilated", OpenCvTypes.Mat.new())
 
         group {
-            private(erodeValVariable, erodeValue.label())
-            private(dilateValVariable, dilateValue.label())
+            public(erodeValVariable, erodeValue.label())
+            public(dilateValVariable, dilateValue.label())
             private(element)
             private(output)
         }

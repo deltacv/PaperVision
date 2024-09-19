@@ -13,6 +13,7 @@ import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.PaperNode
+import java.lang.IndexOutOfBoundsException
 
 @PaperNode(
     name = "nod_pipelineinput",
@@ -24,12 +25,15 @@ class InputMatNode @JvmOverloads constructor(
 ) : DrawNode<NoSession>(allowDelete = false) {
 
     override fun init() {
-        windowSizeSupplier?.let {
-            val nodeSize = ImVec2()
-            ImNodes.getNodeDimensions(id, nodeSize)
+        editor.onDraw.doOnce {
+            if(serializedId != null) return@doOnce
+            windowSizeSupplier?.let {
+                val nodeSize = ImVec2()
+                ImNodes.getNodeDimensions(id, nodeSize)
 
-            val windowSize = it()
-            ImNodes.setNodeScreenSpacePos(id, nodeSize.x * 0.5f, windowSize.y / 2f - nodeSize.y / 2)
+                val windowSize = it()
+                ImNodes.setNodeScreenSpacePos(id, nodeSize.x * 0.5f, windowSize.y / 2f - nodeSize.y / 2)
+            }
         }
     }
 
@@ -37,6 +41,11 @@ class InputMatNode @JvmOverloads constructor(
 
     override fun onEnable() {
         + output.rebuildOnChange()
+    }
+
+    fun ensureAttributeExists() { // prevent weird oopsies due to the special way these persistent buddies are handled
+        enable()
+        output.enable()
     }
 
     override fun genCode(current: CodeGen.Current) = NoSession
@@ -67,12 +76,16 @@ class OutputMatNode @JvmOverloads constructor(
     }
 
     override fun init() {
-        windowSizeSupplier?.let {
-            val nodeSize = ImVec2()
-            ImNodes.getNodeDimensions(id, nodeSize)
+        editor.onDraw.doOnce {
+            if(serializedId != null) return@doOnce
 
-            val windowSize = it()
-            ImNodes.setNodeScreenSpacePos(id, windowSize.x - nodeSize.x * 1.5f , windowSize.y / 2f - nodeSize.y / 2)
+            windowSizeSupplier?.let {
+                val nodeSize = ImVec2()
+                ImNodes.getNodeDimensions(id, nodeSize)
+
+                val windowSize = it()
+                ImNodes.setNodeScreenSpacePos(id, windowSize.x - nodeSize.x * 1.5f , windowSize.y / 2f - nodeSize.y / 2)
+            }
         }
     }
 
@@ -80,6 +93,11 @@ class OutputMatNode @JvmOverloads constructor(
 
     override fun onEnable() {
         + input.rebuildOnChange()
+    }
+
+    fun ensureAttributeExists() { // prevent weird oopsies due to the special way these persistent buddies are handled
+        enable()
+        input.enable()
     }
 
     override fun genCode(current: CodeGen.Current) = current {
