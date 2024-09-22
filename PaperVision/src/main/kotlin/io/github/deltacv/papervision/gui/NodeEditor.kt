@@ -4,12 +4,15 @@ import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.ImNodesContext
+import imgui.extension.texteditor.TextEditorLanguageDefinition
 import imgui.flag.ImGuiMouseButton
 import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImInt
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
+import io.github.deltacv.papervision.codegen.CodeGenManager
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
 import io.github.deltacv.papervision.util.eocvsim.EOCVSimPrevizState.*
@@ -59,6 +62,9 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
     lateinit var playButton: EOCVSimPlayButtonWindow
         private set
 
+    lateinit var sourceCodeExportButton: SourceCodeExportButtonWindow
+        private set
+
     lateinit var eyeFont: Font
         private set
 
@@ -100,11 +106,21 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
         inputNode.enable()
         outputNode.enable()
 
-        playButton = EOCVSimPlayButtonWindow(
+        sourceCodeExportButton = SourceCodeExportButtonWindow(
             { paperVision.nodeList.floatingButton },
-            paperVision.previzManager,
+            { size },
+            paperVision.fontManager,
+            paperVision.codeGenManager
+        )
+
+        sourceCodeExportButton.enable()
+
+        playButton = EOCVSimPlayButtonWindow(
+            sourceCodeExportButton,
+            paperVision,
             paperVision.fontManager
         )
+
         playButton.enable()
     }
 
@@ -339,13 +355,50 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
         ImNodes.destroyContext()
     }
 
-    fun recreateContext() {
-        context = ImNodesContext()
+    class SourceCodeExportButtonWindow(
+        val floatingButtonSupplier: () -> NodeList.FloatingButton,
+        val nodeEditorSizeSupplier: () -> ImVec2,
+        fontManager: FontManager,
+        val codeGenManager: CodeGenManager
+    ) : Window() {
+        override var title = ""
+        override val windowFlags = flags(
+            ImGuiWindowFlags.NoBackground, ImGuiWindowFlags.NoTitleBar,
+            ImGuiWindowFlags.NoDecoration, ImGuiWindowFlags.NoMove,
+            ImGuiWindowFlags.AlwaysAutoResize
+        )
+
+        val frameWidth get() = floatingButtonSupplier().frameWidth
+
+        val sourceFont = fontManager.makeFont("/fonts/icons/Source.ttf", NodeList.plusFontSize * 0.65f)
+
+        override fun preDrawContents() {
+            position = ImVec2(
+                floatingButtonSupplier().position.x - NodeList.plusFontSize * 1.5f,
+                floatingButtonSupplier().position.y,
+            )
+        }
+
+        override fun drawContents() {
+            ImGui.pushFont(sourceFont.imfont)
+
+            if(ImGui.button("S", floatingButtonSupplier().frameWidth, floatingButtonSupplier().frameWidth)) {
+                CodeDisplayWindow(
+                    codeGenManager.build("pp", JavaLanguage),
+                    TextEditorLanguageDefinition.cPlusPlus()
+                ).apply {
+                    enable()
+                    size = ImVec2(nodeEditorSizeSupplier().x * 0.8f, nodeEditorSizeSupplier().y * 0.8f)
+                }
+            }
+
+            ImGui.popFont()
+        }
     }
 
     class EOCVSimPlayButtonWindow(
-        val floatingButtonSupplier: () -> FrameWidthWindow,
-        val previzManager: ClientPrevizManager,
+        val sourceCodeExportButton: SourceCodeExportButtonWindow,
+        val paperVision: PaperVision,
         fontManager: FontManager
     ) : Window() {
 
@@ -361,7 +414,7 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
         val playPauseDotsFont = fontManager.makeFont("/fonts/icons/Play-Pause-Dots.ttf", NodeList.plusFontSize * 0.65f)
 
         override fun preDrawContents() {
-            val floatingButton = floatingButtonSupplier()
+            val floatingButton = sourceCodeExportButton
 
             position = ImVec2(
                 floatingButton.position.x - NodeList.plusFontSize * 1.5f,
@@ -370,21 +423,21 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
         }
 
         override fun drawContents() {
-            val floatingButton = floatingButtonSupplier()
+            val floatingButton = sourceCodeExportButton
 
             ImGui.pushFont(playPauseDotsFont.imfont)
 
-            val text = if(previzManager.previzRunning) {
+            val text = if(paperVision.previzManager.previzRunning) {
                 "-"
             } else "+"
 
             val button = ImGui.button(text, floatingButton.frameWidth, floatingButton.frameWidth)
 
             if (lastButton != button && button) {
-                if(!previzManager.previzRunning) {
-                    previzManager.startPreviz("epico")
+                if(!paperVision.previzManager.previzRunning) {
+                    paperVision.startPrevizAsk()
                 } else {
-                    previzManager.stopPreviz()
+                    paperVision.previzManager.stopPreviz()
                 }
             }
 

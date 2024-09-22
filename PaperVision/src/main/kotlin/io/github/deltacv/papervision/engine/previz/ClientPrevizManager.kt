@@ -4,11 +4,13 @@ import io.github.deltacv.papervision.codegen.CodeGenManager
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
+import io.github.deltacv.papervision.engine.client.message.PrevizAskNameMessage
 import io.github.deltacv.papervision.engine.client.message.PrevizPingPongMessage
 import io.github.deltacv.papervision.engine.client.message.PrevizSourceCodeMessage
 import io.github.deltacv.papervision.engine.client.message.PrevizSetStreamResolutionMessage
 import io.github.deltacv.papervision.engine.client.response.BooleanResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
+import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.io.PipelineStream
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bufferedImageFromResource
@@ -57,7 +59,7 @@ class ClientPrevizManager(
 
         logger.info("Starting previz session $previzName")
 
-        client.sendMessage(PrevizSourceCodeMessage(previzName, sourceCode).onResponse<OkResponse> {
+        client.sendMessage(PrevizSourceCodeMessage(previzName, sourceCode).onResponseWith<OkResponse> {
             client.onProcess.doOnce {
                 logger.info("Previz session $previzName running")
 
@@ -68,7 +70,7 @@ class ClientPrevizManager(
 
                 client.sendMessage(PrevizSetStreamResolutionMessage(
                     previzName, previzStreamWidth, previzStreamHeight
-                ).onResponse<OkResponse> {
+                ).onResponseWith<OkResponse> {
                     client.onProcess.doOnce {
                         stream = PipelineStream(
                             previzName, client, textureProcessorQueue,
@@ -102,7 +104,7 @@ class ClientPrevizManager(
         // send every 200 ms
         if(pingPongTimer.seconds > 0.2) {
             if(previzRunning) {
-                client.sendMessage(PrevizPingPongMessage(previzName!!).onResponse<BooleanResponse> {
+                client.sendMessage(PrevizPingPongMessage(previzName!!).onResponseWith<BooleanResponse> {
                     previzRunning = it.value
                 })
             }

@@ -1,3 +1,7 @@
+import java.nio.file.Paths
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 buildscript {
     ext {
         kotlin_version = "2.0.20"
@@ -32,5 +36,26 @@ allprojects {
         mavenLocal()
 
         maven { url 'https://jitpack.io' }
+    }
+
+
+    if(env == 'dev') {
+        String date = DateTimeFormatter.ofPattern(
+                "yyMMdd-HHmm"
+        ).format(LocalDateTime.now())
+
+        String hash = findProperty('hash')
+
+        version += "-dev-${hash ?: date}"
+        println("Final version of ${project} is $version")
+
+        File libsFolder = Paths.get(
+                projectDir.absolutePath, 'build', 'libs'
+        ).toFile()
+
+        for(file in libsFolder.listFiles()) {
+            if(file.name.contains("dev") && file.name.endsWith(".jar"))
+                file.delete()
+        }
     }
 }

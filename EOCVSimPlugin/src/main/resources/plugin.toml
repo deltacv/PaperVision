@@ -4,6 +4,6 @@ version = "1.0.0"
 api-version = "3.6.0"
 
 super-access = true
-super-access-reason = "gg ez"
+super-access-reason = "PaperVision requires your permision to fully support all features related to rendering user interaction and filesystem access."
 
 main = "io.github.deltacv.papervision.plugin.PaperVisionEOCVSimPlugin"

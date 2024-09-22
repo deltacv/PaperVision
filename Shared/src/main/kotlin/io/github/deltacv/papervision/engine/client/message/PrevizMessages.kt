@@ -17,6 +17,8 @@ class PrevizSetStreamResolutionMessage(
     var height: Int
 ) : PaperVisionEngineMessageBase()
 
+class PrevizAskNameMessage : PaperVisionEngineMessageBase()
+
 class TunerChangeValueMessage(
     var label: String,
     var index: Int,

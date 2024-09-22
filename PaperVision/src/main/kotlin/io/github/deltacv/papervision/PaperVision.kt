@@ -43,6 +43,8 @@ import io.github.deltacv.papervision.util.loggerForThis
 import io.github.deltacv.mai18n.Language
 import io.github.deltacv.papervision.engine.bridge.NoOpPaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
+import io.github.deltacv.papervision.engine.client.message.PrevizAskNameMessage
+import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.util.Popup.Companion.WARN
@@ -208,5 +210,14 @@ class PaperVision(
 
     fun destroy() {
         nodeEditor.destroy()
+    }
+
+    fun startPrevizAsk() {
+        engineClient.sendMessage(PrevizAskNameMessage().onResponseWith<StringResponse> { response ->
+            logger.info("Engine responded with previz name ${response.value}")
+            onUpdate.doOnce {
+                previzManager.startPreviz(response.value)
+            }
+        })
     }
 }

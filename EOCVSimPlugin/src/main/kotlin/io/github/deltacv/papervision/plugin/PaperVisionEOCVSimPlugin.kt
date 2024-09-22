@@ -7,6 +7,7 @@ import io.github.deltacv.papervision.engine.bridge.LocalPaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.message.*
 import io.github.deltacv.papervision.engine.client.response.BooleanResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
+import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
 import io.github.deltacv.papervision.plugin.eocvsim.PaperVisionDefaultPipeline
 import io.github.deltacv.papervision.plugin.eocvsim.PrevizSession
@@ -14,6 +15,7 @@ import io.github.deltacv.papervision.plugin.gui.CloseConfirmWindow
 import io.github.deltacv.papervision.plugin.gui.eocvsim.PaperVisionTabPanel
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
+import io.github.deltacv.papervision.util.replaceLast
 import org.opencv.core.Size
 import java.awt.print.Paper
 import javax.swing.JOptionPane
@@ -90,10 +92,13 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                         CloseConfirmWindow.Action.YES -> {
                             paperVisionProjectManager.saveCurrentProject()
                             PaperVisionDaemon.hidePaperVision()
+
+                            paperVisionProjectManager.closeCurrentProject()
                         }
                         CloseConfirmWindow.Action.NO -> {
                             PaperVisionDaemon.hidePaperVision()
                             paperVisionProjectManager.discardCurrentRecovery()
+                            paperVisionProjectManager.closeCurrentProject()
                         }
                         else -> { /* NO-OP */ }
                     }
@@ -116,6 +121,12 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             }
 
             respond(OkResponse())
+        }
+
+        engine.setMessageHandlerOf<PrevizAskNameMessage> {
+            respond(StringResponse(
+                paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "") ?: "Mack"
+            ))
         }
 
         engine.setMessageHandlerOf<PrevizPingPongMessage> {

@@ -22,17 +22,6 @@ abstract class PaperVisionEngineMessageBase : PaperVisionEngineMessage {
         }
     }
 
-    @JvmName("onResponseTyped")
-    inline fun <reified R: PaperVisionEngineMessageResponse> onResponse(crossinline callback: (R) -> Unit): PaperVisionEngineMessageBase {
-        onResponse {
-            if(it is R) {
-                callback(it)
-            }
-        }
-
-        return this
-    }
-
     override fun onResponse(callback: (PaperVisionEngineMessageResponse) -> Unit): PaperVisionEngineMessageBase {
         onResponseCallbacks.add(callback)
         return this
@@ -43,7 +32,7 @@ abstract class PaperVisionEngineMessageBase : PaperVisionEngineMessage {
             if(it is T) {
                 callback(it)
             }
-        }
+        }.run { this }
 
     override fun toString() = "MessageBase(type=\"${this::class.java.typeName}\", id=$id)"
 

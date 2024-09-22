@@ -277,6 +277,11 @@ class PaperVisionProjectManager(
         refresh()
     }
 
+    fun closeCurrentProject() {
+        currentProject = null
+        PaperVisionDaemon.paperVision.previzManager.stopPreviz()
+    }
+
     fun deleteAllRecoveredProjects() {
         for(file in recoveryFolder.listFiles() ?: arrayOf()) {
             if(file.extension == "recoverypaperproj") {

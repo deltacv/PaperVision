@@ -50,11 +50,11 @@ abstract class Window(
         }
         get() = realFocus
 
+    private var firstDraw = true
+
     override fun enable() {
         super.enable()
-
-        if(isModal)
-            ImGui.openPopup("${tr(title)}###$id")
+        firstDraw = true
     }
 
     override fun draw() {
@@ -72,16 +72,25 @@ abstract class Window(
         }
 
         if(isModal) {
+            if(firstDraw)
+                ImGui.openPopup("${tr(title)}###$id")
+
             if(ImGui.beginPopupModal("${tr(title)}###$id", modalPOpen, windowFlags)) {
                 contents()
                 ImGui.endPopup()
+            } else {
+                delete()
             }
         } else {
             if(ImGui.begin("${tr(title)}###$id", windowFlags)) {
                 contents()
                 ImGui.end()
+            } else {
+                delete()
             }
         }
+
+        firstDraw = false
     }
 
     private fun contents() {

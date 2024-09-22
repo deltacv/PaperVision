@@ -49,7 +49,7 @@ class CodeGenManager(val paperVision: PaperVision) {
 
         codeGen.stage = CodeGen.Stage.ENDED_SUCCESS
 
-        return result
+        return result.trim()
     }
 
 }
