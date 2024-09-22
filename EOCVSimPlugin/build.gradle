@@ -22,8 +22,8 @@ dependencies {
 
     implementation project(":LwjglPlatform")
 
-    // compileOnly 'com.github.deltacv.EOCV-Sim:EOCV-Sim:3.6.0'
-    compileOnly 'com.github.deltacv:EOCV-Sim:4.0.0-dev-240917-1612'
+    compileOnly 'com.github.deltacv.EOCV-Sim:EOCV-Sim:3.7.0' // jitpack
+    // compileOnly 'com.github.deltacv:EOCV-Sim:4.0.0-dev-240917-1612' // Maven local
 
     compileOnly "io.github.spair:imgui-java-app:$imgui_version"
 
