@@ -24,7 +24,7 @@ object PaperVisionDaemon {
     private lateinit var app: PaperVisionApp
     val paperVision get() = app.paperVision
 
-    val onAppInstantiate = EventHandler("PaperVisionDaemon-onAppInstantiate")
+    val onAppInstantiate = EventHandler("PaperVisionDaemon-OnAppInstantiate")
 
     lateinit var paperVisionFuture: Future<*>
         private set
@@ -46,6 +46,7 @@ object PaperVisionDaemon {
 
             if(!app.glfwWindow.visible) {
                 app.glfwWindow.visible = true
+                app.glfwWindow.maximized = true
             }
         }
     }
@@ -87,6 +88,6 @@ object PaperVisionDaemon {
      * Stops the PaperVision process by shutting down the executor service.
      */
     fun stop() {
-        paperVisionFuture?.cancel(true)
+        paperVisionFuture.cancel(true)
     }
 }

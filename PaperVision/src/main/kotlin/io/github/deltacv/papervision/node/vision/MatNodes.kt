@@ -69,6 +69,8 @@ class OutputMatNode @JvmOverloads constructor(
     var windowSizeSupplier: (() -> ImVec2)? = null
 ) : DrawNode<NoSession>(allowDelete = false) {
 
+    var streamId: Int? = null
+
     init {
         genOptions {
             genAtTheEnd = true
@@ -102,6 +104,8 @@ class OutputMatNode @JvmOverloads constructor(
 
     override fun genCode(current: CodeGen.Current) = current {
         current.scope {
+            streamMat(streamId!!, input.value(current).value, input.value(current).color)
+
             returnMethod(input.value(current).value)
             appendWhiteline = false
         }

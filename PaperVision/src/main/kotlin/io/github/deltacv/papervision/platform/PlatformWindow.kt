@@ -11,4 +11,6 @@ interface PlatformWindow {
 
     var visible: Boolean
 
+    var maximized: Boolean
+
 }

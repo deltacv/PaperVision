@@ -109,13 +109,6 @@ public abstract class Window {
 
         clearBuffer();
         renderBuffer();
-
-        GLFW.glfwSetWindowSizeCallback(handle, new GLFWWindowSizeCallback() {
-            @Override
-            public void invoke(final long window, final int width, final int height) {
-                runFrame();
-            }
-        });
     }
 
     private void decideGlGlslVersions() {

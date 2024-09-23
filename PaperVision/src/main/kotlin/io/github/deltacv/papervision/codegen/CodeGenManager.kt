@@ -30,6 +30,8 @@ class CodeGenManager(val paperVision: PaperVision) {
         try {
             codeGen.stage = CodeGen.Stage.INITIAL_GEN
 
+            paperVision.nodeEditor.outputNode.input.requireAttachedAttribute()
+
             paperVision.nodeEditor.inputNode.startGen(current)
         } catch (attrEx: AttributeGenException) {
             codeGen.stage = CodeGen.Stage.ENDED_ERROR

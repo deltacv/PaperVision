@@ -129,6 +129,12 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             ))
         }
 
+        engine.setMessageHandlerOf<AskProjectGenClassName> {
+            respond(StringResponse(
+                paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "") ?: "Mack"
+            ))
+        }
+
         engine.setMessageHandlerOf<PrevizPingPongMessage> {
             respond(BooleanResponse(
                 currentPrevizSession?.sessionName == message.previzName && currentPrevizSession?.previzRunning ?: false)

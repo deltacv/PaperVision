@@ -45,7 +45,7 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
 
     fun MatAttribute.streamIfEnabled(mat: Value, matColor: ColorSpace = ColorSpace.RGB) {
         if(displayWindow != null) {
-            streamMat(displayWindow!!.displayId, mat, matColor)
+            streamMat(displayWindow!!.imageDisplay.id, mat, matColor)
         }
     }
 

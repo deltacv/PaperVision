@@ -153,6 +153,8 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         println("WARN: $message") // TODO: Warnings system...
     }
 
+    fun requireAttachedAttribute() = raiseAssert(hasLink, "err_musthave_attachedattrib")
+
     fun raiseAssert(condition: Boolean, message: String) {
         if(!condition) {
             raise(message)

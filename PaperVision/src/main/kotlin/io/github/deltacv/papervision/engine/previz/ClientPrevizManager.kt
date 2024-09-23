@@ -40,11 +40,16 @@ class ClientPrevizManager(
         private set
 
     val onPrevizStart = EventHandler("ClientPrevizManager-OnPrevizStart")
+    val onPrevizStop = EventHandler("ClientPrevizManager-OnPrevizStop")
 
     val logger by loggerForThis()
 
     var previzRunning = false
         private set
+
+    @set:Synchronized
+    @get:Synchronized
+    private var cancelPingPong = false
 
     fun startPreviz(previzName: String) {
         startPreviz(previzName, JavaLanguage)
@@ -64,6 +69,7 @@ class ClientPrevizManager(
                 logger.info("Previz session $previzName running")
 
                 previzRunning = true
+                cancelPingPong = false
                 pingPongTimer.reset()
 
                 onPrevizStart.run()
@@ -96,14 +102,16 @@ class ClientPrevizManager(
     fun stopPreviz() {
         logger.info("Stopping previz session $previzName")
         previzRunning = false
+        cancelPingPong = true
 
         stream.stop()
+        onPrevizStop.run()
     }
 
     fun update() {
         // send every 200 ms
         if(pingPongTimer.seconds > 0.2) {
-            if(previzRunning) {
+            if(previzRunning && !cancelPingPong) {
                 client.sendMessage(PrevizPingPongMessage(previzName!!).onResponseWith<BooleanResponse> {
                     previzRunning = it.value
                 })

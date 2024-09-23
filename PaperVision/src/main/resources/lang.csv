@@ -64,7 +64,7 @@ att_groupedrects,Grouped Rects,Rectangulos Agrupados
 att_rectsinside,Rects Inside,Rectangulos Dentro
 att_targets,Targets,Objetivos
 att_label,Label,Etiqueta
-err_musthave_attachedattrib,Must have an output attribute attached,Debe tener un atributo de salida conectado
+err_musthave_attachedattrib,Must have an attribute attached,Debe tener un atributo conectado
 err_attachedattrib_isnot,Attribute attached is not $[0],El atributo conectado no es $[0]
 err_valreturned_isnot,Value returned from the node is not $[0],El valor retornado del nodo no es $[0]
 err_attrib_nothandledby_this,Attribute $[0] is not an output of this node or not handled by this,El atributo $[0] no es una salida de este nodo o no es manejado por este

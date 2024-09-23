@@ -3,11 +3,12 @@ package io.github.deltacv.papervision.platform
 import imgui.ImGui
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainer
+import io.github.deltacv.papervision.id.IdElementContainerStack
 import java.nio.ByteBuffer
 
 abstract class PlatformTexture : DrawableIdElementBase<PlatformTexture>() {
 
-    override val idElementContainer = textures
+    override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<PlatformTexture>()
 
     abstract val width: Int
     abstract val height: Int
@@ -23,10 +24,6 @@ abstract class PlatformTexture : DrawableIdElementBase<PlatformTexture>() {
 
     override fun restore() {
         throw UnsupportedOperationException("Cannot restore texture after it has been deleted")
-    }
-
-    companion object {
-        val textures = IdElementContainer<PlatformTexture>()
     }
 
 }

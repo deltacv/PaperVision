@@ -41,7 +41,6 @@ open class Popup(
 
     companion object {
         val WARN = 0
-        val BUILD_ERR = 0
 
         fun warning(text: String, secsPerCharacter: Double = 0.16) {
             Popup(text, ImGui.getMousePos(), text.length * secsPerCharacter, requestedId = WARN).enable()

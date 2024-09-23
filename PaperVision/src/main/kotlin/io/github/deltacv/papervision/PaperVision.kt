@@ -46,8 +46,10 @@ import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.client.message.PrevizAskNameMessage
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
+import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.util.Popup.Companion.WARN
+import io.github.deltacv.papervision.id.DrawableIdElement
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.node.NodeRegistry
 
@@ -99,6 +101,8 @@ class PaperVision(
     val attributes = IdElementContainer<Attribute>()
     val links = IdElementContainer<Link>()
     val windows = IdElementContainer<Window>()
+    val textures = IdElementContainer<PlatformTexture>()
+    val streamDisplays = IdElementContainer<ImageDisplay>()
 
     val popups = IdElementContainer<Popup>().apply {
         reserveId(WARN)
@@ -118,6 +122,8 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(links)
         IdElementContainerStack.threadStack.push(windows)
         IdElementContainerStack.threadStack.push(popups)
+        IdElementContainerStack.threadStack.push(textures)
+        IdElementContainerStack.threadStack.push(streamDisplays)
 
         logger.info("Starting PaperVision...")
 
@@ -155,6 +161,8 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<Link>()
         IdElementContainerStack.threadStack.pop<Window>()
         IdElementContainerStack.threadStack.pop<Popup>()
+        IdElementContainerStack.threadStack.pop<PlatformTexture>()
+        IdElementContainerStack.threadStack.pop<ImageDisplay>()
     }
 
     fun firstProcess() {
@@ -172,6 +180,8 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(links)
         IdElementContainerStack.threadStack.push(windows)
         IdElementContainerStack.threadStack.push(popups)
+        IdElementContainerStack.threadStack.push(textures)
+        IdElementContainerStack.threadStack.push(streamDisplays)
 
         onUpdate.run()
 
@@ -206,6 +216,8 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<Link>()
         IdElementContainerStack.threadStack.pop<Window>()
         IdElementContainerStack.threadStack.pop<Popup>()
+        IdElementContainerStack.threadStack.pop<PlatformTexture>()
+        IdElementContainerStack.threadStack.pop<ImageDisplay>()
     }
 
     fun destroy() {
@@ -217,6 +229,7 @@ class PaperVision(
             logger.info("Engine responded with previz name ${response.value}")
             onUpdate.doOnce {
                 previzManager.startPreviz(response.value)
+                window.title = "PaperVision - ${response.value}"
             }
         })
     }

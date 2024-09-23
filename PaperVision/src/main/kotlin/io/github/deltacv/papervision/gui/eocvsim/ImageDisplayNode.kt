@@ -7,6 +7,7 @@ import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.NoSession
+import io.github.deltacv.papervision.id.DrawableIdElement
 import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.io.PipelineStream
@@ -22,10 +23,8 @@ import io.github.deltacv.papervision.serialization.data.SerializeIgnore
 )
 @SerializeIgnore
 class ImageDisplayNode(
-    var stream: PipelineStream
+    val imageDisplay: ImageDisplay
 ) : DrawNode<NoSession>() {
-
-    val displayId by displayWindows.nextId(this)
 
     val inputId by IdElementContainerStack.threadStack.peekNonNull<Attribute>().nextId()
 
@@ -41,21 +40,7 @@ class ImageDisplayNode(
 
         ImGui.sameLine()
 
-        stream.textureOf(displayId)?.draw()
-    }
-
-    override fun delete() {
-        super.delete()
-        displayWindows.removeId(displayId)
-    }
-
-    override fun restore() {
-        super.restore()
-        displayWindows[displayId] = this
-    }
-
-    companion object {
-        val displayWindows = IdElementContainer<ImageDisplayNode>()
+        imageDisplay.drawStream()
     }
 
     override fun genCode(current: CodeGen.Current) = NoSession

@@ -14,9 +14,13 @@ import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.CodeGenManager
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
+import io.github.deltacv.papervision.engine.client.message.AskProjectGenClassName
+import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
+import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
 import io.github.deltacv.papervision.util.eocvsim.EOCVSimPrevizState.*
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
+import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayWindow
 import io.github.deltacv.papervision.gui.util.FrameWidthWindow
 import io.github.deltacv.papervision.gui.util.Popup
 import io.github.deltacv.papervision.gui.util.Window
@@ -56,6 +60,7 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
     var outputNode = OutputMatNode(winSizeSupplier)
         set(value) {
             value.windowSizeSupplier = winSizeSupplier
+            value.streamId = outputImageDisplay.id
             field = value
         }
 
@@ -89,6 +94,8 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
         ImGuiWindowFlags.NoTitleBar, ImGuiWindowFlags.NoDecoration
     )
 
+    val outputImageDisplay by lazy { ImageDisplay(paperVision.previzManager.stream) }
+
     val nodes get() = paperVision.nodes
     val attributes get() = paperVision.attributes
     val links get() = paperVision.links
@@ -104,13 +111,14 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
 
         originNode.enable()
         inputNode.enable()
+
+        outputNode.streamId = outputImageDisplay.id
         outputNode.enable()
 
         sourceCodeExportButton = SourceCodeExportButtonWindow(
             { paperVision.nodeList.floatingButton },
             { size },
-            paperVision.fontManager,
-            paperVision.codeGenManager
+            paperVision
         )
 
         sourceCodeExportButton.enable()
@@ -122,6 +130,16 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
         )
 
         playButton.enable()
+
+        paperVision.previzManager.onPrevizStart {
+            outputImageDisplay.pipelineStream = paperVision.previzManager.stream
+            val streamWindow = ImageDisplayWindow(outputImageDisplay)
+            streamWindow.enable()
+
+            paperVision.previzManager.onPrevizStop.doOnce {
+                streamWindow.delete()
+            }
+        }
     }
 
     override fun drawContents() {
@@ -237,10 +255,10 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
     }
 
     fun startImageDisplayFor(attribute: Attribute): ImageDisplayNode {
-        val window = ImageDisplayNode(paperVision.previzManager.stream)
+        val window = ImageDisplayNode(ImageDisplay(paperVision.previzManager.stream))
         paperVision.previzManager.onPrevizStart {
             // automagically update the stream when the previz starts
-            window.stream = paperVision.previzManager.stream
+            window.imageDisplay.pipelineStream = paperVision.previzManager.stream
         }
 
         window.pinToMouse = true
@@ -358,8 +376,7 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
     class SourceCodeExportButtonWindow(
         val floatingButtonSupplier: () -> NodeList.FloatingButton,
         val nodeEditorSizeSupplier: () -> ImVec2,
-        fontManager: FontManager,
-        val codeGenManager: CodeGenManager
+        val paperVision: PaperVision
     ) : Window() {
         override var title = ""
         override val windowFlags = flags(
@@ -370,7 +387,7 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
 
         val frameWidth get() = floatingButtonSupplier().frameWidth
 
-        val sourceFont = fontManager.makeFont("/fonts/icons/Source.ttf", NodeList.plusFontSize * 0.65f)
+        val sourceFont = paperVision.fontManager.makeFont("/fonts/icons/Source.ttf", NodeList.plusFontSize * 0.65f)
 
         override fun preDrawContents() {
             position = ImVec2(
@@ -383,13 +400,17 @@ class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Win
             ImGui.pushFont(sourceFont.imfont)
 
             if(ImGui.button("S", floatingButtonSupplier().frameWidth, floatingButtonSupplier().frameWidth)) {
-                CodeDisplayWindow(
-                    codeGenManager.build("pp", JavaLanguage),
-                    TextEditorLanguageDefinition.cPlusPlus()
-                ).apply {
-                    enable()
-                    size = ImVec2(nodeEditorSizeSupplier().x * 0.8f, nodeEditorSizeSupplier().y * 0.8f)
-                }
+                paperVision.engineClient.sendMessage(AskProjectGenClassName().onResponseWith<StringResponse> { response ->
+                    paperVision.onUpdate.doOnce {
+                        CodeDisplayWindow(
+                            paperVision.codeGenManager.build(response.value, JavaLanguage),
+                            TextEditorLanguageDefinition.cPlusPlus()
+                        ).apply {
+                            enable()
+                            size = ImVec2(nodeEditorSizeSupplier().x * 0.8f, nodeEditorSizeSupplier().y * 0.8f)
+                        }
+                    }
+                })
             }
 
             ImGui.popFont()

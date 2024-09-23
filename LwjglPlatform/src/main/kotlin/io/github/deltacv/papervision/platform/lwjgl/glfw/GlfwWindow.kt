@@ -63,4 +63,14 @@ class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
             }
         }
 
+    override var maximized: Boolean
+        get() = glfwGetWindowAttrib(ptrSupplier(), GLFW_MAXIMIZED) == GLFW_TRUE
+        set(value) {
+            if(value) {
+                glfwMaximizeWindow(ptrSupplier())
+            } else {
+                glfwRestoreWindow(ptrSupplier())
+            }
+        }
+
 }
