@@ -5,6 +5,7 @@ import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer
 import io.github.deltacv.papervision.util.event.EventHandler
 import io.github.deltacv.papervision.util.event.EventListener
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
@@ -35,7 +36,10 @@ object PaperVisionDaemon {
     fun launchDaemonPaperVision(instantiator: () -> PaperVisionApp) {
         paperVisionFuture = executorService.submit {
             app = instantiator()
+
             onAppInstantiate.run()
+            onAppInstantiate.callRightAway = true
+
             app.start()
         }
     }
@@ -54,7 +58,6 @@ object PaperVisionDaemon {
     fun currentProjectJson() = PaperVisionSerializer.serialize(
         paperVision.nodes.inmutable, paperVision.links.inmutable
     )
-
 
     fun currentProjectJsonTree() = PaperVisionSerializer.serializeToTree(
         paperVision.nodes.inmutable, paperVision.links.inmutable
@@ -80,7 +83,12 @@ object PaperVisionDaemon {
     fun watchdog() {
         if(paperVisionFuture.isDone && !paperVisionWatchdogGrowled) {
             paperVisionWatchdogGrowled = true
-            paperVisionFuture.get()
+
+            try {
+                paperVisionFuture.get()
+            } catch(e: ExecutionException) {
+                throw e.cause ?: e
+            }
         }
     }
 

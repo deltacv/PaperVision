@@ -189,7 +189,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             PaperVisionDaemon.watchdog()
             engine.process()
 
-            if(previzPingPongTimer.seconds() > 5.0) {
+            if(previzPingPongTimer.seconds() > 5.0 && currentPrevizSession != null) {
                 logger.info("Previz session ${currentPrevizSession?.sessionName} timed out, stopping")
                 currentPrevizSession?.stopPreviz()
                 currentPrevizSession = null
