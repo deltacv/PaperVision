@@ -7,7 +7,7 @@ buildscript {
         kotlin_version = "2.0.20"
         kotlinx_coroutines_version = "1.8.1"
         classgraph_version = "4.8.108"
-        imgui_version = "1.86.6"
+        imgui_version = "1.87.5"
 
         slf4j_version = "1.7.32"
         log4j_version = "2.17.1"
