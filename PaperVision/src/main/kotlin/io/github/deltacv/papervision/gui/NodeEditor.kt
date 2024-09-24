@@ -11,22 +11,15 @@ import imgui.type.ImInt
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
-import io.github.deltacv.papervision.codegen.CodeGenManager
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
-import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.client.message.AskProjectGenClassName
 import io.github.deltacv.papervision.engine.client.response.StringResponse
-import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
-import io.github.deltacv.papervision.util.eocvsim.EOCVSimPrevizState.*
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayWindow
-import io.github.deltacv.papervision.gui.util.FrameWidthWindow
 import io.github.deltacv.papervision.gui.util.Popup
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.io.KeyManager
-import io.github.deltacv.papervision.io.PipelineStream
-import io.github.deltacv.papervision.io.bufferedImageFromResource
 import io.github.deltacv.papervision.node.InvisibleNode
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
@@ -36,7 +29,7 @@ import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.EventHandler
 import io.github.deltacv.papervision.util.flags
 
-class NodeEditor(val paperVision: PaperVision, val keyManager: KeyManager) : Window() {
+class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManager) : Window() {
     companion object {
         val KEY_PAN_CONSTANT = 5f
         val PAN_CONSTANT = 25f
