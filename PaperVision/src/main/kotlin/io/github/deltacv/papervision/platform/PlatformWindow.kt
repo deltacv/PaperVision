@@ -13,4 +13,6 @@ interface PlatformWindow {
 
     var maximized: Boolean
 
+    var focus: Boolean
+
 }

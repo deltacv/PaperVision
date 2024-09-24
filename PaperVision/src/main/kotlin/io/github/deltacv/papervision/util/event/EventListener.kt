@@ -28,7 +28,7 @@ fun interface EventListener {
 }
 
 class EventListenerRemover(
-    val handler: EventHandler,
+    val handler: PaperVisionEventHandler,
     val listener: EventListener,
     val isOnceListener: Boolean
 ) {

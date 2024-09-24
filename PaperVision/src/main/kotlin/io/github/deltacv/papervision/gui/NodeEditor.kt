@@ -26,7 +26,7 @@ import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.node.vision.InputMatNode
 import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.util.ElapsedTime
-import io.github.deltacv.papervision.util.event.EventHandler
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
 
 class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManager) : Window() {
@@ -77,8 +77,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     private val scrollTimer = ElapsedTime()
 
-    val onDraw = EventHandler("NodeEditor-OnDraw")
-    val onEditorChange = EventHandler("NodeEditor-OnChange")
+    val onDraw = PaperVisionEventHandler("NodeEditor-OnDraw")
+    val onEditorChange = PaperVisionEventHandler("NodeEditor-OnChange")
 
     override var title = "editor"
     override val windowFlags = flags(

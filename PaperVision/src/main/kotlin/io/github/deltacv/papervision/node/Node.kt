@@ -14,7 +14,7 @@ import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.BasicNodeData
 import io.github.deltacv.papervision.serialization.NodeSerializationData
-import io.github.deltacv.papervision.util.event.EventHandler
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.event.EventListener
 
 interface Type {
@@ -43,8 +43,8 @@ abstract class Node<S: CodeGenSession>(
 
     override var lastGenSession: S? = null
 
-    val onChange = EventHandler("${this::class.java.simpleName}-OnChange")
-    val onDelete = EventHandler("OnDelete-${this::class.simpleName}")
+    val onChange = PaperVisionEventHandler("${this::class.java.simpleName}-OnChange")
+    val onDelete = PaperVisionEventHandler("OnDelete-${this::class.simpleName}")
 
     private val attribOnChangeListener = EventListener {
         onChange.run()

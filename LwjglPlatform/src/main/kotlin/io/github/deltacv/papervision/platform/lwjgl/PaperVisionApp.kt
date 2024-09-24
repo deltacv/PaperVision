@@ -8,14 +8,16 @@ import io.github.deltacv.papervision.platform.lwjgl.glfw.GlfwKeys
 import io.github.deltacv.papervision.platform.lwjgl.glfw.GlfwWindow
 import io.github.deltacv.papervision.platform.lwjgl.texture.OpenGLTextureFactory
 import io.github.deltacv.papervision.platform.platformSetup
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWKeyCallback
 
 class PaperVisionApp(
     val daemon: Boolean,
     val bridge: PaperVisionEngineBridge? = null,
-    val windowCloseListener: (() -> Boolean)? = null
-) : Window() {
+    val eventLoopHandler: PaperVisionEventHandler? = null,
+    val windowCloseListener: (() -> Boolean)? = null,
+) : EventLoopWindow() {
 
     val setup = platformSetup("LWJGL") {
         window = glfwWindow
@@ -34,10 +36,32 @@ class PaperVisionApp(
             isFullScreen = true
         }
 
-        init(config, daemon)
-        run()
-        postRun()
-        dispose()
+        if(eventLoopHandler == null) {
+            init(config, daemon)
+
+            while(run());
+
+            postRun()
+            dispose()
+        } else {
+            eventLoopHandler.doOnce {
+                init(config, daemon)
+
+                eventLoopHandler.invoke { ctx ->
+                    try {
+                        if (!run()) {
+                            postRun()
+                            dispose()
+                            ctx.removeThis()
+                        }
+                    } catch(e: Throwable) {
+                        postRun()
+                        dispose()
+                        ctx.removeThis()
+                    }
+                }
+            }
+        }
     }
 
     override fun initImGui(config: Configuration) {

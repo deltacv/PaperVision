@@ -4,18 +4,16 @@ import io.github.deltacv.papervision.codegen.CodeGenManager
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
-import io.github.deltacv.papervision.engine.client.message.PrevizAskNameMessage
 import io.github.deltacv.papervision.engine.client.message.PrevizPingPongMessage
 import io.github.deltacv.papervision.engine.client.message.PrevizSourceCodeMessage
 import io.github.deltacv.papervision.engine.client.message.PrevizSetStreamResolutionMessage
 import io.github.deltacv.papervision.engine.client.response.BooleanResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
-import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.io.PipelineStream
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bufferedImageFromResource
 import io.github.deltacv.papervision.util.ElapsedTime
-import io.github.deltacv.papervision.util.event.EventHandler
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 
 class ClientPrevizManager(
@@ -39,8 +37,8 @@ class ClientPrevizManager(
     var stream = PipelineStream("", client, textureProcessorQueue, offlineImages = offlineImages)
         private set
 
-    val onPrevizStart = EventHandler("ClientPrevizManager-OnPrevizStart")
-    val onPrevizStop = EventHandler("ClientPrevizManager-OnPrevizStop")
+    val onPrevizStart = PaperVisionEventHandler("ClientPrevizManager-OnPrevizStart")
+    val onPrevizStop = PaperVisionEventHandler("ClientPrevizManager-OnPrevizStop")
 
     val logger by loggerForThis()
 

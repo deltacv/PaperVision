@@ -38,7 +38,7 @@ import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.platform.*
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer
-import io.github.deltacv.papervision.util.event.EventHandler
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 import io.github.deltacv.mai18n.Language
 import io.github.deltacv.papervision.engine.bridge.NoOpPaperVisionEngineBridge
@@ -49,7 +49,6 @@ import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.util.Popup.Companion.WARN
-import io.github.deltacv.papervision.id.DrawableIdElement
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.node.NodeRegistry
 
@@ -81,7 +80,7 @@ class PaperVision(
     lateinit var textureFactory: PlatformTextureFactory
         private set
 
-    val onUpdate = EventHandler("PaperVision-OnUpdate")
+    val onUpdate = PaperVisionEventHandler("PaperVision-OnUpdate")
 
     lateinit var textureProcessorQueue: TextureProcessorQueue
         private set

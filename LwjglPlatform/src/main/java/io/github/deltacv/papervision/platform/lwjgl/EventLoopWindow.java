@@ -10,11 +10,12 @@ import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.glfw.GLFWWindowSizeCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.IntBuffer;
 import java.util.Objects;
@@ -24,12 +25,14 @@ import java.util.Objects;
  * It's recommended to use, but this class could be extended directly as well.
  * When extended, life-cycle methods should be called manually.
  */
-public abstract class Window {
+public abstract class EventLoopWindow {
 
     private final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
     private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
 
     private String glslVersion = null;
+
+    private Logger logger = LoggerFactory.getLogger(EventLoopWindow.class);
 
     /**
      * Pointer to the native GLFW window.
@@ -47,6 +50,8 @@ public abstract class Window {
      * @param config configuration object with basic window information
      */
     protected void init(final Configuration config, final boolean daemon) {
+        logger.info("init on thread {}", Thread.currentThread().getName());
+
         initWindow(config, daemon);
         initImGui(config);
         imGuiGlfw.init(handle, true);
@@ -150,10 +155,9 @@ public abstract class Window {
     /**
      * Main application loop.
      */
-    protected void run() {
-        while (!GLFW.glfwWindowShouldClose(handle) || !windowCloseAction()) {
-            runFrame();
-        }
+    protected boolean run() {
+        runFrame();
+        return !GLFW.glfwWindowShouldClose(handle) || !windowCloseAction();
     }
 
     public boolean windowCloseAction() {

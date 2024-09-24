@@ -17,7 +17,7 @@ import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.node.*
 import io.github.deltacv.papervision.platform.PlatformWindow
 import io.github.deltacv.papervision.util.ElapsedTime
-import io.github.deltacv.papervision.util.event.EventHandler
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
 import io.github.deltacv.papervision.util.loggerForThis
 
@@ -340,7 +340,7 @@ class NodeList(
 
         override var frameWidth = 0f
 
-        val onPressed = EventHandler("FloatingButton-OnPressed")
+        val onPressed = PaperVisionEventHandler("FloatingButton-OnPressed")
 
         val buttonFont = fontManager.makeFont("/fonts/icons/Open-Close.ttf", plusFontSize)
 

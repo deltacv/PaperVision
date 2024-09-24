@@ -9,6 +9,7 @@ dependencies {
 
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib"
     implementation "io.github.spair:imgui-java-app:$imgui_version"
+    implementation "org.slf4j:slf4j-api:$slf4j_version"
 
     implementation platform('org.lwjgl:lwjgl-bom:3.3.4')
     implementation "org.lwjgl:lwjgl-stb"

@@ -73,4 +73,14 @@ class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
             }
         }
 
+    override var focus: Boolean
+        get() = glfwGetWindowAttrib(ptrSupplier(), GLFW_FOCUSED) == GLFW_TRUE
+        set(value) {
+            if(value) {
+                glfwFocusWindow(ptrSupplier())
+            } else {
+                glfwFocusWindow(0)
+            }
+        }
+
 }

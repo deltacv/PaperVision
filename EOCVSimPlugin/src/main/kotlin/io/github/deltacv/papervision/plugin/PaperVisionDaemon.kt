@@ -3,11 +3,8 @@ package io.github.deltacv.papervision.plugin
 import com.google.gson.JsonElement
 import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer
-import io.github.deltacv.papervision.util.event.EventHandler
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.event.EventListener
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
 
 /**
  * Manages and executes the PaperVision process in a dedicated daemon thread.
@@ -20,28 +17,22 @@ import java.util.concurrent.Future
  */
 object PaperVisionDaemon {
 
-    private val executorService = Executors.newFixedThreadPool(2)
-
     private lateinit var app: PaperVisionApp
     val paperVision get() = app.paperVision
 
-    val onAppInstantiate = EventHandler("PaperVisionDaemon-OnAppInstantiate")
-
-    lateinit var paperVisionFuture: Future<*>
-        private set
-
-    var paperVisionWatchdogGrowled = false
-        private set
+    val onAppInstantiate = PaperVisionEventHandler("PaperVisionDaemon-OnAppInstantiate")
 
     fun launchDaemonPaperVision(instantiator: () -> PaperVisionApp) {
-        paperVisionFuture = executorService.submit {
-            app = instantiator()
+        app = instantiator()
 
-            onAppInstantiate.run()
-            onAppInstantiate.callRightAway = true
+        onAppInstantiate.run()
+        onAppInstantiate.callRightAway = true
 
-            app.start()
+        require(app.eventLoopHandler != null) {
+            "PaperVisionApp handler must not be null"
         }
+
+        app.start()
     }
 
     fun openProject(json: JsonElement) {
@@ -51,6 +42,7 @@ object PaperVisionDaemon {
             if(!app.glfwWindow.visible) {
                 app.glfwWindow.visible = true
                 app.glfwWindow.maximized = true
+                app.glfwWindow.focus = true
             }
         }
     }
@@ -79,23 +71,4 @@ object PaperVisionDaemon {
 
     fun attachToEditorChange(listener: EventListener) =
         paperVision.nodeEditor.onEditorChange(listener)
-
-    fun watchdog() {
-        if(paperVisionFuture.isDone && !paperVisionWatchdogGrowled) {
-            paperVisionWatchdogGrowled = true
-
-            try {
-                paperVisionFuture.get()
-            } catch(e: ExecutionException) {
-                throw e.cause ?: e
-            }
-        }
-    }
-
-    /**
-     * Stops the PaperVision process by shutting down the executor service.
-     */
-    fun stop() {
-        paperVisionFuture.cancel(true)
-    }
 }

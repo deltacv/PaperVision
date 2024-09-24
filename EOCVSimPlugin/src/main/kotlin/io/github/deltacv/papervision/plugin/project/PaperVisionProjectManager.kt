@@ -11,7 +11,7 @@ import io.github.deltacv.papervision.plugin.PaperVisionDaemon
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveredProject
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryDaemonProcessManager
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryData
-import io.github.deltacv.papervision.util.event.EventHandler
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.hexString
 import java.io.File
 import java.io.FileNotFoundException
@@ -63,11 +63,24 @@ class PaperVisionProjectManager(
         if(recoveryFolder.exists()) {
             for(file in recoveryFolder.listFiles() ?: arrayOf()) {
                 if(file.extension == "recoverypaperproj") {
-                    val recoveredProject = RecoveredProject.fromJson(file.readText())
+                    val recoveredProject = try {
+                        RecoveredProject.fromJson(file.readText())
+                    } catch(e: Exception) {
+                        logger.warn("Failed to read recovery file, deleting", e)
+                        file.delete()
+                        continue
+                    }
+
                     val projectPath = fileSystem.getPath(recoveredProject.originalProjectPath)
 
                     if(projectPath.exists()){
-                        val project = PaperVisionProject.fromJson(String(fileSystem.readAllBytes(projectPath), StandardCharsets.UTF_8))
+                        val project = try {
+                            PaperVisionProject.fromJson(String(fileSystem.readAllBytes(projectPath), StandardCharsets.UTF_8))
+                        } catch(e: Exception) {
+                            logger.warn("Failed to read project file for phased recovery, deleting", e)
+                            file.delete()
+                            continue
+                        }
 
                         logger.info("Found recovered project ${recoveredProject.originalProjectPath} from ${recoveredProject.date} compared to ${project.timestamp}")
 
@@ -84,7 +97,7 @@ class PaperVisionProjectManager(
         }
     }.toList()
 
-    val onRefresh = EventHandler("PaperVisionProjectManager-onRefresh")
+    val onRefresh = PaperVisionEventHandler("PaperVisionProjectManager-onRefresh")
 
     fun init() {
         PaperVisionDaemon.attachToEditorChange {

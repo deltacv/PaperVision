@@ -13,7 +13,7 @@ import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.serialization.AttributeSerializationData
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.BasicAttribData
-import io.github.deltacv.papervision.util.event.EventHandler
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -52,12 +52,12 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     var wasLastDrawCancelled = false
         private set
 
-    val onChange = EventHandler("OnChange-${this::class.simpleName}").apply {
+    val onChange = PaperVisionEventHandler("OnChange-${this::class.simpleName}").apply {
         doPersistent {
             changeQueue.add(true)
         }
     }
-    val onDelete = EventHandler("OnDelete-${this::class.simpleName}")
+    val onDelete = PaperVisionEventHandler("OnDelete-${this::class.simpleName}")
 
     val position = ImVec2()
 

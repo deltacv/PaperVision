@@ -5,14 +5,13 @@ import io.github.deltacv.papervision.engine.message.ByteMessageTag
 import io.github.deltacv.papervision.engine.message.ByteMessages
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
-import io.github.deltacv.papervision.util.event.EventHandler
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
-import java.nio.ByteBuffer
 
 class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
     val logger by loggerForThis()
 
-    val onProcess = EventHandler("PaperVisionEngineClient-OnProcess")
+    val onProcess = PaperVisionEventHandler("PaperVisionEngineClient-OnProcess")
 
     private val messagesAwaitingResponse = mutableMapOf<Int, PaperVisionEngineMessage>()
 

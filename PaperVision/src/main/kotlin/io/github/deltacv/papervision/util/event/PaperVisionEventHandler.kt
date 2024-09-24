@@ -25,7 +25,7 @@ package io.github.deltacv.papervision.util.event
 
 import io.github.deltacv.papervision.util.loggerOf
 
-class EventHandler(val name: String) : Runnable {
+class PaperVisionEventHandler(val name: String) : Runnable {
 
     val logger by loggerOf("${name}-EventHandler")
 

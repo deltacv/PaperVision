@@ -1,9 +1,8 @@
 package io.github.deltacv.papervision.io
 
-import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.PlatformTextureFactory
-import io.github.deltacv.papervision.util.event.EventHandler
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 import java.util.concurrent.ArrayBlockingQueue
@@ -17,7 +16,7 @@ class TextureProcessorQueue(
     private val queuedTextures = ArrayBlockingQueue<FutureTexture>(5)
     private val textures = mutableMapOf<Int, PlatformTexture>()
 
-    fun subscribeTo(handler: EventHandler) {
+    fun subscribeTo(handler: PaperVisionEventHandler) {
         handler {
             while(queuedTextures.isNotEmpty()) {
                 val futureTex = queuedTextures.poll()

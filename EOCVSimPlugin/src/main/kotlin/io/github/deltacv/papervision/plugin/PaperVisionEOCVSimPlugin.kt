@@ -17,9 +17,9 @@ import io.github.deltacv.papervision.plugin.gui.CloseConfirmWindow
 import io.github.deltacv.papervision.plugin.gui.eocvsim.PaperVisionTabPanel
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.replaceLast
 import org.opencv.core.Size
-import java.awt.print.Paper
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
@@ -35,13 +35,15 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         context.loader.pluginFile, fileSystem, eocvSim
     )
 
+    val onEOCVSimUpdate = PaperVisionEventHandler("PaperVisionEOCVSimPlugin-OnEOCVSimUpdate")
+
     private val sessionStreamResolutions = mutableMapOf<String, Size>()
 
     private val previzPingPongTimer = ElapsedTime()
 
     override fun onLoad() {
-        PaperVisionDaemon.launchDaemonPaperVision {
-            PaperVisionApp(true, LocalPaperVisionEngineBridge(engine), windowCloseListener = ::paperVisionUserCloseListener)
+        eocvSim.onMainUpdate {
+            onEOCVSimUpdate.run()
         }
 
         PaperVisionDaemon.onAppInstantiate {
@@ -71,6 +73,15 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                     }
                 }
             }
+        }
+
+        PaperVisionDaemon.launchDaemonPaperVision {
+            PaperVisionApp(
+                true,
+                LocalPaperVisionEngineBridge(engine),
+                onEOCVSimUpdate,
+                ::paperVisionUserCloseListener
+            )
         }
 
         eocvSim.pipelineManager.requestAddPipelineClass(PaperVisionDefaultPipeline::class.java, PipelineSource.CLASSPATH)
@@ -186,7 +197,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         eocvSim.onMainUpdate {
-            PaperVisionDaemon.watchdog()
             engine.process()
 
             if(previzPingPongTimer.seconds() > 5.0 && currentPrevizSession != null) {
