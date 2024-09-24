@@ -10,7 +10,7 @@ dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib"
     implementation "io.github.spair:imgui-java-app:$imgui_version"
 
-    implementation platform('org.lwjgl:lwjgl-bom:3.2.3')
+    implementation platform('org.lwjgl:lwjgl-bom:3.3.4')
     implementation "org.lwjgl:lwjgl-stb"
 
     ['natives-linux', 'natives-windows', 'natives-macos', 'natives-macos-arm64'].each {
