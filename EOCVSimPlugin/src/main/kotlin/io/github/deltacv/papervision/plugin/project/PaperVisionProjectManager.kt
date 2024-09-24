@@ -1,5 +1,6 @@
 package io.github.deltacv.papervision.plugin.project
 
+import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.util.extension.plus
 import com.github.serivesmejia.eocvsim.util.io.EOCVSimFolder
 import com.github.serivesmejia.eocvsim.util.loggerForThis
@@ -17,12 +18,14 @@ import java.io.FileNotFoundException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.time.Instant
+import javax.swing.SwingUtilities
 import kotlin.io.path.exists
 import kotlin.io.path.pathString
 
 class PaperVisionProjectManager(
     pluginJarFile: File,
-    val fileSystem: SandboxFileSystem
+    val fileSystem: SandboxFileSystem,
+    val eocvSim: EOCVSim
 ) {
 
     companion object {
@@ -155,6 +158,10 @@ class PaperVisionProjectManager(
                 String(fileSystem.readAllBytes(path), StandardCharsets.UTF_8)
             ).json
         )
+
+        SwingUtilities.invokeLater {
+            eocvSim.visualizer.frame.isVisible = false
+        }
 
         currentProject = project
     }

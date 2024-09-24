@@ -76,4 +76,12 @@ class PrevizSession(
         }
     }
 
+    fun stopPreviz() {
+        previzRunning = false
+
+        logger.info("Stopping previz session $sessionName")
+
+        eocvSim.pipelineManager.removeAllPipelinesFrom(PipelineSource.COMPILED_ON_RUNTIME)
+    }
+
 }

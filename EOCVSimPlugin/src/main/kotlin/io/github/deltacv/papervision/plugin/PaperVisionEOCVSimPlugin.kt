@@ -1,6 +1,8 @@
 package io.github.deltacv.papervision.plugin
 
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
+import com.github.serivesmejia.eocvsim.util.loggerForThis
+import com.qualcomm.robotcore.util.ElapsedTime
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
 import io.github.deltacv.papervision.engine.LocalPaperVisionEngine
 import io.github.deltacv.papervision.engine.bridge.LocalPaperVisionEngineBridge
@@ -23,15 +25,19 @@ import javax.swing.SwingUtilities
 
 class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
+    val logger by loggerForThis()
+
     val engine = LocalPaperVisionEngine()
 
     var currentPrevizSession: PrevizSession? = null
 
     val paperVisionProjectManager = PaperVisionProjectManager(
-        context.loader.pluginFile, fileSystem
+        context.loader.pluginFile, fileSystem, eocvSim
     )
 
     private val sessionStreamResolutions = mutableMapOf<String, Size>()
+
+    private val previzPingPongTimer = ElapsedTime()
 
     override fun onLoad() {
         PaperVisionDaemon.launchDaemonPaperVision {
@@ -91,14 +97,11 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                     when (it) {
                         CloseConfirmWindow.Action.YES -> {
                             paperVisionProjectManager.saveCurrentProject()
-                            PaperVisionDaemon.hidePaperVision()
-
-                            paperVisionProjectManager.closeCurrentProject()
+                            closePaperVision()
                         }
                         CloseConfirmWindow.Action.NO -> {
-                            PaperVisionDaemon.hidePaperVision()
                             paperVisionProjectManager.discardCurrentRecovery()
-                            paperVisionProjectManager.closeCurrentProject()
+                            closePaperVision()
                         }
                         else -> { /* NO-OP */ }
                     }
@@ -136,9 +139,21 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<PrevizPingPongMessage> {
+            if(currentPrevizSession?.sessionName == message.previzName) {
+                previzPingPongTimer.reset()
+            }
+
             respond(BooleanResponse(
                 currentPrevizSession?.sessionName == message.previzName && currentPrevizSession?.previzRunning ?: false)
             )
+        }
+
+        engine.setMessageHandlerOf<PrevizStopMessage> {
+            if(currentPrevizSession?.sessionName == message.previzName) {
+                currentPrevizSession?.stopPreviz()
+                currentPrevizSession = null
+            }
+            respond(OkResponse())
         }
 
         engine.setMessageHandlerOf<PrevizSetStreamResolutionMessage> {
@@ -160,21 +175,42 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                 )
 
                 currentPrevizSession!!.startPreviz(message.sourceCode)
+
+                previzPingPongTimer.reset()
             }
 
             currentPrevizSession!!.refreshPreviz(message.sourceCode)
             respond(OkResponse())
 
-            println(message.sourceCode)
+            logger.info("Received source code\n{}", message.sourceCode)
         }
 
         eocvSim.onMainUpdate {
             PaperVisionDaemon.watchdog()
             engine.process()
+
+            if(previzPingPongTimer.seconds() > 5.0) {
+                logger.info("Previz session ${currentPrevizSession?.sessionName} timed out, stopping")
+                currentPrevizSession?.stopPreviz()
+                currentPrevizSession = null
+            }
         }
     }
 
     override fun onDisable() {
+    }
+
+    private fun closePaperVision() {
+        paperVisionProjectManager.closeCurrentProject()
+        PaperVisionDaemon.hidePaperVision()
+
+        SwingUtilities.invokeLater {
+            eocvSim.visualizer.frame.isVisible = true
+        }
+
+        currentPrevizSession?.stopPreviz()
+        currentPrevizSession = null
+        changeToPaperVisionPipelineIfNecessary()
     }
 
     private fun changeToPaperVisionPipelineIfNecessary() {

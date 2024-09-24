@@ -11,6 +11,10 @@ class PrevizPingPongMessage(
     var previzName: String
 ) : PaperVisionEngineMessageBase()
 
+class PrevizStopMessage(
+    var previzName: String
+) : PaperVisionEngineMessageBase()
+
 class PrevizSetStreamResolutionMessage(
     var previzName: String,
     var width: Int,
