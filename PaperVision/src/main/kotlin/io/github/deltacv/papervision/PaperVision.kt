@@ -170,10 +170,6 @@ class PaperVision(
     }
 
     fun process() {
-        if(!window.visible) {
-            Thread.sleep(100) // reduce CPU usage
-        }
-
         IdElementContainerStack.threadStack.push(nodes)
         IdElementContainerStack.threadStack.push(attributes)
         IdElementContainerStack.threadStack.push(links)
