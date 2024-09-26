@@ -12,11 +12,10 @@ import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWKeyCallback
 
-class PaperVisionApp(
+class PaperVisionApp @JvmOverloads constructor(
     val daemon: Boolean,
     val bridge: PaperVisionEngineBridge? = null,
-    val eventLoopHandler: PaperVisionEventHandler? = null,
-    val windowCloseListener: (() -> Boolean)? = null,
+    val windowCloseListener: (() -> Boolean)? = null
 ) : EventLoopWindow() {
 
     val setup = platformSetup("LWJGL") {
@@ -36,32 +35,12 @@ class PaperVisionApp(
             isFullScreen = true
         }
 
-        if(eventLoopHandler == null) {
-            init(config, daemon)
+        init(config, daemon)
 
-            while(run());
+        while(run());
 
-            postRun()
-            dispose()
-        } else {
-            eventLoopHandler.doOnce {
-                init(config, daemon)
-
-                eventLoopHandler.invoke { ctx ->
-                    try {
-                        if (!run()) {
-                            postRun()
-                            dispose()
-                            ctx.removeThis()
-                        }
-                    } catch(e: Throwable) {
-                        postRun()
-                        dispose()
-                        ctx.removeThis()
-                    }
-                }
-            }
-        }
+        postRun()
+        dispose()
     }
 
     override fun initImGui(config: Configuration) {

@@ -23,7 +23,7 @@
 
 package io.github.deltacv.papervision.plugin.gui.eocvsim
 
-import io.github.deltacv.papervision.plugin.PaperVisionDaemon
+import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectTree
@@ -104,9 +104,7 @@ class PaperVisionTabButtonsPanel(
                     toDelete.add(selectedProject.userObject as PaperVisionProjectTree.ProjectTreeNode.Project)
                 }
 
-                PaperVisionDaemon.invokeOnMainLoop {
-                    projectManager.bulkDeleteProjects(*toDelete.toTypedArray())
-                }
+                projectManager.bulkDeleteProjects(*toDelete.toTypedArray())
             }
         }
 

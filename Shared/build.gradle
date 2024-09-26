@@ -6,4 +6,5 @@ apply from: '../build.common.gradle'
 
 dependencies {
     compileOnly "io.github.spair:imgui-java-binding:$imgui_version" // platforms should add the "implementation" they need
+    implementation "com.google.code.gson:gson:$gson_version"
 }

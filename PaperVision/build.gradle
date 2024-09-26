@@ -18,7 +18,7 @@ dependencies {
 
     implementation "org.java-websocket:Java-WebSocket:1.5.2"
 
-    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation "com.google.code.gson:gson:$gson_version"
     implementation "io.github.classgraph:classgraph:$classgraph_version"
 
     api project(":Shared")

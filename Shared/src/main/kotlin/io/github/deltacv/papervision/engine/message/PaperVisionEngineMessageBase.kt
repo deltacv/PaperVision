@@ -12,17 +12,17 @@ abstract class PaperVisionEngineMessageBase : PaperVisionEngineMessage {
     }
 
     @Transient
-    private val onResponseCallbacks = mutableListOf<(PaperVisionEngineMessageResponse) -> Unit>()
+    private val onResponseCallbacks = mutableListOf<OnResponseCallback>()
 
     override val id = nextId()
 
     override fun acceptResponse(response: PaperVisionEngineMessageResponse) {
         for(callback in onResponseCallbacks) {
-            callback(response)
+           callback.onResponse(response)
         }
     }
 
-    override fun onResponse(callback: (PaperVisionEngineMessageResponse) -> Unit): PaperVisionEngineMessageBase {
+    override fun onResponse(callback: OnResponseCallback): PaperVisionEngineMessageBase {
         onResponseCallbacks.add(callback)
         return this
     }

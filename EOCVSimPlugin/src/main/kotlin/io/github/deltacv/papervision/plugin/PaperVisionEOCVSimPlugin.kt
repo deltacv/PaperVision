@@ -27,12 +27,12 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     val logger by loggerForThis()
 
-    val engine = LocalPaperVisionEngine()
+    val engine = PaperVisionProcessRunner.paperVisionEngine
 
     var currentPrevizSession: PrevizSession? = null
 
     val paperVisionProjectManager = PaperVisionProjectManager(
-        context.loader.pluginFile, fileSystem, eocvSim
+        context.loader.pluginFile, fileSystem, engine, eocvSim
     )
 
     val onEOCVSimUpdate = PaperVisionEventHandler("PaperVisionEOCVSimPlugin-OnEOCVSimUpdate")
@@ -46,45 +46,12 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             onEOCVSimUpdate.run()
         }
 
-        PaperVisionDaemon.onAppInstantiate {
-            PaperVisionDaemon.invokeOnMainLoop {
-                paperVisionProjectManager.init()
+        paperVisionProjectManager.init()
 
-                if(paperVisionProjectManager.recoveredProjects.isNotEmpty()) {
-                    SwingUtilities.invokeLater {
-                        PaperVisionDialogFactory.displayProjectRecoveryDialog(
-                            eocvSim.visualizer.frame, paperVisionProjectManager.recoveredProjects
-                        ) {
-                            for (recoveredProject in it) {
-                                paperVisionProjectManager.recoverProject(recoveredProject)
-                            }
-
-                            if(it.isNotEmpty()) {
-                                JOptionPane.showMessageDialog(
-                                    eocvSim.visualizer.frame,
-                                    "Successfully recovered ${it.size} unsaved project(s)",
-                                    "PaperVision Project Recovery",
-                                    JOptionPane.INFORMATION_MESSAGE
-                                )
-                            }
-
-                            paperVisionProjectManager.deleteAllRecoveredProjects()
-                        }
-                    }
-                }
-            }
-        }
-
-        PaperVisionDaemon.launchDaemonPaperVision {
-            PaperVisionApp(
-                true,
-                LocalPaperVisionEngineBridge(engine),
-                onEOCVSimUpdate,
-                ::paperVisionUserCloseListener
-            )
-        }
-
-        eocvSim.pipelineManager.requestAddPipelineClass(PaperVisionDefaultPipeline::class.java, PipelineSource.CLASSPATH)
+        eocvSim.pipelineManager.requestAddPipelineClass(
+            PaperVisionDefaultPipeline::class.java,
+            PipelineSource.CLASSPATH
+        )
 
         eocvSim.visualizer.onPluginGuiAttachment.doOnce {
             val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
@@ -96,31 +63,34 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             }
         }
 
+        eocvSim.onMainUpdate.doOnce {
+            if (paperVisionProjectManager.recoveredProjects.isNotEmpty()) {
+                SwingUtilities.invokeLater {
+                    PaperVisionDialogFactory.displayProjectRecoveryDialog(
+                        eocvSim.visualizer.frame, paperVisionProjectManager.recoveredProjects
+                    ) {
+                        for (recoveredProject in it) {
+                            paperVisionProjectManager.recoverProject(recoveredProject)
+                        }
+
+                        if (it.isNotEmpty()) {
+                            JOptionPane.showMessageDialog(
+                                eocvSim.visualizer.frame,
+                                "Successfully recovered ${it.size} unsaved project(s)",
+                                "PaperVision Project Recovery",
+                                JOptionPane.INFORMATION_MESSAGE
+                            )
+                        }
+
+                        paperVisionProjectManager.deleteAllRecoveredProjects()
+                    }
+                }
+            }
+        }
+
         eocvSim.pipelineManager.onPipelineChange {
             changeToPaperVisionPipelineIfNecessary()
         }
-    }
-
-    private fun paperVisionUserCloseListener(): Boolean {
-        if(paperVisionProjectManager.currentProject != null) {
-            PaperVisionDaemon.paperVision.onUpdate.doOnce {
-                CloseConfirmWindow {
-                    when (it) {
-                        CloseConfirmWindow.Action.YES -> {
-                            paperVisionProjectManager.saveCurrentProject()
-                            closePaperVision()
-                        }
-                        CloseConfirmWindow.Action.NO -> {
-                            paperVisionProjectManager.discardCurrentRecovery()
-                            closePaperVision()
-                        }
-                        else -> { /* NO-OP */ }
-                    }
-                }.enable()
-            }
-
-            return false
-        } else return true
     }
 
     override fun onEnable() {
@@ -130,7 +100,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<TunerChangeValuesMessage> {
-            for(i in message.values.indices) {
+            for (i in message.values.indices) {
                 eocvSim.tunerManager.getTunableFieldWithLabel(message.label)?.setFieldValue(i, message.values[i])
             }
 
@@ -138,29 +108,35 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<PrevizAskNameMessage> {
-            respond(StringResponse(
-                paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "") ?: "Mack"
-            ))
+            respond(
+                StringResponse(
+                    paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "") ?: "Mack"
+                )
+            )
         }
 
         engine.setMessageHandlerOf<AskProjectGenClassName> {
-            respond(StringResponse(
-                paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "") ?: "Mack"
-            ))
+            respond(
+                StringResponse(
+                    paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "") ?: "Mack"
+                )
+            )
         }
 
         engine.setMessageHandlerOf<PrevizPingPongMessage> {
-            if(currentPrevizSession?.sessionName == message.previzName) {
+            if (currentPrevizSession?.sessionName == message.previzName) {
                 previzPingPongTimer.reset()
             }
 
-            respond(BooleanResponse(
-                currentPrevizSession?.sessionName == message.previzName && currentPrevizSession?.previzRunning ?: false)
+            respond(
+                BooleanResponse(
+                    currentPrevizSession?.sessionName == message.previzName && currentPrevizSession?.previzRunning ?: false
+                )
             )
         }
 
         engine.setMessageHandlerOf<PrevizStopMessage> {
-            if(currentPrevizSession?.sessionName == message.previzName) {
+            if (currentPrevizSession?.sessionName == message.previzName) {
                 currentPrevizSession?.stopPreviz()
                 currentPrevizSession = null
             }
@@ -170,7 +146,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         engine.setMessageHandlerOf<PrevizSetStreamResolutionMessage> {
             sessionStreamResolutions[message.previzName] = Size(message.width.toDouble(), message.height.toDouble())
 
-            if(currentPrevizSession?.sessionName == message.previzName) {
+            if (currentPrevizSession?.sessionName == message.previzName) {
                 currentPrevizSession?.streamer?.resolution = Size(message.width.toDouble(), message.height.toDouble())
             }
 
@@ -178,7 +154,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<PrevizSourceCodeMessage> {
-            if(currentPrevizSession == null || currentPrevizSession?.sessionName != message.previzName) {
+            if (currentPrevizSession == null || currentPrevizSession?.sessionName != message.previzName) {
                 currentPrevizSession = PrevizSession(
                     message.previzName,
                     engine, eocvSim,
@@ -197,9 +173,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         eocvSim.onMainUpdate {
-            engine.process()
-
-            if(previzPingPongTimer.seconds() > 5.0 && currentPrevizSession != null) {
+            if (previzPingPongTimer.seconds() > 5.0 && currentPrevizSession != null) {
                 logger.info("Previz session ${currentPrevizSession?.sessionName} timed out, stopping")
                 currentPrevizSession?.stopPreviz()
                 currentPrevizSession = null
@@ -212,7 +186,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     private fun closePaperVision() {
         paperVisionProjectManager.closeCurrentProject()
-        PaperVisionDaemon.hidePaperVision()
 
         SwingUtilities.invokeLater {
             eocvSim.visualizer.frame.isVisible = true
@@ -226,8 +199,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     private fun changeToPaperVisionPipelineIfNecessary() {
         val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
 
-        if(switchablePanel.selectedIndex == switchablePanel.indexOfTab("PaperVision")) {
-            if(currentPrevizSession?.previzRunning != true) {
+        if (switchablePanel.selectedIndex == switchablePanel.indexOfTab("PaperVision")) {
+            if (currentPrevizSession?.previzRunning != true) {
                 eocvSim.pipelineManager.onUpdate.doOnce {
                     eocvSim.pipelineManager.changePipeline(
                         eocvSim.pipelineManager.getIndexOf(

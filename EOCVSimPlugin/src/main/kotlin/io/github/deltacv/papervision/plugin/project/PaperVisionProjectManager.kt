@@ -7,7 +7,15 @@ import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import io.github.deltacv.eocvsim.sandbox.nio.SandboxFileSystem
-import io.github.deltacv.papervision.plugin.PaperVisionDaemon
+import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
+import io.github.deltacv.papervision.engine.client.response.OkResponse
+import io.github.deltacv.papervision.engine.client.response.StringResponse
+import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
+import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngine
+import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMessage
+import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
+import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentProjectMessage
+import io.github.deltacv.papervision.plugin.ipc.message.SaveCurrentProjectMessage
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveredProject
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryDaemonProcessManager
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryData
@@ -23,8 +31,9 @@ import kotlin.io.path.exists
 import kotlin.io.path.pathString
 
 class PaperVisionProjectManager(
-    pluginJarFile: File,
+    val pluginJarFile: File,
     val fileSystem: SandboxFileSystem,
+    val engine: EOCVSimIpcEngine,
     val eocvSim: EOCVSim
 ) {
 
@@ -43,9 +52,28 @@ class PaperVisionProjectManager(
     var currentProject: PaperVisionProjectTree.ProjectTreeNode.Project? = null
         private set
 
+    var currentPaperVisionProject: PaperVisionProject? = null
+        private set
+
+    init {
+        engine.setMessageHandlerOf<DiscardCurrentRecoveryMessage> {
+            discardCurrentRecovery()
+            respond(OkResponse())
+        }
+
+        engine.setMessageHandlerOf<SaveCurrentProjectMessage> {
+            saveCurrentProject(message.json)
+            respond(OkResponse())
+        }
+
+        engine.setMessageHandlerOf<GetCurrentProjectMessage> {
+            respond(JsonElementResponse(currentPaperVisionProject!!.json))
+        }
+    }
+
     fun paperVisionProjectFrom(
         project: PaperVisionProjectTree.ProjectTreeNode.Project,
-        tree: JsonElement = PaperVisionDaemon.currentProjectJsonTree()
+        tree: JsonElement
     ) = PaperVisionProject(
         Instant.now().toEpochMilli(),
         findProjectFolderPath(project)!!.pathString,
@@ -100,11 +128,9 @@ class PaperVisionProjectManager(
     val onRefresh = PaperVisionEventHandler("PaperVisionProjectManager-onRefresh")
 
     fun init() {
-        PaperVisionDaemon.attachToEditorChange {
+        engine.setMessageHandlerOf<EditorChangeMessage> {
             if(currentProject != null) {
-                PaperVisionDaemon.invokeOnMainLoop {
-                    sendRecoveryProject(currentProject!!)
-                }
+                sendRecoveryProject(currentProject!!, message.json)
             }
         }
     }
@@ -166,26 +192,32 @@ class PaperVisionProjectManager(
 
         logger.info("Opening ${path.pathString}")
 
-        PaperVisionDaemon.openProject(
-            PaperVisionProject.fromJson(
-                String(fileSystem.readAllBytes(path), StandardCharsets.UTF_8)
-            ).json
+        currentPaperVisionProject = PaperVisionProject.fromJson(
+            String(fileSystem.readAllBytes(path), StandardCharsets.UTF_8)
         )
 
         SwingUtilities.invokeLater {
             eocvSim.visualizer.frame.isVisible = false
         }
 
+        PaperVisionProcessRunner.execPaperVision(pluginJar = pluginJarFile)
+
+        PaperVisionProcessRunner.onPaperVisionExit.doOnce {
+            SwingUtilities.invokeLater {
+                eocvSim.visualizer.frame.isVisible = true
+            }
+        }
+
         currentProject = project
     }
 
-    fun saveCurrentProject() {
+    fun saveCurrentProject(json: JsonElement) {
         val project = currentProject ?: return
         val path = findProjectPath(project) ?: return
 
         logger.info("Saving ${path.pathString}")
 
-        fileSystem.write(path, paperVisionProjectFrom(currentProject!!).toJson().toByteArray(StandardCharsets.UTF_8))
+        fileSystem.write(path, paperVisionProjectFrom(currentProject!!, json).toJson().toByteArray(StandardCharsets.UTF_8))
     }
 
     fun findProject(path: String, name: String): PaperVisionProjectTree.ProjectTreeNode.Project? {
@@ -253,7 +285,10 @@ class PaperVisionProjectManager(
         }
     }
 
-    fun sendRecoveryProject(projectNode: PaperVisionProjectTree.ProjectTreeNode.Project) {
+    fun sendRecoveryProject(
+        projectNode: PaperVisionProjectTree.ProjectTreeNode.Project,
+        tree: JsonElement
+    ) {
         val projectPath = findProjectPath(projectNode)?.pathString ?: return
         val hex = projectPath.hexString
 
@@ -263,7 +298,7 @@ class PaperVisionProjectManager(
             RecoveryData(
                 recoveryFolder.path,
                 "${hex}.recoverypaperproj",
-                RecoveredProject(projectPath, System.currentTimeMillis(), hex, paperVisionProjectFrom(projectNode))
+                RecoveredProject(projectPath, System.currentTimeMillis(), hex, paperVisionProjectFrom(projectNode, tree))
             )
         )
     }
@@ -299,7 +334,6 @@ class PaperVisionProjectManager(
 
     fun closeCurrentProject() {
         currentProject = null
-        PaperVisionDaemon.paperVision.previzManager.stopPreviz()
     }
 
     fun deleteAllRecoveredProjects() {

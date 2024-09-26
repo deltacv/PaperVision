@@ -1,0 +1,81 @@
+package io.github.deltacv.papervision.plugin.ipc
+
+import com.github.serivesmejia.eocvsim.util.loggerForThis
+import io.github.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
+import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
+import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
+import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
+import io.github.deltacv.papervision.plugin.ipc.serialization.ipcGson
+import org.java_websocket.client.WebSocketClient
+import java.net.URI
+
+class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
+
+    private val clients = mutableListOf<PaperVisionEngineClient>()
+
+    private var wsClient = WsClient(port, this)
+
+    @Synchronized
+    override fun connectClient(client: PaperVisionEngineClient) {
+        clients.add(client)
+
+        if(!wsClient.isOpen) {
+            wsClient = WsClient(port, this)
+            wsClient.connect()
+        }
+    }
+
+    @Synchronized
+    override fun terminate(client: PaperVisionEngineClient) {
+        clients.remove(client)
+    }
+
+    @Synchronized
+    override fun sendMessage(client: PaperVisionEngineClient, message: PaperVisionEngineMessage) {
+        if(!clients.contains(client)) {
+            throw IllegalArgumentException("Client is not connected to this bridge")
+        }
+
+        if(!wsClient.isOpen) {
+            wsClient = WsClient(port, this)
+            wsClient.connect()
+        }
+
+        wsClient.send(ipcGson.toJson(message))
+    }
+
+    override fun broadcastBytes(bytes: ByteArray) {
+        wsClient.send(bytes)
+    }
+
+    override fun acceptResponse(response: PaperVisionEngineMessageResponse) {
+        for(client in clients) {
+            client.acceptResponse(response)
+        }
+    }
+
+    class WsClient(
+        val port: Int,
+        val bridge: EOCVSimIpcEngineBridge
+    ) : WebSocketClient(URI.create("ws://localhost:$port")) {
+        val logger by loggerForThis()
+
+        override fun onOpen(handshakedata: org.java_websocket.handshake.ServerHandshake?) {
+            logger.info("Connected to server in $port")
+        }
+
+        override fun onClose(code: Int, reason: String?, remote: Boolean) {
+            logger.info("Disconnected from server")
+        }
+
+        override fun onMessage(message: String) {
+            val response = ipcGson.fromJson(message, PaperVisionEngineMessageResponse::class.java)
+            logger.trace("Message: {}", response::class.java.simpleName)
+            bridge.acceptResponse(response)
+        }
+
+        override fun onError(ex: Exception) {
+            logger.error("Error on connection", ex)
+        }
+    }
+}

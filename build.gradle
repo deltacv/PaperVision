@@ -8,8 +8,9 @@ buildscript {
         kotlinx_coroutines_version = "1.8.1"
         classgraph_version = "4.8.108"
         imgui_version = "1.86.12"
+        gson_version = "2.8.9"
 
-        slf4j_version = "1.7.32"
+        slf4j_version = "2.0.16"
         log4j_version = "2.17.1"
 
         env = findProperty('env') == 'release' ? 'release' : 'dev'

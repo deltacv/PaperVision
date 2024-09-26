@@ -105,10 +105,10 @@ public abstract class EventLoopWindow {
         GLFW.glfwSwapInterval(GLFW.GLFW_TRUE);
 
         if(!daemon) {
+            GLFW.glfwShowWindow(handle);
+
             if (config.isFullScreen()) {
                 GLFW.glfwMaximizeWindow(handle);
-            } else {
-                GLFW.glfwShowWindow(handle);
             }
         }
 

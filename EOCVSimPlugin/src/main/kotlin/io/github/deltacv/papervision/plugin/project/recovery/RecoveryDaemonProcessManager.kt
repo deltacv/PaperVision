@@ -31,7 +31,7 @@ class RecoveryDaemonProcessManager(
             val exit = JavaProcess.execClasspath(
                 RecoveryDaemonClient::class.java,
                 pluginJarFile.path,
-                port.toString()
+                null, listOf(port.toString())
             )
 
             logger.warn("Project recovery daemon process exited with code $exit")

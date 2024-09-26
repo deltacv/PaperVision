@@ -18,21 +18,24 @@ shadowJar {
 }
 
 dependencies {
-    compileOnly "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
     implementation project(":LwjglPlatform")
 
-    compileOnly 'com.github.deltacv.EOCV-Sim:EOCV-Sim:3.7.0' // jitpack
-    // compileOnly 'com.github.deltacv:EOCV-Sim:4.0.0-dev-240917-1612' // Maven local
+    //compileOnly 'com.github.deltacv.EOCV-Sim:EOCV-Sim:3.7.0' // jitpack
+    compileOnly 'com.github.deltacv:EOCV-Sim:3.7.1-dev-240925-1545' // Maven local
 
     compileOnly "io.github.spair:imgui-java-app:$imgui_version"
 
     implementation 'org.codehaus.janino:janino:3.1.12'
 
     implementation "org.slf4j:slf4j-api:$slf4j_version"
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    implementation "org.slf4j:slf4j-simple:$slf4j_version"
 
-    implementation "io.javalin:javalin:6.3.0"
-    implementation 'com.google.code.gson:gson:2.8.9'
+
+    implementation "com.google.code.gson:gson:$gson_version"
 
     implementation 'org.java-websocket:Java-WebSocket:1.5.7'
+    implementation 'info.picocli:picocli:4.7.6'
 }
