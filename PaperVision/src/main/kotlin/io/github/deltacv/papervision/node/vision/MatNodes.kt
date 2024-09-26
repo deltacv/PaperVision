@@ -29,7 +29,7 @@ class InputMatNode @JvmOverloads constructor(
             if(serializedId != null) return@doOnce
             windowSizeSupplier?.let {
                 val nodeSize = ImVec2()
-                ImNodes.getNodeDimensions(id, nodeSize)
+                ImNodes.getNodeDimensions(nodeSize, id)
 
                 val windowSize = it()
                 ImNodes.setNodeScreenSpacePos(id, nodeSize.x * 0.5f, windowSize.y / 2f - nodeSize.y / 2)
@@ -83,7 +83,7 @@ class OutputMatNode @JvmOverloads constructor(
 
             windowSizeSupplier?.let {
                 val nodeSize = ImVec2()
-                ImNodes.getNodeDimensions(id, nodeSize)
+                ImNodes.getNodeDimensions(nodeSize, id)
 
                 val windowSize = it()
                 ImNodes.setNodeScreenSpacePos(id, windowSize.x - nodeSize.x * 1.5f , windowSize.y / 2f - nodeSize.y / 2)

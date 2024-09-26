@@ -1,8 +1,6 @@
 package io.github.deltacv.papervision.platform.lwjgl;
 
 import imgui.ImGui;
-import imgui.app.Color;
-import imgui.app.Configuration;
 import imgui.flag.ImGuiConfigFlags;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.glfw.ImGuiImplGlfw;
@@ -32,7 +30,7 @@ public abstract class EventLoopWindow {
 
     private String glslVersion = null;
 
-    private Logger logger = LoggerFactory.getLogger(EventLoopWindow.class);
+    final Logger logger = LoggerFactory.getLogger(EventLoopWindow.class);
 
     /**
      * Pointer to the native GLFW window.
@@ -62,8 +60,8 @@ public abstract class EventLoopWindow {
      * Method to dispose all used application resources and destroy its window.
      */
     protected void dispose() {
-        imGuiGl3.dispose();
-        imGuiGlfw.dispose();
+        imGuiGl3.shutdown();
+        imGuiGlfw.shutdown();
         disposeImGui();
         disposeWindow();
     }
@@ -129,6 +127,8 @@ public abstract class EventLoopWindow {
             GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
             GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 0);
         }
+
+        logger.info("GLSL version: {}", glslVersion);
     }
 
     /**
@@ -195,6 +195,7 @@ public abstract class EventLoopWindow {
     protected void startFrame() {
         clearBuffer();
         imGuiGlfw.newFrame();
+        imGuiGl3.newFrame();
         ImGui.newFrame();
     }
 

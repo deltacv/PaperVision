@@ -2,6 +2,7 @@ package io.github.deltacv.papervision.plugin.project.recovery
 
 import com.github.serivesmejia.eocvsim.util.JavaProcess
 import com.github.serivesmejia.eocvsim.util.loggerForThis
+import io.github.deltacv.papervision.plugin.logging.SLF4JIOReceiver
 import org.java_websocket.WebSocket
 import org.java_websocket.handshake.ClientHandshake
 import org.java_websocket.server.WebSocketServer
@@ -29,9 +30,11 @@ class RecoveryDaemonProcessManager(
             logger.info("Starting project recovery daemon process")
 
             val exit = JavaProcess.execClasspath(
-                RecoveryDaemonClient::class.java,
+                RecoveryDaemonClientMain::class.java,
+                SLF4JIOReceiver(logger),
                 pluginJarFile.path,
-                null, listOf(port.toString())
+                null,
+                listOf(port.toString())
             )
 
             logger.warn("Project recovery daemon process exited with code $exit")

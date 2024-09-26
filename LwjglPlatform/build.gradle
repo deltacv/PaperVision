@@ -8,13 +8,22 @@ dependencies {
     api project(":PaperVision")
 
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib"
-    implementation "io.github.spair:imgui-java-app:$imgui_version"
+    api "io.github.spair:imgui-java-binding:$imgui_version"
+    api "io.github.spair:imgui-java-lwjgl3:$imgui_version"
+
+    implementation "io.github.spair:imgui-java-natives-windows:$imgui_version"
+    implementation "io.github.spair:imgui-java-natives-linux:$imgui_version"
+    implementation "io.github.spair:imgui-java-natives-macos:$imgui_version"
+
     implementation "org.slf4j:slf4j-api:$slf4j_version"
 
-    implementation platform('org.lwjgl:lwjgl-bom:3.3.4')
-    implementation "org.lwjgl:lwjgl-stb"
+    implementation platform("org.lwjgl:lwjgl-bom:$lwjgl_version")
 
-    ['natives-linux', 'natives-windows', 'natives-macos', 'natives-macos-arm64'].each {
-        implementation "org.lwjgl:lwjgl-stb::$it"
+    ['', '-opengl', '-glfw', '-stb'].each {
+        implementation "org.lwjgl:lwjgl$it:$lwjgl_version"
+        implementation "org.lwjgl:lwjgl$it::natives-windows"
+        implementation "org.lwjgl:lwjgl$it::natives-linux"
+        implementation "org.lwjgl:lwjgl$it::natives-macos"
+        implementation "org.lwjgl:lwjgl$it::natives-macos-arm64"
     }
 }

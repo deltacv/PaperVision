@@ -35,7 +35,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         val PAN_CONSTANT = 25f
     }
 
-    var context = ImNodesContext()
+    var context = ImNodes.editorContextCreate()
         private set
     var isNodeFocused = false
         private set
@@ -221,7 +221,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
 
         if (editorPanning.x != prevEditorPanning.x || editorPanning.y != prevEditorPanning.y) {
-            ImNodes.editorResetPanning(editorPanning.x, editorPanning.y)
+            ImNodes.editorContextResetPanning(editorPanning.x, editorPanning.y)
         } else {
             ImNodes.editorContextGetPanning(editorPanning)
         }
@@ -397,7 +397,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                     paperVision.onUpdate.doOnce {
                         CodeDisplayWindow(
                             paperVision.codeGenManager.build(response.value, JavaLanguage),
-                            TextEditorLanguageDefinition.cPlusPlus()
+                            TextEditorLanguageDefinition.CPlusPlus()
                         ).apply {
                             enable()
                             size = ImVec2(nodeEditorSizeSupplier().x * 0.8f, nodeEditorSizeSupplier().y * 0.8f)

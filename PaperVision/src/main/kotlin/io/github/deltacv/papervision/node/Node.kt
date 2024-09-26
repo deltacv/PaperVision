@@ -178,7 +178,7 @@ abstract class Node<S: CodeGenSession>(
     }
 
     open fun makeSerializationData() = BasicNodeData(id, ImVec2().apply {
-        ImNodes.getNodeEditorSpacePos(id, this)
+        ImNodes.getNodeEditorSpacePos(id)
     })
 
     open fun takeDeserializationData(data: NodeSerializationData) { /* do nothing */ }
@@ -200,7 +200,7 @@ abstract class Node<S: CodeGenSession>(
         data.id = id
 
         val pos = ImVec2()
-        ImNodes.getNodeEditorSpacePos(id, pos)
+        ImNodes.getNodeEditorSpacePos(id)
         data.nodePos = pos
 
         return data

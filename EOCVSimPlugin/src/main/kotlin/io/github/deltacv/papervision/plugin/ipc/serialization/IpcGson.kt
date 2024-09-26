@@ -7,5 +7,4 @@ import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResp
 val ipcGson get() = GsonBuilder()
     .registerTypeHierarchyAdapter(PaperVisionEngineMessage::class.java, IpcMessageAdapter)
     .registerTypeHierarchyAdapter(PaperVisionEngineMessageResponse::class.java, IpcMessageResponseAdapter)
-    .registerTypeAdapter(Any::class.java, AnyAdapter)
     .create()

@@ -41,7 +41,7 @@ class TimedTextureAnimation(
     override val width: Int get() = textures[frame].width
     override val height: Int get() = textures[frame].height
 
-    override val textureId: Int get() = textures[frame].textureId
+    override val textureId: Long get() = textures[frame].textureId
 
     override fun delete() {
         for(texture in textures) {

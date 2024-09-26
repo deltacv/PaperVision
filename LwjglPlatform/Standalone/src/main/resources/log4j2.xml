@@ -15,7 +15,7 @@
             <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
         </Console>
 
-        <File name="logfile" fileName="${sys:user.home}/.eocvsim/logs/eocvsim-${date:yyyy_MM_dd-HH.mm.ss}.log" append="false">
+        <File name="logfile" fileName="${sys:user.home}/.papervision/logs/papervision-${date:yyyy_MM_dd-HH.mm.ss}.log" append="false">
             <PatternLayout pattern="${pattern}"/>
         </File>
     </Appenders>

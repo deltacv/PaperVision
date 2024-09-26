@@ -8,6 +8,7 @@ import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResp
 import io.github.deltacv.papervision.plugin.ipc.serialization.ipcGson
 import org.java_websocket.client.WebSocketClient
 import java.net.URI
+import java.nio.ByteBuffer
 
 class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
 
@@ -41,11 +42,15 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
             wsClient.connect()
         }
 
-        wsClient.send(ipcGson.toJson(message))
+        val messageJson = ipcGson.toJson(message)
+
+        wsClient.send(messageJson)
     }
 
     override fun broadcastBytes(bytes: ByteArray) {
-        wsClient.send(bytes)
+        for(client in clients) {
+            client.acceptBytes(bytes)
+        }
     }
 
     override fun acceptResponse(response: PaperVisionEngineMessageResponse) {
@@ -70,8 +75,11 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
 
         override fun onMessage(message: String) {
             val response = ipcGson.fromJson(message, PaperVisionEngineMessageResponse::class.java)
-            logger.trace("Message: {}", response::class.java.simpleName)
             bridge.acceptResponse(response)
+        }
+
+        override fun onMessage(bytes: ByteBuffer) {
+            bridge.broadcastBytes(bytes.array())
         }
 
         override fun onError(ex: Exception) {

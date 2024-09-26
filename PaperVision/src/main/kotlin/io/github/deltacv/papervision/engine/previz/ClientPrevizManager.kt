@@ -9,7 +9,6 @@ import io.github.deltacv.papervision.engine.client.message.PrevizSourceCodeMessa
 import io.github.deltacv.papervision.engine.client.message.PrevizSetStreamResolutionMessage
 import io.github.deltacv.papervision.engine.client.response.BooleanResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
-import io.github.deltacv.papervision.io.PipelineStream
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bufferedImageFromResource
 import io.github.deltacv.papervision.util.ElapsedTime
@@ -81,6 +80,7 @@ class ClientPrevizManager(
                             width = previzStreamWidth, height = previzStreamHeight,
                             offlineImages = offlineImages
                         )
+
                         stream.start()
                     }
                 })

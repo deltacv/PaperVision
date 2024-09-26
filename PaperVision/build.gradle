@@ -12,7 +12,7 @@ dependencies {
 
     compileOnly "io.github.spair:imgui-java-binding:$imgui_version" // platforms should add the "implementation" they need
 
-    implementation "org.slf4j:slf4j-api:$slf4j_version"
+    api "org.slf4j:slf4j-api:$slf4j_version"
 
     implementation 'com.github.deltacv:mai18n:1.0.1'
 

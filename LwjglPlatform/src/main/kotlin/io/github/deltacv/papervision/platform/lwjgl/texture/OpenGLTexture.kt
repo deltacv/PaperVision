@@ -7,7 +7,7 @@ import org.lwjgl.system.MemoryUtil
 import java.nio.ByteBuffer
 
 data class OpenGLTexture(
-    override val textureId: Int,
+    override val textureId: Long,
     override val width: Int,
     override val height: Int
 ) : PlatformTexture() {
@@ -25,7 +25,7 @@ data class OpenGLTexture(
     }
 
     override fun set(bytes: ByteBuffer, colorSpace: ColorSpace) {
-        glBindTexture(GL_TEXTURE_2D, textureId)
+        glBindTexture(GL_TEXTURE_2D, textureId.toInt())
 
         val format = when(colorSpace) {
             ColorSpace.RGB -> GL_RGB
@@ -39,7 +39,7 @@ data class OpenGLTexture(
     }
 
     override fun delete() {
-        glDeleteTextures(textureId)
+        glDeleteTextures(textureId.toInt())
     }
 
 

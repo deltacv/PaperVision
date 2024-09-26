@@ -3,14 +3,12 @@ package io.github.deltacv.papervision.plugin
 import com.github.serivesmejia.eocvsim.util.JavaProcess
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.loggerForThis
-import com.google.gson.JsonElement
 import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngine
-import io.github.deltacv.papervision.serialization.PaperVisionSerializer
+import io.github.deltacv.papervision.plugin.logging.SLF4JIOReceiver
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
-import java.util.concurrent.ThreadPoolExecutor
 
 /**
  * Manages and executes the PaperVision process in a dedicated daemon thread.
@@ -51,6 +49,7 @@ object PaperVisionProcessRunner {
                 logger.info("Running on macOS, adding -XstartOnFirstThread flag")
                 JavaProcess.execClasspath(
                     EOCVSimIpcPaperVisionMain::class.java,
+                    SLF4JIOReceiver(logger),
                     classpath,
                     listOf("-XstartOnFirstThread"),
                     programParams
@@ -58,6 +57,7 @@ object PaperVisionProcessRunner {
             } else {
                 JavaProcess.execClasspath(
                     EOCVSimIpcPaperVisionMain::class.java,
+                    SLF4JIOReceiver(logger),
                     classpath,
                     null,
                     programParams,

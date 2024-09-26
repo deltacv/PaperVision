@@ -1,6 +1,5 @@
 package io.github.deltacv.papervision.platform.lwjgl
 
-import imgui.app.Configuration
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
 import io.github.deltacv.papervision.io.KeyAction

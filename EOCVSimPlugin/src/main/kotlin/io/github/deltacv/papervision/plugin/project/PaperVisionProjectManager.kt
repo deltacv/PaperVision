@@ -69,6 +69,12 @@ class PaperVisionProjectManager(
         engine.setMessageHandlerOf<GetCurrentProjectMessage> {
             respond(JsonElementResponse(currentPaperVisionProject!!.json))
         }
+
+        engine.setMessageHandlerOf<EditorChangeMessage> {
+            if(currentProject != null) {
+                sendRecoveryProject(currentProject!!, message.json)
+            }
+        }
     }
 
     fun paperVisionProjectFrom(
@@ -200,13 +206,13 @@ class PaperVisionProjectManager(
             eocvSim.visualizer.frame.isVisible = false
         }
 
-        PaperVisionProcessRunner.execPaperVision(pluginJar = pluginJarFile)
-
         PaperVisionProcessRunner.onPaperVisionExit.doOnce {
             SwingUtilities.invokeLater {
                 eocvSim.visualizer.frame.isVisible = true
             }
         }
+
+        PaperVisionProcessRunner.execPaperVision(pluginJar = pluginJarFile)
 
         currentProject = project
     }

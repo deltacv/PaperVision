@@ -150,6 +150,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                 currentPrevizSession?.streamer?.resolution = Size(message.width.toDouble(), message.height.toDouble())
             }
 
+            logger.info("Set stream resolution for previz session ${message.previzName} to ${message.width}x${message.height}")
+
             respond(OkResponse())
         }
 
@@ -162,6 +164,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                 )
 
                 currentPrevizSession!!.startPreviz(message.sourceCode)
+
+                logger.info("Previz stream resolution {}x{}", currentPrevizSession!!.streamer.resolution.width, currentPrevizSession!!.streamer.resolution.height)
 
                 previzPingPongTimer.reset()
             }

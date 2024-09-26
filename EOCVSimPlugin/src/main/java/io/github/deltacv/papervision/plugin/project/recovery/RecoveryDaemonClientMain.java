@@ -2,6 +2,8 @@ package io.github.deltacv.papervision.plugin.project.recovery;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -9,17 +11,19 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class RecoveryDaemonClient extends WebSocketClient {
+public class RecoveryDaemonClientMain extends WebSocketClient {
 
     public static final int MAX_CONNECTION_ATTEMPTS_BEFORE_EXITING = 3;
 
-    public RecoveryDaemonClient(int port) throws URISyntaxException {
+    public static final Logger logger = LoggerFactory.getLogger(RecoveryDaemonClientMain.class);
+
+    public RecoveryDaemonClientMain(int port) throws URISyntaxException {
         super(new URI("ws://localhost:" + port));
     }
 
     @Override
     public void onOpen(ServerHandshake handshakedata) {
-        System.out.println("Connected to recovery daemon server at port " + uri.getPort());
+        logger.info("Connected to recovery daemon server at port {}", uri.getPort());
     }
 
     @Override
@@ -35,7 +39,7 @@ public class RecoveryDaemonClient extends WebSocketClient {
             Path recoveryFilePath = recoveryPath.resolve(recoveryData.recoveryFileName);
             Files.write(recoveryFilePath, recoveryData.projectData.toJson().getBytes());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to save recovery data", e);
         }
     }
 
@@ -50,18 +54,18 @@ public class RecoveryDaemonClient extends WebSocketClient {
     public static void main(String[] args) {
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 17112;
 
-        RecoveryDaemonClient client = null;
+        RecoveryDaemonClientMain client = null;
         int connectionAttempts = 0;
 
         try {
             while(!Thread.interrupted()) {
                 if(connectionAttempts >= MAX_CONNECTION_ATTEMPTS_BEFORE_EXITING) {
-                    System.out.println("Failed to connect to recovery daemon after " + MAX_CONNECTION_ATTEMPTS_BEFORE_EXITING + " attempts. Exiting...");
+                    logger.warn("Failed to connect to recovery daemon after " + MAX_CONNECTION_ATTEMPTS_BEFORE_EXITING + " attempts. Exiting...");
                     System.exit(0);
                 }
 
                 if(client == null || client.isClosed()) {
-                    client = new RecoveryDaemonClient(port);
+                    client = new RecoveryDaemonClientMain(port);
                     client.connect();
                     connectionAttempts += 1;
                 }

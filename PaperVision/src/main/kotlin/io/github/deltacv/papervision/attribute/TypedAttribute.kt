@@ -3,7 +3,7 @@ package io.github.deltacv.papervision.attribute
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
-import imgui.extension.imnodes.flag.ImNodesColorStyle
+import imgui.extension.imnodes.flag.ImNodesCol
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
@@ -58,8 +58,8 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
     val nodeSize = ImVec2()
 
     override fun draw() {
-        ImNodes.pushColorStyle(ImNodesColorStyle.Pin, styleColor)
-        ImNodes.pushColorStyle(ImNodesColorStyle.PinHovered, styleHoveredColor)
+        ImNodes.pushColorStyle(ImNodesCol.Pin, styleColor)
+        ImNodes.pushColorStyle(ImNodesCol.PinHovered, styleHoveredColor)
 
         super.draw()
 
@@ -69,7 +69,7 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
 
     override fun drawAttribute() {
         if(isSecondDraw) {
-            ImNodes.getNodeDimensions(parentNode.id, nodeSize)
+            ImNodes.getNodeDimensions(nodeSize, parentNode.id)
 
             isSecondDraw = false
         }

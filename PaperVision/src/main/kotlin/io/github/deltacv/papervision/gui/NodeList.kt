@@ -3,7 +3,8 @@ package io.github.deltacv.papervision.gui
 import imgui.*
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.ImNodesContext
-import imgui.extension.imnodes.flag.ImNodesColorStyle
+import imgui.extension.imnodes.ImNodesEditorContext
+import imgui.extension.imnodes.flag.ImNodesCol
 import imgui.flag.*
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.Attribute
@@ -51,7 +52,7 @@ class NodeList(
     lateinit var headers: Headers
         private set
     
-    private lateinit var listContext: ImNodesContext
+    private lateinit var listContext: ImNodesEditorContext
 
     var hoveredNode = -1
         private set
@@ -130,7 +131,7 @@ class NodeList(
         // NODES WINDOW
 
         ImNodes.getStyle().gridSpacing = 99999f // lol
-        ImNodes.pushColorStyle(ImNodesColorStyle.GridBackground, ImColor.rgba(0f, 0f, 0f, 0f))
+        ImNodes.pushColorStyle(ImNodesCol.GridBackground, ImColor.rgba(0f, 0f, 0f, 0f))
 
         ImNodes.clearNodeSelection()
         ImNodes.clearLinkSelection()
@@ -145,7 +146,7 @@ class NodeList(
                         if(drawnNodes.contains(node.id)) {
                             if (!table.contains(node.id)) {
                                 val nodeSize = ImVec2()
-                                ImNodes.getNodeDimensions(node.id, nodeSize)
+                                ImNodes.getNodeDimensions(nodeSize, node.id)
 
                                 table.add(node.id, nodeSize)
                             } else {
@@ -161,10 +162,10 @@ class NodeList(
                                 titleColor = node.titleColor
                                 node.titleColor = node.titleHoverColor
                             } else {
-                                ImNodes.pushColorStyle(ImNodesColorStyle.TitleBar, PaperVision.imnodesStyle.titleBarHovered)
+                                ImNodes.pushColorStyle(ImNodesCol.TitleBar, PaperVision.imnodesStyle.titleBarHovered)
                             }
 
-                            ImNodes.pushColorStyle(ImNodesColorStyle.NodeBackground, PaperVision.imnodesStyle.nodeBackgroundHovered)
+                            ImNodes.pushColorStyle(ImNodesCol.NodeBackground, PaperVision.imnodesStyle.nodeBackgroundHovered)
                         }
 
                         node.draw()
@@ -189,7 +190,7 @@ class NodeList(
         ImNodes.endNodeEditor()
         ImGui.popStyleColor()
 
-        ImNodes.editorResetPanning(0f, 0f)
+        ImNodes.editorContextResetPanning(0f, 0f)
 
         val mousePos = ImGui.getMousePos()
 
@@ -235,7 +236,7 @@ class NodeList(
 
                 if(instance is DrawNode<*>) {
                     val nodePos = ImVec2()
-                    ImNodes.getNodeScreenSpacePos(hoveredNode, nodePos)
+                    ImNodes.getNodeScreenSpacePos(instance.id)
 
                     val mousePos = ImGui.getMousePos()
 
@@ -266,9 +267,9 @@ class NodeList(
     fun showList() {
         if(!isNodesListOpen) {
             if(::listContext.isInitialized) {
-                listContext.destroy()
+                ImNodes.editorContextFree(listContext)
             }
-            listContext = ImNodesContext()
+            listContext = ImNodes.editorContextCreate()
 
             isNodesListOpen = true
             restore()

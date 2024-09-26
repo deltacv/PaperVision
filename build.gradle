@@ -7,11 +7,13 @@ buildscript {
         kotlin_version = "2.0.20"
         kotlinx_coroutines_version = "1.8.1"
         classgraph_version = "4.8.108"
-        imgui_version = "1.86.12"
+        imgui_version = "1.87.5"
         gson_version = "2.8.9"
+        lwjgl_version = "3.3.2"
 
         slf4j_version = "2.0.16"
-        log4j_version = "2.17.1"
+        log4j_version = "2.24.0"
+        logback_classic_version = "1.5.8"
 
         env = findProperty('env') == 'release' ? 'release' : 'dev'
 

@@ -10,6 +10,7 @@ import org.java_websocket.WebSocket
 import org.java_websocket.handshake.ClientHandshake
 import org.java_websocket.server.WebSocketServer
 import java.lang.Exception
+import java.net.InetSocketAddress
 
 class EOCVSimIpcEngine : MessageHandlerPaperVisionEngine() {
 
@@ -25,7 +26,7 @@ class EOCVSimIpcEngine : MessageHandlerPaperVisionEngine() {
         server.broadcast(ipcGson.toJson(response))
     }
 
-    class WsServer(val engine: EOCVSimIpcEngine) : WebSocketServer() {
+    class WsServer(val engine: EOCVSimIpcEngine) : WebSocketServer(InetSocketAddress(0)) {
         val logger by loggerForThis()
 
         override fun onOpen(conn: WebSocket, handshake: ClientHandshake?) {

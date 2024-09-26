@@ -46,19 +46,21 @@ public class EOCVSimIpcPaperVisionMain implements Callable<Integer> {
                     if(response instanceof JsonElementResponse) {
                         JsonElement json = ((JsonElementResponse) response).getValue();
 
-                        app.getPaperVision().getOnUpdate().doOnce(() -> {}
-                                // PaperVisionSerializer.INSTANCE.deserializeAndApply(json, app.getPaperVision())
+                        app.getPaperVision().getOnUpdate().doOnce(() ->
+                                PaperVisionSerializer.INSTANCE.deserializeAndApply(json, app.getPaperVision())
                         );
                     }
                 }));
             }
 
-            app.getPaperVision().getNodeEditor().getOnEditorChange().doOnce(() ->
-                    app.getPaperVision().getEngineClient().sendMessage(new EditorChangeMessage(
-                            PaperVisionSerializer.INSTANCE.serializeToTree(
-                                    app.getPaperVision().getNodes().getInmutable(), app.getPaperVision().getLinks().getInmutable()
-                            )
-                    ))
+            app.getPaperVision().getNodeEditor().getOnEditorChange().doPersistent(() ->
+                    app.getPaperVision().getOnUpdate().doOnce(() ->
+                        app.getPaperVision().getEngineClient().sendMessage(new EditorChangeMessage(
+                                PaperVisionSerializer.INSTANCE.serializeToTree(
+                                        app.getPaperVision().getNodes().getInmutable(), app.getPaperVision().getLinks().getInmutable()
+                                )
+                        ))
+                    )
             );
         });
 
@@ -68,31 +70,33 @@ public class EOCVSimIpcPaperVisionMain implements Callable<Integer> {
     }
 
     private boolean paperVisionUserCloseListener() {
-        new CloseConfirmWindow((action) -> {
-            switch (action) {
-                case YES:
-                    app.getPaperVision().getEngineClient().sendMessage(new SaveCurrentProjectMessage(
-                            PaperVisionSerializer.INSTANCE.serializeToTree(
-                                    app.getPaperVision().getNodes().getInmutable(), app.getPaperVision().getLinks().getInmutable()
-                            )
-                    ).onResponse((response) -> {
-                        if(response instanceof OkResponse) {
-                            System.exit(0);
-                        }
-                    }));
-                    break;
-                case NO:
-                    app.getPaperVision().getEngineClient().sendMessage(new DiscardCurrentRecoveryMessage().onResponse((response) -> {
-                        if(response instanceof OkResponse) {
-                            System.exit(0);
-                        }
-                    }));
-                    break;
+        app.getPaperVision().getOnUpdate().doOnce(() ->
+            new CloseConfirmWindow((action) -> {
+                switch (action) {
+                    case YES:
+                        app.getPaperVision().getEngineClient().sendMessage(new SaveCurrentProjectMessage(
+                                PaperVisionSerializer.INSTANCE.serializeToTree(
+                                        app.getPaperVision().getNodes().getInmutable(), app.getPaperVision().getLinks().getInmutable()
+                                )
+                        ).onResponse((response) -> {
+                            if (response instanceof OkResponse) {
+                                System.exit(0);
+                            }
+                        }));
+                        break;
+                    case NO:
+                        app.getPaperVision().getEngineClient().sendMessage(new DiscardCurrentRecoveryMessage().onResponse((response) -> {
+                            if (response instanceof OkResponse) {
+                                System.exit(0);
+                            }
+                        }));
+                        break;
                     default: // NO-OP
-            }
+                }
 
-            return Unit.INSTANCE;
-        }).enable();
+                return Unit.INSTANCE;
+            }).enable()
+        );
 
         return false;
     }

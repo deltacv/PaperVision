@@ -1,15 +1,17 @@
-package io.github.deltacv.papervision.io
+package io.github.deltacv.papervision.engine.previz
 
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.message.ByteMessageTag
 import io.github.deltacv.papervision.engine.message.ByteMessages
+import io.github.deltacv.papervision.io.TextureProcessorQueue
+import io.github.deltacv.papervision.io.bytes
+import io.github.deltacv.papervision.io.scaleToFit
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.animation.TimedTextureAnimation
 import io.github.deltacv.papervision.util.loggerForThis
 import java.awt.image.BufferedImage
 import java.nio.ByteBuffer
-import kotlin.math.log
 
 class PipelineStream(
     val sessionName: String,
@@ -62,7 +64,7 @@ class PipelineStream(
     }
 
     fun start() {
-        logger.info("Starting pipeline stream of $sessionName")
+        logger.info("Starting pipeline stream of $sessionName at {}x{}", width, height)
 
         engineClient.setByteMessageHandlerOf(tag) {
             val id = ByteMessages.idFromBytes(it)

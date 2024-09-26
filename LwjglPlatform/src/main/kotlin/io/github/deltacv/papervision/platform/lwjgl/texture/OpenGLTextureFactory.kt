@@ -44,7 +44,7 @@ object OpenGLTextureFactory : PlatformTextureFactory {
 
         glBindTexture(GL_TEXTURE_2D, 0)
 
-        return OpenGLTexture(id, width, height)
+        return OpenGLTexture(id.toLong(), width, height)
     }
 
     override fun create(resource: String): OpenGLTexture {

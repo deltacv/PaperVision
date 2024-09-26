@@ -1,7 +1,7 @@
 package io.github.deltacv.papervision.node
 
 import imgui.extension.imnodes.ImNodes
-import imgui.extension.imnodes.flag.ImNodesColorStyle
+import imgui.extension.imnodes.flag.ImNodesCol
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.id.DrawableIdElementBase
@@ -38,9 +38,9 @@ class Link(
         }
 
         typedAttrib?.run {
-            ImNodes.pushColorStyle(ImNodesColorStyle.Link, styleColor)
-            ImNodes.pushColorStyle(ImNodesColorStyle.LinkHovered, styleHoveredColor)
-            ImNodes.pushColorStyle(ImNodesColorStyle.LinkSelected, styleHoveredColor)
+            ImNodes.pushColorStyle(ImNodesCol.Link, styleColor)
+            ImNodes.pushColorStyle(ImNodesCol.LinkHovered, styleHoveredColor)
+            ImNodes.pushColorStyle(ImNodesCol.LinkSelected, styleHoveredColor)
         }
 
         ImNodes.link(id, a, b)

@@ -2,7 +2,7 @@ package io.github.deltacv.papervision.gui.eocvsim
 
 import io.github.deltacv.papervision.id.IdElement
 import io.github.deltacv.papervision.id.IdElementContainerStack
-import io.github.deltacv.papervision.io.PipelineStream
+import io.github.deltacv.papervision.engine.previz.PipelineStream
 
 class ImageDisplay(
     var pipelineStream: PipelineStream

@@ -3,7 +3,7 @@ package io.github.deltacv.papervision.node
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
-import imgui.extension.imnodes.flag.ImNodesColorStyle
+import imgui.extension.imnodes.flag.ImNodesCol
 import imgui.flag.ImGuiMouseButton
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.CodeGenSession
@@ -56,9 +56,9 @@ abstract class DrawNode<S: CodeGenSession>(
             changeQueue.poll()
         }
 
-        ImNodes.pushColorStyle(ImNodesColorStyle.TitleBar, titleColor)
-        ImNodes.pushColorStyle(ImNodesColorStyle.TitleBarHovered, titleHoverColor)
-        ImNodes.pushColorStyle(ImNodesColorStyle.TitleBarSelected, titleHoverColor)
+        ImNodes.pushColorStyle(ImNodesCol.TitleBar, titleColor)
+        ImNodes.pushColorStyle(ImNodesCol.TitleBarHovered, titleHoverColor)
+        ImNodes.pushColorStyle(ImNodesCol.TitleBarSelected, titleHoverColor)
 
         ImNodes.beginNode(id)
             ImNodes.beginNodeTitleBar()
@@ -90,7 +90,7 @@ abstract class DrawNode<S: CodeGenSession>(
                 val nodeDims = ImVec2()
 
                 // i have no idea why this is needed
-                ImNodes.getNodeDimensions(id, nodeDims)
+                ImNodes.getNodeDimensions(nodeDims, id)
 
                 pinToMouseOffset = ImVec2(
                     nodeDims.x / 2,

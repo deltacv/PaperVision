@@ -13,7 +13,7 @@ abstract class PlatformTexture : DrawableIdElementBase<PlatformTexture>() {
     abstract val width: Int
     abstract val height: Int
 
-    abstract val textureId: Int
+    abstract val textureId: Long
 
     abstract fun set(bytes: ByteArray, colorSpace: ColorSpace = ColorSpace.RGB)
     abstract fun set(bytes: ByteBuffer, colorSpace: ColorSpace = ColorSpace.RGB)
