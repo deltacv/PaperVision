@@ -78,15 +78,11 @@ abstract class Window(
             if(ImGui.beginPopupModal("${tr(title)}###$id", modalPOpen, windowFlags)) {
                 contents()
                 ImGui.endPopup()
-            } else {
-                delete()
             }
         } else {
             if(ImGui.begin("${tr(title)}###$id", windowFlags)) {
                 contents()
                 ImGui.end()
-            } else {
-                delete()
             }
         }
 

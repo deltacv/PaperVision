@@ -11,13 +11,17 @@ import java.nio.Buffer
 
 class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
 
-    override var title: String = ""
+    private val isMac = System.getProperty("os.name").lowercase().contains("mac");
+
+    override var title: String
+        get() = glfwGetWindowTitle(ptrSupplier()) ?: ""
         set(value) {
-            field = value
-            glfwSetWindowTitle(ptrSupplier(), title)
+            glfwSetWindowTitle(ptrSupplier(), value)
         }
     override var icon: String = ""
         set(value) {
+            if(isMac) return // "Cocoa: Regular windows do not have icons on macOS"
+
             val image = loadImageFromResource(value)
 
             GLFWImage.malloc(1).use {

@@ -25,14 +25,14 @@ public class SLF4JIOReceiver implements JavaProcess.ProcessIOReceiver {
             while (sc.hasNextLine()) {
                 logger.info(sc.nextLine());
             }
-        }, "SLFJ4IOReceiver-in-" + instanceCount).start();
+        }, "SLFJ4IOReceiver-out-" + instanceCount).start();
 
         new Thread(() -> {
             Scanner sc = new Scanner(err);
             while (sc.hasNextLine()) {
                 logger.error(sc.nextLine());
             }
-        }, "SLF4JIOReceiver-out-" + instanceCount).start();
+        }, "SLF4JIOReceiver-err-" + instanceCount).start();
     }
 
 }

@@ -24,33 +24,32 @@ package io.github.deltacv.papervision
 
 import imgui.ImGui
 import imgui.flag.ImGuiCond
+import io.github.deltacv.mai18n.Language
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.CodeGenManager
-import io.github.deltacv.papervision.gui.*
-import io.github.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
-import io.github.deltacv.papervision.gui.util.Popup
-import io.github.deltacv.papervision.gui.util.Window
-import io.github.deltacv.papervision.id.IdElementContainer
-import io.github.deltacv.papervision.id.IdElementContainerStack
-import io.github.deltacv.papervision.id.NoneIdElement
-import io.github.deltacv.papervision.io.KeyManager
-import io.github.deltacv.papervision.node.Link
-import io.github.deltacv.papervision.node.Node
-import io.github.deltacv.papervision.platform.*
-import io.github.deltacv.papervision.serialization.PaperVisionSerializer
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
-import io.github.deltacv.papervision.util.loggerForThis
-import io.github.deltacv.mai18n.Language
 import io.github.deltacv.papervision.engine.bridge.NoOpPaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.client.message.PrevizAskNameMessage
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
+import io.github.deltacv.papervision.gui.*
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
 import io.github.deltacv.papervision.gui.style.CurrentStyles
+import io.github.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
+import io.github.deltacv.papervision.gui.util.Popup
 import io.github.deltacv.papervision.gui.util.Popup.Companion.WARN
+import io.github.deltacv.papervision.gui.util.Window
+import io.github.deltacv.papervision.id.IdElementContainer
+import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.NoneIdElement
+import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.io.TextureProcessorQueue
+import io.github.deltacv.papervision.node.Link
+import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.node.NodeRegistry
+import io.github.deltacv.papervision.platform.*
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.loggerForThis
 
 class PaperVision(
     private val setupCall: PlatformSetupCallback
@@ -147,7 +146,7 @@ class PaperVision(
 
         // initializing fonts right after the imgui context is created
         // we can't create fonts mid-frame so that's kind of a problem
-        defaultFont = fontManager.makeFont("/fonts/Calcutta-Regular.otf", 13f)
+        defaultFont = fontManager.makeFont("/fonts/Calcutta-Regular.otf", 18f)
         defaultImGuiFont = fontManager.makeDefaultFont(13f)
 
         nodeEditor.enable()
@@ -162,6 +161,8 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<Popup>()
         IdElementContainerStack.threadStack.pop<PlatformTexture>()
         IdElementContainerStack.threadStack.pop<ImageDisplay>()
+
+        logger.info("PaperVision started")
     }
 
     fun firstProcess() {
@@ -197,10 +198,6 @@ class PaperVision(
         }
 
         ImGui.popFont()
-
-        if(keyManager.pressed(keyManager.keys.ArrowUp)) {
-            println(PaperVisionSerializer.serialize(nodes.elements, links.elements))
-        }
 
         keyManager.update()
 

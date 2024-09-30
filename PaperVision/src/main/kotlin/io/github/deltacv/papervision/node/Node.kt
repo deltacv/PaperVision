@@ -249,10 +249,10 @@ abstract class Node<S: CodeGenSession>(
                     hasInputToOutput = fromAttrib.mode == INPUT && toAttrib.mode == OUTPUT
 
                 if(hasOutputToInput && hasInputToOutput)
-                    break
+                    return true
             }
 
-            return hasOutputToInput && hasInputToOutput
+            return false
         }
     }
 

@@ -343,8 +343,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                 for (node in selectedNodes) {
                     try {
                         nodes[node]?.delete()
-                    } catch (ignored: IndexOutOfBoundsException) {
-                    }
+                    } catch (ignored: IndexOutOfBoundsException) { }
                 }
             }
 

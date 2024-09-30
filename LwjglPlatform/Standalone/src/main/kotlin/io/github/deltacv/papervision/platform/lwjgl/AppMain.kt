@@ -1,6 +1,8 @@
 @file:JvmName("AppMain")
 package io.github.deltacv.papervision.platform.lwjgl
 
+import imgui.app.Application
+
 fun main() {
-    PaperVisionApp(false).start()
+    Application.launch(PaperVisionApp())
 }

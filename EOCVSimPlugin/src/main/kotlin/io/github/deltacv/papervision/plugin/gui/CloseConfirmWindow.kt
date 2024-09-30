@@ -14,31 +14,16 @@ class CloseConfirmWindow(
         CANCEL
     }
 
-    override var title: String = "Confirm"
-    override val windowFlags = flags(
-        ImGuiWindowFlags.NoResize,
-        ImGuiWindowFlags.NoMove,
-        ImGuiWindowFlags.NoCollapse
-    )
+    override var title = "Confirm"
+    override val windowFlags = flags()
 
     override val isModal = true
 
-    private var isFirstDraw = true
-
     override fun onEnable() {
-        // centerWindow()
         focus = true
-        isFirstDraw = true
     }
 
     override fun drawContents() {
-        // Recenter the window on the second draw
-        if (!isFirstDraw) {
-            // centerWindow()
-        } else {
-            isFirstDraw = false
-        }
-
         ImGui.text("Do you wanna save before exiting?")
         ImGui.separator()
 
