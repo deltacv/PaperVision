@@ -15,7 +15,11 @@ class CloseConfirmWindow(
     }
 
     override var title = "Confirm"
-    override val windowFlags = flags()
+    override val windowFlags = flags(
+        ImGuiWindowFlags.NoResize,
+        ImGuiWindowFlags.NoMove,
+        ImGuiWindowFlags.NoCollapse
+    )
 
     override val isModal = true
 

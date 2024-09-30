@@ -41,9 +41,16 @@ class PaperVisionApp @JvmOverloads constructor(
     private var hasProcessed = false
     private var prevKeyCallback: GLFWKeyCallback? = null
 
+    private fun callWindowCloseAction(): Boolean {
+        val shouldClose = windowCloseAction()
+
+        glfwSetWindowShouldClose(handle, shouldClose)
+        return shouldClose
+    }
+
     // override this to handle windowCloseAction
     override fun run() {
-        while (!glfwWindowShouldClose(handle) || !windowCloseAction()) {
+        while (!glfwWindowShouldClose(handle) || !callWindowCloseAction()) {
             runFrame()
         }
     }

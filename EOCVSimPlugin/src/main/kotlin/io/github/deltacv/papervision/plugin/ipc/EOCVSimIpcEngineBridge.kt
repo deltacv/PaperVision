@@ -9,6 +9,7 @@ import io.github.deltacv.papervision.plugin.ipc.serialization.ipcGson
 import org.java_websocket.client.WebSocketClient
 import java.net.URI
 import java.nio.ByteBuffer
+import java.util.concurrent.TimeUnit
 
 class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
 
@@ -20,10 +21,7 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
     override fun connectClient(client: PaperVisionEngineClient) {
         clients.add(client)
 
-        if(!wsClient.isOpen) {
-            wsClient = WsClient(port, this)
-            wsClient.connect()
-        }
+        ensureConnected()
     }
 
     @Synchronized
@@ -37,14 +35,18 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
             throw IllegalArgumentException("Client is not connected to this bridge")
         }
 
-        if(!wsClient.isOpen) {
-            wsClient = WsClient(port, this)
-            wsClient.connect()
-        }
+        ensureConnected()
 
         val messageJson = ipcGson.toJson(message)
 
         wsClient.send(messageJson)
+    }
+
+    private fun ensureConnected() {
+        if(!wsClient.isOpen) {
+            wsClient = WsClient(port, this)
+            wsClient.connectBlocking(5, TimeUnit.SECONDS)
+        }
     }
 
     override fun broadcastBytes(bytes: ByteArray) {

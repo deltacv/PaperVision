@@ -9,6 +9,7 @@ import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
 import io.github.deltacv.papervision.plugin.gui.CloseConfirmWindow
 import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngineBridge
 import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMessage
+import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
 import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentProjectMessage
 import io.github.deltacv.papervision.plugin.ipc.message.SaveCurrentProjectMessage
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer.deserializeAndApply
@@ -35,9 +36,7 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
 
         val bridge = EOCVSimIpcEngineBridge(port)
 
-        app = PaperVisionApp(
-            bridge
-        ) { this.paperVisionUserCloseListener() }
+        app = PaperVisionApp(bridge, ::paperVisionUserCloseListener)
 
         app.paperVision.onUpdate.doOnce  {
             if (queryProject) {
@@ -47,6 +46,14 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
 
                         app.paperVision.onUpdate.doOnce {
                             deserializeAndApply(json, app.paperVision)
+
+                            app.paperVision.onUpdate.doOnce {
+                                app.paperVision.nodeEditor.onEditorChange {
+                                    app.paperVision.engineClient.sendMessage(EditorChangeMessage(
+                                        serializeToTree(app.paperVision.nodes.inmutable, app.paperVision.links.inmutable)
+                                    ))
+                                }
+                            }
                         }
                     }
                 })
@@ -60,34 +67,38 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
 
     private fun paperVisionUserCloseListener(): Boolean {
         app.paperVision.onUpdate.doOnce {
-            CloseConfirmWindow { action: CloseConfirmWindow.Action ->
-                when (action) {
-                    CloseConfirmWindow.Action.YES -> app.paperVision.engineClient.sendMessage(
-                        SaveCurrentProjectMessage(
-                            serializeToTree(
-                                app.paperVision.nodes.inmutable, app.paperVision.links.inmutable
-                            )
-                        ).onResponse(OnResponseCallback { response: PaperVisionEngineMessageResponse? ->
-                            if (response is OkResponse) {
-                                exitProcess(0)
-                            }
-                        })
-                    )
-
-                    CloseConfirmWindow.Action.NO -> app.paperVision.engineClient.sendMessage(
-                        DiscardCurrentRecoveryMessage().onResponse { response ->
-                            if (response is OkResponse) {
-                                exitProcess(0)
-                            }
-                        }
-                    )
-
-                    else -> {}
-                }
-            }.enable()
+            openCloseConfirmDialog()
         }
 
         return false
+    }
+
+    private fun openCloseConfirmDialog() {
+        CloseConfirmWindow { action: CloseConfirmWindow.Action ->
+            when (action) {
+                CloseConfirmWindow.Action.YES -> app.paperVision.engineClient.sendMessage(
+                    SaveCurrentProjectMessage(
+                        serializeToTree(
+                            app.paperVision.nodes.inmutable, app.paperVision.links.inmutable
+                        )
+                    ).onResponse(OnResponseCallback { response: PaperVisionEngineMessageResponse? ->
+                        if (response is OkResponse) {
+                            exitProcess(0)
+                        }
+                    })
+                )
+
+                CloseConfirmWindow.Action.NO -> app.paperVision.engineClient.sendMessage(
+                    DiscardCurrentRecoveryMessage().onResponse { response ->
+                        if (response is OkResponse) {
+                            exitProcess(0)
+                        }
+                    }
+                )
+
+                else -> {}
+            }
+        }.enable()
     }
 
     companion object {

@@ -146,7 +146,7 @@ class PaperVision(
 
         // initializing fonts right after the imgui context is created
         // we can't create fonts mid-frame so that's kind of a problem
-        defaultFont = fontManager.makeFont("/fonts/Calcutta-Regular.otf", 18f)
+        defaultFont = fontManager.makeFont("/fonts/Calcutta-SemiBold.otf", 18f)
         defaultImGuiFont = fontManager.makeDefaultFont(13f)
 
         nodeEditor.enable()
