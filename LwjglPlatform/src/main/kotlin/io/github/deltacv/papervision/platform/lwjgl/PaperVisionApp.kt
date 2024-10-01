@@ -34,22 +34,21 @@ class PaperVisionApp @JvmOverloads constructor(
 
     override fun initImGui(config: Configuration) {
         super.initImGui(config)
-
         paperVision.init()
     }
 
     private var hasProcessed = false
     private var prevKeyCallback: GLFWKeyCallback? = null
 
-    private fun callWindowCloseAction(): Boolean {
-        val shouldClose = windowCloseAction()
-
-        glfwSetWindowShouldClose(handle, shouldClose)
-        return shouldClose
-    }
-
-    // override this to handle windowCloseAction
+    // override to handle windowCloseAction
     override fun run() {
+        fun callWindowCloseAction(): Boolean {
+            val shouldClose = windowCloseAction()
+
+            glfwSetWindowShouldClose(handle, shouldClose)
+            return shouldClose
+        }
+
         while (!glfwWindowShouldClose(handle) || !callWindowCloseAction()) {
             runFrame()
         }
@@ -67,7 +66,6 @@ class PaperVisionApp @JvmOverloads constructor(
             // register a new key callback that will call the previous callback and handle some special keys
             prevKeyCallback = glfwSetKeyCallback(handle, ::keyCallback)
         }
-        glfwWindow.cachedSize = null
 
         paperVision.process()
     }

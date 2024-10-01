@@ -42,19 +42,13 @@ class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
     private val w = BufferUtils.createIntBuffer(1)
     private val h = BufferUtils.createIntBuffer(1)
 
-    internal var cachedSize: ImVec2? = null
-
     override val size: ImVec2
         get() {
-            if(cachedSize != null) return cachedSize!!
-
             (w as Buffer).position(0)
             (h as Buffer).position(0)
 
             glfwGetWindowSize(ptrSupplier(), w, h)
-
-            cachedSize = ImVec2(w.get(0).toFloat(), h.get(0).toFloat())
-            return cachedSize!!
+            return ImVec2(w.get(0).toFloat(), h.get(0).toFloat())
         }
 
     override var visible: Boolean
