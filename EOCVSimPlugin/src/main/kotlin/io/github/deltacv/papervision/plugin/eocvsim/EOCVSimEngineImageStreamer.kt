@@ -40,7 +40,9 @@ class EOCVSimEngineImageStreamer(
         if(image.empty()) return
 
         val scaledImg = matRecycler.takeMatOrNull()
-        scaledImg.release()
+
+        scaledImg.create(resolution, image.type())
+        scaledImg.setTo(Scalar(0.0, 0.0, 0.0))
 
         try {
             if (image.size() == resolution) { //nice, the mat size is the exact same as the video size
@@ -68,6 +70,7 @@ class EOCVSimEngineImageStreamer(
                     val yOffset = (resolution.height - newSize.height) / 2
 
                     val resizedImg = matRecycler.takeMatOrNull()
+                    resizedImg.create(newSize, image.type())
 
                     try {
                         Imgproc.resize(image, resizedImg, newSize, 0.0, 0.0, Imgproc.INTER_AREA)
@@ -103,6 +106,8 @@ class EOCVSimEngineImageStreamer(
             }
         }
 
+        // create a mask mat to check if the image has changed
+        // if it hasn't, we don't need to send it
         try {
             val latestToCurrentMaskMat = maskMatMap.getOrPut(id) { Mat() }
 
