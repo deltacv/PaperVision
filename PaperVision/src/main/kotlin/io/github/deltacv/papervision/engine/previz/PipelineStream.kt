@@ -28,6 +28,9 @@ class PipelineStream(
     var isStarted = false
         private set
 
+    var requestedMaximize = false
+        private set
+
     val tag = ByteMessageTag.fromString(sessionName)
 
     var offlineTexture: PlatformTexture? = null
@@ -83,5 +86,9 @@ class PipelineStream(
     fun textureOf(id: Int) = queue[id] ?: offlineTexture
 
     fun clear() = queue.clear()
+
+    fun maximize() {
+        requestedMaximize = true
+    }
 
 }

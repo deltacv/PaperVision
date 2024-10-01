@@ -124,8 +124,11 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         playButton.enable()
 
-        paperVision.previzManager.onPrevizStart {
+        paperVision.previzManager.onStreamChange {
             outputImageDisplay.pipelineStream = paperVision.previzManager.stream
+        }
+
+        paperVision.previzManager.onPrevizStart {
             val streamWindow = ImageDisplayWindow(outputImageDisplay)
             streamWindow.enable()
 
@@ -249,8 +252,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     fun startImageDisplayFor(attribute: Attribute): ImageDisplayNode {
         val window = ImageDisplayNode(ImageDisplay(paperVision.previzManager.stream))
-        paperVision.previzManager.onPrevizStart {
-            // automagically update the stream when the previz starts
+        paperVision.previzManager.onStreamChange {
+            // automagically update the stream of all windows
             window.imageDisplay.pipelineStream = paperVision.previzManager.stream
         }
 

@@ -39,6 +39,8 @@ class ClientPrevizManager(
     val onPrevizStart = PaperVisionEventHandler("ClientPrevizManager-OnPrevizStart")
     val onPrevizStop = PaperVisionEventHandler("ClientPrevizManager-OnPrevizStop")
 
+    val onStreamChange = PaperVisionEventHandler("ClientPrevizManager-OnStreamChange")
+
     val logger by loggerForThis()
 
     var previzRunning = false
@@ -71,19 +73,28 @@ class ClientPrevizManager(
 
                 onPrevizStart.run()
 
-                client.sendMessage(PrevizSetStreamResolutionMessage(
-                    previzName, previzStreamWidth, previzStreamHeight
-                ).onResponseWith<OkResponse> {
-                    client.onProcess.doOnce {
-                        stream = PipelineStream(
-                            previzName, client, textureProcessorQueue,
-                            width = previzStreamWidth, height = previzStreamHeight,
-                            offlineImages = offlineImages
-                        )
+                setStreamResolution()
+            }
+        })
+    }
 
-                        stream.start()
-                    }
-                })
+    private fun setStreamResolution(
+        previzName: String = this.previzName!!,
+        previzStreamWidth: Int = this.previzStreamWidth,
+        previzStreamHeight: Int = this.previzStreamHeight
+    ) {
+        client.sendMessage(PrevizSetStreamResolutionMessage(
+            previzName, previzStreamWidth, previzStreamHeight
+        ).onResponseWith<OkResponse> {
+            client.onProcess.doOnce {
+                stream = PipelineStream(
+                    previzName, client, textureProcessorQueue,
+                    width = previzStreamWidth, height = previzStreamHeight,
+                    offlineImages = offlineImages
+                )
+
+                stream.start()
+                onStreamChange.run()
             }
         })
     }
@@ -116,6 +127,13 @@ class ClientPrevizManager(
             }
 
             pingPongTimer.reset()
+        }
+
+        if(stream.requestedMaximize) {
+            setStreamResolution(
+                previzStreamWidth = stream.width * 2,
+                previzStreamHeight = stream.height * 2
+            )
         }
     }
 
