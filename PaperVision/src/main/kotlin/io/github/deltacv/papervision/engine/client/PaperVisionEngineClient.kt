@@ -7,7 +7,6 @@ import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
-import special.anonymous
 
 class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
     val logger by loggerForThis()
