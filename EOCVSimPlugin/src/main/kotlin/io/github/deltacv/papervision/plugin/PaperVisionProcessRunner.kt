@@ -46,12 +46,12 @@ object PaperVisionProcessRunner {
             val programParams = listOf("-q", "-p=${paperVisionEngine.server.port}")
 
             if(SysUtil.OS == SysUtil.OperatingSystem.MACOS) {
-                logger.info("Running on macOS, adding -XstartOnFirstThread flag")
+                logger.info("Running on macOS, adding platform-specific flags")
                 JavaProcess.execClasspath(
                     EOCVSimIpcPaperVisionMain::class.java,
                     SLF4JIOReceiver(logger),
                     classpath,
-                    listOf("-XstartOnFirstThread"),
+                    listOf("-XstartOnFirstThread", "Djava.awt.headless=true"),
                     programParams
                 )
             } else {

@@ -16,6 +16,10 @@ dependencies {
 task(runEv, dependsOn: 'classes', type: JavaExec) {
     main = 'io.github.deltacv.papervision.platform.lwjgl.AppMain'
     classpath = sourceSets.main.runtimeClasspath
+
+    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+        jvmArgs += ['-XstartOnFirstThread', '-Djava.awt.headless=true']
+    }
 }
 
 tasks.withType(Jar) {

@@ -188,18 +188,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     override fun onDisable() {
     }
 
-    private fun closePaperVision() {
-        paperVisionProjectManager.closeCurrentProject()
-
-        SwingUtilities.invokeLater {
-            eocvSim.visualizer.frame.isVisible = true
-        }
-
-        currentPrevizSession?.stopPreviz()
-        currentPrevizSession = null
-        changeToPaperVisionPipelineIfNecessary()
-    }
-
     private fun changeToPaperVisionPipelineIfNecessary() {
         val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
 
