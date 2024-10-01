@@ -7,6 +7,7 @@ import io.github.deltacv.papervision.engine.message.OnResponseCallback
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
 import io.github.deltacv.papervision.plugin.gui.CloseConfirmWindow
+import io.github.deltacv.papervision.plugin.gui.InputSourceWindow
 import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngineBridge
 import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMessage
 import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
@@ -58,6 +59,13 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
                     }
                 })
             }
+        }
+
+        app.paperVision.onInit.doOnce {
+            InputSourceWindow(
+                app.paperVision.fontManager.makeFont("/fonts/icons/Input-Sources.ttf", 13f),
+                app.paperVision.engineClient
+            ).enable()
         }
 
         Application.launch(app)

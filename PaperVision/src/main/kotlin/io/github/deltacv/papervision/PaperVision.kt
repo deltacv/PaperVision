@@ -79,6 +79,7 @@ class PaperVision(
     lateinit var textureFactory: PlatformTextureFactory
         private set
 
+    val onInit = PaperVisionEventHandler("PaperVision-OnInit")
     val onUpdate = PaperVisionEventHandler("PaperVision-OnUpdate")
 
     lateinit var textureProcessorQueue: TextureProcessorQueue
@@ -146,13 +147,15 @@ class PaperVision(
 
         // initializing fonts right after the imgui context is created
         // we can't create fonts mid-frame so that's kind of a problem
-        defaultFont = fontManager.makeFont("/fonts/Calcutta-SemiBold.otf", 18f)
-        defaultImGuiFont = fontManager.makeFont("/fonts/Calcutta-Regular.otf", 18f)
+        defaultFont = fontManager.makeFont("/fonts/Calcutta-SemiBold.otf", 20f)
+        defaultImGuiFont = fontManager.makeFont("/fonts/Calcutta-Regular.otf", 20f)
 
         nodeEditor.enable()
         langManager.loadIfNeeded()
 
         nodeList.enable()
+
+        onInit.run()
 
         IdElementContainerStack.threadStack.pop<Node<*>>()
         IdElementContainerStack.threadStack.pop<Attribute>()

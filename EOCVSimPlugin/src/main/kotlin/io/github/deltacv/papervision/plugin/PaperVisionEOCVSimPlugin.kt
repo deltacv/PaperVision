@@ -4,6 +4,7 @@ import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.qualcomm.robotcore.util.ElapsedTime
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
+import com.github.serivesmejia.eocvsim.input.SourceType;
 import io.github.deltacv.papervision.engine.LocalPaperVisionEngine
 import io.github.deltacv.papervision.engine.bridge.LocalPaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.message.*
@@ -16,6 +17,12 @@ import io.github.deltacv.papervision.plugin.eocvsim.PrevizSession
 import io.github.deltacv.papervision.plugin.gui.CloseConfirmWindow
 import io.github.deltacv.papervision.plugin.gui.eocvsim.PaperVisionTabPanel
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
+import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentInputSourceMessage
+import io.github.deltacv.papervision.plugin.ipc.message.GetInputSourcesMessage
+import io.github.deltacv.papervision.plugin.ipc.message.InputSourceData
+import io.github.deltacv.papervision.plugin.ipc.message.InputSourceType
+import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
+import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.replaceLast
@@ -105,6 +112,38 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             }
 
             respond(OkResponse())
+        }
+
+        engine.setMessageHandlerOf<GetInputSourcesMessage> {
+            eocvSim.onMainUpdate.doOnce {
+                respond(
+                    InputSourcesListResponse(
+                        eocvSim.inputSourceManager.sources.map {
+                            InputSourceData(
+                                it.key,
+                                when(eocvSim.inputSourceManager.getSourceType(it.key)) {
+                                    SourceType.CAMERA -> InputSourceType.CAMERA
+                                    SourceType.VIDEO -> InputSourceType.VIDEO
+                                    else -> InputSourceType.IMAGE
+                                }
+                            )
+                        }.toTypedArray()
+                    )
+                )
+            }
+        }
+
+        engine.setMessageHandlerOf<GetCurrentInputSourceMessage> {
+            eocvSim.onMainUpdate.doOnce {
+                respond(StringResponse(eocvSim.inputSourceManager.currentInputSource?.name ?: ""))
+            }
+        }
+
+        engine.setMessageHandlerOf<SetInputSourceMessage> {
+            eocvSim.onMainUpdate.doOnce {
+                eocvSim.inputSourceManager.requestSetInputSource(message.inputSource)
+                respond(OkResponse())
+            }
         }
 
         engine.setMessageHandlerOf<PrevizAskNameMessage> {
