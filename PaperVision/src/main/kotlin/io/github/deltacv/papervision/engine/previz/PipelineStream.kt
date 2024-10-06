@@ -36,6 +36,9 @@ class PipelineStream(
     var requestedMaximize = false
         private set
 
+    var requestedMinimize = false
+        private set
+
     val tag = ByteMessageTag.fromString(sessionName)
 
     var offlineTexture: PlatformTexture? = null
@@ -94,6 +97,10 @@ class PipelineStream(
 
     fun maximize() {
         requestedMaximize = true
+    }
+
+    fun minimize() {
+        requestedMinimize = true
     }
 
 }

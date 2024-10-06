@@ -15,4 +15,7 @@ interface PlatformKeys {
 
     val LeftControl: Int
     val RightControl: Int
+
+    val LeftSuper: Int
+    val RightSuper: Int
 }

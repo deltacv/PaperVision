@@ -86,7 +86,8 @@ class ClientPrevizManager(
     private fun setStreamResolution(
         previzName: String = this.previzName!!,
         previzStreamWidth: Int = this.previzStreamWidth,
-        previzStreamHeight: Int = this.previzStreamHeight
+        previzStreamHeight: Int = this.previzStreamHeight,
+        status: PipelineStream.Status = stream.status
     ) {
         client.sendMessage(PrevizSetStreamResolutionMessage(
             previzName, previzStreamWidth, previzStreamHeight
@@ -95,7 +96,8 @@ class ClientPrevizManager(
                 stream = PipelineStream(
                     previzName, client, textureProcessorQueue,
                     width = previzStreamWidth, height = previzStreamHeight,
-                    offlineImages = offlineImages
+                    offlineImages = offlineImages,
+                    status = status
                 )
 
                 stream.start()
@@ -142,7 +144,16 @@ class ClientPrevizManager(
         if(stream.requestedMaximize && previzName != null) {
             setStreamResolution(
                 previzStreamWidth = stream.width * 2,
-                previzStreamHeight = stream.height * 2
+                previzStreamHeight = stream.height * 2,
+                status = PipelineStream.Status.MAXIMIZED
+            )
+        }
+
+        if(stream.requestedMinimize && previzName != null) {
+            setStreamResolution(
+                previzStreamWidth = stream.width / 2,
+                previzStreamHeight = stream.height / 2,
+                status = PipelineStream.Status.MINIMIZED
             )
         }
     }

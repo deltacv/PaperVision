@@ -14,7 +14,11 @@ class ImageDisplay(
         pipelineStream.textureOf(id)?.draw()
 
         if (ImGui.isItemHovered() && ImGui.isMouseDoubleClicked(0)) {
-            pipelineStream.maximize()
+            if(pipelineStream.status == PipelineStream.Status.MINIMIZED) {
+                pipelineStream.maximize()
+            } else {
+                pipelineStream.minimize()
+            }
         }
     }
 }

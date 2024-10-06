@@ -2,6 +2,7 @@ package io.github.deltacv.papervision.gui.eocvsim
 
 import imgui.ImGui
 import imgui.flag.ImGuiWindowFlags
+import io.github.deltacv.papervision.engine.previz.PipelineStream
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.util.flags
 
@@ -19,8 +20,22 @@ class ImageDisplayWindow(
     override fun drawContents() {
         imageDisplay.drawStream()
 
-        if (ImGui.button("Maximize")) {
-            imageDisplay.pipelineStream.maximize()
+        val pipelineStream = imageDisplay.pipelineStream
+
+        val buttonText = if(pipelineStream.status == PipelineStream.Status.MINIMIZED) {
+            "Maximize"
+        } else {
+            "Minimize"
+        }
+
+        if (ImGui.button(buttonText)) {
+            if (ImGui.isItemHovered() && ImGui.isMouseDoubleClicked(0)) {
+                if(pipelineStream.status == PipelineStream.Status.MINIMIZED) {
+                    pipelineStream.maximize()
+                } else {
+                    pipelineStream.minimize()
+                }
+            }
         }
     }
 }

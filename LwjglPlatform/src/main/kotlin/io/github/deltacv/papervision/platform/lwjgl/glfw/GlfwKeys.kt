@@ -20,4 +20,7 @@ object GlfwKeys : PlatformKeys {
     override val LeftControl = glfwGetKeyScancode(GLFW_KEY_LEFT_CONTROL) //37
     override val RightControl = glfwGetKeyScancode(GLFW_KEY_RIGHT_SHIFT) //105
 
+    override val LeftSuper = glfwGetKeyScancode(GLFW_KEY_LEFT_SUPER) //133
+    override val RightSuper = glfwGetKeyScancode(GLFW_KEY_RIGHT_SUPER) //134
+
 }
