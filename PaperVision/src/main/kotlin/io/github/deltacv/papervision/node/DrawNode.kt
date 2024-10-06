@@ -12,8 +12,9 @@ import java.lang.IllegalArgumentException
 import java.util.concurrent.ArrayBlockingQueue
 
 abstract class DrawNode<S: CodeGenSession>(
-    allowDelete: Boolean = true
-) : Node<S>(allowDelete) {
+    allowDelete: Boolean = true,
+    joinActionStack: Boolean = true
+) : Node<S>(allowDelete, joinActionStack) {
 
     var nextNodePosition: ImVec2? = null
 

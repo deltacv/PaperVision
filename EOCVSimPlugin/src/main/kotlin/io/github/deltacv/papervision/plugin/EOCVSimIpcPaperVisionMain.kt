@@ -6,6 +6,8 @@ import io.github.deltacv.papervision.engine.client.response.OkResponse
 import io.github.deltacv.papervision.engine.message.OnResponseCallback
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
+import io.github.deltacv.papervision.platform.lwjgl.util.loadImageFromResource
+import io.github.deltacv.papervision.platform.lwjgl.util.toBufferedImage
 import io.github.deltacv.papervision.plugin.gui.CloseConfirmWindow
 import io.github.deltacv.papervision.plugin.gui.InputSourceWindow
 import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngineBridge
@@ -18,6 +20,7 @@ import io.github.deltacv.papervision.serialization.PaperVisionSerializer.seriali
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import picocli.CommandLine
+import java.awt.Taskbar
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 

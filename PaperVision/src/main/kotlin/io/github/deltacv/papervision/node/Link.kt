@@ -24,12 +24,18 @@ class Link(
 
     constructor(data: LinkSerializationData) : this(data.from, data.to)
 
+    fun getOtherAttribute(me: Attribute) = if(me == aAttrib) bAttrib else aAttrib
+
     override fun draw() {
         if(aAttrib?.links?.contains(this) == false)
             aAttrib?.links?.add(this)
-
         if(bAttrib?.links?.contains(this) == false)
             bAttrib?.links?.add(this)
+
+        if(aAttrib == null || bAttrib == null) {
+            delete()
+            return
+        }
 
         val typedAttrib = when {
             aAttrib is TypedAttribute -> aAttrib as TypedAttribute
@@ -56,19 +62,12 @@ class Link(
     }
 
     override fun delete() {
-        aAttrib?.links?.remove(this)
-        bAttrib?.links?.remove(this)
-
         idElementContainer.removeId(id)
         triggerOnChange()
     }
 
     override fun restore() {
         idElementContainer[id] = this
-
-        aAttrib?.links?.add(this)
-        bAttrib?.links?.add(this)
-
         triggerOnChange()
     }
 

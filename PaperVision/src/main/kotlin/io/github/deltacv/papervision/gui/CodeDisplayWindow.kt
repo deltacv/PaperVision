@@ -12,7 +12,8 @@ import java.awt.datatransfer.StringSelection
 
 class CodeDisplayWindow(
     val code: String,
-    val language: TextEditorLanguageDefinition
+    val language: TextEditorLanguageDefinition,
+    val codeFont: Font? = null
 ) : Window() {
     override var title = "Code"
 
@@ -20,7 +21,8 @@ class CodeDisplayWindow(
         ImGuiWindowFlags.NoResize,
         ImGuiWindowFlags.NoCollapse,
         ImGuiWindowFlags.NoMove,
-        ImGuiWindowFlags.HorizontalScrollbar
+        ImGuiWindowFlags.NoScrollbar,
+        ImGuiWindowFlags.NoScrollWithMouse
     )
 
     override val isModal = true
@@ -39,9 +41,22 @@ class CodeDisplayWindow(
     }
 
     override fun drawContents() {
-        EDITOR.render("Code")
+        codeFont?.let {
+            ImGui.pushFont(it.imfont)
+        }
 
-        ImGui.newLine()
+        ImGui.beginChild(
+            "${titleId}Child###$id", ImVec2(size.x, size.y * 0.85f),
+            false, flags(ImGuiWindowFlags.HorizontalScrollbar)
+        )
+
+        EDITOR.render("${titleId}Code###$id")
+
+        ImGui.endChild()
+
+        codeFont?.let {
+            ImGui.popFont()
+        }
 
         if(ImGui.button("Copy Code")) {
             Toolkit.getDefaultToolkit().systemClipboard.setContents(

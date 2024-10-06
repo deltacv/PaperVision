@@ -29,6 +29,11 @@ abstract class DrawableIdElementBase<T : DrawableIdElementBase<T>> : DrawableIdE
 
     abstract val idElementContainer: IdElementContainer<T>
 
+    var hasEnabled = false
+        private set
+
+    val isEnabled get() = idElementContainer.has(id, this as T)
+
     open val requestedId: Int? = null
 
     private var internalId: Int? = null
@@ -44,8 +49,8 @@ abstract class DrawableIdElementBase<T : DrawableIdElementBase<T>> : DrawableIdE
     override fun enable() {
         if(internalId == null || !idElementContainer.has(id, this as T)) {
             internalId = provideId()
-
             onEnable()
+            hasEnabled = true
         }
     }
 

@@ -22,7 +22,8 @@ interface Type {
 }
 
 abstract class Node<S: CodeGenSession>(
-    private var allowDelete: Boolean = true
+    private var allowDelete: Boolean = true,
+    val joinActionStack: Boolean = true
 ) : DrawableIdElementBase<Node<*>>(), GenNode<S>, DataSerializable<NodeSerializationData> {
 
     override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Node<*>>()
@@ -57,6 +58,7 @@ abstract class Node<S: CodeGenSession>(
 
     protected fun drawAttributes() {
         for((i, attribute) in nodeAttributes.withIndex()) {
+            attribute.parentNode = this
             attribute.draw()
 
             if(i < nodeAttributes.size - 1 && !attribute.wasLastDrawCancelled) {
@@ -73,12 +75,7 @@ abstract class Node<S: CodeGenSession>(
 
     fun forceDelete() {
         for (attribute in nodeAttributes.toTypedArray()) {
-            for(link in attribute.links.toTypedArray()) {
-                link.delete()
-            }
-
             attribute.delete()
-            attribs.remove(attribute)
         }
 
         idElementContainer.removeId(id)
@@ -93,12 +90,7 @@ abstract class Node<S: CodeGenSession>(
 
     fun forceRestore() {
         for (attribute in nodeAttributes.toTypedArray()) {
-            for(link in attribute.links.toTypedArray()) {
-                link.restore()
-            }
-
             attribute.restore()
-            attribs.add(attribute)
         }
 
         idElementContainer[id] = this
@@ -127,13 +119,12 @@ abstract class Node<S: CodeGenSession>(
     }
 
     fun hasDeadEnd(initialNode: Node<*> = this): Boolean {
-        nodeAttributesLoop@
         for(attribute in nodeAttributes) {
             if(attribute.mode == AttributeMode.INPUT) {
                 continue
             }
 
-            for(linkedAttribute in attribute.linkedAttributes()) {
+            for(linkedAttribute in attribute.enabledLinkedAttributes()) {
                if(linkedAttribute != null) {
                    if(linkedAttribute.mode == AttributeMode.OUTPUT || linkedAttribute.parentNode == initialNode) {
                        continue // uh oh
@@ -154,7 +145,7 @@ abstract class Node<S: CodeGenSession>(
 
         for(attribute in attribs) {
             if(attribute.mode == AttributeMode.OUTPUT) {
-                for(linkedAttribute in attribute.linkedAttributes()) {
+                for(linkedAttribute in attribute.enabledLinkedAttributes()) {
                     if(linkedAttribute != null && !linkedNodes.contains(linkedAttribute.parentNode)) {
                         linkedNodes.add(linkedAttribute.parentNode)
                     }
@@ -200,7 +191,7 @@ abstract class Node<S: CodeGenSession>(
         data.id = id
 
         val pos = ImVec2()
-        ImNodes.getNodeEditorSpacePos(id)
+        ImNodes.getNodeEditorSpacePos(id) // TODO: Fix this to get the actual position when SpaiR decides to merge my PR...
         data.nodePos = pos
 
         return data

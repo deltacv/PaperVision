@@ -5,6 +5,9 @@ import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 
 object NoOpPaperVisionEngineBridge : PaperVisionEngineBridge {
+    override val isConnected: Boolean
+        get() = false
+
     override fun connectClient(client: PaperVisionEngineClient) {
         // No-op
     }

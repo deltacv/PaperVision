@@ -17,6 +17,9 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
 
     private var wsClient = WsClient(port, this)
 
+    override val isConnected: Boolean
+        get() = wsClient.isOpen
+
     @Synchronized
     override fun connectClient(client: PaperVisionEngineClient) {
         clients.add(client)

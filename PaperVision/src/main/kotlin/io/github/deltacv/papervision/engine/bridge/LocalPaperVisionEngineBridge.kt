@@ -11,6 +11,9 @@ class LocalPaperVisionEngineBridge(
 
     private val clients = mutableListOf<PaperVisionEngineClient>()
 
+    override val isConnected: Boolean
+        get() = true
+
     init {
         paperVisionEngine.bridge = this
     }

@@ -37,7 +37,7 @@ class BooleanAttribute(
     override fun value(current: CodeGen.Current): GenValue.Boolean {
         if(isInput) {
             if(hasLink) {
-                val linkedAttrib = linkedAttribute()
+                val linkedAttrib = enabledLinkedAttribute()
 
                 raiseAssert(
                     linkedAttrib != null,

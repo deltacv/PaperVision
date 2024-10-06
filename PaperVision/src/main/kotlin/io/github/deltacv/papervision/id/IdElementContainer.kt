@@ -1,5 +1,7 @@
 package io.github.deltacv.papervision.id
 
+import kotlin.math.max
+
 class IdElementContainer<T : IdElement> : Iterable<T> {
 
     private val e = ArrayList<T?>()
@@ -10,6 +12,21 @@ class IdElementContainer<T : IdElement> : Iterable<T> {
     var elements = ArrayList<T>()
         private set
 
+    /**
+     * Points to an element in the container.
+     * This pointer is used by all the stack operation functions.
+     * To get the element pointed by the stackPointer, use [peek].
+     *
+     * While the container is zero-based as normal, the stack pointer is one-based.
+     * This means that the first element in the container is at index 0, but the stack pointer is at 1.
+     */
+    var stackPointer: Int = 1
+
+    var stackPointerFollowing = true
+        private set
+
+    val size get() = e.size
+
     @Suppress("UNCHECKED_CAST")
     var inmutable: List<T> = elements.clone() as List<T>
         private set
@@ -17,6 +34,12 @@ class IdElementContainer<T : IdElement> : Iterable<T> {
     @Suppress("UNCHECKED_CAST")
     private fun reallocateArray() {
         inmutable = elements.clone() as List<T>
+    }
+
+    private fun movePointerToLast() {
+        if(stackPointerFollowing) {
+            stackPointer = e.size
+        }
     }
 
     fun requestId(element: T, id: Int) = lazy {
@@ -29,6 +52,7 @@ class IdElementContainer<T : IdElement> : Iterable<T> {
         }
 
         e[id] = element
+        movePointerToLast()
 
         elements.add(element)
         reallocateArray()
@@ -46,6 +70,7 @@ class IdElementContainer<T : IdElement> : Iterable<T> {
         }
 
         e.add(id, null)
+        movePointerToLast()
 
         reallocateArray()
 
@@ -65,13 +90,17 @@ class IdElementContainer<T : IdElement> : Iterable<T> {
 
         elements.add(element)
         reallocateArray()
+        movePointerToLast()
 
         e.lastIndexOf(element)
     }
 
     fun nextId() = lazy {
         e.add(null)
+
         reallocateArray()
+        movePointerToLast()
+
         e.lastIndexOf(null)
     }
 
@@ -89,14 +118,72 @@ class IdElementContainer<T : IdElement> : Iterable<T> {
         return e[id]
     }
 
-    operator fun set(id: Int, element: T) {
-        e[id] = element
+    /**
+     * Peeks the element at the current stack pointer.
+     * @return the element at the current stack pointer
+     */
+    fun peek() = e.getOrNull(stackPointer - 1)
 
-        if(!elements.contains(element)) {
-            elements.add(element)
+    /**
+     * Pushes the stack pointer forward by one if the element at the current pointer is not null.
+     */
+    fun pushforwardIfNonNull() {
+        if(e.getOrNull(stackPointer) != null) {
+            stackPointer += 1
 
-            reallocateArray()
+            // if we have pushforward to the end of the list, set it to follow
+            if(stackPointer == e.size) {
+                stackPointerFollowing = true
+            }
         }
+    }
+
+    /**
+     * Peeks the element at the current stack pointer and pushes the pointer back by one
+     * only if the element at the current pointer found by [peek] is not null.
+     * @return the element at the current stack pointer
+     */
+    fun peekAndPushback() = peek()?.also {
+        stackPointer = max(stackPointer - 1, 1)
+        stackPointerFollowing = false
+    }
+
+    /**
+     * Pops the element at the current stack pointer.
+     * May cause issues if the stackPointer is not
+     * following the end of the list.
+     */
+    fun pop() = removeId(max(stackPointer - 1, 0))
+
+    /**
+     * Forks the container, creating a new container with the same elements
+     * up to the current stack pointer, discarding everything after the pointer
+     * This function does nothing if the stack pointer is at the end of the list.
+     */
+    fun fork() {
+        if(stackPointer == e.size) return
+
+        val newE = ArrayList<T?>()
+
+        // Copy all elements up to the current pointer, excluding everything after
+        for(i in 0 until stackPointer) {
+            newE.add(e[i])
+        }
+
+        e.clear()
+        e.addAll(newE)
+
+        // recreate elements
+        elements.clear()
+        elements.addAll(e.filterNotNull())
+
+        reallocateArray()
+
+        stackPointerFollowing = true
+    }
+
+    operator fun set(id: Int, element: T) {
+        requestId(element, id).value
     }
 
     fun clear() {

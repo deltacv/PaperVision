@@ -16,7 +16,7 @@ class CodeGenManager(val paperVision: PaperVision) {
         name: String,
         language: Language = JavaLanguage,
         isForPreviz: Boolean = false
-    ): String {
+    ): String? {
         for(popup in IdElementContainerStack.threadStack.peekNonNull<Popup>().inmutable) {
             if(popup.label == "Gen-Error") {
                 popup.delete()
@@ -38,7 +38,7 @@ class CodeGenManager(val paperVision: PaperVision) {
 
             Popup(attrEx.message, attrEx.attribute.position, 8.0, label = "Gen-Error").enable()
             logger.warn("Code gen stopped due to attribute exception", attrEx)
-            return ""
+            return null
         }
 
         codeGen.stage = CodeGen.Stage.PRE_END

@@ -19,9 +19,14 @@ class PipelineStream(
     val queue: TextureProcessorQueue,
     val width: Int = 160,
     val height: Int = 120,
+    val status: Status = Status.MINIMIZED,
     offlineImages: Array<BufferedImage>? = null,
     offlineImagesFps: Double = 1.0
 ) {
+
+    enum class Status {
+        MINIMIZED, MAXIMIZED
+    }
     
     val logger by loggerForThis()
 
@@ -56,7 +61,7 @@ class PipelineStream(
                         img = img.scaleToFit(width, height)
                     }
 
-                    textures.add(queue.textureFactory.create(width, height, img.bytes(), ColorSpace.BGR))
+                    textures.add(queue.textureFactory.create(width, height, img.bytes(), ColorSpace.RGB))
                 }
 
                 offlineTexture = TimedTextureAnimation(offlineImagesFps, textures.toTypedArray()).apply {

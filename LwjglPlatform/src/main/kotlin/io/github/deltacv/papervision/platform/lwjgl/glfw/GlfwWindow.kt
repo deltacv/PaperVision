@@ -3,10 +3,12 @@ package io.github.deltacv.papervision.platform.lwjgl.glfw
 import imgui.ImVec2
 import io.github.deltacv.papervision.platform.lwjgl.util.loadImageFromResource
 import io.github.deltacv.papervision.platform.PlatformWindow
+import io.github.deltacv.papervision.platform.lwjgl.util.toBufferedImage
 import org.lwjgl.BufferUtils
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWImage
 import org.lwjgl.stb.STBImage.stbi_image_free
+import java.awt.Taskbar
 import java.nio.Buffer
 
 class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
@@ -23,6 +25,10 @@ class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
             if(isMac) return // "Cocoa: Regular windows do not have icons on macOS"
 
             val image = loadImageFromResource(value)
+
+            if(Taskbar.isTaskbarSupported() && Taskbar.getTaskbar().isSupported(Taskbar.Feature.ICON_IMAGE)) {
+                Taskbar.getTaskbar().iconImage = image.toBufferedImage()
+            }
 
             GLFWImage.malloc(1).use {
                 it.position(0)

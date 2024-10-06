@@ -56,7 +56,7 @@ class EnumAttribute<T: Enum<T>>(
 
         if(isInput) {
             if(hasLink) {
-                val linkedAttrib = linkedAttribute()
+                val linkedAttrib = enabledLinkedAttribute()
 
                 raiseAssert(
                     linkedAttrib != null,

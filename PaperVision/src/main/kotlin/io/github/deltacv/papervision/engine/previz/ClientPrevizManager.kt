@@ -58,8 +58,13 @@ class ClientPrevizManager(
         startPreviz(previzName, codeGenManager.build(previzName, language, true))
     }
 
-    fun startPreviz(previzName: String, sourceCode: String) {
+    fun startPreviz(previzName: String, sourceCode: String?) {
         this.previzName = previzName
+
+        if(sourceCode == null) {
+            logger.warn("Failed to start previz session $previzName, source code is null (probably due to code gen error)")
+            return
+        }
 
         logger.info("Starting previz session $previzName")
 
@@ -103,7 +108,12 @@ class ClientPrevizManager(
         refreshPreviz(codeGenManager.build(it, JavaLanguage, true))
     }
 
-    fun refreshPreviz(sourceCode: String) {
+    fun refreshPreviz(sourceCode: String?) {
+        if(sourceCode == null) {
+            logger.warn("Failed to refresh previz session $previzName, source code is null (probably due to code gen error)")
+            return
+        }
+
         if(previzRunning)
             client.sendMessage(PrevizSourceCodeMessage(previzName!!, sourceCode))
     }
@@ -129,7 +139,7 @@ class ClientPrevizManager(
             pingPongTimer.reset()
         }
 
-        if(stream.requestedMaximize) {
+        if(stream.requestedMaximize && previzName != null) {
             setStreamResolution(
                 previzStreamWidth = stream.width * 2,
                 previzStreamHeight = stream.height * 2

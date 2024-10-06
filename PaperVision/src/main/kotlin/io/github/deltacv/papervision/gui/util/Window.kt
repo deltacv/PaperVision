@@ -14,6 +14,9 @@ abstract class Window(
 
     override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Window>()
 
+    var isVisible: Boolean = false
+        private set
+
     abstract var title: String
     abstract val windowFlags: Int
 
@@ -50,6 +53,8 @@ abstract class Window(
         }
         get() = realFocus
 
+    val titleId get() = "${tr(title)}###$id"
+
     private var firstDraw = true
 
     override fun enable() {
@@ -73,17 +78,21 @@ abstract class Window(
 
         if(isModal) {
             if(firstDraw)
-                ImGui.openPopup("${tr(title)}###$id")
+                ImGui.openPopup(titleId)
 
-            if(ImGui.beginPopupModal("${tr(title)}###$id", modalPOpen, windowFlags)) {
+            if(ImGui.beginPopupModal(titleId, modalPOpen, windowFlags)) {
                 contents()
                 ImGui.endPopup()
             }
+
+            isVisible = modalPOpen.get()
         } else {
-            if(ImGui.begin("${tr(title)}###$id", windowFlags)) {
+            if(ImGui.begin(titleId, windowFlags)) {
                 contents()
                 ImGui.end()
             }
+
+            isVisible = ImGui.isItemVisible()
         }
 
         firstDraw = false

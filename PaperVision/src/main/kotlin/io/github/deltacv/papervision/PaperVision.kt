@@ -24,6 +24,7 @@ package io.github.deltacv.papervision
 
 import imgui.ImGui
 import imgui.flag.ImGuiCond
+import imgui.flag.ImGuiKey
 import io.github.deltacv.mai18n.Language
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.CodeGenManager
@@ -33,6 +34,8 @@ import io.github.deltacv.papervision.engine.client.message.PrevizAskNameMessage
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
 import io.github.deltacv.papervision.gui.*
+import io.github.deltacv.papervision.action.Action
+import io.github.deltacv.papervision.action.RootAction
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
@@ -102,10 +105,13 @@ class PaperVision(
     val windows = IdElementContainer<Window>()
     val textures = IdElementContainer<PlatformTexture>()
     val streamDisplays = IdElementContainer<ImageDisplay>()
+    val actions = IdElementContainer<Action>()
 
     val popups = IdElementContainer<Popup>().apply {
         reserveId(WARN)
     }
+
+    val isModalWindowOpen get() = windows.inmutable.find { it.isModal && it.isVisible } != null
 
     lateinit var engineClient: PaperVisionEngineClient
 
@@ -113,6 +119,9 @@ class PaperVision(
         private set
 
     lateinit var defaultFont: Font
+        private set
+
+    lateinit var codeFont: Font
         private set
 
     fun init() {
@@ -123,6 +132,7 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(popups)
         IdElementContainerStack.threadStack.push(textures)
         IdElementContainerStack.threadStack.push(streamDisplays)
+        IdElementContainerStack.threadStack.push(actions)
 
         logger.info("Starting PaperVision...")
 
@@ -148,12 +158,15 @@ class PaperVision(
         // initializing fonts right after the imgui context is created
         // we can't create fonts mid-frame so that's kind of a problem
         defaultFont = fontManager.makeFont("/fonts/Calcutta-SemiBold.otf", 20f)
-        defaultImGuiFont = fontManager.makeFont("/fonts/Calcutta-Regular.otf", 20f)
+        codeFont = fontManager.makeFont("/fonts/JetBrainsMono-Regular.ttf", 28f)
+        defaultImGuiFont = fontManager.makeDefaultFont(20f)
 
         nodeEditor.enable()
         langManager.loadIfNeeded()
 
         nodeList.enable()
+
+        RootAction().enable()
 
         onInit.run()
 
@@ -164,6 +177,7 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<Popup>()
         IdElementContainerStack.threadStack.pop<PlatformTexture>()
         IdElementContainerStack.threadStack.pop<ImageDisplay>()
+        IdElementContainerStack.threadStack.pop<Action>()
 
         logger.info("PaperVision started")
     }
@@ -181,6 +195,20 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(popups)
         IdElementContainerStack.threadStack.push(textures)
         IdElementContainerStack.threadStack.push(streamDisplays)
+        IdElementContainerStack.threadStack.push(actions)
+
+        if(keyManager.pressing(keyManager.keys.LeftControl)) {
+            if(ImGui.isKeyPressed(ImGuiKey.Z)) {
+                logger.info("Undo, stack; size: ${actions.size}, pointer: ${actions.stackPointer}, peek: ${actions.peek()}")
+
+                actions.peekAndPushback()?.undo()
+            } else if(ImGui.isKeyPressed(ImGuiKey.Y)) {
+                logger.info("redo, stack; size: ${actions.size}, pointer: ${actions.stackPointer}, peek: ${actions.peek()}")
+
+                actions.pushforwardIfNonNull()
+                actions.peek()?.execute()
+            }
+        }
 
         onUpdate.run()
 
@@ -213,6 +241,7 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<Popup>()
         IdElementContainerStack.threadStack.pop<PlatformTexture>()
         IdElementContainerStack.threadStack.pop<ImageDisplay>()
+        IdElementContainerStack.threadStack.pop<Action>()
     }
 
     fun destroy() {

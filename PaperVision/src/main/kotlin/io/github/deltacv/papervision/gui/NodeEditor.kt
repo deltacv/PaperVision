@@ -3,12 +3,15 @@ package io.github.deltacv.papervision.gui
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
-import imgui.extension.imnodes.ImNodesContext
 import imgui.extension.texteditor.TextEditorLanguageDefinition
 import imgui.flag.ImGuiMouseButton
 import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImInt
 import io.github.deltacv.papervision.PaperVision
+import io.github.deltacv.papervision.action.editor.CreateNodeAction
+import io.github.deltacv.papervision.action.editor.DeleteNodesAction
+import io.github.deltacv.papervision.action.editor.CreateLinkAction
+import io.github.deltacv.papervision.action.editor.DeleteLinksAction
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -28,6 +31,7 @@ import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
+import io.github.deltacv.papervision.util.loggerForThis
 
 class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManager) : Window() {
     companion object {
@@ -156,7 +160,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                 onEditorChange.run()
             }
         }
-        for (link in links) {
+        for (link in links.inmutable) {
             link.draw()
             if(link.pollChange()) {
                 onEditorChange.run()
@@ -177,7 +181,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             rightClickedWhileHoveringNode = ImGui.isMouseClicked(ImGuiMouseButton.Right) && !isFreeToMove
         }
 
-        if (paperVision.nodeList.isNodesListOpen) {
+        if (paperVision.nodeList.isNodesListOpen || paperVision.isModalWindowOpen) {
             ImNodes.clearLinkSelection()
             ImNodes.clearNodeSelection()
         } else if (
@@ -245,8 +249,14 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     fun addNode(nodeClazz: Class<out Node<*>>): Node<*> {
         val instance = instantiateNode(nodeClazz)
+        val action = CreateNodeAction(instance)
 
-        instance.enable()
+        if(instance.joinActionStack){
+            action.enable()
+        } else {
+            action.execute()
+        }
+
         return instance
     }
 
@@ -264,10 +274,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             window.delete()
         }
 
-        val link = Link(attribute.id, window.inputId, false, shouldSerialize = false)
+        val link = Link(attribute.id, window.input.id, false, shouldSerialize = false)
         link.enable()
-
-        window.onDelete.doOnce { link.delete() }
 
         return window
     }
@@ -286,7 +294,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             // one of the attributes was null so we can't perform additional checks to ensure stuff
             // we will just go ahead and create the link hoping nothing breaks lol
             if (startAttrib == null || endAttrib == null) {
-                Link(start, end).enable() // create the link and enable it
+                CreateLinkAction(Link(start, end)).enable() // create the link and enable it
                 return
             }
 
@@ -314,7 +322,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             }
 
             val link = Link(start, end)
-            link.enable() // create the link and enable it
+            CreateLinkAction(link).enable()
 
             if (Node.checkRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
                 Popup.warning("err_couldntlink_recursion")
@@ -343,23 +351,37 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                 val selectedNodes = IntArray(ImNodes.numSelectedNodes())
                 ImNodes.getSelectedNodes(selectedNodes)
 
+                val nodesToDelete = mutableListOf<Node<*>>()
+
                 for (node in selectedNodes) {
                     try {
-                        nodes[node]?.delete()
-                    } catch (ignored: IndexOutOfBoundsException) { }
+                        val node = nodes[node]!!
+
+                        if(node.joinActionStack) {
+                            nodesToDelete.add(node)
+                        } else {
+                            node.delete()
+                        }
+                    } catch (_: Exception) { }
                 }
+
+                DeleteNodesAction(nodesToDelete).enable()
             }
 
             if (ImNodes.numSelectedLinks() > 0) {
                 val selectedLinks = IntArray(ImNodes.numSelectedLinks())
                 ImNodes.getSelectedLinks(selectedLinks)
 
+                val linksToDelete = mutableListOf<Link>()
+
                 for (link in selectedLinks) {
                     links[link]?.run {
                         if(isDestroyableByUser)
-                            delete()
+                            linksToDelete.add(this)
                     }
                 }
+
+                DeleteLinksAction(linksToDelete).enable()
             }
         }
     }
@@ -384,6 +406,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         val sourceFont = paperVision.fontManager.makeFont("/fonts/icons/Source.ttf", NodeList.plusFontSize * 0.65f)
 
+        val logger by loggerForThis()
+
         override fun preDrawContents() {
             position = ImVec2(
                 floatingButtonSupplier().position.x - NodeList.plusFontSize * 1.5f,
@@ -391,21 +415,37 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             )
         }
 
+        private fun openSourceCodeWindow(code: String?) {
+            if(code == null) {
+                logger.warn("Code generation failed, cancelled opening source code window")
+                return
+            }
+
+            CodeDisplayWindow(
+                code,
+                TextEditorLanguageDefinition.CPlusPlus(),
+                paperVision.codeFont
+            ).apply {
+                enable()
+                size = ImVec2(nodeEditorSizeSupplier().x * 0.8f, nodeEditorSizeSupplier().y * 0.8f)
+            }
+        }
+
         override fun drawContents() {
             ImGui.pushFont(sourceFont.imfont)
 
             if(ImGui.button("S", floatingButtonSupplier().frameWidth, floatingButtonSupplier().frameWidth)) {
-                paperVision.engineClient.sendMessage(AskProjectGenClassName().onResponseWith<StringResponse> { response ->
-                    paperVision.onUpdate.doOnce {
-                        CodeDisplayWindow(
-                            paperVision.codeGenManager.build(response.value, JavaLanguage),
-                            TextEditorLanguageDefinition.CPlusPlus()
-                        ).apply {
-                            enable()
-                            size = ImVec2(nodeEditorSizeSupplier().x * 0.8f, nodeEditorSizeSupplier().y * 0.8f)
+                if(paperVision.engineClient.bridge.isConnected) {
+                    paperVision.engineClient.sendMessage(AskProjectGenClassName().onResponseWith<StringResponse> { response ->
+                        paperVision.onUpdate.doOnce {
+                            openSourceCodeWindow(paperVision.codeGenManager.build(response.value, JavaLanguage))
                         }
+                    })
+                } else {
+                    paperVision.onUpdate.doOnce {
+                        openSourceCodeWindow(paperVision.codeGenManager.build("Mack", JavaLanguage))
                     }
-                })
+                }
             }
 
             ImGui.popFont()

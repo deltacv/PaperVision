@@ -153,7 +153,7 @@ open class ListAttribute(
     override fun value(current: CodeGen.Current): GenValue.GList {
         return if (mode == AttributeMode.INPUT) {
             if (hasLink) {
-                val linkedAttrib = linkedAttribute()
+                val linkedAttrib = enabledLinkedAttribute()
 
                 raiseAssert(
                     linkedAttrib != null,

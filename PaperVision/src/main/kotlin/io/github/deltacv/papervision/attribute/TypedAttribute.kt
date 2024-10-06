@@ -139,7 +139,7 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
     ): T {
         if(isInput) {
             return if(hasLink || inputFieldValue == null) {
-                val linkedAttrib = linkedAttribute()
+                val linkedAttrib = enabledLinkedAttribute()
 
                 raiseAssert(
                     linkedAttrib != null,

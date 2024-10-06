@@ -6,6 +6,7 @@ import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.exception.AttributeGenException
+import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.node.Link
@@ -20,6 +21,19 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 enum class AttributeMode { INPUT, OUTPUT }
+
+class EmptyInputAttribute : Attribute() {
+    override val mode = AttributeMode.INPUT
+
+    override fun drawAttribute() {
+    }
+
+    override fun acceptLink(other: Attribute) = true
+
+    override fun value(current: CodeGen.Current): GenValue {
+        TODO("Not yet implemented")
+    }
+}
 
 abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<AttributeSerializationData> {
 
@@ -36,7 +50,9 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         internal set
 
     val links = mutableListOf<Link>()
-    val hasLink get() = links.isNotEmpty()
+    val enabledLinks get() = links.filter { it.isEnabled }
+
+    val hasLink get() = enabledLinks.isNotEmpty()
 
     val isInput by lazy { mode == AttributeMode.INPUT }
     val isOutput by lazy { !isInput }
@@ -115,17 +131,21 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         onDelete.run()
         idElementContainer.removeId(id)
 
-        for(link in links.toTypedArray()) {
+        for(link in enabledLinks.toTypedArray()) {
             link.delete()
-            links.remove(link)
         }
     }
 
     override fun restore() {
         idElementContainer[id] = this
+
+        for(link in links.toTypedArray()) {
+            if(link.getOtherAttribute(this)?.isEnabled == true)
+                link.restore()
+        }
     }
 
-    fun linkedAttribute(): Attribute? {
+    fun enabledLinkedAttribute(): Attribute? {
         if(!isInput) {
             raise("Output attributes might have more than one link, so linkedAttribute() is not allowed")
         }
@@ -134,7 +154,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
             return null
         }
 
-        val link = links[0]
+        val link = enabledLinks[0]
 
         return if(link.aAttrib == this) {
             link.bAttrib
@@ -142,6 +162,12 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     }
 
     fun linkedAttributes() = links.map {
+        if(it.aAttrib == this) {
+            it.bAttrib
+        } else it.aAttrib
+    }
+
+    fun enabledLinkedAttributes() = enabledLinks.map {
         if(it.aAttrib == this) {
             it.bAttrib
         } else it.aAttrib
@@ -179,7 +205,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
     fun get(): Any? = when {
         mode == AttributeMode.INPUT -> thisGet()
-        hasLink -> linkedAttribute()!!.get()
+        hasLink -> enabledLinkedAttribute()!!.get()
         else -> (getThisSupplier ?: throw IllegalStateException("This attribute can't return a get() value")).invoke()
     }
 
