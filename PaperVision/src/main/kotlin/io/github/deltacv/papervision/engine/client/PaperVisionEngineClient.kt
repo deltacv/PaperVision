@@ -49,6 +49,10 @@ class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
         byteMessageHandlers[tag] = handler
     }
 
+    fun clearByteMessageHandlerOf(tag: ByteMessageTag) {
+        byteMessageHandlers.remove(tag)
+    }
+
     fun process() {
         val binaryMessages = synchronized(bytesQueue) {
             bytesQueue.toTypedArray()

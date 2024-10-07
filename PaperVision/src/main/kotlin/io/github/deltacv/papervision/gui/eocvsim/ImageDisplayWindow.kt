@@ -29,12 +29,10 @@ class ImageDisplayWindow(
         }
 
         if (ImGui.button(buttonText)) {
-            if (ImGui.isItemHovered() && ImGui.isMouseDoubleClicked(0)) {
-                if(pipelineStream.status == PipelineStream.Status.MINIMIZED) {
-                    pipelineStream.maximize()
-                } else {
-                    pipelineStream.minimize()
-                }
+            if(pipelineStream.status == PipelineStream.Status.MINIMIZED) {
+                pipelineStream.maximize()
+            } else {
+                pipelineStream.minimize()
             }
         }
     }

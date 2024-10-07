@@ -33,11 +33,9 @@ class PipelineStream(
     var isStarted = false
         private set
 
-    var requestedMaximize = false
-        private set
+    private var requestedMaximize = false
 
-    var requestedMinimize = false
-        private set
+    private var requestedMinimize = false
 
     val tag = ByteMessageTag.fromString(sessionName)
 
@@ -84,14 +82,18 @@ class PipelineStream(
             queue.offer(id, width, height, ByteBuffer.wrap(message))
         }
 
-        isStarted = false
+        isStarted = true
     }
 
     fun stop() {
         isStarted = false
+        engineClient.clearByteMessageHandlerOf(tag)
+        clear()
     }
 
-    fun textureOf(id: Int) = queue[id] ?: offlineTexture
+    fun textureOf(id: Int) = if(isStarted)
+        queue[id] ?: offlineTexture
+    else offlineTexture
 
     fun clear() = queue.clear()
 
@@ -102,5 +104,8 @@ class PipelineStream(
     fun minimize() {
         requestedMinimize = true
     }
+
+    fun popRequestedMaximize() = requestedMaximize.also { requestedMaximize = false }
+    fun popRequestedMinimize() = requestedMinimize.also { requestedMinimize = false }
 
 }

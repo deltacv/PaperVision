@@ -11,6 +11,10 @@ class TextureProcessorQueue(
     val textureFactory: PlatformTextureFactory
 ) {
 
+    companion object {
+        const val REUSABLE_ARRAY_QUEUE_SIZE = 4
+    }
+
     private val reusableArrays = mutableMapOf<Int, ArrayBlockingQueue<WeakReference<ByteArray>>>()
 
     private val queuedTextures = ArrayBlockingQueue<FutureTexture>(5)
@@ -54,7 +58,7 @@ class TextureProcessorQueue(
         synchronized(reusableArrays) {
             if(!reusableArrays.contains(size)) {
                 array = ByteArray(size)
-                reusableArrays[size] = ArrayBlockingQueue(5)
+                reusableArrays[size] = ArrayBlockingQueue(REUSABLE_ARRAY_QUEUE_SIZE)
             } else {
                 val queue = reusableArrays[size]!!
 

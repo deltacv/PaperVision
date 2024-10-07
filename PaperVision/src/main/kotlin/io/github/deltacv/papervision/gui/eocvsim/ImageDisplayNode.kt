@@ -24,7 +24,7 @@ class ImageDisplayNode(
     val imageDisplay: ImageDisplay
 ) : DrawNode<NoSession>(joinActionStack = false) {
 
-    val input = EmptyInputAttribute()
+    val input = EmptyInputAttribute(this)
 
     override fun drawNode() {
         ImNodes.pushColorStyle(ImNodesCol.Pin, MatAttribute.styleColor)

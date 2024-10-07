@@ -15,7 +15,7 @@ import io.github.deltacv.papervision.action.editor.DeleteLinksAction
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
-import io.github.deltacv.papervision.engine.client.message.AskProjectGenClassName
+import io.github.deltacv.papervision.engine.client.message.AskProjectGenClassNameMessage
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
@@ -436,7 +436,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
             if(ImGui.button("S", floatingButtonSupplier().frameWidth, floatingButtonSupplier().frameWidth)) {
                 if(paperVision.engineClient.bridge.isConnected) {
-                    paperVision.engineClient.sendMessage(AskProjectGenClassName().onResponseWith<StringResponse> { response ->
+                    paperVision.engineClient.sendMessage(AskProjectGenClassNameMessage().onResponseWith<StringResponse> { response ->
                         paperVision.onUpdate.doOnce {
                             openSourceCodeWindow(paperVision.codeGenManager.build(response.value, JavaLanguage))
                         }

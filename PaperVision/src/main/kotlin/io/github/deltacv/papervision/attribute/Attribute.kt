@@ -22,8 +22,16 @@ import kotlin.contracts.contract
 
 enum class AttributeMode { INPUT, OUTPUT }
 
-class EmptyInputAttribute : Attribute() {
+class EmptyInputAttribute(
+    parent: Node<*>? = null
+) : Attribute() {
     override val mode = AttributeMode.INPUT
+
+    init {
+        parent?.let {
+            parentNode = it
+        }
+    }
 
     override fun drawAttribute() {
     }

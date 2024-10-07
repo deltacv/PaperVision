@@ -4,20 +4,18 @@ import io.github.deltacv.papervision.codegen.CodeGenManager
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
-import io.github.deltacv.papervision.engine.client.message.PrevizPingPongMessage
 import io.github.deltacv.papervision.engine.client.message.PrevizSourceCodeMessage
-import io.github.deltacv.papervision.engine.client.message.PrevizSetStreamResolutionMessage
-import io.github.deltacv.papervision.engine.client.response.BooleanResponse
+import io.github.deltacv.papervision.engine.client.message.PrevizStartMessage
+import io.github.deltacv.papervision.engine.client.message.PrevizStopMessage
 import io.github.deltacv.papervision.engine.client.response.OkResponse
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bufferedImageFromResource
-import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 
 class ClientPrevizManager(
-    val previzStreamWidth: Int,
-    val previzStreamHeight: Int,
+    val defaultPrevizStreamWidth: Int,
+    val defaultPrevizStreamHeight: Int,
     val codeGenManager: CodeGenManager,
     val textureProcessorQueue: TextureProcessorQueue,
     val client: PaperVisionEngineClient
@@ -31,10 +29,11 @@ class ClientPrevizManager(
     var previzName: String? = null
         private set
 
-    private val pingPongTimer = ElapsedTime()
-
     var stream = PipelineStream("", client, textureProcessorQueue, offlineImages = offlineImages)
-        private set
+        private set(value) {
+            field = value
+            onStreamChange.run()
+        }
 
     val onPrevizStart = PaperVisionEventHandler("ClientPrevizManager-OnPrevizStart")
     val onPrevizStop = PaperVisionEventHandler("ClientPrevizManager-OnPrevizStop")
@@ -46,19 +45,25 @@ class ClientPrevizManager(
     var previzRunning = false
         private set
 
-    @set:Synchronized
-    @get:Synchronized
-    private var cancelPingPong = false
-
     fun startPreviz(previzName: String) {
         startPreviz(previzName, JavaLanguage)
+    }
+
+    fun startPreviz(previzName: String, streamWidth: Int, streamHeight: Int, streamStatus: PipelineStream.Status) {
+        startPreviz(previzName, codeGenManager.build(previzName, JavaLanguage, true), streamWidth, streamHeight, streamStatus)
     }
 
     fun startPreviz(previzName: String, language: Language) {
         startPreviz(previzName, codeGenManager.build(previzName, language, true))
     }
 
-    fun startPreviz(previzName: String, sourceCode: String?) {
+    fun startPreviz(
+        previzName: String,
+        sourceCode: String?,
+        streamWidth: Int = defaultPrevizStreamWidth,
+        streamHeight: Int = defaultPrevizStreamHeight,
+        streamStatus: PipelineStream.Status = PipelineStream.Status.MINIMIZED
+    ) {
         this.previzName = previzName
 
         if(sourceCode == null) {
@@ -68,42 +73,37 @@ class ClientPrevizManager(
 
         logger.info("Starting previz session $previzName")
 
-        client.sendMessage(PrevizSourceCodeMessage(previzName, sourceCode).onResponseWith<OkResponse> {
+        client.sendMessage(PrevizStartMessage(previzName, sourceCode, streamWidth, streamHeight).onResponseWith<OkResponse> {
             client.onProcess.doOnce {
                 logger.info("Previz session $previzName running")
 
                 previzRunning = true
-                cancelPingPong = false
-                pingPongTimer.reset()
 
                 onPrevizStart.run()
 
-                setStreamResolution()
+                stream = PipelineStream(
+                    previzName, client, textureProcessorQueue,
+                    width = streamWidth, height = streamHeight,
+                    offlineImages = offlineImages,
+                    status = streamStatus
+                )
+
+                stream.start()
             }
         })
     }
 
-    private fun setStreamResolution(
+    private fun restartWithStreamResolution(
         previzName: String = this.previzName!!,
-        previzStreamWidth: Int = this.previzStreamWidth,
-        previzStreamHeight: Int = this.previzStreamHeight,
+        previzStreamWidth: Int = this.defaultPrevizStreamWidth,
+        previzStreamHeight: Int = this.defaultPrevizStreamHeight,
         status: PipelineStream.Status = stream.status
     ) {
-        client.sendMessage(PrevizSetStreamResolutionMessage(
-            previzName, previzStreamWidth, previzStreamHeight
-        ).onResponseWith<OkResponse> {
-            client.onProcess.doOnce {
-                stream = PipelineStream(
-                    previzName, client, textureProcessorQueue,
-                    width = previzStreamWidth, height = previzStreamHeight,
-                    offlineImages = offlineImages,
-                    status = status
-                )
+        if(previzRunning) {
+            stopPreviz()
+        }
 
-                stream.start()
-                onStreamChange.run()
-            }
-        })
+        startPreviz(previzName, previzStreamWidth, previzStreamHeight, status)
     }
 
     fun refreshPreviz() = previzName?.let{
@@ -123,34 +123,28 @@ class ClientPrevizManager(
     fun stopPreviz() {
         logger.info("Stopping previz session $previzName")
         previzRunning = false
-        cancelPingPong = true
+
+        client.sendMessage(PrevizStopMessage(previzName!!))
 
         stream.stop()
         onPrevizStop.run()
     }
 
     fun update() {
-        // send every 200 ms
-        if(pingPongTimer.seconds > 0.2) {
-            if(previzRunning && !cancelPingPong) {
-                client.sendMessage(PrevizPingPongMessage(previzName!!).onResponseWith<BooleanResponse> {
-                    previzRunning = it.value
-                })
-            }
+        if(stream.popRequestedMaximize() && previzName != null) {
+            logger.info("Maximizing previz session $previzName")
 
-            pingPongTimer.reset()
-        }
-
-        if(stream.requestedMaximize && previzName != null) {
-            setStreamResolution(
+            restartWithStreamResolution(
                 previzStreamWidth = stream.width * 2,
                 previzStreamHeight = stream.height * 2,
                 status = PipelineStream.Status.MAXIMIZED
             )
         }
 
-        if(stream.requestedMinimize && previzName != null) {
-            setStreamResolution(
+        if(stream.popRequestedMinimize() && previzName != null) {
+            logger.info("Minimizing previz session $previzName")
+
+            restartWithStreamResolution(
                 previzStreamWidth = stream.width / 2,
                 previzStreamHeight = stream.height / 2,
                 status = PipelineStream.Status.MINIMIZED

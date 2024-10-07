@@ -5,18 +5,16 @@ import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.qualcomm.robotcore.util.ElapsedTime
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
 import com.github.serivesmejia.eocvsim.input.SourceType;
-import io.github.deltacv.papervision.engine.LocalPaperVisionEngine
-import io.github.deltacv.papervision.engine.bridge.LocalPaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.message.*
 import io.github.deltacv.papervision.engine.client.response.BooleanResponse
+import io.github.deltacv.papervision.engine.client.response.ErrorResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
 import io.github.deltacv.papervision.engine.client.response.StringResponse
-import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
 import io.github.deltacv.papervision.plugin.eocvsim.PaperVisionDefaultPipeline
-import io.github.deltacv.papervision.plugin.eocvsim.PrevizSession
-import io.github.deltacv.papervision.plugin.gui.CloseConfirmWindow
+import io.github.deltacv.papervision.plugin.ipc.eocvsim.PrevizSession
 import io.github.deltacv.papervision.plugin.gui.eocvsim.PaperVisionTabPanel
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
+import io.github.deltacv.papervision.plugin.ipc.eocvsim.EOCVSimEngineImageStreamer
 import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.GetInputSourcesMessage
 import io.github.deltacv.papervision.plugin.ipc.message.InputSourceData
@@ -43,10 +41,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     )
 
     val onEOCVSimUpdate = PaperVisionEventHandler("PaperVisionEOCVSimPlugin-OnEOCVSimUpdate")
-
-    private val sessionStreamResolutions = mutableMapOf<String, Size>()
-
-    private val previzPingPongTimer = ElapsedTime()
 
     override fun onLoad() {
         eocvSim.onMainUpdate {
@@ -154,7 +148,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             )
         }
 
-        engine.setMessageHandlerOf<AskProjectGenClassName> {
+        engine.setMessageHandlerOf<AskProjectGenClassNameMessage> {
             respond(
                 StringResponse(
                     paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "") ?: "Mack"
@@ -162,16 +156,30 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             )
         }
 
-        engine.setMessageHandlerOf<PrevizPingPongMessage> {
-            if (currentPrevizSession?.sessionName == message.previzName) {
-                previzPingPongTimer.reset()
+        engine.setMessageHandlerOf<PrevizStartMessage> {
+            if (currentPrevizSession != null) {
+                logger.warn("Stopping current previz session ${currentPrevizSession?.sessionName} to start new one")
+                logger.warn("Please make sure to stop the previz session before starting a new one")
+                currentPrevizSession?.stopPreviz()
             }
 
-            respond(
-                BooleanResponse(
-                    currentPrevizSession?.sessionName == message.previzName && currentPrevizSession?.previzRunning ?: false
+            val streamer = EOCVSimEngineImageStreamer(
+                engine,
+                message.previzName,
+                Size(
+                    message.streamWidth.toDouble(),
+                    message.streamHeight.toDouble()
                 )
             )
+
+            currentPrevizSession = PrevizSession(
+                message.previzName,
+                eocvSim, streamer
+            )
+
+            currentPrevizSession?.startPreviz(message.sourceCode)
+
+            respond(OkResponse())
         }
 
         engine.setMessageHandlerOf<PrevizStopMessage> {
@@ -179,48 +187,19 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                 currentPrevizSession?.stopPreviz()
                 currentPrevizSession = null
             }
-            respond(OkResponse())
-        }
-
-        engine.setMessageHandlerOf<PrevizSetStreamResolutionMessage> {
-            sessionStreamResolutions[message.previzName] = Size(message.width.toDouble(), message.height.toDouble())
-
-            if (currentPrevizSession?.sessionName == message.previzName) {
-                currentPrevizSession?.streamer?.resolution = Size(message.width.toDouble(), message.height.toDouble())
-            }
-
-            logger.info("Set stream resolution for previz session ${message.previzName} to ${message.width}x${message.height}")
 
             respond(OkResponse())
         }
 
         engine.setMessageHandlerOf<PrevizSourceCodeMessage> {
-            if (currentPrevizSession == null || currentPrevizSession?.sessionName != message.previzName) {
-                currentPrevizSession = PrevizSession(
-                    message.previzName,
-                    engine, eocvSim,
-                    sessionStreamResolutions[message.previzName] ?: Size(320.0, 240.0)
-                )
+            if (currentPrevizSession?.sessionName == message.previzName) {
+                currentPrevizSession!!.refreshPreviz(message.sourceCode)
+                logger.info("Received source code\n{}", message.sourceCode)
 
-                currentPrevizSession!!.startPreviz(message.sourceCode)
-
-                logger.info("Previz stream resolution {}x{}", currentPrevizSession!!.streamer.resolution.width, currentPrevizSession!!.streamer.resolution.height)
-
-                previzPingPongTimer.reset()
+                respond(OkResponse())
             }
 
-            currentPrevizSession!!.refreshPreviz(message.sourceCode)
-            respond(OkResponse())
-
-            logger.info("Received source code\n{}", message.sourceCode)
-        }
-
-        eocvSim.onMainUpdate {
-            if (previzPingPongTimer.seconds() > 5.0 && currentPrevizSession != null) {
-                logger.info("Previz session ${currentPrevizSession?.sessionName} timed out, stopping")
-                currentPrevizSession?.stopPreviz()
-                currentPrevizSession = null
-            }
+            respond(ErrorResponse("No previz session with name ${message.previzName}"))
         }
     }
 

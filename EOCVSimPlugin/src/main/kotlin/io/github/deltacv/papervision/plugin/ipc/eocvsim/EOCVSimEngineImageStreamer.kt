@@ -1,4 +1,4 @@
-package io.github.deltacv.papervision.plugin.eocvsim
+package io.github.deltacv.papervision.plugin.ipc.eocvsim
 
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.stream.ImageStreamer

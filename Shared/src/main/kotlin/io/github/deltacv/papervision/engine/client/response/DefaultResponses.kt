@@ -10,10 +10,12 @@ open class OkResponse(val info: String = "") : PaperVisionEngineMessageResponse(
     }
 }
 
-open class ErrorResponse(val reason: String, val exception: Exception? = null) : PaperVisionEngineMessageResponse() {
+open class ErrorResponse(val reason: String, val stackTrace: Array<String>? = null) : PaperVisionEngineMessageResponse() {
     override val status = false
 
+    constructor(reason: String, throwable: Throwable) : this(reason, throwable.stackTrace.map { it.toString() }.toTypedArray())
+
     override fun toString(): String {
-        return "ErrorResponse(type=\"${this::class.java.typeName}\", reason=\"$reason\", exception=\"$exception\")"
+        return "ErrorResponse(type=\"${this::class.java.typeName}\", reason=\"$reason\", exception=\"${stackTrace?.getOrNull(0)}\")"
     }
 }
