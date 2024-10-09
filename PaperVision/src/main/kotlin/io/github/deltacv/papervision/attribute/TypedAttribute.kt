@@ -12,8 +12,8 @@ import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValueMessage
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValuesMessage
 
-interface Type {
-    val name: String
+interface AttributeType {
+    val icon: String
     val allowsNew: Boolean get() = true
 
     val styleColor: Int get() = PaperVision.imnodesStyle.pin
@@ -31,12 +31,12 @@ interface Type {
     }
 }
 
-abstract class TypedAttribute(val type: Type) : Attribute() {
+abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
 
     abstract var variableName: String?
 
-    open val styleColor get() = type.styleColor
-    open val styleHoveredColor get() = type.styleHoveredColor
+    open val styleColor get() = attributeType.styleColor
+    open val styleHoveredColor get() = attributeType.styleHoveredColor
 
     open val linkColor get() = styleColor
     open val linkHoveredColor get() = styleHoveredColor
@@ -46,7 +46,7 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
 
     var inputSameLine = false
 
-    open var typeName = "(${type.name})"
+    open var icon = attributeType.icon
 
     private var isFirstDraw = true
     private var isSecondDraw = false
@@ -84,35 +84,40 @@ abstract class TypedAttribute(val type: Type) : Attribute() {
         }
 
         if(drawDescriptiveText) {
-            val t: String
+            val t = tr(finalVarName)
 
-            if(mode == AttributeMode.OUTPUT && parentNode.nodeAttributes.size > 1) {
-                t = tr(if(drawType) {
-                    "$finalVarName $typeName"
-                } else finalVarName)
+            if(mode == AttributeMode.INPUT) {
+                ImGui.pushFont(parentNode.fontAwesome.imfont)
+                ImGui.text(icon)
+                ImGui.popFont()
 
+                ImGui.sameLine()
+
+                ImGui.text(t)
+
+                drawAfterText()
+            } else {
                 val textSize = ImVec2()
                 ImGui.calcTextSize(textSize, t)
 
-                ImGui.indent((nodeSize.x - textSize.x))
-            } else {
-                t = tr(if(drawType) {
-                    "$typeName $finalVarName"
-                } else finalVarName)
-            }
+                if(parentNode.nodeAttributes.size > 1) {
+                    ImGui.indent((nodeSize.x - (textSize.x * 1.2f)))
+                } else {
+                    ImGui.indent(textSize.x * 0.6f)
+                }
 
-            if(mode == AttributeMode.INPUT) {
+                ImGui.text(t)
+                ImGui.sameLine()
+
+                ImGui.pushFont(parentNode.fontAwesome.imfont)
+                ImGui.text(icon)
+                ImGui.popFont()
+
                 drawAfterText()
             }
-
-            ImGui.text(t)
         } else if(!inputSameLine) {
             ImGui.text("")
-        } else if(mode == AttributeMode.INPUT) {
-            drawAfterText()
-        }
-
-        if(mode == AttributeMode.OUTPUT) {
+        } else {
             drawAfterText()
         }
 

@@ -9,6 +9,7 @@ import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.ColorSpace
 import io.github.deltacv.papervision.util.Range2i
 
@@ -24,7 +25,7 @@ class ScalarAttribute(
             field = value
         }
 
-    override var typeName = "(Scalar)"
+    override var icon = FontAwesomeIcons.GripHorizontal
 
     override fun drawAttributeText(index: Int, attrib: Attribute) {
         if(index < color.channelNames.size) {

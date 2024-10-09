@@ -4,10 +4,11 @@ import imgui.ImGui
 import imgui.flag.ImGuiInputTextFlags
 import imgui.type.ImString
 import io.github.deltacv.papervision.attribute.AttributeMode
-import io.github.deltacv.papervision.attribute.Type
+import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.serialization.AttributeSerializationData
 
 class StringAttribute(
@@ -15,8 +16,8 @@ class StringAttribute(
     override var variableName: String? = null
 ) : TypedAttribute(Companion) {
 
-    companion object: Type {
-        override val name = "String"
+    companion object: AttributeType {
+        override val icon = FontAwesomeIcons.EnvelopeOpenText
 
         override fun new(mode: AttributeMode, variableName: String) = StringAttribute(mode, variableName)
     }

@@ -4,10 +4,11 @@ import imgui.ImGui
 import imgui.type.ImInt
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
-import io.github.deltacv.papervision.attribute.Type
+import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.serialization.data.SerializeData
 
@@ -17,8 +18,8 @@ class EnumAttribute<T: Enum<T>>(
     override var variableName: String?
 ) : TypedAttribute(Companion) {
 
-    companion object: Type {
-        override val name = "Enum"
+    companion object: AttributeType {
+        override val icon = FontAwesomeIcons.FlagCheckered
         override val allowsNew = false
 
         override val styleColor = rgbaColor(46, 139, 87, 180)

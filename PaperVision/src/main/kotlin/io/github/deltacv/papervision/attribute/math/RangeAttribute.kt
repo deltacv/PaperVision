@@ -3,10 +3,11 @@ package io.github.deltacv.papervision.attribute.math
 import imgui.type.ImInt
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.AttributeMode
-import io.github.deltacv.papervision.attribute.Type
+import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
 import io.github.deltacv.papervision.serialization.data.SerializeData
 
@@ -14,8 +15,8 @@ class RangeAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null
 ) : TypedAttribute(Companion) {
-    companion object : Type {
-        override val name = "Range"
+    companion object : AttributeType {
+        override val icon = FontAwesomeIcons.TextWidth
         override fun new(mode: AttributeMode, variableName: String) = RangeAttribute(mode, variableName)
     }
 

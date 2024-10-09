@@ -5,10 +5,11 @@ import imgui.type.ImDouble
 import imgui.type.ImFloat
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.AttributeMode
-import io.github.deltacv.papervision.attribute.Type
+import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.util.Range2d
 
 class DoubleAttribute(
@@ -16,8 +17,8 @@ class DoubleAttribute(
     override var variableName: String? = null
 ) : TypedAttribute(Companion) {
 
-    companion object: Type {
-        override val name = "Double"
+    companion object: AttributeType {
+        override val icon = FontAwesomeIcons.SquareRootAlt
 
         override fun new(mode: AttributeMode, variableName: String) = DoubleAttribute(mode, variableName)
     }

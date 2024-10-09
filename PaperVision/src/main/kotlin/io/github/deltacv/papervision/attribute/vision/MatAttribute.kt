@@ -4,14 +4,13 @@ import imgui.ImGui
 import imgui.flag.ImGuiCol
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.attribute.AttributeMode
-import io.github.deltacv.papervision.attribute.Type
+import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
-import io.github.deltacv.papervision.serialization.data.SerializeData
 import io.github.deltacv.papervision.serialization.data.SerializeIgnore
 
 class MatAttribute(
@@ -20,8 +19,8 @@ class MatAttribute(
     var allowPrevizButton: Boolean = false
 ) : TypedAttribute(Companion) {
 
-    companion object: Type {
-        override val name = "Image"
+    companion object: AttributeType {
+        override val icon = FontAwesomeIcons.Image
 
         override val styleColor = rgbaColor(255, 213, 79, 180)
         override val styleHoveredColor = rgbaColor(255, 213, 79, 255)

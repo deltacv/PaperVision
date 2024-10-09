@@ -1,10 +1,11 @@
 package io.github.deltacv.papervision.attribute.vision.structs
 
 import io.github.deltacv.papervision.attribute.AttributeMode
-import io.github.deltacv.papervision.attribute.Type
+import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.rgbaColor
 
 class PointsAttribute (
@@ -12,8 +13,8 @@ class PointsAttribute (
     override var variableName: String? = null
 ) : TypedAttribute(PointsAttribute) {
 
-    companion object : Type {
-        override val name = "Points"
+    companion object : AttributeType {
+        override val icon = FontAwesomeIcons.DotCircle
 
         override val styleColor = rgbaColor(149, 117, 205, 180)
         override val styleHoveredColor = rgbaColor(149, 117, 205, 255)

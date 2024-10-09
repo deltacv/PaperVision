@@ -3,10 +3,11 @@ package io.github.deltacv.papervision.attribute.math
 import imgui.ImGui
 import imgui.type.ImBoolean
 import io.github.deltacv.papervision.attribute.AttributeMode
-import io.github.deltacv.papervision.attribute.Type
+import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.serialization.data.SerializeData
 
 class BooleanAttribute(
@@ -14,8 +15,8 @@ class BooleanAttribute(
     override var variableName: String? = null
 ) : TypedAttribute(Companion) {
 
-    companion object: Type {
-        override val name = "Boolean"
+    companion object: AttributeType {
+        override val icon = FontAwesomeIcons.ToggleOn
 
         override fun new(mode: AttributeMode, variableName: String) = BooleanAttribute(mode, variableName)
     }

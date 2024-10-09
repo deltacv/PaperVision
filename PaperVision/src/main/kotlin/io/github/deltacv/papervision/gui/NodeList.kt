@@ -168,7 +168,9 @@ class NodeList(
                             ImNodes.pushColorStyle(ImNodesCol.NodeBackground, PaperVision.imnodesStyle.nodeBackgroundHovered)
                         }
 
+                        node.fontAwesome = paperVision.fontAwesome
                         node.draw()
+
                         if(!drawnNodes.contains(node.id)) {
                             drawnNodes.add(node.id)
                         }

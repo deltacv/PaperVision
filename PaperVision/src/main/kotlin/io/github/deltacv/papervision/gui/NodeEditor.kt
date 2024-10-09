@@ -150,6 +150,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         for (node in nodes.inmutable) {
             node.editor = this
+            node.fontAwesome = fontAwesome
+
             node.draw()
             if(node.pollChange()) {
                 onEditorChange.run()

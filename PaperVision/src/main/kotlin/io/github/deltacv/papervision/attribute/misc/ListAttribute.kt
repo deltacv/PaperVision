@@ -4,10 +4,11 @@ import com.google.gson.JsonObject
 import imgui.ImGui
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
-import io.github.deltacv.papervision.attribute.Type
+import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.data.adapter.dataSerializableToJsonObject
@@ -16,31 +17,31 @@ import io.github.deltacv.papervision.serialization.AttributeSerializationData
 
 open class ListAttribute(
     override val mode: AttributeMode,
-    val elementType: Type,
+    val elementAttributeType: AttributeType,
     override var variableName: String? = null,
     length: Int? = null,
     val allowAddOrDelete: Boolean = true
 ) : TypedAttribute(Companion) {
 
-    companion object : Type {
-        override val name = "List"
+    companion object : AttributeType {
+        override val icon = FontAwesomeIcons.List
         override val allowsNew = false
 
         override val styleColor = rgbaColor(95, 158, 160, 180)
         override val styleHoveredColor = rgbaColor(95, 158, 160, 255)
     }
 
-    override var typeName = "[${elementType.name}]"
+    override var icon = "[${elementAttributeType.icon}]"
 
     override val styleColor
-        get() = if (elementType.isDefaultListColor) {
+        get() = if (elementAttributeType.isDefaultListColor) {
             Companion.styleColor
-        } else elementType.listStyleColor
+        } else elementAttributeType.listStyleColor
 
     override val styleHoveredColor
-        get() = if (elementType.isDefaultListColor) {
+        get() = if (elementAttributeType.isDefaultListColor) {
             Companion.styleHoveredColor
-        } else elementType.listStyleHoveredColor
+        } else elementAttributeType.listStyleHoveredColor
 
     val listAttributes = mutableListOf<TypedAttribute>()
     val deleteQueue = mutableListOf<TypedAttribute>()
@@ -186,7 +187,7 @@ open class ListAttribute(
     override fun drawAttribute() {
         super.drawAttribute()
 
-        if (!hasLink && elementType.allowsNew && allowAod && mode == AttributeMode.INPUT) {
+        if (!hasLink && elementAttributeType.allowsNew && allowAod && mode == AttributeMode.INPUT) {
             // idk wat the frame height is, i just stole it from
             // https://github.com/ocornut/imgui/blob/7b8bc864e9af6c6c9a22125d65595d526ba674c5/imgui_widgets.cpp#L3439
 
@@ -214,7 +215,7 @@ open class ListAttribute(
         }
     }
 
-    override fun acceptLink(other: Attribute) = other is ListAttribute && other.elementType == elementType
+    override fun acceptLink(other: Attribute) = other is ListAttribute && other.elementAttributeType == elementAttributeType
 
     override fun thisGet(): Array<Any> {
         val list = mutableListOf<Any>()
@@ -230,7 +231,7 @@ open class ListAttribute(
         val count = listAttributes.size.toString()
         val elementName = count + if (count.length == 1) " " else ""
 
-        val element = elementType.new(AttributeMode.INPUT, elementName)
+        val element = elementAttributeType.new(AttributeMode.INPUT, elementName)
         element.parentNode = parentNode
         if(enable) element.enable() //enables the new element
 

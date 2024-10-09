@@ -9,6 +9,7 @@ import io.github.deltacv.papervision.attribute.math.RangeAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.ColorSpace
 import io.github.deltacv.papervision.util.hexString
 
@@ -23,6 +24,8 @@ class ScalarRangeAttribute(
             fixedLength = value.channels
             field = value
         }
+
+    override var icon = FontAwesomeIcons.GripVertical
 
     override fun drawAttributeText(index: Int, attrib: Attribute) {
         if(index < color.channelNames.size) {
