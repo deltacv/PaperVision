@@ -67,8 +67,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     lateinit var sourceCodeExportButton: SourceCodeExportButtonWindow
         private set
 
-    lateinit var eyeFont: Font
-        private set
+    val fontAwesome get() = paperVision.fontAwesome
 
     val editorPanning = ImVec2(0f, 0f)
     val editorPanningDelta = ImVec2(0f, 0f)
@@ -100,10 +99,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     val Keys get() = keyManager.keys
 
     override fun onEnable() {
-        eyeFont = paperVision.fontManager.makeFont(
-            "/fonts/icons/Eye.ttf", 15f
-        )
-
         ImNodes.createContext()
 
         originNode.enable()
@@ -123,7 +118,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         playButton = EOCVSimPlayButtonWindow(
             sourceCodeExportButton,
             paperVision,
-            paperVision.fontManager
+            paperVision.fontAwesomeBig
         )
 
         playButton.enable()
@@ -404,13 +399,11 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         val frameWidth get() = floatingButtonSupplier().frameWidth
 
-        val sourceFont = paperVision.fontManager.makeFont("/fonts/icons/Source.ttf", NodeList.plusFontSize * 0.65f)
-
         val logger by loggerForThis()
 
         override fun preDrawContents() {
             position = ImVec2(
-                floatingButtonSupplier().position.x - NodeList.plusFontSize * 1.5f,
+                floatingButtonSupplier().position.x - NodeList.plusFontSize * 1.7f,
                 floatingButtonSupplier().position.y,
             )
         }
@@ -432,9 +425,9 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
 
         override fun drawContents() {
-            ImGui.pushFont(sourceFont.imfont)
+            ImGui.pushFont(paperVision.fontAwesomeBig.imfont)
 
-            if(ImGui.button("S", floatingButtonSupplier().frameWidth, floatingButtonSupplier().frameWidth)) {
+            if(ImGui.button(FontAwesomeIcons.FileCode, floatingButtonSupplier().frameWidth, floatingButtonSupplier().frameWidth)) {
                 if(paperVision.engineClient.bridge.isConnected) {
                     paperVision.engineClient.sendMessage(AskProjectGenClassNameMessage().onResponseWith<StringResponse> { response ->
                         paperVision.onUpdate.doOnce {
@@ -455,7 +448,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     class EOCVSimPlayButtonWindow(
         val sourceCodeExportButton: SourceCodeExportButtonWindow,
         val paperVision: PaperVision,
-        fontManager: FontManager
+        val fontAwesome: Font
     ) : Window() {
 
         override var title = "eocv sim control"
@@ -467,13 +460,11 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         private var lastButton = false
 
-        val playPauseDotsFont = fontManager.makeFont("/fonts/icons/Play-Pause-Dots.ttf", NodeList.plusFontSize * 0.65f)
-
         override fun preDrawContents() {
             val floatingButton = sourceCodeExportButton
 
             position = ImVec2(
-                floatingButton.position.x - NodeList.plusFontSize * 1.5f,
+                floatingButton.position.x - NodeList.plusFontSize * 1.7f,
                 floatingButton.position.y,
             )
         }
@@ -481,11 +472,11 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         override fun drawContents() {
             val floatingButton = sourceCodeExportButton
 
-            ImGui.pushFont(playPauseDotsFont.imfont)
+            ImGui.pushFont(fontAwesome.imfont)
 
             val text = if(paperVision.previzManager.previzRunning) {
-                "-"
-            } else "+"
+                FontAwesomeIcons.Stop;
+            } else FontAwesomeIcons.Play
 
             val button = ImGui.button(text, floatingButton.frameWidth, floatingButton.frameWidth)
 
@@ -501,9 +492,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
             lastButton = button
         }
-
     }
-
 }
 
 fun instantiateNode(nodeClazz: Class<out Node<*>>) = try {

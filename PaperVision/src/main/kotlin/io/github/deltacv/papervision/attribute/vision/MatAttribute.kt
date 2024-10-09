@@ -1,11 +1,13 @@
 package io.github.deltacv.papervision.attribute.vision
 
 import imgui.ImGui
+import imgui.flag.ImGuiCol
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.Type
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
@@ -45,12 +47,16 @@ class MatAttribute(
         if(mode == AttributeMode.OUTPUT && allowPrevizButton && isOnEditor) {
             ImGui.sameLine()
 
-            ImGui.pushFont(editor.eyeFont.imfont)
-                val text = if (isPrevizEnabled) "-" else "+"
+            ImGui.pushFont(editor.fontAwesome.imfont)
+                val text = if (isPrevizEnabled) FontAwesomeIcons.EyeSlash else FontAwesomeIcons.Eye
+
+                ImGui.pushStyleColor(ImGuiCol.Button, 0)
 
                 isPrevizEnabled = ExtraWidgets.toggleButton(
                     text, isPrevizEnabled
                 )
+
+                ImGui.popStyleColor()
             ImGui.popFont()
         }
 

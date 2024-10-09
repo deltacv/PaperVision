@@ -89,8 +89,8 @@ abstract class Window(
         } else {
             if(ImGui.begin(titleId, windowFlags)) {
                 contents()
-                ImGui.end()
             }
+            ImGui.end()
 
             isVisible = ImGui.isItemVisible()
         }

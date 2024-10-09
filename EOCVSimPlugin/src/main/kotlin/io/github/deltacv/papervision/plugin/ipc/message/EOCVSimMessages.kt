@@ -17,3 +17,7 @@ class GetCurrentInputSourceMessage : PaperVisionEngineMessageBase()
 class SetInputSourceMessage(
     var inputSource: String
 ) : PaperVisionEngineMessageBase()
+
+class OpenCreateInputSourceMessage(
+    var sourceType: InputSourceType
+) : PaperVisionEngineMessageBase()

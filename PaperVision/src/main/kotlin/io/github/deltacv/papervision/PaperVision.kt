@@ -22,10 +22,13 @@
 
 package io.github.deltacv.papervision
 
+import imgui.ImFontGlyphRangesBuilder
 import imgui.ImGui
 import imgui.flag.ImGuiCond
 import imgui.flag.ImGuiKey
 import io.github.deltacv.mai18n.Language
+import io.github.deltacv.papervision.action.Action
+import io.github.deltacv.papervision.action.RootAction
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.CodeGenManager
 import io.github.deltacv.papervision.engine.bridge.NoOpPaperVisionEngineBridge
@@ -34,8 +37,6 @@ import io.github.deltacv.papervision.engine.client.message.PrevizAskNameMessage
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
 import io.github.deltacv.papervision.gui.*
-import io.github.deltacv.papervision.action.Action
-import io.github.deltacv.papervision.action.RootAction
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
@@ -124,6 +125,11 @@ class PaperVision(
     lateinit var codeFont: Font
         private set
 
+    lateinit var fontAwesome: Font
+        private set
+    lateinit var fontAwesomeBig: Font
+        private set
+
     fun init() {
         IdElementContainerStack.threadStack.push(nodes)
         IdElementContainerStack.threadStack.push(attributes)
@@ -157,9 +163,16 @@ class PaperVision(
 
         // initializing fonts right after the imgui context is created
         // we can't create fonts mid-frame so that's kind of a problem
-        defaultFont = fontManager.makeFont("/fonts/Calcutta-SemiBold.otf", 20f)
-        codeFont = fontManager.makeFont("/fonts/JetBrainsMono-Regular.ttf", 28f)
+        defaultFont = fontManager.makeFont("/fonts/Calcutta-SemiBold.otf", defaultFontConfig(20f))
+        codeFont = fontManager.makeFont("/fonts/JetBrainsMono-Regular.ttf", defaultFontConfig(28f))
         defaultImGuiFont = fontManager.makeDefaultFont(20f)
+
+        val rangesBuilder = ImFontGlyphRangesBuilder()
+        rangesBuilder.addRanges(ImGui.getIO().fonts.glyphRangesDefault)
+        rangesBuilder.addRanges(FontAwesomeIcons._IconRange)
+
+        fontAwesome = fontManager.makeFont("/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(16f), rangesBuilder.buildRanges())
+        fontAwesomeBig = fontManager.makeFont("/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(52f), rangesBuilder.buildRanges())
 
         nodeEditor.enable()
         langManager.loadIfNeeded()

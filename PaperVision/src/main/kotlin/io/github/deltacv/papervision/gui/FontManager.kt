@@ -12,8 +12,12 @@ class FontManager {
 
     val ttfFiles = mutableMapOf<String, File>()
 
-    fun makeFont(ttfPath: String, size: Float): Font {
-        val hashName = "mai-$ttfPath-$size"
+    fun makeFont(
+        ttfPath: String,
+        fontConfig: ImFontConfig,
+        glyphRanges: ShortArray? = null
+    ): Font {
+        val hashName = "mai-$ttfPath-${fontConfig.sizePixels}"
 
         if(fonts.containsKey(hashName)) {
             return fonts[hashName]!!
@@ -21,34 +25,28 @@ class FontManager {
 
         if(!ttfFiles.containsKey(ttfPath) || !ttfFiles[ttfPath]!!.exists()) {
             ttfFiles[ttfPath] = copyToTempFile(
-                FontManager::class.java.getResourceAsStream(ttfPath),
+                FontManager::class.java.getResourceAsStream(ttfPath)!!,
                 File(ttfPath).name, true
             )
         }
 
         val file = ttfFiles[ttfPath]!!
 
-        val fontConfig = ImFontConfig()
-        fontConfig.sizePixels = size
-        fontConfig.oversampleH = 2
-        fontConfig.oversampleV = 2
-        fontConfig.pixelSnapH = false
+        val imguiFont = if(glyphRanges != null) {
+            ImGui.getIO().fonts.addFontFromFileTTF(file.absolutePath, fontConfig.sizePixels, fontConfig, glyphRanges)
+        } else {
+            ImGui.getIO().fonts.addFontFromFileTTF(file.absolutePath, fontConfig.sizePixels, fontConfig)
+        }
 
         val font = Font(
-            ImGui.getIO().fonts.addFontFromFileTTF(file.absolutePath, size, fontConfig),
-            ttfPath, size
+            imguiFont,
+            fontConfig,
+            ttfPath,
+            fontConfig.sizePixels
         )
         fonts[hashName] = font
 
         return font
-    }
-
-    fun resizeFont(font: Font, newSize: Float): Font {
-        return if(font.ttfPath == null) {
-            makeDefaultFont(newSize)
-        } else {
-            makeFont(font.ttfPath, newSize)
-        }
     }
 
     fun makeDefaultFont(size: Float): Font {
@@ -63,7 +61,7 @@ class FontManager {
         fontConfig.oversampleV = 1
         fontConfig.pixelSnapH = false
 
-        val font = Font(ImGui.getIO().fonts.addFontDefault(fontConfig), null, size)
+        val font = Font(ImGui.getIO().fonts.addFontDefault(fontConfig), fontConfig, null, size)
         fonts[name] = font
 
         return font
@@ -73,6 +71,14 @@ class FontManager {
 
 class Font internal constructor(
     val imfont: ImFont,
+    val fontConfig: ImFontConfig,
     val ttfPath: String?,
     val size: Float
 )
+
+fun defaultFontConfig(size: Float) = ImFontConfig().apply {
+    oversampleH = 1
+    oversampleV = 1
+    pixelSnapH = false
+    sizePixels = size
+}

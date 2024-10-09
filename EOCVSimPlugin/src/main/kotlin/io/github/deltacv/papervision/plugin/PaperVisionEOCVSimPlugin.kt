@@ -1,5 +1,6 @@
 package io.github.deltacv.papervision.plugin
 
+import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.qualcomm.robotcore.util.ElapsedTime
@@ -19,12 +20,14 @@ import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentInputSourceMes
 import io.github.deltacv.papervision.plugin.ipc.message.GetInputSourcesMessage
 import io.github.deltacv.papervision.plugin.ipc.message.InputSourceData
 import io.github.deltacv.papervision.plugin.ipc.message.InputSourceType
+import io.github.deltacv.papervision.plugin.ipc.message.OpenCreateInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.replaceLast
 import org.opencv.core.Size
+import java.awt.print.Paper
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
@@ -48,11 +51,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         paperVisionProjectManager.init()
-
-        eocvSim.pipelineManager.requestAddPipelineClass(
-            PaperVisionDefaultPipeline::class.java,
-            PipelineSource.CLASSPATH
-        )
 
         eocvSim.visualizer.onPluginGuiAttachment.doOnce {
             val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
@@ -90,6 +88,10 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         eocvSim.pipelineManager.onPipelineChange {
+            changeToPaperVisionPipelineIfNecessary()
+        }
+
+        PaperVisionProcessRunner.onPaperVisionExit {
             changeToPaperVisionPipelineIfNecessary()
         }
     }
@@ -136,6 +138,17 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         engine.setMessageHandlerOf<SetInputSourceMessage> {
             eocvSim.onMainUpdate.doOnce {
                 eocvSim.inputSourceManager.requestSetInputSource(message.inputSource)
+                respond(OkResponse())
+            }
+        }
+
+        engine.setMessageHandlerOf<OpenCreateInputSourceMessage> {
+            eocvSim.onMainUpdate.doOnce {
+                DialogFactory.createSourceDialog(eocvSim, when(message.sourceType) {
+                    InputSourceType.CAMERA -> SourceType.CAMERA
+                    InputSourceType.VIDEO -> SourceType.VIDEO
+                    else -> SourceType.IMAGE
+                })
                 respond(OkResponse())
             }
         }
@@ -210,7 +223,12 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
 
         if (switchablePanel.selectedIndex == switchablePanel.indexOfTab("PaperVision")) {
-            if (currentPrevizSession?.previzRunning != true) {
+            if (currentPrevizSession?.previzRunning != true || !PaperVisionProcessRunner.isRunning) {
+                eocvSim.pipelineManager.requestAddPipelineClass(
+                    PaperVisionDefaultPipeline::class.java,
+                    PipelineSource.CLASSPATH
+                )
+
                 eocvSim.pipelineManager.onUpdate.doOnce {
                     eocvSim.pipelineManager.changePipeline(
                         eocvSim.pipelineManager.getIndexOf(
@@ -224,6 +242,9 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             }
         } else {
             eocvSim.visualizer.viewport.renderer.setFpsMeterEnabled(true)
+
+            eocvSim.pipelineManager.pipelines.removeAll { it.clazz == PaperVisionDefaultPipeline::class.java }
+            eocvSim.pipelineManager.refreshGuiPipelineList()
         }
     }
 

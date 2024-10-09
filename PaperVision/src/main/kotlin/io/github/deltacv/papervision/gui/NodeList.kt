@@ -80,7 +80,7 @@ class NodeList(
             }
         }
 
-        floatingButton = FloatingButton(this, paperVision.window, paperVision.fontManager)
+        floatingButton = FloatingButton(this, paperVision.window, paperVision.fontAwesomeBig)
         floatingButton.enable()
 
         floatingButton.onPressed {
@@ -326,7 +326,7 @@ class NodeList(
     class FloatingButton(
         val nodeList: NodeList,
         val window: PlatformWindow,
-        fontManager: FontManager
+        val fontAwesome: Font
     ) : FrameWidthWindow() {
 
         override var title = "floating"
@@ -343,20 +343,18 @@ class NodeList(
 
         val onPressed = PaperVisionEventHandler("FloatingButton-OnPressed")
 
-        val buttonFont = fontManager.makeFont("/fonts/icons/Open-Close.ttf", plusFontSize)
-
         override fun preDrawContents() {
             position = ImVec2(
-                window.size.x - plusFontSize * 1.8f, window.size.y - plusFontSize * 1.8f
+                window.size.x - plusFontSize * 2f, window.size.y - plusFontSize * 2f
             )
         }
 
         override fun drawContents() {
             focus = false
 
-            ImGui.pushFont(buttonFont.imfont)
+            ImGui.pushFont(fontAwesome.imfont)
 
-            frameWidth = ImGui.getFrameHeight()
+            frameWidth = ImGui.getFrameHeight() * 1.3f
 
             val button = ImGui.button(if(nodeList.isNodesListOpen) "x" else "+", frameWidth, frameWidth)
             ImGui.popFont()

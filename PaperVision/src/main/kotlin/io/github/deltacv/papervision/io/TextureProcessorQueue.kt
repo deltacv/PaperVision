@@ -1,5 +1,6 @@
 package io.github.deltacv.papervision.io
 
+import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.PlatformTextureFactory
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
@@ -28,7 +29,7 @@ class TextureProcessorQueue(
                 if(textures.contains(futureTex.id)) {
                     val existingTex = textures[futureTex.id]!!
                     if(existingTex.width == futureTex.width && existingTex.height == futureTex.height) {
-                        existingTex.set(futureTex.data)
+                        existingTex.set(futureTex.data, futureTex.colorSpace)
                         returnReusableArray(futureTex.data)
 
                         continue
@@ -38,7 +39,7 @@ class TextureProcessorQueue(
                 }
 
                 textures[futureTex.id] = textureFactory.create(
-                    futureTex.width, futureTex.height, futureTex.data
+                    futureTex.width, futureTex.height, futureTex.data, futureTex.colorSpace
                 )
                 returnReusableArray(futureTex.data)
             }
@@ -51,7 +52,7 @@ class TextureProcessorQueue(
         }
     }
 
-    fun offer(id: Int, width: Int, height: Int, data: ByteBuffer) {
+    fun offer(id: Int, width: Int, height: Int, data: ByteBuffer, colorSpace: ColorSpace = ColorSpace.RGB) {
         val size = data.remaining()
         val array: ByteArray
 
@@ -72,14 +73,14 @@ class TextureProcessorQueue(
             reusableArrays.remove(size)
         }
 
-        System.arraycopy(data.array(), data.position(), array, 0, size)
+        System.arraycopy(data.array(), 0, array, 0, size)
 
         synchronized(queuedTextures) {
             if(queuedTextures.remainingCapacity() == 0) {
-                Thread.yield()
+                queuedTextures.poll()
             }
 
-            queuedTextures.offer(FutureTexture(id, width, height, array))
+            queuedTextures.offer(FutureTexture(id, width, height, array, colorSpace))
         }
     }
 
@@ -93,6 +94,6 @@ class TextureProcessorQueue(
         textures.clear()
     }
 
-    data class FutureTexture(val id: Int, val width: Int, val height: Int, val data: ByteArray)
+    data class FutureTexture(val id: Int, val width: Int, val height: Int, val data: ByteArray, val colorSpace: ColorSpace)
 
 }

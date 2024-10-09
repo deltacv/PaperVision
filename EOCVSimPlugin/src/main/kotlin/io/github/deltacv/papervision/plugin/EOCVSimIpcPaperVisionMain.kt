@@ -66,7 +66,7 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
 
         app.paperVision.onInit.doOnce {
             InputSourceWindow(
-                app.paperVision.fontManager.makeFont("/fonts/icons/Input-Sources.ttf", 13f),
+                app.paperVision.fontAwesome,
                 app.paperVision.engineClient
             ).enable()
         }
