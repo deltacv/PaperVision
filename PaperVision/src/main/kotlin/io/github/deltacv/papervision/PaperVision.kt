@@ -41,7 +41,8 @@ import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
 import io.github.deltacv.papervision.gui.util.Popup
-import io.github.deltacv.papervision.gui.util.Popup.Companion.WARN
+import io.github.deltacv.papervision.gui.util.Tooltip
+import io.github.deltacv.papervision.gui.util.Tooltip.Companion.WARN
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
@@ -108,11 +109,14 @@ class PaperVision(
     val streamDisplays = IdElementContainer<ImageDisplay>()
     val actions = IdElementContainer<Action>()
 
-    val popups = IdElementContainer<Popup>().apply {
+    val popups = IdElementContainer<Popup>()
+    val tooltips = IdElementContainer<Tooltip>().apply {
         reserveId(WARN)
     }
 
     val isModalWindowOpen get() = windows.inmutable.find { it.isModal && it.isVisible } != null
+
+    val isPopupOpen get() = popups.inmutable.find { it.isVisible } != null
 
     lateinit var engineClient: PaperVisionEngineClient
 
@@ -135,10 +139,11 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(attributes)
         IdElementContainerStack.threadStack.push(links)
         IdElementContainerStack.threadStack.push(windows)
-        IdElementContainerStack.threadStack.push(popups)
+        IdElementContainerStack.threadStack.push(tooltips)
         IdElementContainerStack.threadStack.push(textures)
         IdElementContainerStack.threadStack.push(streamDisplays)
         IdElementContainerStack.threadStack.push(actions)
+        IdElementContainerStack.threadStack.push(popups)
 
         logger.info("Starting PaperVision...")
 
@@ -187,10 +192,11 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<Attribute>()
         IdElementContainerStack.threadStack.pop<Link>()
         IdElementContainerStack.threadStack.pop<Window>()
-        IdElementContainerStack.threadStack.pop<Popup>()
+        IdElementContainerStack.threadStack.pop<Tooltip>()
         IdElementContainerStack.threadStack.pop<PlatformTexture>()
         IdElementContainerStack.threadStack.pop<ImageDisplay>()
         IdElementContainerStack.threadStack.pop<Action>()
+        IdElementContainerStack.threadStack.pop<Popup>()
 
         logger.info("PaperVision started")
     }
@@ -205,21 +211,17 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(attributes)
         IdElementContainerStack.threadStack.push(links)
         IdElementContainerStack.threadStack.push(windows)
-        IdElementContainerStack.threadStack.push(popups)
+        IdElementContainerStack.threadStack.push(tooltips)
         IdElementContainerStack.threadStack.push(textures)
         IdElementContainerStack.threadStack.push(streamDisplays)
         IdElementContainerStack.threadStack.push(actions)
+        IdElementContainerStack.threadStack.push(popups)
 
         if(keyManager.pressing(keyManager.keys.LeftControl)) {
             if(ImGui.isKeyPressed(ImGuiKey.Z)) {
-                logger.info("Undo, stack; size: ${actions.size}, pointer: ${actions.stackPointer}, peek: ${actions.peek()}")
-
-                actions.peekAndPushback()?.undo()
+                undo()
             } else if(ImGui.isKeyPressed(ImGuiKey.Y)) {
-                logger.info("redo, stack; size: ${actions.size}, pointer: ${actions.stackPointer}, peek: ${actions.peek()}")
-
-                actions.pushforwardIfNonNull()
-                actions.peek()?.execute()
+                redo()
             }
         }
 
@@ -237,8 +239,11 @@ class PaperVision(
         for(window in windows.inmutable) {
             window.draw()
         }
-        for(tooltip in popups.inmutable) {
+        for(tooltip in tooltips.inmutable) {
             tooltip.draw()
+        }
+        for(popup in popups.inmutable) {
+            popup.draw()
         }
 
         ImGui.popFont()
@@ -251,10 +256,23 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<Attribute>()
         IdElementContainerStack.threadStack.pop<Link>()
         IdElementContainerStack.threadStack.pop<Window>()
-        IdElementContainerStack.threadStack.pop<Popup>()
+        IdElementContainerStack.threadStack.pop<Tooltip>()
         IdElementContainerStack.threadStack.pop<PlatformTexture>()
         IdElementContainerStack.threadStack.pop<ImageDisplay>()
         IdElementContainerStack.threadStack.pop<Action>()
+        IdElementContainerStack.threadStack.pop<Popup>()
+    }
+
+    fun undo() {
+        logger.info("Undo, stack; size: ${actions.size}, pointer: ${actions.stackPointer}, peek: ${actions.peek()}")
+        actions.peekAndPushback()?.undo()
+    }
+
+    fun redo() {
+        logger.info("redo, stack; size: ${actions.size}, pointer: ${actions.stackPointer}, peek: ${actions.peek()}")
+
+        actions.pushforwardIfNonNull()
+        actions.peek()?.execute()
     }
 
     fun destroy() {

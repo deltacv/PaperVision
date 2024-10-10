@@ -27,6 +27,8 @@ object PaperVisionProcessRunner {
 
     val onPaperVisionExit = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionExit")
 
+    val onPaperVisionExitError = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionExit")
+
     private val pool = Executors.newFixedThreadPool(1)
 
     var isRunning = false
@@ -45,7 +47,7 @@ object PaperVisionProcessRunner {
             val classpath = pluginJar.absolutePath + File.pathSeparator + System.getProperty("java.class.path")
             val programParams = listOf("-q", "-p=${paperVisionEngine.server.port}")
 
-            if(SysUtil.OS == SysUtil.OperatingSystem.MACOS) {
+            val exitCode = if(SysUtil.OS == SysUtil.OperatingSystem.MACOS) {
                 logger.info("Running on macOS, adding platform-specific flags")
                 JavaProcess.execClasspath(
                     EOCVSimIpcPaperVisionMain::class.java,
@@ -65,6 +67,10 @@ object PaperVisionProcessRunner {
             }
 
             onPaperVisionExit.run()
+
+            if(exitCode != 0) {
+                onPaperVisionExitError.run()
+            }
 
             logger.warn("PaperVision process has exited")
 

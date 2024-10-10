@@ -1,4 +1,4 @@
-package io.github.deltacv.papervision.plugin.gui
+package io.github.deltacv.papervision.plugin.gui.imgui
 
 import imgui.ImGui
 import imgui.flag.ImGuiWindowFlags

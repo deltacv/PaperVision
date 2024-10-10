@@ -3,9 +3,8 @@ package io.github.deltacv.papervision.gui.util
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.type.ImBoolean
-import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.mai18n.tr
+import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
 
 abstract class Window(

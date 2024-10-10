@@ -2,16 +2,15 @@ package io.github.deltacv.papervision.gui
 
 import imgui.*
 import imgui.extension.imnodes.ImNodes
-import imgui.extension.imnodes.ImNodesContext
 import imgui.extension.imnodes.ImNodesEditorContext
 import imgui.extension.imnodes.flag.ImNodesCol
 import imgui.flag.*
+import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.gui.util.FrameWidthWindow
 import io.github.deltacv.papervision.gui.util.Table
 import io.github.deltacv.papervision.gui.util.Window
-import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.io.KeyManager
@@ -31,7 +30,7 @@ class NodeList(
 ): Window() {
 
     companion object {
-        const val plusFontSize = 60f
+        const val PLUS_FONT_SIZE = 60f
     }
 
     val listNodes = IdElementContainer<Node<*>>()
@@ -347,7 +346,7 @@ class NodeList(
 
         override fun preDrawContents() {
             position = ImVec2(
-                window.size.x - plusFontSize * 2f, window.size.y - plusFontSize * 2f
+                window.size.x - PLUS_FONT_SIZE * 2f, window.size.y - PLUS_FONT_SIZE * 2f
             )
         }
 

@@ -6,10 +6,8 @@ import io.github.deltacv.papervision.engine.client.response.OkResponse
 import io.github.deltacv.papervision.engine.message.OnResponseCallback
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
-import io.github.deltacv.papervision.platform.lwjgl.util.loadImageFromResource
-import io.github.deltacv.papervision.platform.lwjgl.util.toBufferedImage
-import io.github.deltacv.papervision.plugin.gui.CloseConfirmWindow
-import io.github.deltacv.papervision.plugin.gui.InputSourceWindow
+import io.github.deltacv.papervision.plugin.gui.imgui.CloseConfirmWindow
+import io.github.deltacv.papervision.plugin.gui.imgui.InputSourceWindow
 import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngineBridge
 import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMessage
 import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
@@ -20,7 +18,6 @@ import io.github.deltacv.papervision.serialization.PaperVisionSerializer.seriali
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import picocli.CommandLine
-import java.awt.Taskbar
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
@@ -67,6 +64,7 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
         app.paperVision.onInit.doOnce {
             InputSourceWindow(
                 app.paperVision.fontAwesome,
+                app.paperVision.fontAwesomeBig,
                 app.paperVision.engineClient
             ).enable()
         }

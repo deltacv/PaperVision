@@ -4,6 +4,7 @@ import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.texteditor.TextEditorLanguageDefinition
+import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiMouseButton
 import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImInt
@@ -21,8 +22,11 @@ import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayWindow
 import io.github.deltacv.papervision.gui.util.Popup
+import io.github.deltacv.papervision.gui.util.Tooltip
 import io.github.deltacv.papervision.gui.util.Window
+import io.github.deltacv.papervision.id.DrawableIdElement
 import io.github.deltacv.papervision.io.KeyManager
+import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.InvisibleNode
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
@@ -32,6 +36,7 @@ import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
 import io.github.deltacv.papervision.util.loggerForThis
+import kotlinx.coroutines.selects.select
 
 class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManager) : Window() {
     companion object {
@@ -90,6 +95,13 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         ImGuiWindowFlags.NoTitleBar, ImGuiWindowFlags.NoDecoration
     )
 
+    val rightClickMenuPopup by lazy {
+        RightClickMenuPopup(paperVision.nodeList, paperVision::undo, paperVision::redo)
+    }
+
+    private val rightClickMenuPopupTimer = ElapsedTime()
+    private val justDeletedLinkTimer = ElapsedTime()
+
     val outputImageDisplay by lazy { ImageDisplay(paperVision.previzManager.stream) }
 
     val nodes get() = paperVision.nodes
@@ -103,6 +115,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         originNode.enable()
         inputNode.enable()
+        rightClickMenuPopup.enable()
 
         outputNode.streamId = outputImageDisplay.id
         outputNode.enable()
@@ -153,13 +166,13 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             node.fontAwesome = fontAwesome
 
             node.draw()
-            if(node.pollChange()) {
+            if (node.pollChange()) {
                 onEditorChange.run()
             }
         }
         for (link in links.inmutable) {
             link.draw()
-            if(link.pollChange()) {
+            if (link.pollChange()) {
                 onEditorChange.run()
             }
         }
@@ -170,12 +183,22 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         val isFreeToMove = (!isNodeFocused || scrollTimer.millis <= 500)
 
-        if(rightClickedWhileHoveringNode) {
-            if(ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
+        if (rightClickedWhileHoveringNode) {
+            if (ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
                 rightClickedWhileHoveringNode = false
             }
         } else {
             rightClickedWhileHoveringNode = ImGui.isMouseClicked(ImGuiMouseButton.Right) && !isFreeToMove
+        }
+
+        if ((!ImGui.isMouseDown(ImGuiMouseButton.Right) && !ImGui.isMouseReleased(ImGuiMouseButton.Right))) {
+            rightClickMenuPopupTimer.reset()
+        }
+
+        if (ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
+            if (rightClickMenuPopupTimer.millis <= 200 && (!paperVision.nodeList.isNodesListOpen && !paperVision.isModalWindowOpen && justDeletedLinkTimer.millis >= 200)) {
+                rightClickMenuPopup.open()
+            }
         }
 
         if (paperVision.nodeList.isNodesListOpen || paperVision.isModalWindowOpen) {
@@ -183,11 +206,13 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             ImNodes.clearNodeSelection()
         } else if (
             ImGui.isMouseDown(ImGuiMouseButton.Middle)
-            || (ImGui.isMouseDown(ImGuiMouseButton.Right) && (!rightClickedWhileHoveringNode || keyManager.pressing(Keys.LeftControl)))
+            || (ImGui.isMouseDown(ImGuiMouseButton.Right) && rightClickMenuPopupTimer.millis >= 100 && (!rightClickedWhileHoveringNode || keyManager.pressing(
+                Keys.LeftControl
+            )))
         ) {
             editorPanning.x += (ImGui.getMousePosX() - prevMouseX)
             editorPanning.y += (ImGui.getMousePosY() - prevMouseY)
-        } else if(isFreeToMove) { // not hovering any node
+        } else if (isFreeToMove) { // not hovering any node
             var doingKeys = false
 
             // scrolling
@@ -239,6 +264,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         prevMouseX = ImGui.getMousePosX()
         prevMouseY = ImGui.getMousePosY()
 
+        updateRightClickMenuSelection()
+
         handleDeleteLink()
         handleCreateLink()
         handleDeleteSelection()
@@ -248,7 +275,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         val instance = instantiateNode(nodeClazz)
         val action = CreateNodeAction(instance)
 
-        if(instance.joinActionStack){
+        if (instance.joinActionStack) {
             action.enable()
         } else {
             action.execute()
@@ -275,6 +302,42 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         link.enable()
 
         return window
+    }
+
+    private fun updateRightClickMenuSelection() {
+        if (rightClickMenuPopup.isVisible) {
+            return
+        }
+
+        rightClickMenuPopup.selection.clear()
+
+        val nodeSelection = IntArray(ImNodes.numSelectedNodes())
+        ImNodes.getSelectedNodes(nodeSelection)
+
+        for (node in nodeSelection) {
+            if (node < 0) continue
+
+            nodes[node]?.let {
+                rightClickMenuPopup.selection.add(it)
+            }
+        }
+
+        val linkSelection = IntArray(ImNodes.numSelectedLinks())
+        ImNodes.getSelectedLinks(linkSelection)
+
+        for (link in linkSelection) {
+            if (link < 0) continue
+
+            links[link]?.let {
+                rightClickMenuPopup.selection.add(it)
+            }
+        }
+
+        if (ImNodes.getHoveredNode() >= 0) {
+            nodes[ImNodes.getHoveredNode()]?.let {
+                rightClickMenuPopup.selection.add(it)
+            }
+        }
     }
 
     private val startAttr = ImInt()
@@ -306,7 +369,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             }
 
             if (!startAttrib.acceptLink(endAttrib) || !endAttrib.acceptLink(startAttrib)) {
-                Popup.warning("err_couldntlink_didntmatch")
+                Tooltip.warning("err_couldntlink_didntmatch")
                 return // one or both of the attributes didn't accept the link, abort.
             }
 
@@ -322,7 +385,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             CreateLinkAction(link).enable()
 
             if (Node.checkRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
-                Popup.warning("err_couldntlink_recursion")
+                Tooltip.warning("err_couldntlink_recursion")
                 // remove the link if a recursion case was detected (e.g both nodes were attached to each other already)
                 link.delete()
             } else {
@@ -339,6 +402,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         if (ImGui.isMouseClicked(ImGuiMouseButton.Right) && hoveredId >= 0) {
             val hoveredLink = links[hoveredId]
             hoveredLink?.delete()
+            justDeletedLinkTimer.reset()
         }
     }
 
@@ -354,12 +418,13 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                     try {
                         val node = nodes[node]!!
 
-                        if(node.joinActionStack) {
+                        if (node.joinActionStack) {
                             nodesToDelete.add(node)
                         } else {
                             node.delete()
                         }
-                    } catch (_: Exception) { }
+                    } catch (_: Exception) {
+                    }
                 }
 
                 DeleteNodesAction(nodesToDelete).enable()
@@ -373,7 +438,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
                 for (link in selectedLinks) {
                     links[link]?.run {
-                        if(isDestroyableByUser)
+                        if (isDestroyableByUser)
                             linksToDelete.add(this)
                     }
                 }
@@ -385,6 +450,56 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     fun destroy() {
         ImNodes.destroyContext()
+    }
+
+    class RightClickMenuPopup(
+        val nodeList: NodeList,
+        val undo: () -> Unit,
+        val redo: () -> Unit
+    ) : Popup() {
+        var selection = mutableListOf<DrawableIdElement>()
+
+        override val title = "right click menu"
+        override val flags = flags(ImGuiWindowFlags.NoTitleBar, ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoMove)
+
+        override fun drawContents() {
+            ImGui.pushStyleColor(ImGuiCol.Button, 0)
+
+            if (ImGui.button("Undo")) {
+                undo()
+                ImGui.closeCurrentPopup()
+            }
+
+            if (ImGui.button("Redo")) {
+                redo()
+                ImGui.closeCurrentPopup()
+            }
+
+            if (selection.isNotEmpty()) {
+                if (ImGui.button("Delete")) {
+                    selection.find { it is Node<*> }?.let {
+                        val nodesToDelete = selection.filterIsInstance<Node<*>>()
+                        DeleteNodesAction(nodesToDelete).enable()
+                    }
+
+                    selection.find { it is Link }?.let {
+                        val linksToDelete = selection.filterIsInstance<Link>()
+                        DeleteLinksAction(linksToDelete).enable()
+                    }
+
+                    ImGui.closeCurrentPopup()
+                }
+            }
+
+            ImGui.separator()
+
+            if (ImGui.button("Add Node")) {
+                nodeList.showList()
+            }
+
+            ImGui.popStyleColor()
+        }
+
     }
 
     class SourceCodeExportButtonWindow(
@@ -405,13 +520,13 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         override fun preDrawContents() {
             position = ImVec2(
-                floatingButtonSupplier().position.x - NodeList.plusFontSize * 1.7f,
+                floatingButtonSupplier().position.x - NodeList.PLUS_FONT_SIZE * 1.7f,
                 floatingButtonSupplier().position.y,
             )
         }
 
         private fun openSourceCodeWindow(code: String?) {
-            if(code == null) {
+            if (code == null) {
                 logger.warn("Code generation failed, cancelled opening source code window")
                 return
             }
@@ -429,8 +544,13 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         override fun drawContents() {
             ImGui.pushFont(paperVision.fontAwesomeBig.imfont)
 
-            if(ImGui.button(FontAwesomeIcons.FileCode, floatingButtonSupplier().frameWidth, floatingButtonSupplier().frameWidth)) {
-                if(paperVision.engineClient.bridge.isConnected) {
+            if (ImGui.button(
+                    FontAwesomeIcons.FileCode,
+                    floatingButtonSupplier().frameWidth,
+                    floatingButtonSupplier().frameWidth
+                )
+            ) {
+                if (paperVision.engineClient.bridge.isConnected) {
                     paperVision.engineClient.sendMessage(AskProjectGenClassNameMessage().onResponseWith<StringResponse> { response ->
                         paperVision.onUpdate.doOnce {
                             openSourceCodeWindow(paperVision.codeGenManager.build(response.value, JavaLanguage))
@@ -466,7 +586,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             val floatingButton = sourceCodeExportButton
 
             position = ImVec2(
-                floatingButton.position.x - NodeList.plusFontSize * 1.7f,
+                floatingButton.position.x - NodeList.PLUS_FONT_SIZE * 1.7f,
                 floatingButton.position.y,
             )
         }
@@ -476,14 +596,14 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
             ImGui.pushFont(fontAwesome.imfont)
 
-            val text = if(paperVision.previzManager.previzRunning) {
+            val text = if (paperVision.previzManager.previzRunning) {
                 FontAwesomeIcons.Stop;
             } else FontAwesomeIcons.Play
 
             val button = ImGui.button(text, floatingButton.frameWidth, floatingButton.frameWidth)
 
             if (lastButton != button && button) {
-                if(!paperVision.previzManager.previzRunning) {
+                if (!paperVision.previzManager.previzRunning) {
                     paperVision.startPrevizAsk()
                 } else {
                     paperVision.previzManager.stopPreviz()

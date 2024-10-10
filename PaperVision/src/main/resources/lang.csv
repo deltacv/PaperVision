@@ -2,6 +2,7 @@ name,en,es
 lan_en,English,Ingles
 lan_es,Spanish,Español
 win_inputsources,Input Sources,Fuentes de Entrada
+win_createinput_sources,Create Input Sources,Crear Fuentes de Entrada
 cat_pipeline_flow,Pipeline Flow,Ejecucion
 cat_coding,Coding,Codigo
 cat_high_level_cv,High Level,Alto Nivel

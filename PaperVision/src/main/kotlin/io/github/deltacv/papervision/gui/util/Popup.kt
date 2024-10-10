@@ -1,50 +1,47 @@
 package io.github.deltacv.papervision.gui.util
 
 import imgui.ImGui
-import imgui.ImVec2
+import imgui.type.ImBoolean
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.IdElementContainer
-import io.github.deltacv.papervision.util.ElapsedTime
-import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.id.IdElementContainerStack
 
-open class Popup(
-    val text: String,
-    val position: ImVec2,
-    val timeSecs: Double,
-    val label: String? = null,
-    override val requestedId: Int? = null
-) : DrawableIdElementBase<Popup>() {
-
-    private val timer = ElapsedTime()
-
+abstract class Popup : DrawableIdElementBase<Popup>() {
     override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Popup>()
 
-    override fun onEnable() {
-        timer.reset()
-    }
+    abstract val title: String
+    abstract val flags: Int
+
+    private var open = false
+
+    var isVisible = false
+        private set
+
+    val position = ImGui.getMousePos()
+    val idName by lazy { "${title}###$id" }
+
+    private val pOpen = ImBoolean(false)
+
+    abstract fun drawContents()
 
     override fun draw() {
-        ImGui.setNextWindowPos(position.x, position.y)
-
-        ImGui.beginTooltip()
-            drawContents()
-        ImGui.endTooltip()
-
-        if(timer.seconds > timeSecs)
-            delete()
-    }
-
-    open fun drawContents() {
-        ImGui.text(tr(text))
-    }
-
-    companion object {
-        val WARN = 0
-
-        fun warning(text: String, secsPerCharacter: Double = 0.16) {
-            Popup(text, ImGui.getMousePos(), text.length * secsPerCharacter, requestedId = WARN).enable()
+        if(open) {
+            ImGui.openPopup(idName)
+            open = false
         }
+
+        if (ImGui.beginPopup(idName, flags)) {
+            drawContents()
+            ImGui.endPopup()
+        }
+
+        isVisible = ImGui.isPopupOpen(idName)
     }
 
+    fun open() {
+        if(!isEnabled) {
+            enable()
+        }
+
+        open = true
+    }
 }

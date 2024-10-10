@@ -1,8 +1,8 @@
-package io.github.deltacv.papervision.plugin.gui
+package io.github.deltacv.papervision.plugin.gui.imgui
 
 import imgui.ImGui
+import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiWindowFlags
-import imgui.type.ImInt
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.gui.Font
@@ -19,6 +19,7 @@ import io.github.deltacv.papervision.util.flags
 
 class InputSourceWindow(
     val fontAwesome: Font,
+    val fontAwesomeBig: Font,
     val client: PaperVisionEngineClient
 ) : Window(){
     var inputSources = arrayOf<InputSourceData>()
@@ -71,7 +72,7 @@ class InputSourceWindow(
         }
 
         if(ImGui.button("Create new input source")) {
-            CreateInputSourceWindow(client).enable()
+            CreateInputSourceWindow(client, fontAwesomeBig).enable()
         }
 
         if(previousInputSource != currentInputSource && currentInputSource != null) {
@@ -83,9 +84,14 @@ class InputSourceWindow(
 }
 
 class CreateInputSourceWindow(
-    val client: PaperVisionEngineClient
+    val client: PaperVisionEngineClient,
+    val fontAwesome: Font
 ) : Window() {
-    override var title = "$[win_createinputsources]"
+    companion object {
+        val separationMultiplier = 1.5f
+    }
+
+    override var title = "$[win_createinput_sources]"
 
     override val windowFlags = flags(
         ImGuiWindowFlags.AlwaysAutoResize,
@@ -93,21 +99,33 @@ class CreateInputSourceWindow(
 
     override val isModal = true
 
-    val inputIndex = ImInt()
-
     override fun drawContents() {
-        ImGui.combo("###$id", inputIndex, arrayOf("Image", "Camera", "Video"), 3)
+        ImGui.pushStyleColor(ImGuiCol.Button, 0)
 
-        if(ImGui.button("Create")) {
-            client.sendMessage(OpenCreateInputSourceMessage(
-                when(inputIndex.get()) {
-                    1 -> InputSourceType.CAMERA
-                    2 -> InputSourceType.VIDEO
-                    else -> InputSourceType.IMAGE
-                }
-            ))
+        ImGui.pushFont(fontAwesome.imfont)
 
+        if(ImGui.button(FontAwesomeIcons.Image)){
+            client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.IMAGE))
             delete()
         }
+
+        ImGui.sameLine()
+        ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+
+        if(ImGui.button(FontAwesomeIcons.Camera)){
+            client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.CAMERA))
+            delete()
+        }
+
+        ImGui.sameLine()
+        ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+
+        if(ImGui.button(FontAwesomeIcons.Video)){
+            client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.VIDEO))
+            delete()
+        }
+
+        ImGui.popFont()
+        ImGui.popStyleColor()
     }
 }

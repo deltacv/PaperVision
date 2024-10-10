@@ -1,21 +1,19 @@
 package io.github.deltacv.papervision.plugin
 
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
+import com.github.serivesmejia.eocvsim.input.SourceType
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.loggerForThis
-import com.qualcomm.robotcore.util.ElapsedTime
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
-import com.github.serivesmejia.eocvsim.input.SourceType;
 import io.github.deltacv.papervision.engine.client.message.*
-import io.github.deltacv.papervision.engine.client.response.BooleanResponse
 import io.github.deltacv.papervision.engine.client.response.ErrorResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.plugin.eocvsim.PaperVisionDefaultPipeline
-import io.github.deltacv.papervision.plugin.ipc.eocvsim.PrevizSession
 import io.github.deltacv.papervision.plugin.gui.eocvsim.PaperVisionTabPanel
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import io.github.deltacv.papervision.plugin.ipc.eocvsim.EOCVSimEngineImageStreamer
+import io.github.deltacv.papervision.plugin.ipc.eocvsim.PrevizSession
 import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.GetInputSourcesMessage
 import io.github.deltacv.papervision.plugin.ipc.message.InputSourceData
@@ -24,10 +22,10 @@ import io.github.deltacv.papervision.plugin.ipc.message.OpenCreateInputSourceMes
 import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
+import io.github.deltacv.papervision.util.event.EventListener
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.replaceLast
 import org.opencv.core.Size
-import java.awt.print.Paper
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
@@ -62,7 +60,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             }
         }
 
-        eocvSim.onMainUpdate.doOnce {
+        val recoveredProjectsListener = Runnable {
             if (paperVisionProjectManager.recoveredProjects.isNotEmpty()) {
                 SwingUtilities.invokeLater {
                     PaperVisionDialogFactory.displayProjectRecoveryDialog(
@@ -86,6 +84,9 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                 }
             }
         }
+
+        eocvSim.onMainUpdate.doOnce(recoveredProjectsListener)
+        PaperVisionProcessRunner.onPaperVisionExit.doOnce(recoveredProjectsListener)
 
         eocvSim.pipelineManager.onPipelineChange {
             changeToPaperVisionPipelineIfNecessary()
