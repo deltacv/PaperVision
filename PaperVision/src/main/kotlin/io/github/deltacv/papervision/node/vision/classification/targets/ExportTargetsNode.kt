@@ -6,7 +6,9 @@ import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.NoSession
+import io.github.deltacv.papervision.codegen.dsl.generators
 import io.github.deltacv.papervision.codegen.dsl.targets
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -27,20 +29,24 @@ class ExportTargetsNode : DrawNode<NoSession>() {
         + label
     }
 
-    override fun genCode(current: CodeGen.Current) = current {
-        val targetsValue = inputTargets.value(current)
+    override val generators = generators {
+        generatorFor(JavaLanguage) {
+            current {
+                val targetsValue = inputTargets.value(current)
 
-        if(targetsValue !is GenValue.GList.RuntimeListOf<*>) {
-            raise("") // TODO: Handle non-runtime lists
-        }
+                if(targetsValue !is GenValue.GList.RuntimeListOf<*>) {
+                    raise("") // TODO: Handle non-runtime lists
+                }
 
-        current.targets {
-            current.scope {
-                addTargets(string(label.value(current).value), targetsValue.value)
+                current.targets {
+                    current.scope {
+                        addTargets(string(label.value(current).value), targetsValue.value)
+                    }
+                }
+
+                NoSession
             }
         }
-
-        NoSession
     }
 
 }

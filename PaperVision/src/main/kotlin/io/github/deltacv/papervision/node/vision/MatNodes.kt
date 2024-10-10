@@ -4,16 +4,18 @@ import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
-import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.papervision.codegen.dsl.generatorFor
+import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
-import java.lang.IndexOutOfBoundsException
 
 @PaperNode(
     name = "nod_pipelineinput",
@@ -48,7 +50,9 @@ class InputMatNode @JvmOverloads constructor(
         output.enable()
     }
 
-    override fun genCode(current: CodeGen.Current) = NoSession
+    override val generators = mutableMapOf(
+        generatorFor(JavaLanguage) { NoSession }
+    )
 
     fun startGen(current: CodeGen.Current) {
         propagate(current)
@@ -57,7 +61,7 @@ class InputMatNode @JvmOverloads constructor(
     val value = GenValue.Mat(Variable(OpenCvTypes.Mat, "input"), ColorSpace.RGBA)
 
     override fun getOutputValueOf(current: CodeGen.Current,
-                                  attrib: Attribute) = value
+                                  attrib: Attribute) = if(attrib == output) value else GenValue.None
 }
 
 @PaperNode(
@@ -102,15 +106,17 @@ class OutputMatNode @JvmOverloads constructor(
         input.enable()
     }
 
-    override fun genCode(current: CodeGen.Current) = current {
-        current.scope {
-            streamMat(streamId!!, input.value(current).value, input.value(current).color)
+    override val generators = generators {
+        generatorFor(JavaLanguage) {
+            current.scope {
+                streamMat(streamId!!, input.value(current).value, input.value(current).color)
 
-            returnMethod(input.value(current).value)
-            appendWhiteline = false
+                returnMethod(input.value(current).value)
+                appendWhiteline = false
+            }
+
+            NoSession
         }
-
-        NoSession
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute) = GenValue.None

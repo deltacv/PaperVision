@@ -14,6 +14,8 @@ import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Scalar
+import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -51,90 +53,94 @@ open class DrawRectanglesNode
         }
     }
 
-    override fun genCode(current: CodeGen.Current) = current {
-        val session = Session()
+    override val generators = generators {
+        generatorFor(JavaLanguage) {
+            current {
+                val session = Session()
 
-        val color = lineColor.value(current)
-        val colorScalar = uniqueVariable(
-            "rectsColor",
-            Scalar.new(
-                color.a.v,
-                color.b.v,
-                color.c.v,
-                color.d.v,
-            )
-        )
+                val color = lineColor.value(current)
+                val colorScalar = uniqueVariable(
+                    "rectsColor",
+                    Scalar.new(
+                        color.a.v,
+                        color.b.v,
+                        color.c.v,
+                        color.d.v,
+                    )
+                )
 
-        val input = inputMat.value(current)
-        val rectanglesList = rectangles.value(current)
+                val input = inputMat.value(current)
+                val rectanglesList = rectangles.value(current)
 
-        val thickness = lineThickness.value(current).value
-        val thicknessVariable = uniqueVariable("rectsThickness", thickness.v)
+                val thickness = lineThickness.value(current).value
+                val thicknessVariable = uniqueVariable("rectsThickness", thickness.v)
 
-        val output = uniqueVariable("${input.value.value!!}Rects", Mat.new())
+                val output = uniqueVariable("${input.value.value!!}Rects", Mat.new())
 
-        var drawMat = input.value
+                var drawMat = input.value
 
-        group {
-            if (current.isForPreviz) {
-                public(thicknessVariable, lineThickness.label())
-            }
+                group {
+                    if (current.isForPreviz) {
+                        public(thicknessVariable, lineThickness.label())
+                    }
 
-            public(colorScalar, lineColor.label())
+                    public(colorScalar, lineColor.label())
 
-            if (!isDrawOnInput) {
-                private(output)
-            }
-        }
-
-        current.scope {
-            if (!isDrawOnInput) {
-                drawMat = output
-                input.value("copyTo", drawMat)
-            }
-
-            if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
-                for (rectangle in (rectanglesList as GenValue.GList.ListOf<*>).elements) {
-                    if (rectangle is GenValue.GRect.Rect) {
-                        Imgproc(
-                            "rectangle", drawMat,
-                            OpenCvTypes.Rect.new(
-                                double(rectangle.x.value), double(rectangle.y.value),
-                                double(rectangle.w.value), double(rectangle.h.value)
-                            ),
-                            colorScalar,
-                            if (current.isForPreviz)
-                                thicknessVariable
-                            else thickness.v
-                        )
-                    } else if (rectangle is GenValue.GRect.RuntimeRect) {
-                        Imgproc(
-                            "rectangle", drawMat, rectangle.value, colorScalar,
-                            if (current.isForPreviz)
-                                thicknessVariable
-                            else thickness.v
-                        )
+                    if (!isDrawOnInput) {
+                        private(output)
                     }
                 }
-            } else {
-                foreach(variable(OpenCvTypes.Rect, "rect"), rectanglesList.value) {
-                    Imgproc(
-                        "rectangle", drawMat, it, colorScalar,
-                        if (current.isForPreviz)
-                            thicknessVariable
-                        else thickness.v
-                    )
-                }
-            }
 
-            if (!isDrawOnInput) {
-                outputMat.streamIfEnabled(output, input.color)
+                current.scope {
+                    if (!isDrawOnInput) {
+                        drawMat = output
+                        input.value("copyTo", drawMat)
+                    }
+
+                    if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
+                        for (rectangle in (rectanglesList as GenValue.GList.ListOf<*>).elements) {
+                            if (rectangle is GenValue.GRect.Rect) {
+                                Imgproc(
+                                    "rectangle", drawMat,
+                                    OpenCvTypes.Rect.new(
+                                        double(rectangle.x.value), double(rectangle.y.value),
+                                        double(rectangle.w.value), double(rectangle.h.value)
+                                    ),
+                                    colorScalar,
+                                    if (current.isForPreviz)
+                                        thicknessVariable
+                                    else thickness.v
+                                )
+                            } else if (rectangle is GenValue.GRect.RuntimeRect) {
+                                Imgproc(
+                                    "rectangle", drawMat, rectangle.value, colorScalar,
+                                    if (current.isForPreviz)
+                                        thicknessVariable
+                                    else thickness.v
+                                )
+                            }
+                        }
+                    } else {
+                        foreach(variable(OpenCvTypes.Rect, "rect"), rectanglesList.value) {
+                            Imgproc(
+                                "rectangle", drawMat, it, colorScalar,
+                                if (current.isForPreviz)
+                                    thicknessVariable
+                                else thickness.v
+                            )
+                        }
+                    }
+
+                    if (!isDrawOnInput) {
+                        outputMat.streamIfEnabled(output, input.color)
+                    }
+                }
+
+                session.outputMat = GenValue.Mat(drawMat, input.color, input.isBinary)
+
+                session
             }
         }
-
-        session.outputMat = GenValue.Mat(drawMat, input.color, input.isBinary)
-
-        session
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {

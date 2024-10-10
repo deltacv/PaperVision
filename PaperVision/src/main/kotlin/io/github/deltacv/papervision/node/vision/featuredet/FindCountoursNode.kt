@@ -12,6 +12,8 @@ import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.MatOfPoint
+import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -31,30 +33,34 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
         + outputPoints.rebuildOnChange()
     }
 
-    override fun genCode(current: CodeGen.Current) = current {
-        val session = Session()
+    override val generators = generators {
+        generatorFor(JavaLanguage) {
+            current {
+                val session = Session()
 
-        val input = inputMat.value(current)
-        input.requireBinary(inputMat)
+                val input = inputMat.value(current)
+                input.requireBinary(inputMat)
 
-        val list = uniqueVariable("contours", JavaTypes.ArrayList(MatOfPoint).new())
-        val hierarchyMat = uniqueVariable("hierarchy", Mat.new())
+                val list = uniqueVariable("contours", JavaTypes.ArrayList(MatOfPoint).new())
+                val hierarchyMat = uniqueVariable("hierarchy", Mat.new())
 
-        group {
-            private(list)
-            private(hierarchyMat)
+                group {
+                    private(list)
+                    private(hierarchyMat)
+                }
+
+                current.scope {
+                    list("clear")
+                    hierarchyMat("release")
+
+                    Imgproc("findContours", input.value, list, hierarchyMat, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE)
+                }
+
+                session.contoursList = GenValue.GList.RuntimeListOf(list, GenValue.GPoints.Points::class)
+
+                session
+            }
         }
-
-        current.scope {
-            list("clear")
-            hierarchyMat("release")
-
-            Imgproc("findContours", input.value, list, hierarchyMat, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE)
-        }
-
-        session.contoursList = GenValue.GList.RuntimeListOf(list, GenValue.GPoints.Points::class)
-
-        session
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {

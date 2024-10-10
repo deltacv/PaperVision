@@ -8,6 +8,8 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -40,70 +42,74 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
         + outputMat.enablePrevizButton().rebuildOnChange()
     }
 
-    override fun genCode(current: CodeGen.Current) = current {
-        val session = Session()
+    override val generators = generators {
+        generatorFor(JavaLanguage) {
+            current {
+                val session = Session()
 
-        val input = inputMat.value(current)
-        input.requireBinary(inputMat)
+                val input = inputMat.value(current)
+                input.requireBinary(inputMat)
 
-        val erodeVal = erodeValue.value(current)
-        val erodeValVariable = uniqueVariable("erodeValue", int(erodeVal.value.v))
+                val erodeVal = erodeValue.value(current)
+                val erodeValVariable = uniqueVariable("erodeValue", int(erodeVal.value.v))
 
-        val dilateVal = erodeValue.value(current)
-        val dilateValVariable = uniqueVariable("dilateValue", int(dilateVal.value.v))
+                val dilateVal = erodeValue.value(current)
+                val dilateValVariable = uniqueVariable("dilateValue", int(dilateVal.value.v))
 
-        val element = uniqueVariable("element", OpenCvTypes.Mat.nullVal)
+                val element = uniqueVariable("element", OpenCvTypes.Mat.nullVal)
 
-        val output = uniqueVariable("${input.value.value!!}ErodedDilated", OpenCvTypes.Mat.new())
+                val output = uniqueVariable("${input.value.value!!}ErodedDilated", OpenCvTypes.Mat.new())
 
-        group {
-            public(erodeValVariable, erodeValue.label())
-            public(dilateValVariable, dilateValue.label())
-            private(element)
-            private(output)
-        }
+                group {
+                    public(erodeValVariable, erodeValue.label())
+                    public(dilateValVariable, dilateValue.label())
+                    private(element)
+                    private(output)
+                }
 
-        current.scope {
-            input.value("copyTo", output)
+                current.scope {
+                    input.value("copyTo", output)
 
-            ifCondition(erodeValVariable greaterThan int(0)) {
-                element instanceSet OpenCvTypes.Imgproc.callValue(
-                    "getStructuringElement",
-                    OpenCvTypes.Mat,
-                    OpenCvTypes.Imgproc.MORPH_RECT,
-                    OpenCvTypes.Size.new(erodeValVariable, erodeValVariable)
-                )
+                    ifCondition(erodeValVariable greaterThan int(0)) {
+                        element instanceSet OpenCvTypes.Imgproc.callValue(
+                            "getStructuringElement",
+                            OpenCvTypes.Mat,
+                            OpenCvTypes.Imgproc.MORPH_RECT,
+                            OpenCvTypes.Size.new(erodeValVariable, erodeValVariable)
+                        )
 
-                OpenCvTypes.Imgproc("erode", output, output, element)
+                        OpenCvTypes.Imgproc("erode", output, output, element)
 
-                separate()
+                        separate()
 
-                element("release")
+                        element("release")
+                    }
+
+                    separate()
+
+                    ifCondition(dilateValVariable greaterThan int(0)) {
+                        element instanceSet OpenCvTypes.Imgproc.callValue(
+                            "getStructuringElement",
+                            OpenCvTypes.Mat,
+                            OpenCvTypes.Imgproc.MORPH_RECT,
+                            OpenCvTypes.Size.new(dilateValVariable, dilateValVariable)
+                        )
+
+                        OpenCvTypes.Imgproc("dilate", output, output, element)
+
+                        separate()
+
+                        element("release")
+                    }
+
+                    outputMat.streamIfEnabled(output, ColorSpace.GRAY)
+                }
+
+                session.outputMatValue = GenValue.Mat(output, input.color, input.isBinary)
+
+                session
             }
-
-            separate()
-
-            ifCondition(dilateValVariable greaterThan int(0)) {
-                element instanceSet OpenCvTypes.Imgproc.callValue(
-                    "getStructuringElement",
-                    OpenCvTypes.Mat,
-                    OpenCvTypes.Imgproc.MORPH_RECT,
-                    OpenCvTypes.Size.new(dilateValVariable, dilateValVariable)
-                )
-
-                OpenCvTypes.Imgproc("dilate", output, output, element)
-
-                separate()
-
-                element("release")
-            }
-
-            outputMat.streamIfEnabled(output, ColorSpace.GRAY)
         }
-
-        session.outputMatValue = GenValue.Mat(output, input.color, input.isBinary)
-
-        session
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {

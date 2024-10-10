@@ -13,6 +13,8 @@ import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Core
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Scalar
+import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.Category
@@ -63,69 +65,73 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         lastColor = color
     }
 
-    override fun genCode(current: CodeGen.Current) = current {
-        val session = Session()
+    override val generators = generators {
+        generatorFor(JavaLanguage) {
+            current {
+                val session = Session()
 
-        val range = scalar.value(current)
+                val range = scalar.value(current)
 
-        var inputMat = input.value(current)
-        inputMat.requireNonBinary(input)
-        
-        val matColor = inputMat.color
-        val targetColor = lastColor
-        
-        val needsCvt = matColor != targetColor
+                var inputMat = input.value(current)
+                inputMat.requireNonBinary(input)
 
-        val cvtMat = uniqueVariable("${targetColor.name.lowercase()}Mat", Mat.new())
-        val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}BinaryMat", Mat.new())
+                val matColor = inputMat.color
+                val targetColor = lastColor
 
-        val scalarLabels = scalar.labelsForTwoScalars()
+                val needsCvt = matColor != targetColor
 
-        val lowerScalar = uniqueVariable("lower${targetColor.name}",
-            Scalar.new(
-                range.a.min.v,
-                range.b.min.v,
-                range.c.min.v,
-                range.d.min.v,
-            )
-        )
+                val cvtMat = uniqueVariable("${targetColor.name.lowercase()}Mat", Mat.new())
+                val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}BinaryMat", Mat.new())
 
-        val upperScalar = uniqueVariable("upper${targetColor.name}",
-            Scalar.new(
-                range.a.max.v,
-                range.b.max.v,
-                range.c.max.v,
-                range.d.max.v,
-            )
-        )
+                val scalarLabels = scalar.labelsForTwoScalars()
 
-        group {
-            // lower color scalar
-            public(lowerScalar, scalarLabels.first)
+                val lowerScalar = uniqueVariable("lower${targetColor.name}",
+                    Scalar.new(
+                        range.a.min.v,
+                        range.b.min.v,
+                        range.c.min.v,
+                        range.d.min.v,
+                    )
+                )
 
-            // upper color scalar
-            public(upperScalar, scalarLabels.second)
+                val upperScalar = uniqueVariable("upper${targetColor.name}",
+                    Scalar.new(
+                        range.a.max.v,
+                        range.b.max.v,
+                        range.c.max.v,
+                        range.d.max.v,
+                    )
+                )
 
-            if (needsCvt) {
-                private(cvtMat)
+                group {
+                    // lower color scalar
+                    public(lowerScalar, scalarLabels.first)
+
+                    // upper color scalar
+                    public(upperScalar, scalarLabels.second)
+
+                    if (needsCvt) {
+                        private(cvtMat)
+                    }
+                    // output mat target
+                    private(thresholdTargetMat)
+                }
+
+                current.scope {
+                    if(needsCvt) {
+                        Imgproc("cvtColor", inputMat.value, cvtMat, cvtColorValue(matColor, targetColor))
+                        inputMat = GenValue.Mat(cvtMat, targetColor)
+                    }
+
+                    Core("inRange", inputMat.value, lowerScalar, upperScalar, thresholdTargetMat)
+                    output.streamIfEnabled(thresholdTargetMat, ColorSpace.GRAY)
+                }
+
+                session.outputMat = GenValue.Mat(thresholdTargetMat, targetColor, true)
+
+                session
             }
-            // output mat target
-            private(thresholdTargetMat)
         }
-
-        current.scope {
-            if(needsCvt) {
-                Imgproc("cvtColor", inputMat.value, cvtMat, cvtColorValue(matColor, targetColor))
-                inputMat = GenValue.Mat(cvtMat, targetColor)
-            }
-
-            Core("inRange", inputMat.value, lowerScalar, upperScalar, thresholdTargetMat)
-            output.streamIfEnabled(thresholdTargetMat, ColorSpace.GRAY)
-        }
-
-        session.outputMat = GenValue.Mat(thresholdTargetMat, targetColor, true)
-
-        session
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {

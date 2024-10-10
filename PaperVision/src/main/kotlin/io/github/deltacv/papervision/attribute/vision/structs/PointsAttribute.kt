@@ -14,7 +14,7 @@ class PointsAttribute (
 ) : TypedAttribute(PointsAttribute) {
 
     companion object : AttributeType {
-        override val icon = FontAwesomeIcons.DotCircle
+        override val icon = FontAwesomeIcons.BezierCurve
 
         override val styleColor = rgbaColor(149, 117, 205, 180)
         override val styleHoveredColor = rgbaColor(149, 117, 205, 255)

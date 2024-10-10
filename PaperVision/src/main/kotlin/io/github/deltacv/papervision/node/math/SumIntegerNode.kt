@@ -10,11 +10,12 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.Category
 
+/*
 @PaperNode(
     name = "nod_sumintegers",
     category = Category.MATH,
     description = "Sums a list of integers and outputs the result"
-)
+)*/
 class SumIntegerNode : DrawNode<SumIntegerNode.Session>() {
 
     val numbers = ListAttribute(INPUT, IntAttribute, "$[att_numbers]")
@@ -27,8 +28,6 @@ class SumIntegerNode : DrawNode<SumIntegerNode.Session>() {
 
     override fun genCode(current: CodeGen.Current) = current {
         val session = Session()
-
-
 
         session
     }

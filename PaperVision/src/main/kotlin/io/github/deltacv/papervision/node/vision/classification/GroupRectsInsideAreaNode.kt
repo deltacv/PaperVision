@@ -13,6 +13,8 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -53,108 +55,112 @@ class GroupRectsInsideAreaNode : DrawNode<GroupRectsInsideAreaNode.Session>() {
         + output.rebuildOnChange()
     }
 
-    override fun genCode(current: CodeGen.Current) = current {
-        val session = Session()
+    override val generators = generators {
+        generatorFor(JavaLanguage) {
+            current {
+                val session = Session()
 
-        val sourceValue = source.value(current).value
-        val rectsList = input.value(current)
+                val sourceValue = source.value(current).value
+                val rectsList = input.value(current)
 
-        if(rectsList !is GenValue.GList.RuntimeListOf<*>) {
-            raise("") // TODO: Handle non-runtime lists
-        }
+                if(rectsList !is GenValue.GList.RuntimeListOf<*>) {
+                    raise("") // TODO: Handle non-runtime lists
+                }
 
-        val areaOrientationValue = areaOrientation.value(current)
+                val areaOrientationValue = areaOrientation.value(current)
 
-        val startPositionPerc = int(areaStartPositionPercentage.value(current).value)
-        val endPositionPerc = int(areaEndPositionPercentage.value(current).value)
+                val startPositionPerc = int(areaStartPositionPercentage.value(current).value)
+                val endPositionPerc = int(areaEndPositionPercentage.value(current).value)
 
-        val groupedRects = uniqueVariable("rectsInside${areaOrientationValue.value.name}Area", JavaTypes.ArrayList(OpenCvTypes.Rect).new())
+                val groupedRects = uniqueVariable("rectsInside${areaOrientationValue.value.name}Area", JavaTypes.ArrayList(OpenCvTypes.Rect).new())
 
-        val areaRectVariable = uniqueVariable("areaRect", OpenCvTypes.Rect.new())
+                val areaRectVariable = uniqueVariable("areaRect", OpenCvTypes.Rect.new())
 
-        group {
-            private(groupedRects)
+                group {
+                    private(groupedRects)
 
-            if(areaRect.hasLink) {
-                private(areaRectVariable)
-            }
-        }
+                    if(areaRect.hasLink) {
+                        private(areaRectVariable)
+                    }
+                }
 
-        current.scope {
-            groupedRects("clear")
+                current.scope {
+                    groupedRects("clear")
 
-            separate()
+                    separate()
 
-            val imageSize = sourceValue.callValue("size", OpenCvTypes.Size)
+                    val imageSize = sourceValue.callValue("size", OpenCvTypes.Size)
 
-            val start = when(areaOrientationValue.value) {
-                Orientation.Vertical -> uniqueVariable(
-                    "start",
-                    imageSize.propertyValue("width", IntType) * (startPositionPerc / double(100.0))
-                )
+                    val start = when(areaOrientationValue.value) {
+                        Orientation.Vertical -> uniqueVariable(
+                            "start",
+                            imageSize.propertyValue("width", IntType) * (startPositionPerc / double(100.0))
+                        )
 
-                Orientation.Horizontal -> uniqueVariable(
-                    "start",
-                    imageSize.propertyValue("height", IntType) * (startPositionPerc / double(100.0))
-                )
-            }
+                        Orientation.Horizontal -> uniqueVariable(
+                            "start",
+                            imageSize.propertyValue("height", IntType) * (startPositionPerc / double(100.0))
+                        )
+                    }
 
-            val end = when(areaOrientationValue.value) {
-                Orientation.Vertical -> uniqueVariable(
-                    "end",
-                    imageSize.propertyValue("width", IntType) * (endPositionPerc / double(100.0))
-                )
+                    val end = when(areaOrientationValue.value) {
+                        Orientation.Vertical -> uniqueVariable(
+                            "end",
+                            imageSize.propertyValue("width", IntType) * (endPositionPerc / double(100.0))
+                        )
 
-                Orientation.Horizontal -> uniqueVariable(
-                    "end",
-                    imageSize.propertyValue("height", IntType) * (endPositionPerc / double(100.0))
-                )
-            }
+                        Orientation.Horizontal -> uniqueVariable(
+                            "end",
+                            imageSize.propertyValue("height", IntType) * (endPositionPerc / double(100.0))
+                        )
+                    }
 
-            local(start)
-            local(end)
+                    local(start)
+                    local(end)
 
-            separate()
+                    separate()
 
-            foreach(Variable(OpenCvTypes.Rect, "rect"), rectsList.value) {
-                when(areaOrientationValue.value) {
-                    Orientation.Horizontal -> {
-                        ifCondition((it.propertyValue("y", IntType) greaterOrEqualThan start) and (it.propertyValue("y", IntType) + it.propertyValue("height", IntType) lessOrEqualThan end)) {
-                            groupedRects("add", it)
+                    foreach(Variable(OpenCvTypes.Rect, "rect"), rectsList.value) {
+                        when(areaOrientationValue.value) {
+                            Orientation.Horizontal -> {
+                                ifCondition((it.propertyValue("y", IntType) greaterOrEqualThan start) and (it.propertyValue("y", IntType) + it.propertyValue("height", IntType) lessOrEqualThan end)) {
+                                    groupedRects("add", it)
+                                }
+                            }
+
+                            Orientation.Vertical -> {
+                                ifCondition((it.propertyValue("x", IntType) greaterOrEqualThan start) and (it.propertyValue("x", IntType) + it.propertyValue("width", IntType) lessOrEqualThan end)) {
+                                    groupedRects("add", it)
+                                }
+                            }
                         }
                     }
 
-                    Orientation.Vertical -> {
-                        ifCondition((it.propertyValue("x", IntType) greaterOrEqualThan start) and (it.propertyValue("x", IntType) + it.propertyValue("width", IntType) lessOrEqualThan end)) {
-                            groupedRects("add", it)
+                    if(areaRect.hasLink) {
+                        when(areaOrientationValue.value) {
+                            Orientation.Horizontal -> {
+                                areaRectVariable.propertyVariable("x", IntType) set int(start)
+                                areaRectVariable.propertyVariable("y", IntType) set int(0)
+                                areaRectVariable.propertyVariable("width", IntType) set int(end - start)
+                                areaRectVariable.propertyVariable("height", IntType) set int(imageSize.propertyValue("height", IntType))
+                            }
+
+                            Orientation.Vertical -> {
+                                areaRectVariable.propertyVariable("x", IntType) set int(0)
+                                areaRectVariable.propertyVariable("y", IntType) set int(start)
+                                areaRectVariable.propertyVariable("width", IntType) set int(imageSize.propertyValue("width", IntType))
+                                areaRectVariable.propertyVariable("height", IntType) set int(end - start)
+                            }
                         }
                     }
                 }
-            }
 
-            if(areaRect.hasLink) {
-                when(areaOrientationValue.value) {
-                    Orientation.Horizontal -> {
-                        areaRectVariable.propertyVariable("x", IntType) set int(start)
-                        areaRectVariable.propertyVariable("y", IntType) set int(0)
-                        areaRectVariable.propertyVariable("width", IntType) set int(end - start)
-                        areaRectVariable.propertyVariable("height", IntType) set int(imageSize.propertyValue("height", IntType))
-                    }
+                session.areaRectOutput = GenValue.GRect.RuntimeRect(areaRectVariable)
+                session.output = GenValue.GList.RuntimeListOf(groupedRects, GenValue.GRect.RuntimeRect::class)
 
-                    Orientation.Vertical -> {
-                        areaRectVariable.propertyVariable("x", IntType) set int(0)
-                        areaRectVariable.propertyVariable("y", IntType) set int(start)
-                        areaRectVariable.propertyVariable("width", IntType) set int(imageSize.propertyValue("width", IntType))
-                        areaRectVariable.propertyVariable("height", IntType) set int(end - start)
-                    }
-                }
+                session
             }
         }
-
-        session.areaRectOutput = GenValue.GRect.RuntimeRect(areaRectVariable)
-        session.output = GenValue.GList.RuntimeListOf(groupedRects, GenValue.GRect.RuntimeRect::class)
-
-        session
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {

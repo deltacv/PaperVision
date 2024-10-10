@@ -8,9 +8,13 @@ import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.Generator
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.Language
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -30,32 +34,36 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
         + outputRects.rebuildOnChange()
     }
 
-    override fun genCode(current: CodeGen.Current) = current {
-        val session = Session()
+    override val generators = generators {
+        generatorFor(JavaLanguage) {
+            current {
+                val session = Session()
 
-        val input = inputContours.value(current)
+                val input = inputContours.value(current)
 
-        if(input !is GenValue.GList.RuntimeListOf<*>) {
-            raise("") // TODO: Handle non-runtime lists
-        }
+                if(input !is GenValue.GList.RuntimeListOf<*>) {
+                    raise("") // TODO: Handle non-runtime lists
+                }
 
-        val rectsList = uniqueVariable("${input.value.value}Rects", JavaTypes.ArrayList(OpenCvTypes.Rect).new())
+                val rectsList = uniqueVariable("${input.value.value}Rects", JavaTypes.ArrayList(OpenCvTypes.Rect).new())
 
-        group {
-            private(rectsList)
-        }
+                group {
+                    private(rectsList)
+                }
 
-        current.scope {
-            rectsList("clear")
+                current.scope {
+                    rectsList("clear")
 
-            foreach(variable(OpenCvTypes.MatOfPoint, "points"), input.value) {
-                rectsList("add", Imgproc.callValue("boundingRect", OpenCvTypes.Rect, it))
+                    foreach(variable(OpenCvTypes.MatOfPoint, "points"), input.value) {
+                        rectsList("add", Imgproc.callValue("boundingRect", OpenCvTypes.Rect, it))
+                    }
+                }
+
+                session.outputRects = GenValue.GList.RuntimeListOf(rectsList, GenValue.GRect.RuntimeRect::class)
+
+                session
             }
         }
-
-        session.outputRects = GenValue.GList.RuntimeListOf(rectsList, GenValue.GRect.RuntimeRect::class)
-
-        session
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {

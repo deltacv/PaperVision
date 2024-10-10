@@ -13,6 +13,8 @@ import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Size
+import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -91,61 +93,65 @@ class GroupContoursByShapeNode : DrawNode<GroupContoursByShapeNode.Session>() {
         if(sides.thisGet() < 0) sides.value.set(0)
     }
 
-    override fun genCode(current: CodeGen.Current) = current {
-        val session = Session()
+    override val generators = generators {
+        generatorFor(JavaLanguage) {
+            current {
+                val session = Session()
 
-        val inputContours = input.value(current)
+                val inputContours = input.value(current)
 
-        if(inputContours !is GenValue.GList.RuntimeListOf<*>){
-            raise("")
-        }
-
-        val shapeValue = shape.value(current).value
-        val sidesValue = sides.value(current)
-        val accuracyValue = accuracy.value(current).value
-
-        val list = uniqueVariable("filtered${shapeValue.name}Contours", JavaTypes.ArrayList(OpenCvTypes.MatOfPoint).new())
-
-        val contours2f = uniqueVariable("contours2f", OpenCvTypes.MatOfPoint2f.new())
-        val approxPolyDp = uniqueVariable("approxPolyDp", OpenCvTypes.MatOfPoint2f.new())
-        val approxPolyDp2f = uniqueVariable("approxPolyDp2f", OpenCvTypes.MatOfPoint2f.new())
-
-        group {
-            private(approxPolyDp)
-            private(approxPolyDp2f)
-            private(contours2f)
-
-            private(list)
-        }
-
-        current.scope {
-            list("clear")
-
-            foreach(variable(OpenCvTypes.MatOfPoint, "contour"), inputContours.value) {
-                it("convertTo", contours2f, cvTypeValue("CV_32FC2"))
-
-                separate()
-
-                Imgproc("approxPolyDP", contours2f, approxPolyDp2f, ((double(100.0) - int(accuracyValue)) / double(100.0)) * Imgproc.callValue("arcLength", DoubleType, contours2f, trueValue), trueValue)
-                approxPolyDp2f("convertTo", approxPolyDp, cvTypeValue("CV_32S"))
-
-                separate()
-
-                ifCondition(approxPolyDp.callValue("size", Size).propertyValue("height", IntType) equalsTo sidesValue.value.v) {
-                    list("add", it)
+                if(inputContours !is GenValue.GList.RuntimeListOf<*>){
+                    raise("")
                 }
 
-                separate()
+                val shapeValue = shape.value(current).value
+                val sidesValue = sides.value(current)
+                val accuracyValue = accuracy.value(current).value
 
-                contours2f("release")
-                approxPolyDp("release")
-                approxPolyDp2f("release")
+                val list = uniqueVariable("filtered${shapeValue.name}Contours", JavaTypes.ArrayList(OpenCvTypes.MatOfPoint).new())
+
+                val contours2f = uniqueVariable("contours2f", OpenCvTypes.MatOfPoint2f.new())
+                val approxPolyDp = uniqueVariable("approxPolyDp", OpenCvTypes.MatOfPoint2f.new())
+                val approxPolyDp2f = uniqueVariable("approxPolyDp2f", OpenCvTypes.MatOfPoint2f.new())
+
+                group {
+                    private(approxPolyDp)
+                    private(approxPolyDp2f)
+                    private(contours2f)
+
+                    private(list)
+                }
+
+                current.scope {
+                    list("clear")
+
+                    foreach(variable(OpenCvTypes.MatOfPoint, "contour"), inputContours.value) {
+                        it("convertTo", contours2f, cvTypeValue("CV_32FC2"))
+
+                        separate()
+
+                        Imgproc("approxPolyDP", contours2f, approxPolyDp2f, ((double(100.0) - int(accuracyValue)) / double(100.0)) * Imgproc.callValue("arcLength", DoubleType, contours2f, trueValue), trueValue)
+                        approxPolyDp2f("convertTo", approxPolyDp, cvTypeValue("CV_32S"))
+
+                        separate()
+
+                        ifCondition(approxPolyDp.callValue("size", Size).propertyValue("height", IntType) equalsTo sidesValue.value.v) {
+                            list("add", it)
+                        }
+
+                        separate()
+
+                        contours2f("release")
+                        approxPolyDp("release")
+                        approxPolyDp2f("release")
+                    }
+                }
+
+                session.output = GenValue.GList.RuntimeListOf(list, GenValue.GPoints.RuntimePoints::class)
+
+                session
             }
         }
-
-        session.output = GenValue.GList.RuntimeListOf(list, GenValue.GPoints.RuntimePoints::class)
-
-        session
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {

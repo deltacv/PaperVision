@@ -9,10 +9,10 @@ import imgui.flag.ImGuiMouseButton
 import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImInt
 import io.github.deltacv.papervision.PaperVision
-import io.github.deltacv.papervision.action.editor.CreateNodeAction
-import io.github.deltacv.papervision.action.editor.DeleteNodesAction
 import io.github.deltacv.papervision.action.editor.CreateLinkAction
+import io.github.deltacv.papervision.action.editor.CreateNodeAction
 import io.github.deltacv.papervision.action.editor.DeleteLinksAction
+import io.github.deltacv.papervision.action.editor.DeleteNodesAction
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -26,7 +26,6 @@ import io.github.deltacv.papervision.gui.util.Tooltip
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.id.DrawableIdElement
 import io.github.deltacv.papervision.io.KeyManager
-import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.InvisibleNode
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
@@ -36,7 +35,6 @@ import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
 import io.github.deltacv.papervision.util.loggerForThis
-import kotlinx.coroutines.selects.select
 
 class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManager) : Window() {
     companion object {

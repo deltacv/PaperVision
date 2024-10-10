@@ -11,6 +11,8 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Size
+import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -39,51 +41,55 @@ class BlurNode : DrawNode<BlurNode.Session>() {
         + output.enablePrevizButton()
     }
 
-    override fun genCode(current: CodeGen.Current) = current {
-        val session = Session()
+    override val generators = generators {
+        generatorFor(JavaLanguage) {
+            current {
+                val session = Session()
 
-        val inputMat = input.value(current)
-        val algo = blurAlgo.value(current).value
-        val blurVal = blurValue.value(current)
+                val inputMat = input.value(current)
+                val algo = blurAlgo.value(current).value
+                val blurVal = blurValue.value(current)
 
-        val blurValVariable = uniqueVariable("blurValue", int(blurVal.value.v))
-        val outputMat = uniqueVariable("blur${algo.name}Mat", Mat.new())
+                val blurValVariable = uniqueVariable("blurValue", int(blurVal.value.v))
+                val outputMat = uniqueVariable("blur${algo.name}Mat", Mat.new())
 
-        group {
-            public(blurValVariable, blurValue.label())
-            private(outputMat)
-        }
-
-        current.scope {
-            when(algo) {
-                Gaussian -> {
-                    val kernelSize = 6.v * blurValVariable + 1.v
-                    val sizeBlurVal = Size.new(kernelSize, kernelSize)
-
-                    Imgproc("GaussianBlur", inputMat.value, outputMat, sizeBlurVal, blurValVariable)
+                group {
+                    public(blurValVariable, blurValue.label())
+                    private(outputMat)
                 }
-                Box -> {
-                    val kernelSize = 2.v * blurValVariable + 1.v
-                    val sizeBlurVal = Size.new(kernelSize, kernelSize)
 
-                    Imgproc("blur", inputMat.value, outputMat, sizeBlurVal)
+                current.scope {
+                    when(algo) {
+                        Gaussian -> {
+                            val kernelSize = 6.v * blurValVariable + 1.v
+                            val sizeBlurVal = Size.new(kernelSize, kernelSize)
+
+                            Imgproc("GaussianBlur", inputMat.value, outputMat, sizeBlurVal, blurValVariable)
+                        }
+                        Box -> {
+                            val kernelSize = 2.v * blurValVariable + 1.v
+                            val sizeBlurVal = Size.new(kernelSize, kernelSize)
+
+                            Imgproc("blur", inputMat.value, outputMat, sizeBlurVal)
+                        }
+                        Median -> {
+                            val kernelSize = 2.v * blurValVariable + 1.v
+                            Imgproc("medianBlur", inputMat.value, outputMat, kernelSize)
+                        }
+                        Bilateral -> {
+                            Imgproc("bilateralFilter", inputMat.value, outputMat, (-1).v, blurValVariable, blurValVariable)
+                        }
+                    }
+
+
+                    output.streamIfEnabled(outputMat, inputMat.color)
                 }
-                Median -> {
-                    val kernelSize = 2.v * blurValVariable + 1.v
-                    Imgproc("medianBlur", inputMat.value, outputMat, kernelSize)
-                }
-                Bilateral -> {
-                    Imgproc("bilateralFilter", inputMat.value, outputMat, (-1).v, blurValVariable, blurValVariable)
-                }
+
+                session.outputMatValue = GenValue.Mat(outputMat, inputMat.color)
+
+                session
             }
-
-
-            output.streamIfEnabled(outputMat, inputMat.color)
         }
-
-        session.outputMatValue = GenValue.Mat(outputMat, inputMat.color)
-
-        session
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {

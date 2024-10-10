@@ -8,6 +8,8 @@ import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Core
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Mat
+import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -31,30 +33,34 @@ class MaskNode : DrawNode<MaskNode.Session>(){
         + outputMat.rebuildOnChange()
     }
 
-    override fun genCode(current: CodeGen.Current) = current {
-        val session = Session()
+    override val generators = generators {
+        generatorFor(JavaLanguage) {
+            current {
+                val session = Session()
 
-        val input = inputMat.value(current)
-        input.requireNonBinary(inputMat)
+                val input = inputMat.value(current)
+                input.requireNonBinary(inputMat)
 
-        val mask = maskMat.value(current)
-        mask.requireBinary(maskMat)
+                val mask = maskMat.value(current)
+                mask.requireBinary(maskMat)
 
-        val output = uniqueVariable("${input.value.value!!}Mask", Mat.new())
+                val output = uniqueVariable("${input.value.value!!}Mask", Mat.new())
 
-        group {
-            private(output)
+                group {
+                    private(output)
+                }
+
+                current.scope {
+                    output("release")
+                    Core("bitwise_and", input.value, input.value, output, mask.value)
+                    outputMat.streamIfEnabled(output, input.color)
+                }
+
+                session.outputMat = GenValue.Mat(output, input.color)
+
+                session
+            }
         }
-
-        current.scope {
-            output("release")
-            Core("bitwise_and", input.value, input.value, output, mask.value)
-            outputMat.streamIfEnabled(output, input.color)
-        }
-
-        session.outputMat = GenValue.Mat(output, input.color)
-
-        session
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {

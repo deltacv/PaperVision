@@ -3,9 +3,11 @@ package io.github.deltacv.papervision.node
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
+import io.github.deltacv.papervision.GeneratorsGenNode
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.*
+import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.exception.NodeGenException
 import io.github.deltacv.papervision.gui.Font
 import io.github.deltacv.papervision.gui.NodeEditor
@@ -25,7 +27,7 @@ interface Type {
 abstract class Node<S: CodeGenSession>(
     private var allowDelete: Boolean = true,
     val joinActionStack: Boolean = true
-) : DrawableIdElementBase<Node<*>>(), GenNode<S>, DataSerializable<NodeSerializationData> {
+) : DrawableIdElementBase<Node<*>>(), GeneratorsGenNode<S>, DataSerializable<NodeSerializationData> {
 
     override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Node<*>>()
     override val requestedId get() = serializedId
@@ -44,6 +46,8 @@ abstract class Node<S: CodeGenSession>(
         internal set
 
     val isOnEditor get() = ::editor.isInitialized && idElementContainer.contains(this)
+
+    override val generators = mutableMapOf<Language, Generator<S>>()
 
     override val genOptions = CodeGenOptions()
 

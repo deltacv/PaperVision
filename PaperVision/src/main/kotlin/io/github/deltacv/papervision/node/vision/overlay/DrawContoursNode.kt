@@ -13,6 +13,8 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Scalar
+import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -52,65 +54,69 @@ open class DrawContoursNode
         }
     }
 
-    override fun genCode(current: CodeGen.Current) = current {
-        val session = Session()
+    override val generators = generators {
+        generatorFor(JavaLanguage) {
+            current {
+                val session = Session()
 
-        val color = lineColor.value(current)
-        val colorScalar = uniqueVariable("contoursColor",
-            Scalar.new(
-                color.a.v,
-                color.b.v,
-                color.c.v,
-                color.d.v,
-            )
-        )
+                val color = lineColor.value(current)
+                val colorScalar = uniqueVariable("contoursColor",
+                    Scalar.new(
+                        color.a.v,
+                        color.b.v,
+                        color.c.v,
+                        color.d.v,
+                    )
+                )
 
-        val input = inputMat.value(current)
-        val contoursList = contours.value(current)
+                val input = inputMat.value(current)
+                val contoursList = contours.value(current)
 
-        val thickness = lineThickness.value(current).value
-        val thicknessVariable = uniqueVariable("contoursThickness", thickness.v)
+                val thickness = lineThickness.value(current).value
+                val thicknessVariable = uniqueVariable("contoursThickness", thickness.v)
 
-        val output = uniqueVariable("${input.value.value!!}Contours", Mat.new())
+                val output = uniqueVariable("${input.value.value!!}Contours", Mat.new())
 
-        if(contoursList !is GenValue.GList.RuntimeListOf<*>) {
-            contours.raise("Given list is not a runtime type (TODO)") // TODO: Handle non-runtime lists
+                if(contoursList !is GenValue.GList.RuntimeListOf<*>) {
+                    contours.raise("Given list is not a runtime type (TODO)") // TODO: Handle non-runtime lists
+                }
+
+                var drawMat = input.value
+
+                group {
+                    if(current.isForPreviz) {
+                        public(thicknessVariable, lineThickness.label())
+                    }
+
+                    public(colorScalar, lineColor.label())
+
+                    if (!isDrawOnInput) {
+                        private(output)
+                    }
+                }
+
+                current.scope {
+                    if(!isDrawOnInput) {
+                        drawMat = output
+                        input.value("copyTo", drawMat)
+                    }
+
+                    Imgproc("drawContours", drawMat, contoursList.value, (-1).v, colorScalar,
+                        if(isForPreviz)
+                            thicknessVariable
+                        else thickness.v
+                    )
+
+                    if(!isDrawOnInput) {
+                        outputMat.streamIfEnabled(drawMat, input.color)
+                    }
+                }
+
+                session.outputMat = GenValue.Mat(drawMat, input.color, input.isBinary)
+
+                session
+            }
         }
-
-        var drawMat = input.value
-
-        group {
-            if(current.isForPreviz) {
-                public(thicknessVariable, lineThickness.label())
-            }
-
-            public(colorScalar, lineColor.label())
-
-            if (!isDrawOnInput) {
-                private(output)
-            }
-        }
-
-        current.scope {
-            if(!isDrawOnInput) {
-                drawMat = output
-                input.value("copyTo", drawMat)
-            }
-
-            Imgproc("drawContours", drawMat, contoursList.value, (-1).v, colorScalar,
-                if(isForPreviz)
-                    thicknessVariable
-                else thickness.v
-            )
-
-            if(!isDrawOnInput) {
-                outputMat.streamIfEnabled(drawMat, input.color)
-            }
-        }
-
-        session.outputMat = GenValue.Mat(drawMat, input.color, input.isBinary)
-
-        session
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {

@@ -31,7 +31,7 @@ open class ListAttribute(
         override val styleHoveredColor = rgbaColor(95, 158, 160, 255)
     }
 
-    override var icon = "[${elementAttributeType.icon}]"
+    override var icon = "${FontAwesomeIcons.ChevronLeft}[${elementAttributeType.icon}${FontAwesomeIcons.ChevronRight}"
 
     override val styleColor
         get() = if (elementAttributeType.isDefaultListColor) {

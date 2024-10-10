@@ -50,6 +50,8 @@ class CodeGen(
     operator fun <T> invoke(block: CodeGenContext.() -> T) = block(context)
 
     data class Current(val codeGen: CodeGen, val scope: Scope, val isForPreviz: Boolean) {
+        val language get() = codeGen.language
+
         operator fun <T> invoke(scopeBlock: CodeGenContext.() -> T) = codeGen.invoke(scopeBlock)
     }
 
