@@ -21,7 +21,7 @@ import io.github.deltacv.papervision.node.PaperNode
 @PaperNode(
     name = "nod_findcontours",
     category = Category.FEATURE_DET,
-    description = "Finds all the contours (list of points) of a given binary image."
+    description = "des_findcontours"
 )
 class FindContoursNode : DrawNode<FindContoursNode.Session>() {
 

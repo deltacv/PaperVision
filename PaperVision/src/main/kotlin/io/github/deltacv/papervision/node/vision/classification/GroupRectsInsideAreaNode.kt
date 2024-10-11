@@ -25,7 +25,7 @@ enum class Orientation { Vertical, Horizontal }
 @PaperNode(
     name = "nod_grouprects_insidearea",
     category = Category.CLASSIFICATION,
-    description = "Finds all the contours (list of points) of a given binary image."
+    description = "des_grouprects_insidearea"
 )
 class GroupRectsInsideAreaNode : DrawNode<GroupRectsInsideAreaNode.Session>() {
 

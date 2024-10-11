@@ -24,7 +24,7 @@ import io.github.deltacv.papervision.node.vision.ColorSpace
 @PaperNode(
     name = "nod_drawrects",
     category = Category.OVERLAY,
-    description = "Draws the rectangles on a copy of the given image and outputs the result."
+    description = "des_drawrects"
 )
 open class DrawRectanglesNode
 @JvmOverloads constructor(val isDrawOnInput: Boolean = false) : DrawNode<DrawRectanglesNode.Session>() {
@@ -160,6 +160,6 @@ open class DrawRectanglesNode
 @PaperNode(
     name = "nod_drawrects_onimage",
     category = Category.OVERLAY,
-    description = "Draws the rectangles in the passed image."
+    description = "des_drawrects_onimage"
 )
 class DrawRectanglesOnImageNode : DrawRectanglesNode(true)

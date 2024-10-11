@@ -15,7 +15,7 @@ import io.github.deltacv.papervision.node.PaperNode
 @PaperNode(
     name = "nod_exporttarget",
     category = Category.CLASSIFICATION,
-    description = "Export detected target to return from the pipeline"
+    description = "des_exporttarget"
 )
 class ExportTargetNode : DrawNode<NoSession>() {
 

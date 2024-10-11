@@ -20,7 +20,7 @@ import io.github.deltacv.papervision.node.PaperNode
 @PaperNode(
     name = "nod_boundingrect",
     category = Category.FEATURE_DET,
-    description = "Calculates the bounding rectangles of a given list of points."
+    description = "des_boundingrect"
 )
 class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 

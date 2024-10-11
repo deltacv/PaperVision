@@ -27,7 +27,7 @@ enum class Shape(val sides: Int?) {
 @PaperNode(
     name = "nod_groupcontours_byshape",
     category = Category.CLASSIFICATION,
-    description = "Finds all the contours (list of points) of a given binary image."
+    description = "des_groupcontours_byshape"
 )
 class GroupContoursByShapeNode : DrawNode<GroupContoursByShapeNode.Session>() {
 

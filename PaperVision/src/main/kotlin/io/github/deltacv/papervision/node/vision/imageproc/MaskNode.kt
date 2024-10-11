@@ -17,7 +17,7 @@ import io.github.deltacv.papervision.node.PaperNode
 @PaperNode(
     name = "nod_binarymask",
     category = Category.IMAGE_PROC,
-    description = "Takes a normal image and performs a mask based on a binary image, discards or includes areas from the normal image based on the binary image."
+    description = "des_binarymask"
 )
 class MaskNode : DrawNode<MaskNode.Session>(){
 

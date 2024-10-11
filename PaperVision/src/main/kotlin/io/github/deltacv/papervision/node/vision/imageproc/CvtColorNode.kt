@@ -19,7 +19,7 @@ import io.github.deltacv.papervision.node.vision.ColorSpace
 @PaperNode(
     name = "nod_cvtcolor",
     category = Category.IMAGE_PROC,
-    description = "Converts a Mat from its current color space to the specified color space. If the mat is already in the specified color space, no conversion is made."
+    description = "des_cvtcolor"
 )
 class CvtColorNode : DrawNode<CvtColorNode.Session>() {
 

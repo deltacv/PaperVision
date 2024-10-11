@@ -25,7 +25,7 @@ import io.github.deltacv.papervision.serialization.data.SerializeData
 @PaperNode(
     name = "nod_colorthresh",
     category = Category.IMAGE_PROC,
-    description = "Performs a threshold in the input image and returns a binary image, discarding the pixels that were outside the range in the color space specified."
+    description = "des_colorthresh"
 )
 class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 

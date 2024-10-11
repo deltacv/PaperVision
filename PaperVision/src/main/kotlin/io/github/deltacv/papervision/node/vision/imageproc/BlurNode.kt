@@ -23,7 +23,7 @@ enum class BlurAlgorithm { Gaussian, Box, Median, Bilateral }
 @PaperNode(
     name = "nod_blur",
     category = Category.IMAGE_PROC,
-    description = "Takes a normal image and performs a mask based on a binary image, discards or includes areas from the normal image based on the binary image."
+    description = "des_blur"
 )
 class BlurNode : DrawNode<BlurNode.Session>() {
 

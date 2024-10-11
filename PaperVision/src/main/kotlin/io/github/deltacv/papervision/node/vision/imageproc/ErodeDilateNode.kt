@@ -19,7 +19,7 @@ import io.github.deltacv.papervision.util.Range2i
 @PaperNode(
     name = "nod_erodedilate",
     category = Category.IMAGE_PROC,
-    description = "Erodes and dilates a given image"
+    description = "des_erodedilate"
 )
 class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
 

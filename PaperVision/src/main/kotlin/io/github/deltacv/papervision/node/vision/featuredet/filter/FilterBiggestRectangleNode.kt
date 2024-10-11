@@ -17,7 +17,7 @@ import io.github.deltacv.papervision.node.PaperNode
 @PaperNode(
     name = "nod_filterbiggest_rect",
     category = Category.FEATURE_DET,
-    description = "Finds all the contours (list of points) of a given binary image."
+    description = "des_filterbiggest_rect"
 )
 class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>() {
 
