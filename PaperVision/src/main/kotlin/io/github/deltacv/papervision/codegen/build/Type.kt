@@ -4,10 +4,10 @@ import io.github.deltacv.papervision.codegen.csv
 
 open class Type(
     val className: String,
-    val packagePath: String = "",
+    open val packagePath: String = "",
     val generics: Array<Type>? = null,
 
-    val actualImport: Type? = null,
+    open val actualImport: Type? = null,
     val isArray: Boolean = false
 ) {
 

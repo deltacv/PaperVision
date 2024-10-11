@@ -9,9 +9,11 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.codegen.build.Variable
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generatorFor
 import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -58,10 +60,12 @@ class InputMatNode @JvmOverloads constructor(
         propagate(current)
     }
 
-    val value = GenValue.Mat(Variable(JvmOpenCvTypes.Mat, "input"), ColorSpace.RGBA)
-
     override fun getOutputValueOf(current: CodeGen.Current,
-                                  attrib: Attribute) = if(attrib == output) value else GenValue.None
+                                  attrib: Attribute
+    ) = when(current.language) {
+        is CPythonLanguage -> GenValue.Mat(Variable(CPythonOpenCvTypes.npArray, "input"), ColorSpace.RGBA)
+        else -> GenValue.Mat(Variable(JvmOpenCvTypes.Mat, "input"), ColorSpace.RGBA)
+    }
 }
 
 @PaperNode(
@@ -112,6 +116,16 @@ class OutputMatNode @JvmOverloads constructor(
                 streamMat(streamId!!, input.value(current).value, input.value(current).color)
 
                 returnMethod(input.value(current).value)
+                appendWhiteline = false
+            }
+
+            NoSession
+        }
+
+        generatorFor(CPythonLanguage) {
+            current.scope {
+                val inputValue = input.value(current)
+                returnMethod(inputValue.value)
                 appendWhiteline = false
             }
 

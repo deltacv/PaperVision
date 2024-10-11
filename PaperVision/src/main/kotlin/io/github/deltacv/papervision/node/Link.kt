@@ -73,6 +73,7 @@ class Link(
 
     internal fun triggerOnChange() {
         aAttrib?.onChange?.run()
+        bAttrib?.onChange?.run()
     }
 
     companion object {

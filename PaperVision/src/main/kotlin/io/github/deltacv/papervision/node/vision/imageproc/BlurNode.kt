@@ -8,10 +8,13 @@ import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Size
 import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage.tuple
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -89,6 +92,59 @@ class BlurNode : DrawNode<BlurNode.Session>() {
 
                 session
             }
+        }
+
+        generatorFor(CPythonLanguage) {
+            val session = Session()
+
+            current {
+                val inputMat = input.value(current)
+                val algo = blurAlgo.value(current).value
+                val blurVal = blurValue.value(current)
+
+                current.scope {
+                    val value = when (algo) {
+                        Gaussian -> {
+                            val kernelSize = uniqueVariable("kernel", 6.v * int(blurVal.value.v) + 1.v)
+                            local(kernelSize)
+                            val sizeBlurVal = tuple(kernelSize, kernelSize)
+
+                            cv2.callValue("GaussianBlur", CPythonLanguage.NoType, inputMat.value, sizeBlurVal, int(blurVal.value.v))
+                        }
+
+                        Box -> {
+                            val kernelSize = uniqueVariable("kernel", 2.v * int(blurVal.value.v) + 1.v)
+                            local(kernelSize)
+
+                            cv2.callValue("blur", CPythonLanguage.NoType, inputMat.value, tuple(kernelSize, kernelSize))
+                        }
+
+                        Median -> {
+                            val kernelSize = 2.v * int(blurVal.value.v) + 1.v
+                            cv2.callValue("medianBlur", CPythonLanguage.NoType, inputMat.value, kernelSize)
+                        }
+
+                        Bilateral -> {
+                            cv2.callValue(
+                                "bilateralFilter",
+                                CPythonLanguage.NoType,
+                                inputMat.value,
+                                (-1).v,
+                                int(blurVal.value.v),
+                                int(blurVal.value.v)
+                            )
+                        }
+                    }
+
+                    val variable = uniqueVariable("blur${algo.name}", value)
+                    local(variable)
+
+                    session.outputMatValue = GenValue.Mat(variable, inputMat.color)
+                }
+
+            }
+
+            session
         }
     }
 

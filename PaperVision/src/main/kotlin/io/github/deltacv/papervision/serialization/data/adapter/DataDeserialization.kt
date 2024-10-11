@@ -7,6 +7,9 @@ import io.github.deltacv.papervision.node.hasSuperclass
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import java.lang.reflect.Field
 
+/**
+ * Deserialize a json object to a DataSerializable object.
+ */
 @Suppress("UNCHECKED_CAST")
 fun jsonObjectToDataSerializable(
     json: JsonElement,
@@ -25,7 +28,7 @@ fun jsonObjectToDataSerializable(
     val objectInstance = inst
         ?: try {
             objectClass.getConstructor(dataClass).newInstance(dataInstance)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             objectClass.getConstructor().newInstance()
         } as DataSerializable<Any>
 
@@ -69,6 +72,9 @@ private fun processValue(instance: Any, valueName: String, value: JsonElement, c
     }
 }
 
+/**
+ * Get a field from a class, including superclasses.
+ */
 fun Class<*>.getFieldDeep(name: String): Field? {
     var field: Field? = null
     var clazz: Class<*>? = this
@@ -76,7 +82,7 @@ fun Class<*>.getFieldDeep(name: String): Field? {
     while (clazz != null && field == null) {
         try {
             field = clazz.getDeclaredField(name)
-        } catch (ignored: Exception) { }
+        } catch (_: Exception) { }
         clazz = clazz.superclass
     }
 

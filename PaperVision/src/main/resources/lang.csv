@@ -10,6 +10,7 @@ cat_high_level_cv,High Level,Alto Nivel
 cat_image_proc,Image Processing,Procesamiento de Imagen
 cat_feature_det,Feature Detection and Filtering,Deteccion de Caracteristicas y Filtrado
 cat_overlay,Overlay,Overlay
+cat_class,Classification,Clasificacion
 cat_math,Math,Matematicas
 cat_misc,Miscellaneous,Miscelaneo
 nod_previewdisplay,Preview,Previsualizacion

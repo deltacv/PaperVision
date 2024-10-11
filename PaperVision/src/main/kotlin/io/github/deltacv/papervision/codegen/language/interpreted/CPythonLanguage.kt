@@ -1,21 +1,30 @@
 package io.github.deltacv.papervision.codegen.language.interpreted
 
+import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.type.CPythonType
 import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.LanguageBase
+import io.github.deltacv.papervision.util.loggerForThis
+import kotlin.text.isNotBlank
 
 object CPythonLanguage : LanguageBase(
-    usesSemicolon = false,
-    genInClass = false,
-    optimizeImports = false
+    usesSemicolon = false
 ) {
 
     override val Parameter.string get() = name
 
+    val NoType = object: CPythonType("None", "None") {
+        override val shouldImport = false
+    }
+
     override val trueValue = ConValue(BooleanType, "True")
     override val falseValue = ConValue(BooleanType, "False")
+
+    override val nullValue = ConValue(NoType, "None")
 
     override val newImportBuilder = { PythonImportBuilder(this) }
 
@@ -115,43 +124,99 @@ object CPythonLanguage : LanguageBase(
 
     override fun nullVal(type: Type) = ConValue(type, "None")
 
+    override fun gen(codeGen: CodeGen): String = codeGen.run {
+        val mainScope = Scope(0, language, importScope)
+        val classBodyScope = Scope(1, language, importScope)
+
+        val start = classStartScope.get()
+        if(start.isNotBlank()) {
+            classBodyScope.scope(classStartScope)
+            classBodyScope.newStatement()
+        }
+
+        val init = initScope.get()
+        if(init.isNotBlank()) {
+            classBodyScope.method(
+                Visibility.PUBLIC, language.VoidType, "init", initScope,
+                Parameter(CPythonOpenCvTypes.npArray, "input")
+            )
+            classBodyScope.newStatement()
+        }
+
+        classBodyScope.method(
+            Visibility.PUBLIC, CPythonOpenCvTypes.npArray, "runPipeline", processFrameScope,
+            Parameter(CPythonOpenCvTypes.npArray, "input")
+        )
+
+        val end = classEndScope.get()
+        if(end.isNotBlank()) {
+            classBodyScope.scope(classEndScope)
+        }
+
+        mainScope.scope(importScope)
+        mainScope.newStatement()
+
+        mainScope.scope(classBodyScope, trimIndent = true)
+
+        mainScope.get()
+    }
+
+    fun tuple(vararg value: Value) = ConValue(NoType, "(${value.csv()})")
+
     class PythonImportBuilder(val lang: Language) : Language.ImportBuilder {
-        private val imports = mutableMapOf<String, MutableList<String>>()
+        private val imports = mutableMapOf<String, MutableSet<CPythonType>>() // Use MutableSet to avoid duplicates
+
+        val logger by loggerForThis()
 
         override fun import(type: Type) {
+            // Resolve actual import type
             val actualType = type.actualImport ?: type
 
-            if(lang.isImportExcluded(actualType) || !actualType.shouldImport) return
+            // Skip excluded types or types that shouldn't be imported
+            if (lang.isImportExcluded(actualType) || !actualType.shouldImport) return
 
-            val classNames = imports[actualType.packagePath]
-
-            if(classNames == null) {
-                imports[actualType.packagePath] = mutableListOf(actualType.className)
-            } else if(!classNames.contains(actualType.className)){
-                classNames.add(actualType.className)
+            // Check if the actual type is a CPythonType, as that’s what we want to track
+            if (actualType is CPythonType) {
+                // Insert the type into the imports map under its package/module path
+                imports.getOrPut(actualType.module) { mutableSetOf() }.add(actualType) // Add to MutableSet
+            } else {
+                logger.warn("Type $type is not a CPythonType and cannot be imported")
             }
         }
+
 
         override fun build(): String {
             val builder = StringBuilder()
 
-            for((importPath, classNames) in imports) {
-                builder.appendLine().append("from $importPath import ")
+            // Iterate over the modules and their types
+            for ((module, types) in imports) {
+                if (types.isEmpty()) continue
 
-                if(classNames.size > 1) builder.append("(")
+                // If only one type is imported, use the `import` syntax
+                if (types.size == 1) {
+                    builder.append("import ${types.first().module}")
+                    if (types.first().alias != null) {
+                        builder.append(" as ${types.first().alias}")
+                    }
+                    builder.appendLine()
+                } else {
+                    // Otherwise, use `from module import TypeA as AliasA, TypeB as AliasB`
+                    builder.append("from $module import ")
 
-                for((i, className) in classNames.withIndex()) {
-                    builder.append(className)
-
-                    if(i != classNames.size -1) builder.append(", ")
+                    // Handle aliases in the import statement
+                    val typeNames = types.joinToString(", ") { type ->
+                        if (type.alias != null) {
+                            "${type.name} as ${type.alias}"  // Type with alias
+                        } else {
+                            type.name ?: type.module         // Type without alias
+                        }
+                    }
+                    builder.append(typeNames).appendLine()
                 }
-
-                if(classNames.size > 1) builder.append(")")
             }
 
             return builder.toString().trim()
         }
-
     }
 
 }

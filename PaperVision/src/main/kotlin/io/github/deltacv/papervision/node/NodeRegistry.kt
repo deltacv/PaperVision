@@ -37,3 +37,13 @@ object NodeRegistry {
     }
 
 }
+
+fun hasSuperclass(clazz: Class<*>, superclass: Class<*>): Boolean {
+    return if (clazz.superclass == null) {
+        false
+    } else if (clazz.superclass == superclass) {
+        true
+    } else {
+        hasSuperclass(clazz.superclass, superclass)
+    }
+}
