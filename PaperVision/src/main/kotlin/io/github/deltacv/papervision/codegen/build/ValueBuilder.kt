@@ -96,7 +96,7 @@ interface ValueBuilder {
 
     fun enumValue(type: Type, constantName: String) = ConValue(type, "$type.$constantName")
 
-    fun cvtColorValue(a: ColorSpace, b: ColorSpace): ConValue {
+    fun cvtColorValue(a: ColorSpace, b: ColorSpace): Value {
         var newA = a
         var newB = b
 

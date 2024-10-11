@@ -14,6 +14,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Scalar
 import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -116,6 +117,12 @@ open class DrawContoursNode
 
                 session
             }
+        }
+
+        generatorFor(CPythonLanguage) {
+            val session = Session()
+
+            session
         }
     }
 

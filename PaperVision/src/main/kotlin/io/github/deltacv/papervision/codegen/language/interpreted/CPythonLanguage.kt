@@ -8,6 +8,7 @@ import io.github.deltacv.papervision.codegen.build.type.CPythonType
 import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.LanguageBase
+import io.github.deltacv.papervision.node.vision.ColorSpace
 import io.github.deltacv.papervision.util.loggerForThis
 import kotlin.text.isNotBlank
 
@@ -53,6 +54,19 @@ object CPythonLanguage : LanguageBase(
 
     override fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value?) =
         throw UnsupportedOperationException("streamMatCallDeclaration is not supported in Python")
+
+    override fun cvtColorValue(a: ColorSpace, b: ColorSpace): Value {
+        var newA = a
+        var newB = b
+
+        if(a == ColorSpace.RGBA && b != ColorSpace.RGB) {
+            newA = ColorSpace.RGB
+        } else if(a != ColorSpace.RGB && b == ColorSpace.RGBA) {
+            newB = ColorSpace.RGB
+        }
+
+        return ConValue(NoType, "cv2.COLOR_${newA.name}2${newB.name}")
+    }
 
     override fun methodDeclaration(
         vis: Visibility,
@@ -136,10 +150,7 @@ object CPythonLanguage : LanguageBase(
 
         val init = initScope.get()
         if(init.isNotBlank()) {
-            classBodyScope.method(
-                Visibility.PUBLIC, language.VoidType, "init", initScope,
-                Parameter(CPythonOpenCvTypes.npArray, "input")
-            )
+            classBodyScope.scope(initScope)
             classBodyScope.newStatement()
         }
 
@@ -162,6 +173,8 @@ object CPythonLanguage : LanguageBase(
     }
 
     fun tuple(vararg value: Value) = ConValue(NoType, "(${value.csv()})")
+
+    fun namedArgument(name: String, value: Value) = ConValue(NoType, "$name=${value.value}")
 
     class PythonImportBuilder(val lang: Language) : Language.ImportBuilder {
         private val imports = mutableMapOf<String, MutableSet<CPythonType>>() // Use MutableSet to avoid duplicates

@@ -34,10 +34,10 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
         + inputMat.rebuildOnChange()
 
         + erodeValue
-        erodeValue.sliderMode(Range2i(0, 100))
+        erodeValue.sliderMode(Range2i(0, 10))
 
         + dilateValue
-        dilateValue.sliderMode(Range2i(0, 100))
+        dilateValue.sliderMode(Range2i(0, 10))
 
         + outputMat.enablePrevizButton().rebuildOnChange()
     }

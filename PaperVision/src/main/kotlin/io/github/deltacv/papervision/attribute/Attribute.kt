@@ -225,7 +225,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
         return try {
             get()
-        } catch (ignored: IllegalStateException) {
+        } catch (_: IllegalStateException) {
             orElse()
             null
         }

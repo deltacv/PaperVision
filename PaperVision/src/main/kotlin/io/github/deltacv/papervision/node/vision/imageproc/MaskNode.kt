@@ -6,9 +6,11 @@ import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Core
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -57,6 +59,29 @@ class MaskNode : DrawNode<MaskNode.Session>(){
                 }
 
                 session.outputMat = GenValue.Mat(output, input.color)
+
+                session
+            }
+        }
+
+        generatorFor(CPythonLanguage) {
+            current {
+                val session = Session()
+
+                val input = inputMat.value(current)
+                input.requireNonBinary(inputMat)
+
+                val mask = maskMat.value(current)
+                mask.requireBinary(maskMat)
+
+                current.scope {
+                    val output = uniqueVariable("${input.value.value!!}Mask",
+                        cv2.callValue("bitwise_and", CPythonLanguage.NoType, input.value, input.value, CPythonLanguage.namedArgument("mask", mask.value))
+                    )
+                    local(output)
+
+                    session.outputMat = GenValue.Mat(output, input.color)
+                }
 
                 session
             }

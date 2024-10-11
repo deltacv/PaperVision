@@ -9,11 +9,13 @@ import io.github.deltacv.papervision.attribute.vision.structs.ScalarRangeAttribu
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Core
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Scalar
 import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
 import io.github.deltacv.papervision.node.PaperNode
@@ -131,6 +133,52 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
                 session
             }
+        }
+
+        generatorFor(CPythonLanguage) {
+            val session = Session()
+
+            current {
+                val range = scalar.value(current)
+
+                var inputMat = input.value(current)
+                inputMat.requireNonBinary(input)
+
+                val matColor = inputMat.color
+                val targetColor = lastColor
+
+                val needsCvt = matColor != targetColor
+
+                val cvtMat = uniqueVariable(
+                    targetColor.name.lowercase(),
+                    cv2.callValue("cvtColor", CPythonLanguage.NoType, inputMat.value, cvtColorValue(matColor, targetColor))
+                )
+
+                val target = if(needsCvt) {
+                    cvtMat
+                } else inputMat.value
+
+                val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}Thresh",
+                    cv2.callValue("inRange", CPythonLanguage.NoType, target,
+                        CPythonLanguage.tuple(range.a.min.v, range.b.min.v, range.c.min.v, range.d.min.v),
+                        CPythonLanguage.tuple(range.a.max.v, range.b.max.v, range.c.max.v, range.d.max.v)
+                    )
+                )
+
+                current.scope {
+                    if(needsCvt) {
+                        local(cvtMat)
+                    }
+
+                    local(thresholdTargetMat)
+
+                    session.outputMat = GenValue.Mat(thresholdTargetMat, targetColor, true)
+                }
+
+                session
+            }
+
+            session
         }
     }
 
