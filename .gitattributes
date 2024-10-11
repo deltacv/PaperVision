@@ -1,0 +1,2 @@
+# Make sure line endings are always checked in as LF, and auto-converted to CLRF when checked out on Windows machines.  See https://stackoverflow.com/a/40821931
+* text=auto
