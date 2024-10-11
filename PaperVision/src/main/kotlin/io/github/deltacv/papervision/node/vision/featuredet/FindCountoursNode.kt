@@ -9,9 +9,9 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Imgproc
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Mat
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.MatOfPoint
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.MatOfPoint
 import io.github.deltacv.papervision.codegen.dsl.generators
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category

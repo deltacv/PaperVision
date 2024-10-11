@@ -126,12 +126,20 @@ class PaperVision(
     lateinit var defaultFont: Font
         private set
 
+    lateinit var defaultFontBig: Font
+        private set
+
     lateinit var codeFont: Font
         private set
 
     lateinit var fontAwesome: Font
         private set
     lateinit var fontAwesomeBig: Font
+        private set
+
+    lateinit var fontAwesomeBrands: Font
+        private set
+    lateinit var fontAwesomeBrandsBig: Font
         private set
 
     fun init() {
@@ -169,6 +177,8 @@ class PaperVision(
         // initializing fonts right after the imgui context is created
         // we can't create fonts mid-frame so that's kind of a problem
         defaultFont = fontManager.makeFont("/fonts/Calcutta-SemiBold.otf", defaultFontConfig(20f))
+        defaultFontBig = fontManager.makeFont("/fonts/Calcutta-SemiBold.otf", defaultFontConfig(28f))
+
         codeFont = fontManager.makeFont("/fonts/JetBrainsMono-Regular.ttf", defaultFontConfig(28f))
         defaultImGuiFont = fontManager.makeDefaultFont(20f)
 
@@ -178,6 +188,9 @@ class PaperVision(
 
         fontAwesome = fontManager.makeFont("/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(16f), rangesBuilder.buildRanges())
         fontAwesomeBig = fontManager.makeFont("/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(52f), rangesBuilder.buildRanges())
+
+        fontAwesomeBrands = fontManager.makeFont("/fonts/icons/FontAwesome6-Brands-Regular-400.otf", defaultFontConfig(16f), rangesBuilder.buildRanges())
+        fontAwesomeBrandsBig = fontManager.makeFont("/fonts/icons/FontAwesome6-Brands-Regular-400.otf", defaultFontConfig(80f), rangesBuilder.buildRanges())
 
         nodeEditor.enable()
         langManager.loadIfNeeded()

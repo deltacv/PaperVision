@@ -12,7 +12,7 @@ import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generators
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
@@ -72,9 +72,9 @@ class GroupRectsInsideAreaNode : DrawNode<GroupRectsInsideAreaNode.Session>() {
                 val startPositionPerc = int(areaStartPositionPercentage.value(current).value)
                 val endPositionPerc = int(areaEndPositionPercentage.value(current).value)
 
-                val groupedRects = uniqueVariable("rectsInside${areaOrientationValue.value.name}Area", JavaTypes.ArrayList(OpenCvTypes.Rect).new())
+                val groupedRects = uniqueVariable("rectsInside${areaOrientationValue.value.name}Area", JavaTypes.ArrayList(JvmOpenCvTypes.Rect).new())
 
-                val areaRectVariable = uniqueVariable("areaRect", OpenCvTypes.Rect.new())
+                val areaRectVariable = uniqueVariable("areaRect", JvmOpenCvTypes.Rect.new())
 
                 group {
                     private(groupedRects)
@@ -89,7 +89,7 @@ class GroupRectsInsideAreaNode : DrawNode<GroupRectsInsideAreaNode.Session>() {
 
                     separate()
 
-                    val imageSize = sourceValue.callValue("size", OpenCvTypes.Size)
+                    val imageSize = sourceValue.callValue("size", JvmOpenCvTypes.Size)
 
                     val start = when(areaOrientationValue.value) {
                         Orientation.Vertical -> uniqueVariable(
@@ -120,7 +120,7 @@ class GroupRectsInsideAreaNode : DrawNode<GroupRectsInsideAreaNode.Session>() {
 
                     separate()
 
-                    foreach(Variable(OpenCvTypes.Rect, "rect"), rectsList.value) {
+                    foreach(Variable(JvmOpenCvTypes.Rect, "rect"), rectsList.value) {
                         when(areaOrientationValue.value) {
                             Orientation.Horizontal -> {
                                 ifCondition((it.propertyValue("y", IntType) greaterOrEqualThan start) and (it.propertyValue("y", IntType) + it.propertyValue("height", IntType) lessOrEqualThan end)) {

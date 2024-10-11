@@ -10,9 +10,9 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Imgproc
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Size
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Size
 import io.github.deltacv.papervision.codegen.dsl.generators
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
@@ -108,11 +108,11 @@ class GroupContoursByShapeNode : DrawNode<GroupContoursByShapeNode.Session>() {
                 val sidesValue = sides.value(current)
                 val accuracyValue = accuracy.value(current).value
 
-                val list = uniqueVariable("filtered${shapeValue.name}Contours", JavaTypes.ArrayList(OpenCvTypes.MatOfPoint).new())
+                val list = uniqueVariable("filtered${shapeValue.name}Contours", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
 
-                val contours2f = uniqueVariable("contours2f", OpenCvTypes.MatOfPoint2f.new())
-                val approxPolyDp = uniqueVariable("approxPolyDp", OpenCvTypes.MatOfPoint2f.new())
-                val approxPolyDp2f = uniqueVariable("approxPolyDp2f", OpenCvTypes.MatOfPoint2f.new())
+                val contours2f = uniqueVariable("contours2f", JvmOpenCvTypes.MatOfPoint2f.new())
+                val approxPolyDp = uniqueVariable("approxPolyDp", JvmOpenCvTypes.MatOfPoint2f.new())
+                val approxPolyDp2f = uniqueVariable("approxPolyDp2f", JvmOpenCvTypes.MatOfPoint2f.new())
 
                 group {
                     private(approxPolyDp)
@@ -125,7 +125,7 @@ class GroupContoursByShapeNode : DrawNode<GroupContoursByShapeNode.Session>() {
                 current.scope {
                     list("clear")
 
-                    foreach(variable(OpenCvTypes.MatOfPoint, "contour"), inputContours.value) {
+                    foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), inputContours.value) {
                         it("convertTo", contours2f, cvTypeValue("CV_32FC2"))
 
                         separate()

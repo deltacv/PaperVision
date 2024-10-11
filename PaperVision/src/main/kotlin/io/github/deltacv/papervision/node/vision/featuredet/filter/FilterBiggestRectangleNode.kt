@@ -7,7 +7,7 @@ import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generators
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
@@ -40,7 +40,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                     raise("") // TODO: Handle non-runtime lists
                 }
 
-                val biggestRect = uniqueVariable("biggestRect", OpenCvTypes.Rect.nullVal)
+                val biggestRect = uniqueVariable("biggestRect", JvmOpenCvTypes.Rect.nullVal)
 
                 group {
                     private(biggestRect)
@@ -49,7 +49,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                 current.scope {
                     biggestRect instanceSet biggestRect.nullVal
 
-                    foreach(variable(OpenCvTypes.Rect, "rect"), rectsList.value) { rect ->
+                    foreach(variable(JvmOpenCvTypes.Rect, "rect"), rectsList.value) { rect ->
                         ifCondition(
                             biggestRect equalsTo biggestRect.nullVal or
                                     (rect.callValue("area", DoubleType) greaterThan biggestRect.callValue("area", DoubleType))

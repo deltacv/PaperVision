@@ -9,7 +9,7 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.codegen.build.Variable
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generatorFor
 import io.github.deltacv.papervision.codegen.dsl.generators
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -58,7 +58,7 @@ class InputMatNode @JvmOverloads constructor(
         propagate(current)
     }
 
-    val value = GenValue.Mat(Variable(OpenCvTypes.Mat, "input"), ColorSpace.RGBA)
+    val value = GenValue.Mat(Variable(JvmOpenCvTypes.Mat, "input"), ColorSpace.RGBA)
 
     override fun getOutputValueOf(current: CodeGen.Current,
                                   attrib: Attribute) = if(attrib == output) value else GenValue.None

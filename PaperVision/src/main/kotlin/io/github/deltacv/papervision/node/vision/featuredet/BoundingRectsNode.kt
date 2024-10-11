@@ -8,12 +8,10 @@ import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.Generator
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generators
-import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -45,7 +43,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                     raise("") // TODO: Handle non-runtime lists
                 }
 
-                val rectsList = uniqueVariable("${input.value.value}Rects", JavaTypes.ArrayList(OpenCvTypes.Rect).new())
+                val rectsList = uniqueVariable("${input.value.value}Rects", JavaTypes.ArrayList(JvmOpenCvTypes.Rect).new())
 
                 group {
                     private(rectsList)
@@ -54,8 +52,8 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                 current.scope {
                     rectsList("clear")
 
-                    foreach(variable(OpenCvTypes.MatOfPoint, "points"), input.value) {
-                        rectsList("add", Imgproc.callValue("boundingRect", OpenCvTypes.Rect, it))
+                    foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value) {
+                        rectsList("add", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, it))
                     }
                 }
 

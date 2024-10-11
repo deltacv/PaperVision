@@ -3,7 +3,7 @@ package io.github.deltacv.papervision.node
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
-import io.github.deltacv.papervision.GeneratorsGenNode
+import io.github.deltacv.papervision.codegen.GeneratorsGenNode
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.*
@@ -31,6 +31,8 @@ abstract class Node<S: CodeGenSession>(
 
     override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Node<*>>()
     override val requestedId get() = serializedId
+
+    val description by lazy { this::class.java.getAnnotation(PaperNode::class.java)?.description }
 
     var serializedId: Int? = null
         private set

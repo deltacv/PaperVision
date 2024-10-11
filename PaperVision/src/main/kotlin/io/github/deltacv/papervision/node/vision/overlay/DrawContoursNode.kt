@@ -10,9 +10,9 @@ import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Imgproc
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Mat
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Scalar
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Scalar
 import io.github.deltacv.papervision.codegen.dsl.generators
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
@@ -23,7 +23,7 @@ import io.github.deltacv.papervision.node.vision.ColorSpace
 @PaperNode(
     name = "nod_drawcontours",
     category = Category.OVERLAY,
-    description = "Draws the contours on a copy of the given image and outputs the result."
+    description = "des_drawcontours"
 )
 open class DrawContoursNode
 @JvmOverloads constructor(val isDrawOnInput: Boolean = false)
@@ -138,6 +138,6 @@ open class DrawContoursNode
 @PaperNode(
     name = "nod_drawcontours_onimage",
     category = Category.OVERLAY,
-    description = "Draws the contours list in the passed image."
+    description = "des_drawcontours_onimage"
 )
 class DrawContoursOnImageNode : DrawContoursNode(true)

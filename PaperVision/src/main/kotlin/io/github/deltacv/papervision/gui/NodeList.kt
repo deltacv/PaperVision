@@ -79,7 +79,7 @@ class NodeList(
             }
         }
 
-        floatingButton = FloatingButton(this, paperVision.window, paperVision.fontAwesomeBig)
+        floatingButton = FloatingButton(this, paperVision.window, paperVision.defaultFontBig, paperVision.fontAwesomeBig)
         floatingButton.enable()
 
         floatingButton.onPressed {
@@ -157,6 +157,16 @@ class NodeList(
                         var titleColor = 0
 
                         if(isHoverManuallyDetected && hoveredNode == node.id) {
+                            if(node.description != null) {
+                                ImGui.pushFont(paperVision.defaultFontBig.imfont)
+
+                                ImGui.beginTooltip()
+                                    ImGui.textUnformatted(tr(node.description!!))
+                                ImGui.endTooltip()
+
+                                ImGui.popFont()
+                            }
+
                             if(node is DrawNode<*>) {
                                 titleColor = node.titleColor
                                 node.titleColor = node.titleHoverColor
@@ -175,6 +185,7 @@ class NodeList(
                         }
 
                         if(isHoverManuallyDetected && hoveredNode == node.id) {
+
                             if(node is DrawNode<*>) {
                                 node.titleColor = titleColor
                             } else {
@@ -327,7 +338,8 @@ class NodeList(
     class FloatingButton(
         val nodeList: NodeList,
         val window: PlatformWindow,
-        val fontAwesome: Font
+        val defaultFontBig: Font,
+        val fontAwesome: Font,
     ) : FrameWidthWindow() {
 
         override var title = "floating"
@@ -357,16 +369,21 @@ class NodeList(
 
             frameWidth = ImGui.getFrameHeight() * 1.3f
 
-            val button = ImGui.button(if(nodeList.isNodesListOpen) "x" else "+", frameWidth, frameWidth)
+            val button = ImGui.button(if(nodeList.isNodesListOpen) "x" else FontAwesomeIcons.Plus, frameWidth, frameWidth)
+
             ImGui.popFont()
 
             if(ImGui.isItemHovered()) {
                 if(hoveringPlusTime.millis > 500) {
                     val tooltipText = if(nodeList.isNodesListOpen) "mis_nodeslist_close" else "mis_nodeslist_open"
 
+                    ImGui.pushFont(defaultFontBig.imfont)
+
                     ImGui.beginTooltip()
                         ImGui.text(tr(tooltipText))
                     ImGui.endTooltip()
+
+                    ImGui.popFont()
                 }
             } else {
                 hoveringPlusTime.reset()

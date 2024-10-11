@@ -15,6 +15,8 @@ import io.github.deltacv.papervision.action.editor.DeleteLinksAction
 import io.github.deltacv.papervision.action.editor.DeleteNodesAction
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
+import io.github.deltacv.papervision.codegen.language.Language
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.engine.client.message.AskProjectGenClassNameMessage
 import io.github.deltacv.papervision.engine.client.response.StringResponse
@@ -500,6 +502,79 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     }
 
+    class SourceCodeExportSelectLanguageWindow(
+        val paperVision: PaperVision,
+        val nodeEditorSizeSupplier: () -> ImVec2
+    ) : Window() {
+
+        companion object {
+            val separationMultiplier = 1.5f
+        }
+
+        override var title = "$[win_selectlanguage]"
+        override val windowFlags = flags(
+            ImGuiWindowFlags.NoResize,
+            ImGuiWindowFlags.NoMove,
+            ImGuiWindowFlags.NoCollapse
+        )
+
+        override val isModal = true
+
+        val logger by loggerForThis()
+
+        override fun drawContents() {
+            ImGui.pushFont(paperVision.fontAwesomeBrandsBig.imfont)
+            ImGui.pushStyleColor(ImGuiCol.Button, 0)
+
+            if (ImGui.button(FontAwesomeIcons.Brands.Java)) {
+                openSourceCodeWindow(JavaLanguage)
+                delete()
+            }
+
+            ImGui.sameLine()
+            ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+
+            if (ImGui.button(FontAwesomeIcons.Brands.Python)) {
+                openSourceCodeWindow(CPythonLanguage)
+                delete()
+            }
+
+            ImGui.popFont()
+            ImGui.popStyleColor()
+        }
+
+
+        private fun openSourceCodeWindow(language: Language) {
+            fun openWindow(code: String?) {
+                if (code == null) {
+                    logger.warn("Code generation failed, cancelled opening source code window")
+                    return
+                }
+
+                CodeDisplayWindow(
+                    code,
+                    TextEditorLanguageDefinition.CPlusPlus(),
+                    paperVision.codeFont
+                ).apply {
+                    enable()
+                    size = ImVec2(nodeEditorSizeSupplier().x * 0.8f, nodeEditorSizeSupplier().y * 0.8f)
+                }
+            }
+
+            if (paperVision.engineClient.bridge.isConnected) {
+                paperVision.engineClient.sendMessage(AskProjectGenClassNameMessage().onResponseWith<StringResponse> { response ->
+                    paperVision.onUpdate.doOnce {
+                        openWindow(paperVision.codeGenManager.build(response.value, language))
+                    }
+                })
+            } else {
+                paperVision.onUpdate.doOnce {
+                    openWindow(paperVision.codeGenManager.build("Mack", language))
+                }
+            }
+        }
+    }
+
     class SourceCodeExportButtonWindow(
         val floatingButtonSupplier: () -> NodeList.FloatingButton,
         val nodeEditorSizeSupplier: () -> ImVec2,
@@ -514,29 +589,11 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         val frameWidth get() = floatingButtonSupplier().frameWidth
 
-        val logger by loggerForThis()
-
         override fun preDrawContents() {
             position = ImVec2(
                 floatingButtonSupplier().position.x - NodeList.PLUS_FONT_SIZE * 1.7f,
                 floatingButtonSupplier().position.y,
             )
-        }
-
-        private fun openSourceCodeWindow(code: String?) {
-            if (code == null) {
-                logger.warn("Code generation failed, cancelled opening source code window")
-                return
-            }
-
-            CodeDisplayWindow(
-                code,
-                TextEditorLanguageDefinition.CPlusPlus(),
-                paperVision.codeFont
-            ).apply {
-                enable()
-                size = ImVec2(nodeEditorSizeSupplier().x * 0.8f, nodeEditorSizeSupplier().y * 0.8f)
-            }
         }
 
         override fun drawContents() {
@@ -548,17 +605,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                     floatingButtonSupplier().frameWidth
                 )
             ) {
-                if (paperVision.engineClient.bridge.isConnected) {
-                    paperVision.engineClient.sendMessage(AskProjectGenClassNameMessage().onResponseWith<StringResponse> { response ->
-                        paperVision.onUpdate.doOnce {
-                            openSourceCodeWindow(paperVision.codeGenManager.build(response.value, JavaLanguage))
-                        }
-                    })
-                } else {
-                    paperVision.onUpdate.doOnce {
-                        openSourceCodeWindow(paperVision.codeGenManager.build("Mack", JavaLanguage))
-                    }
-                }
+                SourceCodeExportSelectLanguageWindow(paperVision, nodeEditorSizeSupplier).enable()
             }
 
             ImGui.popFont()
@@ -595,7 +642,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             ImGui.pushFont(fontAwesome.imfont)
 
             val text = if (paperVision.previzManager.previzRunning) {
-                FontAwesomeIcons.Stop;
+                FontAwesomeIcons.Stop
             } else FontAwesomeIcons.Play
 
             val button = ImGui.button(text, floatingButton.frameWidth, floatingButton.frameWidth)

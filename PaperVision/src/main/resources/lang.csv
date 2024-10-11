@@ -3,6 +3,7 @@ lan_en,English,Ingles
 lan_es,Spanish,Español
 win_inputsources,Input Sources,Fuentes de Entrada
 win_createinput_sources,Create Input Sources,Crear Fuentes de Entrada
+win_selectlanguage,Select Language,Seleccionar Lenguaje
 cat_pipeline_flow,Pipeline Flow,Ejecucion
 cat_coding,Coding,Codigo
 cat_high_level_cv,High Level,Alto Nivel
@@ -65,6 +66,8 @@ att_groupedrects,Grouped Rects,Rectangulos Agrupados
 att_rectsinside,Rects Inside,Rectangulos Dentro
 att_targets,Targets,Objetivos
 att_label,Label,Etiqueta
+des_drawcontours,Draws the contours on a copy of<br>the given image and outputs the result.,Dibuja los contornos en una copia de<br>la imagen dada y devuelve el resultado.
+des_drawcontours_onimage,Draws the contours on the input image,Dibuja los contornos en la imagen de entrada.
 err_musthave_attachedattrib,Must have an attribute attached,Debe tener un atributo conectado
 err_attachedattrib_isnot,Attribute attached is not $[0],El atributo conectado no es $[0]
 err_valreturned_isnot,Value returned from the node is not $[0],El valor retornado del nodo no es $[0]

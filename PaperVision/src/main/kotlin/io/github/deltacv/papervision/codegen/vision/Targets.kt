@@ -6,7 +6,7 @@ import io.github.deltacv.papervision.codegen.build.ConValue
 import io.github.deltacv.papervision.codegen.build.Parameter
 import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.targets
 
 fun CodeGen.Current.enableTargets() = this {
@@ -22,7 +22,7 @@ fun CodeGen.Current.enableTargets() = this {
 
             codeGen.classEndScope {
                 val labelParameter = Parameter(JavaTypes.String, "label")
-                val rectTargetParameter = Parameter(OpenCvTypes.Rect, "rect")
+                val rectTargetParameter = Parameter(JvmOpenCvTypes.Rect, "rect")
 
                 method(
                     Visibility.PRIVATE,
@@ -37,7 +37,7 @@ fun CodeGen.Current.enableTargets() = this {
 
                 separate()
 
-                val rectArrayListTargetsParameter = Parameter(JavaTypes.ArrayList(OpenCvTypes.Rect), "rects")
+                val rectArrayListTargetsParameter = Parameter(JavaTypes.ArrayList(JvmOpenCvTypes.Rect), "rects")
 
                 method(
                     Visibility.PRIVATE,
@@ -47,7 +47,7 @@ fun CodeGen.Current.enableTargets() = this {
                     rectArrayListTargetsParameter,
                     isSynchronized = true
                 ) {
-                    foreach(Variable(OpenCvTypes.Rect, "rect"), rectArrayListTargetsParameter) {
+                    foreach(Variable(JvmOpenCvTypes.Rect, "rect"), rectArrayListTargetsParameter) {
                         "addTarget"(labelParameter, it)
                     }
                 }
@@ -112,7 +112,7 @@ fun CodeGen.Current.enableTargets() = this {
 
                 clazz(Visibility.PUBLIC, TargetType.className) {
                     val labelVariable = Variable("label", ConValue(JavaTypes.String, null))
-                    val rectVariable = Variable("rect", ConValue(OpenCvTypes.Rect, null))
+                    val rectVariable = Variable("rect", ConValue(JvmOpenCvTypes.Rect, null))
 
                     instanceVariable(Visibility.PUBLIC, labelVariable, isFinal = true)
                     instanceVariable(Visibility.PUBLIC, rectVariable, isFinal = true)

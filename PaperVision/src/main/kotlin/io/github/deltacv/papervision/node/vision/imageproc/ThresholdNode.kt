@@ -9,10 +9,10 @@ import io.github.deltacv.papervision.attribute.vision.structs.ScalarRangeAttribu
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Core
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Imgproc
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Mat
-import io.github.deltacv.papervision.codegen.build.type.OpenCvTypes.Scalar
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Core
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Scalar
 import io.github.deltacv.papervision.codegen.dsl.generators
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.gui.util.ExtraWidgets

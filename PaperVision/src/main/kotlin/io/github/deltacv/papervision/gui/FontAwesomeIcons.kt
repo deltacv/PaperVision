@@ -11,6 +11,11 @@ object FontAwesomeIcons {
     val _IconRangeMax: Short = 0xf8ff.toShort()
     val _IconRange: ShortArray = shortArrayOf(_IconRangeMin, _IconRangeMax, 0)
 
+    object Brands {
+        const val Java: String = "\uf4e4"
+        const val Python: String = "\uf3e2"
+    }
+
     const val Ad: String = "\uf641"
     const val AddressBook: String = "\uf2b9"
     const val AddressCard: String = "\uf2bb"

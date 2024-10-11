@@ -1,9 +1,5 @@
-package io.github.deltacv.papervision
+package io.github.deltacv.papervision.codegen
 
-import io.github.deltacv.papervision.codegen.CodeGen
-import io.github.deltacv.papervision.codegen.CodeGenSession
-import io.github.deltacv.papervision.codegen.GenNode
-import io.github.deltacv.papervision.codegen.Generator
 import io.github.deltacv.papervision.codegen.language.Language
 
 interface GeneratorsGenNode<S: CodeGenSession> : GenNode<S> {

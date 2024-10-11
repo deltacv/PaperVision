@@ -17,7 +17,7 @@ open class Type(
 
     val hasGenerics get() = !generics.isNullOrEmpty()
 
-    val shouldImport get() = className != packagePath
+    open val shouldImport get() = className != packagePath
 
     val shortNameWithGenerics get() =
         if(generics != null)
