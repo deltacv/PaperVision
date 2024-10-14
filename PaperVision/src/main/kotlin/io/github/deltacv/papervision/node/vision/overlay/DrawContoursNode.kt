@@ -10,6 +10,7 @@ import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Scalar
@@ -121,6 +122,36 @@ open class DrawContoursNode
 
         generatorFor(CPythonLanguage) {
             val session = Session()
+
+            current {
+                val color = lineColor.value(current)
+                val input = inputMat.value(current)
+                val contoursList = contours.value(current)
+                val thickness = lineThickness.value(current).value
+
+                current.scope {
+                    if(contoursList !is GenValue.GList.RuntimeListOf<*>) {
+                        contours.raise("Given list is not a runtime type (TODO)") // TODO: Handle non-runtime lists
+                    }
+
+                    val colorScalar = CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
+
+                    val target = if(isDrawOnInput) {
+                        input.value
+                    } else {
+                        val output = uniqueVariable(
+                            "${input.value.value!!}Contours", input.value.callValue("copy", CPythonLanguage.NoType)
+                        )
+                        local(output)
+
+                        output
+                    }
+
+                    cv2("drawContours", target, contoursList.value, (-1).v, colorScalar, thickness.v)
+
+                    session.outputMat = GenValue.Mat(target, input.color, input.isBinary)
+                }
+            }
 
             session
         }

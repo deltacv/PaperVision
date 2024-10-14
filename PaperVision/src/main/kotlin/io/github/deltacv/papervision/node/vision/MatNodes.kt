@@ -63,7 +63,7 @@ class InputMatNode @JvmOverloads constructor(
     override fun getOutputValueOf(current: CodeGen.Current,
                                   attrib: Attribute
     ) = when(current.language) {
-        is CPythonLanguage -> GenValue.Mat(Variable(CPythonOpenCvTypes.npArray, "input"), ColorSpace.RGBA)
+        is CPythonLanguage -> GenValue.Mat(Variable(CPythonLanguage.NoType, "input"), ColorSpace.RGBA)
         else -> GenValue.Mat(Variable(JvmOpenCvTypes.Mat, "input"), ColorSpace.RGBA)
     }
 }

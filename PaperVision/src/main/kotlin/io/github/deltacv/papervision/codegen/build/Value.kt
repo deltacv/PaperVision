@@ -46,7 +46,7 @@ open class ConValue(override val type: Type, override val value: String?): Value
 class Condition(booleanType: Type, condition: String) : ConValue(booleanType, condition)
 class Operation(numberType: Type, operation: String) : ConValue(numberType, operation)
 
-class Variable(val name: String, val variableValue: Value) : ConValue(variableValue.type, name) {
+open class Variable(val name: String, val variableValue: Value) : ConValue(variableValue.type, name) {
 
     constructor(type: Type, name: String) : this(name, ConValue(type, name))
 

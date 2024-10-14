@@ -8,11 +8,13 @@ import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.MatOfPoint
 import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -57,6 +59,34 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
                 }
 
                 session.contoursList = GenValue.GList.RuntimeListOf(list, GenValue.GPoints.Points::class)
+
+                session
+            }
+        }
+
+        generatorFor(CPythonLanguage) {
+            current {
+                val session = Session()
+
+                val input = inputMat.value(current)
+                input.requireBinary(inputMat)
+
+                current.scope {
+                    val contours = tryName("contours")
+                    val hierarchy = tryName("hierarchy")
+
+                    val result = CPythonLanguage.tupleVariables(cv2.callValue(
+                        "findContours",
+                        CPythonLanguage.NoType,
+                        input.value,
+                        cv2.RETR_LIST,
+                        cv2.CHAIN_APPROX_SIMPLE
+                    ), contours, hierarchy)
+
+                    local(result)
+
+                    session.contoursList = GenValue.GList.RuntimeListOf(result.get(contours), GenValue.GPoints.Points::class)
+                }
 
                 session
             }

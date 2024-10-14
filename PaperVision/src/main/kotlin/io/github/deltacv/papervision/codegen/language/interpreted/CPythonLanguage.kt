@@ -155,8 +155,8 @@ object CPythonLanguage : LanguageBase(
         }
 
         classBodyScope.method(
-            Visibility.PUBLIC, CPythonOpenCvTypes.npArray, "runPipeline", processFrameScope,
-            Parameter(CPythonOpenCvTypes.npArray, "input")
+            Visibility.PUBLIC, NoType, "runPipeline", processFrameScope,
+            Parameter(NoType, "input"), Parameter(NoType, "llrobot")
         )
 
         val end = classEndScope.get()
@@ -171,6 +171,20 @@ object CPythonLanguage : LanguageBase(
 
         mainScope.get()
     }
+
+    class TupleVariable(value: Value, vararg names: String) : Variable(names.csv(), value) {
+        val names = names.toSet()
+
+        fun get(name: String): Value {
+            if(name !in names) {
+                throw IllegalArgumentException("Name $name is not in the tuple variable")
+            }
+
+            return ConValue(NoType, name);
+        }
+    }
+
+    fun tupleVariables(value: Value, vararg names: String) = TupleVariable(value, *names)
 
     fun tuple(vararg value: Value) = ConValue(NoType, "(${value.csv()})")
 
@@ -196,7 +210,6 @@ object CPythonLanguage : LanguageBase(
                 logger.warn("Type $type is not a CPythonType and cannot be imported")
             }
         }
-
 
         override fun build(): String {
             val builder = StringBuilder()
