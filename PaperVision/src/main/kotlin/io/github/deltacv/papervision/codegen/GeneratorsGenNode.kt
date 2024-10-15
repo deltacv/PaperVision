@@ -8,7 +8,7 @@ interface GeneratorsGenNode<S: CodeGenSession> : GenNode<S> {
     fun map(language: Language, generator: Generator<S>) = Pair(language, generator)
 
     override fun genCode(current: CodeGen.Current): S {
-        val generator = generators[current.language] ?: throw NoSuchElementException("No generator found for language ${current.language}")
+        val generator = generators[current.language] ?: throw NoSuchElementException("No generator found for language ${current.language.javaClass.simpleName} at node ${this::class.simpleName}")
         lastGenSession = generator.genCode(current)
 
         return lastGenSession!!

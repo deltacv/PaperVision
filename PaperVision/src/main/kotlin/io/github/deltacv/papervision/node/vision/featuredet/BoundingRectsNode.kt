@@ -8,10 +8,13 @@ import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -54,6 +57,32 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
                     foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value) {
                         rectsList("add", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, it))
+                    }
+                }
+
+                session.outputRects = GenValue.GList.RuntimeListOf(rectsList, GenValue.GRect.RuntimeRect::class)
+
+                session
+            }
+        }
+
+        generatorFor(CPythonLanguage) {
+            current {
+                val session = Session()
+
+                val input = inputContours.value(current)
+
+                if(input !is GenValue.GList.RuntimeListOf<*>) {
+                    raise("") // TODO: Handle non-runtime lists
+                }
+
+                val rectsList = uniqueVariable("${input.value.value}Rects", CPythonLanguage.nullValue)
+
+                current.scope {
+                    rectsList("clear")
+
+                    foreach(variable(CPythonLanguage.NoType, "points"), input.value) { points ->
+                        rectsList("append", cv2.callValue("boundingRect", CPythonLanguage.NoType, points))
                     }
                 }
 

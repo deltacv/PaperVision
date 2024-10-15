@@ -3,27 +3,27 @@ package io.github.deltacv.papervision.node.vision.featuredet.filter
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
+import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generators
-import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 
 @PaperNode(
-    name = "nod_filterbiggest_rect",
+    name = "nod_filterbiggest_contour",
     category = Category.FEATURE_DET,
-    description = "des_filterbiggest_rect"
+    description = "des_filterbiggest_contour"
 )
-class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>() {
+class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
 
-    val input = ListAttribute(INPUT, RectAttribute, "$[att_rects]")
-    val output = RectAttribute(OUTPUT, "$[att_biggestrect]")
+    val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
+    val output = PointsAttribute(OUTPUT, "$[att_biggestcontour]")
 
     override fun onEnable() {
         + input.rebuildOnChange()
@@ -61,35 +61,6 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                 }
 
                 session.biggestRect = GenValue.GRect.RuntimeRect(biggestRect)
-
-                session
-            }
-        }
-
-        generatorFor(CPythonLanguage) {
-            current {
-                val session = Session()
-
-                val rectsList = input.value(current)
-
-                if(rectsList !is GenValue.GList.RuntimeListOf<*>) {
-                    raise("") // TODO: Handle non-runtime lists
-                }
-
-                val biggestRect = uniqueVariable("biggestRect", CPythonLanguage.nullValue)
-
-                current.scope {
-                    local(biggestRect)
-
-                    foreach(variable(CPythonLanguage.NoType, "rect"), rectsList.value) { rect ->
-                        ifCondition(
-                            biggestRect equalsTo CPythonLanguage.nullValue or
-                                    (rect.callValue("area", CPythonLanguage.NoType) greaterThan biggestRect.callValue("area", CPythonLanguage.NoType))
-                        ) {
-                            biggestRect instanceSet rect
-                        }
-                    }
-                }
 
                 session
             }

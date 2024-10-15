@@ -12,6 +12,11 @@ object JvmOpenCvTypes {
         val RETR_LIST = ConValue(StandardTypes.cint, "Imgproc.RETR_LIST").apply {
             additionalImports(this)
         }
+
+        val RETR_EXTERNAL = ConValue(StandardTypes.cint, "Imgproc.RETR_EXTERNAL").apply {
+            additionalImports(this)
+        }
+
         val CHAIN_APPROX_SIMPLE = ConValue(StandardTypes.cint, "Imgproc.CHAIN_APPROX_SIMPLE").apply {
             additionalImports(this)
         }

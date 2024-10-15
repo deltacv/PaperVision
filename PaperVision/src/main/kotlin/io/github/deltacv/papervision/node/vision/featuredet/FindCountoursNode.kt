@@ -55,7 +55,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
                     list("clear")
                     hierarchyMat("release")
 
-                    Imgproc("findContours", input.value, list, hierarchyMat, Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE)
+                    Imgproc("findContours", input.value, list, hierarchyMat, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE)
                 }
 
                 session.contoursList = GenValue.GList.RuntimeListOf(list, GenValue.GPoints.Points::class)
@@ -79,7 +79,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
                         "findContours",
                         CPythonLanguage.NoType,
                         input.value,
-                        cv2.RETR_LIST,
+                        cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE
                     ), contours, hierarchy)
 

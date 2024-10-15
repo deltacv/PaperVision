@@ -77,8 +77,8 @@ class Font internal constructor(
 )
 
 fun defaultFontConfig(size: Float) = ImFontConfig().apply {
-    oversampleH = 1
-    oversampleV = 1
+    oversampleH = 2
+    oversampleV = 2
     pixelSnapH = false
     sizePixels = size
 }
