@@ -93,6 +93,11 @@ class EOCVSimEngineImageStreamer(
             if(cvtCode != null) {
                 Imgproc.cvtColor(scaledImg, scaledImg, cvtCode)
             }
+
+            if(image.type() != CvType.CV_8UC3) {
+                throw IllegalArgumentException("Image must be of type CV_8UC3")
+                return
+            }
         } catch(e: Exception) {
             scaledImg.returnMat()
             logger.error("Error while scaling streamed image", e)

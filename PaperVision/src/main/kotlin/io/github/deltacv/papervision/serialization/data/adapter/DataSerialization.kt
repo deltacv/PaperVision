@@ -3,10 +3,10 @@ package io.github.deltacv.papervision.serialization.data.adapter
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonSerializationContext
-import io.github.deltacv.papervision.node.hasSuperclass
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.data.SerializeData
 import io.github.deltacv.papervision.serialization.data.SerializeIgnore
+import io.github.deltacv.papervision.util.hasSuperclass
 
 fun DataSerializable<*>.toJsonObject(): JsonObject {
     val obj = JsonObject()
@@ -19,10 +19,11 @@ fun DataSerializable<*>.toJsonObject(): JsonObject {
             continue
         }
 
-        if(hasSuperclass(field.type, DataSerializable::class.java)) {
+        if(field.type.hasSuperclass(DataSerializable::class.java)) {
             if(!(value as DataSerializable<*>).shouldSerialize) {
                 continue
             }
+
             obj.add(field.name, dataSerializableToJsonObject(value))
         } else if(field.isAnnotationPresent(SerializeData::class.java)) {
             obj.add(field.name, gson.toJsonTree(value))

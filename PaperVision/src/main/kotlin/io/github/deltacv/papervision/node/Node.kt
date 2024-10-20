@@ -49,6 +49,9 @@ abstract class Node<S: CodeGenSession>(
 
     val isOnEditor get() = ::editor.isInitialized && idElementContainer.contains(this)
 
+    // it is the responsibility of the inheriting class to set this value in draw()
+    val position = ImVec2()
+
     override val generators = mutableMapOf<Language, Generator<S>>()
 
     override val genOptions = CodeGenOptions()
@@ -105,6 +108,10 @@ abstract class Node<S: CodeGenSession>(
         }
 
         idElementContainer[id] = this
+
+        if(this is DrawNode<*>) {
+            nextNodePosition = position
+        }
     }
 
     fun addAttribute(attribute: Attribute) {
@@ -203,9 +210,9 @@ abstract class Node<S: CodeGenSession>(
         val data = makeSerializationData()
         data.id = id
 
-        val pos = ImVec2()
-        ImNodes.getNodeEditorSpacePos(id) // TODO: Fix this to get the actual position when SpaiR decides to merge my PR...
-        data.nodePos = pos
+        // val pos = ImVec2()
+        // ImNodes.getNodeEditorSpacePos(id) // TODO: Fix this to get the actual position when SpaiR decides to merge my PR...
+        data.nodePos = position
 
         return data
     }

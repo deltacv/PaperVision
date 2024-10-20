@@ -66,6 +66,8 @@ abstract class DrawNode<S: CodeGenSession>(
                 ImGui.textUnformatted(tr(title))
             ImNodes.endNodeTitleBar()
 
+            ImGui.getCursorPos(position)
+
             drawNode()
             drawAttributes()
         ImNodes.endNode()

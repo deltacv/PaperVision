@@ -28,6 +28,7 @@ nod_grouprects_insidearea,Group Rectangles Inside Area,Agrupar Rectangulos Dentr
 nod_exporttarget,Export Target,Exportar Objetivo
 nod_exporttargets,Export Targets,Exportar Objetivos
 nod_filterbiggest_rect,Filter Biggest Rectangle,Filtar Rectangulo Mas Grande
+nod_filterbiggest_contour,Filter Biggest Contour,Filtrar Contorno Mas Grande
 nod_drawcontours,Draw Contours,Dibujar Contornos
 nod_drawcontours_onimage,Draw Contours on Image,Dibujar Contornos en Imagen
 nod_drawrects,Draw Rectangles,Dibujar Rectangulos
@@ -36,6 +37,8 @@ nod_sumintegers,Sum Integers,Sumar Enteros
 nod_codesnippet,Code Snippet,Trozo de Codigo
 att_input,Input,Entrada
 att_output,Output,Salida
+att_crosshair,Crosshair,Crosshair
+att_exporteddata,Export Data,Datos Exportados
 att_value,Value,Valor
 att_convertto,Convert To,Convertir A
 att_binarymask,Binary Mask,Mascara Binaria
@@ -47,6 +50,7 @@ att_contours,Contours,Contornos
 att_rects,Rectangles,Rectangulos
 att_boundingrects,Bounding Rects,Rectangulos
 att_biggestrect,Biggest Rect,Rectangulo Mas Grande
+att_biggestcontour,Biggest Contour,Contorno Mas Grande
 att_filteredcontours,Filtered Contours,Contornos Filtrados
 att_colorspace,Color Space,Espacio de Color
 att_drawon_image,Draw On,Dibujar En

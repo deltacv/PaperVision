@@ -123,7 +123,7 @@ object CPythonLanguage : LanguageBase(
         return ConValue(arrayOf(type), "[]")
     }
 
-    fun newArrayOf(type: Type, vararg values: Value): ConValue {
+    override fun newArrayOf(type: Type, vararg values: Value): ConValue {
         return ConValue(arrayOf(type), "[${values.csv()}]")
     }
 

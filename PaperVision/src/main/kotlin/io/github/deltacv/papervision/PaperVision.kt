@@ -53,6 +53,7 @@ import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.node.NodeRegistry
 import io.github.deltacv.papervision.platform.*
+import io.github.deltacv.papervision.serialization.PaperVisionSerializer
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 
@@ -235,6 +236,8 @@ class PaperVision(
                 undo()
             } else if(ImGui.isKeyPressed(ImGuiKey.Y)) {
                 redo()
+            } else if(ImGui.isKeyPressed(ImGuiKey.S)) {
+                logger.info(PaperVisionSerializer.serialize(nodes.inmutable, links.inmutable))
             }
         }
 

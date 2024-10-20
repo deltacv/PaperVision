@@ -1,6 +1,7 @@
 package io.github.deltacv.papervision.node
 
 import io.github.deltacv.papervision.gui.CategorizedNodes
+import io.github.deltacv.papervision.util.hasSuperclass
 
 @Suppress("UNCHECKED_CAST")
 object NodeRegistry {
@@ -17,7 +18,7 @@ object NodeRegistry {
             val clazz = NodeRegistry::class.java.classLoader.loadClass(className)
             val regAnnotation = clazz.getDeclaredAnnotation(PaperNode::class.java)
 
-            if (hasSuperclass(clazz, Node::class.java)) {
+            if (clazz.hasSuperclass(Node::class.java)) {
                 val nodeClazz = clazz as Class<out Node<*>>
                 registerNode(nodeClazz, regAnnotation.category)
             }
@@ -36,14 +37,4 @@ object NodeRegistry {
         }
     }
 
-}
-
-fun hasSuperclass(clazz: Class<*>, superclass: Class<*>): Boolean {
-    return if (clazz.superclass == null) {
-        false
-    } else if (clazz.superclass == superclass) {
-        true
-    } else {
-        hasSuperclass(clazz.superclass, superclass)
-    }
 }

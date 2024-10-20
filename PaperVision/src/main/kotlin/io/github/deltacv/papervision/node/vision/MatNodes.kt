@@ -13,9 +13,7 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.Variable
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.codegen.dsl.generatorFor
 import io.github.deltacv.papervision.codegen.dsl.generators
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
@@ -23,6 +21,7 @@ import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.data.SerializeData
 
 @PaperNode(
     name = "nod_pipelineinput",
@@ -46,6 +45,7 @@ class InputMatNode @JvmOverloads constructor(
         }
     }
 
+    @SerializeData
     val output = MatAttribute(OUTPUT, "$[att_input]")
 
     override fun onEnable() {

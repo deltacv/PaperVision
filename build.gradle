@@ -15,7 +15,12 @@ buildscript {
         log4j_version = "2.24.0"
         logback_classic_version = "1.5.8"
 
-        env = findProperty('env') == 'release' ? 'release' : 'dev'
+        Penv = findProperty('env')
+        if(Penv != null && (Penv != 'dev' && Penv != 'release')) {
+            throw new GradleException("Invalid env property, must be 'dev' or 'release'")
+        }
+
+        env = Penv == 'release' ? 'release' : 'dev'
 
         println("Current build is: $env")
     }
@@ -40,7 +45,6 @@ allprojects {
 
         maven { url 'https://jitpack.io' }
     }
-
 
     if(env == 'dev') {
         String date = DateTimeFormatter.ofPattern(

@@ -3,9 +3,9 @@ package io.github.deltacv.papervision.serialization.data.adapter
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import io.github.deltacv.papervision.node.hasSuperclass
 import io.github.deltacv.papervision.serialization.data.DataSerializable
-import java.lang.reflect.Field
+import io.github.deltacv.papervision.util.getFieldDeep
+import io.github.deltacv.papervision.util.hasSuperclass
 
 /**
  * Deserialize a json object to a DataSerializable object.
@@ -51,7 +51,8 @@ private fun processValue(instance: Any, valueName: String, value: JsonElement, c
         if(field != null) {
             field.isAccessible = true
 
-            if (hasSuperclass(field.type, DataSerializable::class.java)) {
+            // al chile no se
+            if (field.type.hasSuperclass(DataSerializable::class.java)) {
                 val fieldValue = field.get(instance)
                 if (fieldValue != null) {
                     jsonObjectToDataSerializable(value, context, fieldValue as DataSerializable<Any>)
@@ -70,21 +71,4 @@ private fun processValue(instance: Any, valueName: String, value: JsonElement, c
     } catch(e: Exception) {
         throw RuntimeException("Exception while processing json entry \"$valueName\" of ${instance::class.java.typeName}", e)
     }
-}
-
-/**
- * Get a field from a class, including superclasses.
- */
-fun Class<*>.getFieldDeep(name: String): Field? {
-    var field: Field? = null
-    var clazz: Class<*>? = this
-
-    while (clazz != null && field == null) {
-        try {
-            field = clazz.getDeclaredField(name)
-        } catch (_: Exception) { }
-        clazz = clazz.superclass
-    }
-
-    return field
 }

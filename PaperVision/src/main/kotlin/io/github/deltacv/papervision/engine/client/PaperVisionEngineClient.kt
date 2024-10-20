@@ -32,6 +32,7 @@ class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
         messagesAwaitingResponse.remove(response.id)?.acceptResponse(response)
     }
 
+    @Suppress("SENSELESS_COMPARISON") // uh, i have gotten NPEs from bytes being null somehow
     fun acceptBytes(bytes: ByteArray) {
         if(bytes == null) return
 
@@ -58,6 +59,7 @@ class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
             bytesQueue.toTypedArray()
         }
 
+        @Suppress("SENSELESS_COMPARISON")
         binaryMessages.forEach {
             if(it == null) return@forEach
 

@@ -31,10 +31,14 @@ open class LanguageBase(
         return Type("${type.className}[]", type.packagePath, type.generics, isArray = true, actualImport = originalType)
     }
 
-    // TODO: append generics properly
     override fun newArrayOf(type: Type, size: Value) = ConValue(
         arrayOf(type), "new ${type.className}${if(type.hasGenerics) "<>" else ""}[${size.value}]"
     )
+
+    override fun newArrayOf(type: Type, vararg values: Value): Value {
+        val arrayType = arrayOf(type)
+        return ConValue(arrayType, "new ${type.className}${if(type.hasGenerics) "<>" else ""}[] { ${values.csv()} }")
+    }
 
     override val newImportBuilder: () -> Language.ImportBuilder = { BaseImportBuilder(this) }
 
