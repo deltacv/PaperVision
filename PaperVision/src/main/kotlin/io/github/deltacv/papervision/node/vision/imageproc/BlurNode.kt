@@ -136,7 +136,7 @@ class BlurNode : DrawNode<BlurNode.Session>() {
                         }
                     }
 
-                    val variable = uniqueVariable("blur${algo.name}", value)
+                    val variable = uniqueVariable("blur_${algo.name.lowercase()}", value)
                     local(variable)
 
                     session.outputMatValue = GenValue.Mat(variable, inputMat.color)

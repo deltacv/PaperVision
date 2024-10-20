@@ -15,6 +15,14 @@ object CPythonOpenCvTypes {
         val CHAIN_APPROX_SIMPLE = ConValue(this, "cv2.CHAIN_APPROX_SIMPLE").apply {
             additionalImports(this)
         }
+
+        val MORPH_RECT = ConValue(this, "cv2.MORPH_RECT").apply {
+            additionalImports(this)
+        }
+
+        val contourArea = ConValue(this, "cv2.contourArea").apply {
+            additionalImports(this)
+        }
     }
 
     val np = CPythonType("numpy", null, "np")

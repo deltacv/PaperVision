@@ -10,11 +10,14 @@ import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.Value
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Scalar
 import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -140,6 +143,81 @@ open class DrawRectanglesNode
 
                 session
             }
+        }
+
+        generatorFor(CPythonLanguage) {
+            val session = Session()
+
+            current {
+                val input = inputMat.value(current)
+                val rectanglesList = rectangles.value(current)
+
+                val thickness = lineThickness.value(current).value
+                val color = lineColor.value(current)
+
+                current.scope {
+                    val target = if (isDrawOnInput) {
+                        input.value
+                    } else {
+                        val output = uniqueVariable(
+                            "${input.value.value}_rects",
+                            input.value.callValue("copy", CPythonLanguage.NoType)
+                        )
+                        local(output)
+                        output
+                    }
+
+                    val colorScalar = CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
+
+                    fun runtimeRect(rectValue: Value) {
+                        val rectangle = CPythonLanguage.tupleVariables(
+                            rectValue,
+                            "x", "y", "w", "h"
+                        )
+                        local(rectangle)
+
+                        // cv2.rectangle(mat, (x, y), (x + w, y + h), color, thickness)
+                        // color is a (r, g, b, a) tuple
+                        cv2(
+                            "rectangle", target,
+                            CPythonLanguage.tuple(rectangle.get("x"), rectangle.get("y")),
+                            CPythonLanguage.tuple(
+                                rectangle.get("x") + rectangle.get("w"),
+                                rectangle.get("y") + rectangle.get("h")
+                            ),
+                            colorScalar,
+                            thickness.v
+                        )
+                    }
+
+                    if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
+                        for (rectangle in (rectanglesList as GenValue.GList.ListOf<*>).elements) {
+                            if (rectangle is GenValue.GRect.Rect) {
+                                cv2(
+                                    "rectangle", target,
+                                    CPythonLanguage.tuple(rectangle.x.value.v, rectangle.y.value.v),
+                                    CPythonLanguage.tuple(
+                                        rectangle.x.value.v + rectangle.w.value.v,
+                                        rectangle.y.value.v + rectangle.h.value.v
+                                    ),
+                                    colorScalar,
+                                    thickness.v
+                                )
+                            } else if (rectangle is GenValue.GRect.RuntimeRect) {
+                                runtimeRect(rectangle.value)
+                            }
+                        }
+                    } else {
+                        foreach(variable(CPythonLanguage.NoType, "rect"), rectanglesList.value) { rect ->
+                            runtimeRect(rect)
+                        }
+                    }
+
+                    session.outputMat = GenValue.Mat(target, input.color, input.isBinary)
+                }
+            }
+
+            session
         }
     }
 

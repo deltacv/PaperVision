@@ -1,11 +1,8 @@
 package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.attribute.Attribute
-import io.github.deltacv.papervision.codegen.language.Language
-import io.github.deltacv.papervision.exception.NodeGenException
-import io.github.deltacv.papervision.node.DrawNode
 
-interface GenNode<S: CodeGenSession> {
+interface GenNode<S: CodeGenSession> : Generator<S> {
 
     val genOptions: CodeGenOptions
     var lastGenSession: S?
@@ -15,8 +12,6 @@ interface GenNode<S: CodeGenSession> {
     fun receivePropagation(current: CodeGen.Current) {
         genCodeIfNecessary(current)
     }
-
-    fun genCode(current: CodeGen.Current): S
 
     /**
      * Generates code if there's not a session in the current CodeGen

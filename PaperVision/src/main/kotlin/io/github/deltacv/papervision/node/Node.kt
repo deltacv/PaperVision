@@ -175,7 +175,9 @@ abstract class Node<S: CodeGenSession>(
             }
         }
 
+        // Propagate FIRST to all nodes that are not dead ends
         completePathNodes.forEach { it.receivePropagation(current) }
+        // Propagate to dead ends, so they can be processed last
         deadEndNodes.forEach { it.receivePropagation(current) }
     }
 

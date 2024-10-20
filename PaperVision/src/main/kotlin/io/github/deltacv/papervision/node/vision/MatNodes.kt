@@ -3,14 +3,19 @@ package io.github.deltacv.papervision.node.vision
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.papervision.attribute.Attribute
+import io.github.deltacv.papervision.attribute.math.DoubleAttribute
+import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.NoSession
+import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.codegen.dsl.generatorFor
 import io.github.deltacv.papervision.codegen.dsl.generators
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
@@ -100,14 +105,20 @@ class OutputMatNode @JvmOverloads constructor(
     }
 
     val input = MatAttribute(INPUT, "$[att_output]")
+    val crosshair = PointsAttribute(INPUT, "$[att_crosshair]")
+    val exportedData = ListAttribute(INPUT, DoubleAttribute, "$[att_exporteddata]")
 
     override fun onEnable() {
         + input.rebuildOnChange()
+        + crosshair.rebuildOnChange()
+        + exportedData.rebuildOnChange()
     }
 
     fun ensureAttributeExists() { // prevent weird oopsies due to the special way these persistent buddies are handled
         enable()
         input.enable()
+        crosshair.enable()
+        exportedData.enable()
     }
 
     override val generators = generators {
@@ -122,14 +133,38 @@ class OutputMatNode @JvmOverloads constructor(
             NoSession
         }
 
+        @Suppress("UNCHECKED_CAST")
         generatorFor(CPythonLanguage) {
-            current.scope {
+            current {
                 val inputValue = input.value(current)
-                returnMethod(inputValue.value)
-                appendWhiteline = false
-            }
+                val crosshairValue = crosshair.value(current)
+                val dataValue = exportedData.value(current)
 
-            NoSession
+                current.scope {
+                    val llpython = uniqueVariable("llpython", if(dataValue is GenValue.GList.RuntimeListOf<*>) {
+                        dataValue.value
+                    } else if(dataValue is GenValue.GList.ListOf<*>) {
+                        val data = mutableListOf<Value>()
+
+                        for (d in dataValue.elements) {
+                            if(d is GenValue.Double) {
+                                data.add(d.value.v)
+                            }
+                        }
+
+                        CPythonLanguage.newArrayOf(CPythonLanguage.NoType, *data.toTypedArray())
+                    } else raise("Uh oh, this shouldn't happen"))
+
+                    local(llpython)
+
+                    separate()
+
+                    returnMethod(CPythonLanguage.tuple(crosshairValue.value, inputValue.value, llpython))
+                    appendWhiteline = false
+                }
+
+                NoSession
+            }
         }
     }
 

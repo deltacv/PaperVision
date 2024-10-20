@@ -158,7 +158,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
                     cvtMat
                 } else inputMat.value
 
-                val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}Thresh",
+                val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}_thresh",
                     cv2.callValue("inRange", CPythonLanguage.NoType, target,
                         CPythonLanguage.tuple(range.a.min.v, range.b.min.v, range.c.min.v, range.d.min.v),
                         CPythonLanguage.tuple(range.a.max.v, range.b.max.v, range.c.max.v, range.d.max.v)

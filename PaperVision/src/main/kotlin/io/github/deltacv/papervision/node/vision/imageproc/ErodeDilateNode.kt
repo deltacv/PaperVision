@@ -7,8 +7,10 @@ import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -109,6 +111,55 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
 
                 session
             }
+        }
+
+        generatorFor(CPythonLanguage) {
+            val session = Session()
+
+            current {
+                val input = inputMat.value(current)
+                input.requireBinary(inputMat)
+
+                val erodeVal = erodeValue.value(current)
+                val dilateVal = dilateValue.value(current)
+
+                val output = uniqueVariable(
+                    "${input.value.value!!}_eroded_dilated",
+                    input.value.callValue("copy", CPythonLanguage.NoType)
+                )
+
+                current.scope {
+                    local(output)
+
+                    if (erodeVal.value > 0) {
+                        val element = uniqueVariable("element", cv2.callValue(
+                            "getStructuringElement",
+                            CPythonLanguage.NoType,
+                            cv2.MORPH_RECT,
+                            CPythonLanguage.tuple(erodeVal.value.v, erodeVal.value.v)
+                        ))
+
+                        cv2("erode", output, output, element)
+                    }
+
+                    if (dilateVal.value > 0) {
+                        val element = uniqueVariable("element", cv2.callValue(
+                            "getStructuringElement",
+                            CPythonLanguage.NoType,
+                            cv2.MORPH_RECT,
+                            CPythonLanguage.tuple(dilateVal.value.v, dilateVal.value.v)
+                        ))
+
+                        cv2("dilate", output, output, element)
+                    }
+                }
+
+                session.outputMatValue = GenValue.Mat(output, input.color, input.isBinary)
+
+                session
+            }
+
+            session
         }
     }
 

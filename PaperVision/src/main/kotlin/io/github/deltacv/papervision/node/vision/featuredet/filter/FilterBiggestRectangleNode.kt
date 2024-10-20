@@ -76,20 +76,25 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                     raise("") // TODO: Handle non-runtime lists
                 }
 
-                val biggestRect = uniqueVariable("biggestRect", CPythonLanguage.nullValue)
+                val biggestRect = uniqueVariable("biggest_rect", CPythonLanguage.nullValue)
 
                 current.scope {
                     local(biggestRect)
 
                     foreach(variable(CPythonLanguage.NoType, "rect"), rectsList.value) { rect ->
+                        // 2 - width, 3 - height, of tuple (x, y, w, h)
+                        val rectArea = rect[2.v, CPythonLanguage.NoType] * rect[3.v, CPythonLanguage.NoType]
+                        val biggestRectArea = biggestRect[2.v, CPythonLanguage.NoType] * biggestRect[3.v, CPythonLanguage.NoType]
+
                         ifCondition(
-                            biggestRect equalsTo CPythonLanguage.nullValue or
-                                    (rect.callValue("area", CPythonLanguage.NoType) greaterThan biggestRect.callValue("area", CPythonLanguage.NoType))
+                            biggestRect equalsTo CPythonLanguage.nullValue or (rectArea greaterThan biggestRectArea)
                         ) {
                             biggestRect instanceSet rect
                         }
                     }
                 }
+
+                session.biggestRect = GenValue.GRect.RuntimeRect(biggestRect)
 
                 session
             }

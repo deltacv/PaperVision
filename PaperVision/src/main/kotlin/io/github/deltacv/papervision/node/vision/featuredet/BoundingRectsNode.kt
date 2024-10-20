@@ -76,10 +76,10 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                     raise("") // TODO: Handle non-runtime lists
                 }
 
-                val rectsList = uniqueVariable("${input.value.value}Rects", CPythonLanguage.nullValue)
+                val rectsList = uniqueVariable("${input.value.value}_rects", CPythonLanguage.NoType.newArray(0.v))
 
                 current.scope {
-                    rectsList("clear")
+                    local(rectsList)
 
                     foreach(variable(CPythonLanguage.NoType, "points"), input.value) { points ->
                         rectsList("append", cv2.callValue("boundingRect", CPythonLanguage.NoType, points))

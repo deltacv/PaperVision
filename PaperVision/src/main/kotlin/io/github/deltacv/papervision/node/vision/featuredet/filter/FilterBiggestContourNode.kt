@@ -8,8 +8,11 @@ import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -35,32 +38,64 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
             current {
                 val session = Session()
 
-                val rectsList = input.value(current)
+                val contoursList = input.value(current)
 
-                if(rectsList !is GenValue.GList.RuntimeListOf<*>) {
+                if(contoursList !is GenValue.GList.RuntimeListOf<*>) {
                     raise("") // TODO: Handle non-runtime lists
                 }
 
-                val biggestRect = uniqueVariable("biggestRect", JvmOpenCvTypes.Rect.nullVal)
+                val biggestContour = uniqueVariable("biggestContour", JvmOpenCvTypes.MatOfPoint.nullVal) // TODO: huh???
 
                 group {
-                    private(biggestRect)
+                    private(biggestContour)
                 }
 
                 current.scope {
-                    biggestRect instanceSet biggestRect.nullVal
+                    biggestContour instanceSet biggestContour.nullVal
 
-                    foreach(variable(JvmOpenCvTypes.Rect, "rect"), rectsList.value) { rect ->
+                    foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), contoursList.value) { contour ->
+                        val contourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, contour)
+                        val biggestContourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, biggestContour)
+
                         ifCondition(
-                            biggestRect equalsTo biggestRect.nullVal or
-                                    (rect.callValue("area", DoubleType) greaterThan biggestRect.callValue("area", DoubleType))
+                            biggestContour equalsTo biggestContour.nullVal or (contourArea greaterThan biggestContourArea)
                         ) {
-                            biggestRect instanceSet rect
+                            biggestContour instanceSet contour
                         }
                     }
                 }
 
-                session.biggestRect = GenValue.GRect.RuntimeRect(biggestRect)
+                session.biggestContour = GenValue.GPoints.RuntimePoints(biggestContour)
+
+                session
+            }
+        }
+
+        generatorFor(CPythonLanguage) {
+            current {
+                val session = Session()
+
+
+                val contoursList = input.value(current)
+
+                if(contoursList !is GenValue.GList.RuntimeListOf<*>) {
+                    raise("") // TODO: Handle non-runtime lists
+                }
+
+                current.scope {
+                    val biggestContour = uniqueVariable(
+                        "biggest_contour",
+                        "max".callValue(
+                            CPythonLanguage.NoType,
+                            contoursList.value,
+                            CPythonLanguage.namedArgument("key", cv2.contourArea)
+                        )
+                    )
+
+                    local(biggestContour)
+
+                    session.biggestContour = GenValue.GPoints.RuntimePoints(biggestContour)
+                }
 
                 session
             }
@@ -71,14 +106,14 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return lastGenSession!!.biggestRect
+            return lastGenSession!!.biggestContour
         }
 
         noValue(attrib)
     }
 
     class Session : CodeGenSession {
-        lateinit var biggestRect: GenValue.GRect.RuntimeRect
+        lateinit var biggestContour: GenValue.GPoints.RuntimePoints
     }
 
 }

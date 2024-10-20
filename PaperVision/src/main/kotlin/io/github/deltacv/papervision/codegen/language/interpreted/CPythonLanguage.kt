@@ -117,11 +117,21 @@ object CPythonLanguage : LanguageBase(
 
     override fun castValue(value: Value, castTo: Type) = ConValue(castTo, value.value)
 
+    override fun arrayOf(type: Type) = type
+
     override fun newArrayOf(type: Type, size: Value): ConValue {
         return ConValue(arrayOf(type), "[]")
     }
 
+    fun newArrayOf(type: Type, vararg values: Value): ConValue {
+        return ConValue(arrayOf(type), "[${values.csv()}]")
+    }
+
     override fun arraySize(array: Value) = ConValue(IntType, "len(${array.value})")
+
+    override fun arrayValue(from: Value, index: Value, type: Type) = ConValue(
+        type, "${from.value}[${index.value}]"
+    )
 
     override fun block(start: String, body: Scope, tabs: String): String {
         val bodyStr = body.get()
@@ -171,6 +181,7 @@ object CPythonLanguage : LanguageBase(
 
         mainScope.get()
     }
+
 
     class TupleVariable(value: Value, vararg names: String) : Variable(names.csv(), value) {
         val names = names.toSet()

@@ -140,7 +140,7 @@ open class DrawContoursNode
                         input.value
                     } else {
                         val output = uniqueVariable(
-                            "${input.value.value!!}Contours", input.value.callValue("copy", CPythonLanguage.NoType)
+                            "${input.value.value!!}_contours", input.value.callValue("copy", CPythonLanguage.NoType)
                         )
                         local(output)
 
