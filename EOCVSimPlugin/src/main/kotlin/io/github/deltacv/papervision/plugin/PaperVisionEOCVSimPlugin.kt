@@ -22,7 +22,6 @@ import io.github.deltacv.papervision.plugin.ipc.message.OpenCreateInputSourceMes
 import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
-import io.github.deltacv.papervision.util.event.EventListener
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.replaceLast
 import org.opencv.core.Size
@@ -86,7 +85,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         eocvSim.onMainUpdate.doOnce(recoveredProjectsListener)
-        PaperVisionProcessRunner.onPaperVisionExit.doOnce(recoveredProjectsListener)
+
+        PaperVisionProcessRunner.onPaperVisionExitError.doOnce(recoveredProjectsListener)
 
         eocvSim.pipelineManager.onPipelineChange {
             changeToPaperVisionPipelineIfNecessary()
@@ -192,6 +192,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             )
 
             currentPrevizSession?.startPreviz(message.sourceCode)
+
+            logger.info("Received source code\n{}", message.sourceCode)
 
             respond(OkResponse())
         }

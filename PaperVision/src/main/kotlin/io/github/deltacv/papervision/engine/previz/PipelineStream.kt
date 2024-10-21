@@ -79,6 +79,8 @@ class PipelineStream(
             val id = ByteMessages.idFromBytes(it)
             val message = ByteMessages.messageFromBytes(it)
 
+            logger.info("Received message from $sessionName with id $id and message size ${message.size}")
+
             queue.offer(id, width, height, ByteBuffer.wrap(message))
         }
 

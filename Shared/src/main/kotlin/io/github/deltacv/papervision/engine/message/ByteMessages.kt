@@ -57,7 +57,22 @@ object ByteMessages {
         val messageSize = bytes.size - messageOffset
 
         // next messageSize bytes are the message
-        return ByteBuffer.wrap(bytes, messageOffset, messageSize).array()
+        return bytes.copyOfRange(messageOffset, messageOffset + messageSize)
+    }
+
+    fun messageFromBytes(bytes: ByteArray, target: ByteArray) {
+        // first four bytes are the size of the tag string
+        val tagSize = ByteBuffer.wrap(bytes, 0, 4).getInt()
+
+        val messageOffset = 4 + tagSize + 4
+        val messageSize = bytes.size - messageOffset
+
+        if(target.size < messageSize) {
+            throw IllegalArgumentException("Target array is too small to fit the message")
+        }
+
+        // next messageSize bytes are the message
+        System.arraycopy(bytes, messageOffset, target, 0, messageSize)
     }
 
     fun toBytes(tag: ByteArray, id: Int, message: ByteArray): ByteArray {

@@ -36,6 +36,6 @@ interface PlatformTextureFactory {
     fun create(resource: String): PlatformTexture
 }
 
-enum class ColorSpace {
-    RGB, RGBA, BGR, BGRA
+enum class ColorSpace(val channels: Int) {
+    RGB(3), RGBA(4), BGR(3), BGRA(4)
 }

@@ -93,7 +93,7 @@ class PaperVisionProjectManager(
 
     val logger by loggerForThis()
 
-    val recoveredProjects = mutableListOf<RecoveredProject>().apply {
+    val recoveredProjects get() = mutableListOf<RecoveredProject>().apply {
         if(recoveryFolder.exists()) {
             for(file in recoveryFolder.listFiles() ?: arrayOf()) {
                 if(file.extension == "recoverypaperproj") {

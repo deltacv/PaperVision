@@ -91,7 +91,7 @@ class NodeList(
         IdElementContainerStack.threadStack.push(listNodes)
         IdElementContainerStack.threadStack.push(listAttributes)
 
-        headers = Headers(keyManager) { nodes }
+        headers = Headers(keyManager, paperVision.defaultFontBig) { nodes }
 
         IdElementContainerStack.threadStack.pop<Node<*>>()
         IdElementContainerStack.threadStack.pop<Attribute>()
@@ -401,6 +401,7 @@ class NodeList(
 
     class Headers(
         val keyManager: KeyManager,
+        val headerFont: Font,
         val nodesSupplier: () -> Map<Category, List<Node<*>>>
     ) : Window() {
 
@@ -454,9 +455,14 @@ class NodeList(
                     ImGui.pushStyleColor(ImGuiCol.HeaderActive, category.colorSelected)
                     ImGui.pushStyleColor(ImGuiCol.HeaderHovered, category.colorSelected)
 
+                    ImGui.pushFont(headerFont.imfont)
+
                     val isOpen = ImGui.collapsingHeader(
                         tr(category.properName), ImGuiTreeNodeFlags.DefaultOpen
                     )
+
+                    ImGui.popFont()
+
                     categoriesState[category] = isOpen
 
                     ImGui.popStyleColor()

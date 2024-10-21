@@ -129,7 +129,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
                     output.streamIfEnabled(thresholdTargetMat, ColorSpace.GRAY)
                 }
 
-                session.outputMat = GenValue.Mat(thresholdTargetMat, targetColor, true)
+                session.outputMat = GenValue.Mat(thresholdTargetMat, ColorSpace.GRAY, true)
 
                 session
             }

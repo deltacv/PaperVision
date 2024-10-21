@@ -19,7 +19,7 @@ class EOCVSimEngineImageStreamer(
     val matRecycler = MatRecycler(3)
     private var bytes = ByteArray(resolution.width.toInt() * resolution.height.toInt() * 3)
 
-    private val latestMat = Mat()
+    private val latestMatMap = mutableMapOf<Int, Mat>()
     private val maskMatMap = mutableMapOf<Int, Mat>()
 
     var resolution = resolution
@@ -94,7 +94,9 @@ class EOCVSimEngineImageStreamer(
                 Imgproc.cvtColor(scaledImg, scaledImg, cvtCode)
             }
 
-            if(image.type() != CvType.CV_8UC3) {
+            if(scaledImg.type() == CvType.CV_8UC1) {
+                Imgproc.cvtColor(scaledImg, scaledImg, Imgproc.COLOR_GRAY2RGB)
+            } else if(scaledImg.type() != CvType.CV_8UC3) {
                 throw IllegalArgumentException("Image must be of type CV_8UC3")
                 return
             }
@@ -111,11 +113,12 @@ class EOCVSimEngineImageStreamer(
             }
         }
 
+        val latestToCurrentMaskMat = maskMatMap.getOrPut(id) { Mat() }
+        val latestMat = latestMatMap.getOrPut(id) { Mat() }
+
         // create a mask mat to check if the image has changed
         // if it hasn't, we don't need to send it
         try {
-            val latestToCurrentMaskMat = maskMatMap.getOrPut(id) { Mat() }
-
             if (!latestMat.empty() && latestMat.size() == scaledImg.size()) {
                 latestToCurrentMaskMat.release()
 

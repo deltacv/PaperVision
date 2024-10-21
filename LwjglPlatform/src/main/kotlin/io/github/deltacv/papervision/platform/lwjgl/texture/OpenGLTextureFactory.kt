@@ -27,6 +27,11 @@ object OpenGLTextureFactory : PlatformTextureFactory {
     override fun create(width: Int, height: Int, bytes: ByteBuffer, colorSpace: ColorSpace): OpenGLTexture {
         val id = glGenTextures()
 
+        val expectedSize = width * height * colorSpace.channels
+        if(expectedSize != bytes.remaining()) {
+            throw IllegalArgumentException("Buffer size does not match resolution (expected $expectedSize, got ${bytes.remaining()}, channels: ${colorSpace.channels}, width: $width, height: $height)")
+        }
+
         glBindTexture(GL_TEXTURE_2D, id)
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
 

@@ -14,6 +14,8 @@ import java.net.InetSocketAddress
 
 class EOCVSimIpcEngine : MessageHandlerPaperVisionEngine() {
 
+    val logger by loggerForThis()
+
     val server = WsServer(this).apply {
         start()
     }
@@ -47,7 +49,7 @@ class EOCVSimIpcEngine : MessageHandlerPaperVisionEngine() {
         override fun onMessage(conn: WebSocket, message: String) {
             val engineMessage = ipcGson.fromJson(message, PaperVisionEngineMessage::class.java)
 
-            logger.trace("Message from {}: {}", engineMessage::class.java.simpleName, message)
+            logger.trace("Message {}: {}", engineMessage::class.java.simpleName, message)
             engine.acceptMessage(engineMessage)
         }
 

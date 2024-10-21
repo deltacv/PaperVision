@@ -27,7 +27,7 @@ object PaperVisionProcessRunner {
 
     val onPaperVisionExit = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionExit")
 
-    val onPaperVisionExitError = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionExit")
+    val onPaperVisionExitError = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionExitError")
 
     private val pool = Executors.newFixedThreadPool(1)
 
@@ -72,7 +72,7 @@ object PaperVisionProcessRunner {
                 onPaperVisionExitError.run()
             }
 
-            logger.warn("PaperVision process has exited")
+            logger.warn("PaperVision process has exited with exit code $exitCode")
 
             isRunning = false
         }

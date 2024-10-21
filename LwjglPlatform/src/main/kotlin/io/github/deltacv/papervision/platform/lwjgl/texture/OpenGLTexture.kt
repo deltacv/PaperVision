@@ -13,6 +13,11 @@ data class OpenGLTexture(
 ) : PlatformTexture() {
 
     override fun set(bytes: ByteArray, colorSpace: ColorSpace) {
+        val expectedSize = width * height * colorSpace.channels
+        if(expectedSize != bytes.size) {
+            throw IllegalArgumentException("Buffer size does not match resolution (expected $expectedSize, got ${bytes.size}, channels: ${colorSpace.channels}, width: $width, height: $height)")
+        }
+
         val buffer = MemoryUtil.memAlloc(bytes.size)
         buffer.put(bytes)
         buffer.flip()
@@ -25,6 +30,11 @@ data class OpenGLTexture(
     }
 
     override fun set(bytes: ByteBuffer, colorSpace: ColorSpace) {
+        val expectedSize = width * height * colorSpace.channels
+        if(expectedSize != bytes.remaining()) {
+            throw IllegalArgumentException("Buffer size does not match resolution (expected $expectedSize, got ${bytes.remaining()}, channels: ${colorSpace.channels}, width: $width, height: $height)")
+        }
+
         glBindTexture(GL_TEXTURE_2D, textureId.toInt())
 
         val format = when(colorSpace) {
@@ -41,6 +51,5 @@ data class OpenGLTexture(
     override fun delete() {
         glDeleteTextures(textureId.toInt())
     }
-
 
 }
