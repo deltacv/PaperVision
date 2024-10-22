@@ -121,15 +121,30 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     local(crosshairPoint)
 
+                    val rows = drawOnValue.callValue("rows", IntType)
+                    val cols = drawOnValue.callValue("cols", IntType)
+
+                    // Define a scale factor based on the image dimensions
+                    val scaleFactor = uniqueVariable("scaleFactor", (rows + cols) / 2.v)
+                    local(scaleFactor)
+
+                    separate()
+
+                    // Adjust crosshairSize based on the scale factor
+                    val adjustedCrosshairSize = uniqueVariable("adjustedCrosshairSize", crosshairSize * scaleFactor / 100.v)
+                    local(adjustedCrosshairSize)
+
+                    separate()
+
                     Imgproc(
                         "line",
                         crosshairImage,
                         JvmOpenCvTypes.Point.new(
-                            crosshairPoint.propertyValue("x", DoubleType) - crosshairSize,
+                            crosshairPoint.propertyValue("x", DoubleType) - adjustedCrosshairSize,
                             crosshairPoint.propertyValue("y", DoubleType)
                         ),
                         JvmOpenCvTypes.Point.new(
-                            crosshairPoint.propertyValue("x", DoubleType) + crosshairSize,
+                            crosshairPoint.propertyValue("x", DoubleType) + adjustedCrosshairSize,
                             crosshairPoint.propertyValue("y", DoubleType)
                         ),
                         crosshairCol,
@@ -141,11 +156,11 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                         crosshairImage,
                         JvmOpenCvTypes.Point.new(
                             crosshairPoint.propertyValue("x", DoubleType),
-                            crosshairPoint.propertyValue("y", DoubleType) - crosshairSize
+                            crosshairPoint.propertyValue("y", DoubleType) - adjustedCrosshairSize
                         ),
                         JvmOpenCvTypes.Point.new(
                             crosshairPoint.propertyValue("x", DoubleType),
-                            crosshairPoint.propertyValue("y", DoubleType) + crosshairSize
+                            crosshairPoint.propertyValue("y", DoubleType) + adjustedCrosshairSize
                         ),
                         crosshairCol,
                         crosshairThickness
@@ -157,53 +172,20 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
-                    val crosshairTopLeft = JvmOpenCvTypes.Point.new(
-                        crosshairPoint.propertyValue("x", DoubleType) - crosshairSize / 2.v,
-                        crosshairPoint.propertyValue("y", DoubleType) - crosshairSize / 2.v
-                    )
-                    val crosshairBottomRight = JvmOpenCvTypes.Point.new(
-                        crosshairPoint.propertyValue("x", DoubleType) + crosshairSize / 2.v,
-                        crosshairPoint.propertyValue("y", DoubleType) + crosshairSize
-                    )
-
-                    val crosshairRect =
-                        uniqueVariable("crosshairRect", JvmOpenCvTypes.Rect.new(crosshairTopLeft, crosshairBottomRight))
-                    local(crosshairRect)
-
-                    separate()
-
                     foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), inputPoints.value) {
-                        val boundingRect =
-                            uniqueVariable("boundingRect", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, it))
+                        // Get the bounding rectangle of the current contour
+                        val boundingRect = uniqueVariable(
+                            "boundingRect", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, it)
+                        )
                         local(boundingRect)
 
                         separate()
 
-                        // Calculate the centroid of the contour
-                        val centroidX = uniqueVariable(
-                            "centroidX",
-                            (boundingRect.callValue("tl", JvmOpenCvTypes.Point).propertyValue("x", DoubleType) +
-                                    boundingRect.callValue("br", JvmOpenCvTypes.Point)
-                                        .propertyValue("x", DoubleType)) / 2.v
-                        )
-                        val centroidY = uniqueVariable(
-                            "centroidY",
-                            (boundingRect.callValue("tl", JvmOpenCvTypes.Point).propertyValue("y", DoubleType) +
-                                    boundingRect.callValue("br", JvmOpenCvTypes.Point)
-                                        .propertyValue("y", DoubleType)) / 2.v
-                        )
-
-                        local(centroidX)
-                        local(centroidY)
-
-                        val centroid = uniqueVariable("centroid", JvmOpenCvTypes.Point.new(centroidX, centroidY))
-                        local(centroid)
-
-                        separate()
-
+                        // Check if the crosshair rectangle is inside the bounding rectangle
                         ifCondition(
-                            centroid.callValue("inside", BooleanType, crosshairRect).condition()
+                            boundingRect.callValue("contains", BooleanType, crosshairPoint).condition()
                         ) {
+                            // Add the contour to the crosshair if the bounding rectangle contains the crosshair
                             crosshair("add", it)
                         }
                     }
