@@ -10,12 +10,14 @@ import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.Scope
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Scalar
+import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generators
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -169,7 +171,7 @@ open class DrawRectanglesNode
 
                     val colorScalar = CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
 
-                    fun runtimeRect(rectValue: Value) {
+                    fun ScopeContext.runtimeRect(rectValue: Value) {
                         val rectangle = CPythonLanguage.tupleVariables(
                             rectValue,
                             "x", "y", "w", "h"

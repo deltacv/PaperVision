@@ -16,6 +16,8 @@ class Scope(
 
     private val usedNames = mutableListOf<String>()
 
+    private val beforeReturningCallbacks = mutableListOf<(Scope) -> Unit>()
+
     private val tabs by lazy {
         val builder = StringBuilder()
 
@@ -188,7 +190,15 @@ class Scope(
         builder.append(language.block(methodDeclaration.second, body, tabs))
     }
 
+    fun beforeReturning(block: (Scope) -> Unit) {
+        beforeReturningCallbacks.add(block)
+    }
+
     fun returnMethod(value: Value? = null) {
+        for(callback in beforeReturningCallbacks) {
+            callback(this)
+        }
+
         newStatement()
         if(value != null) importValue(value)
 
@@ -219,7 +229,6 @@ class Scope(
 
     private fun block(block: String, scope: Scope) {
         newStatement()
-
         builder.append(language.block(block, scope, tabs))
     }
 

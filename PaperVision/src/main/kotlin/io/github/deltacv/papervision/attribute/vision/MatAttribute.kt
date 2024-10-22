@@ -55,6 +55,8 @@ class MatAttribute(
                     text, isPrevizEnabled
                 )
 
+                drawAfterTextSize = ImGui.getItemRectSize()
+
                 ImGui.popStyleColor()
             ImGui.popFont()
         }

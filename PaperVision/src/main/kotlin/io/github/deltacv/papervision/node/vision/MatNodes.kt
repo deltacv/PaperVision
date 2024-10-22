@@ -14,6 +14,7 @@ import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorFor
 import io.github.deltacv.papervision.codegen.dsl.generators
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
@@ -123,11 +124,75 @@ class OutputMatNode @JvmOverloads constructor(
 
     override val generators = generators {
         generatorFor(JavaLanguage) {
-            current.scope {
-                streamMat(streamId!!, input.value(current).value, input.value(current).color)
+            current {
+                val inputValue = input.value(current)
 
-                returnMethod(input.value(current).value)
-                appendWhiteline = false
+                current.scope {
+                    if (crosshair.linkedAttributes().isNotEmpty()) {
+                        val crosshairValue = crosshair.value(current)
+
+                        ifCondition((crosshairValue.value notEqualsTo crosshairValue.value.type.nullVal)) {val boundingRect =
+                            uniqueVariable("boundingRect", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, crosshairValue.value))
+                            local(boundingRect)
+
+                            separate()
+
+                            // Calculate the centroid of the contour
+                            val centroidX =
+                                uniqueVariable("centroidX", (boundingRect.callValue("tl", JvmOpenCvTypes.Point).propertyValue("x", DoubleType) +
+                                        boundingRect.callValue("br", JvmOpenCvTypes.Point)
+                                            .propertyValue("x", DoubleType)) / 2.v)
+                            val centroidY =
+                                uniqueVariable("centroidY", (boundingRect.callValue("tl", JvmOpenCvTypes.Point).propertyValue("y", DoubleType) +
+                                        boundingRect.callValue("br", JvmOpenCvTypes.Point)
+                                            .propertyValue("y", DoubleType)) / 2.v)
+
+                            local(centroidX)
+                            local(centroidY)
+
+                            separate()
+
+                            val centroid = uniqueVariable("centroid", JvmOpenCvTypes.Point.new(centroidX, centroidY))
+                            local(centroid)
+                            val contourArea = uniqueVariable("contourArea", Imgproc.callValue("contourArea", DoubleType, crosshairValue.value))
+                            local(contourArea)
+
+                            separate()
+
+                            val crosshairSize = 10.v
+                            val crosshairThickness = 5.v
+
+                            val crosshairCol = uniqueVariable("crosshairCol", JvmOpenCvTypes.Scalar.new(0.0.v, 255.0.v, 0.0.v))
+                            local(crosshairCol)
+
+                            // draw crosshair on the centroid
+
+                            separate()
+
+                            Imgproc("line",
+                                inputValue.value,
+                                JvmOpenCvTypes.Point.new(centroidX - crosshairSize, centroidY),
+                                JvmOpenCvTypes.Point.new(centroidX + crosshairSize, centroidY),
+                                crosshairCol,
+                                crosshairThickness
+                            )
+                            Imgproc("line",
+                                inputValue.value,
+                                JvmOpenCvTypes.Point.new(centroidX, centroidY - crosshairSize),
+                                JvmOpenCvTypes.Point.new(centroidX, centroidY + crosshairSize),
+                                crosshairCol,
+                                crosshairThickness
+                            )
+                        }
+
+                        separate()
+                    }
+
+                    streamMat(streamId!!, inputValue.value, inputValue.color)
+                    returnMethod(inputValue.value)
+
+                    appendWhiteline = false
+                }
             }
 
             NoSession

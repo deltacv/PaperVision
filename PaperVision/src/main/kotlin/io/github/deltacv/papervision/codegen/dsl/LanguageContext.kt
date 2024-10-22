@@ -32,6 +32,9 @@ open class LanguageContext(val language: Language) {
     infix fun Value.greaterOrEqualThan(right: Value) = language.greaterOrEqualThan(this, right)
 
     infix fun Value.equalsTo(right: Value) = language.equals(this, right)
+    infix fun Value.notEqualsTo(right: Value) = language.notEquals(this, right)
+
+    fun not(cond: Condition) = language.not(cond)
 
     infix fun Condition.and(right: Condition) = language.and(this, right)
     infix fun Condition.or(right: Condition) = language.or(this, right)

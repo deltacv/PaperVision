@@ -2,6 +2,7 @@ package io.github.deltacv.papervision.attribute.misc
 
 import com.google.gson.JsonObject
 import imgui.ImGui
+import imgui.flag.ImGuiCol
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
@@ -197,20 +198,35 @@ open class ListAttribute(
 
             ImGui.sameLine(0.0f, style.itemInnerSpacingX * 2.0f)
 
-            if (ImGui.button("+", buttonSize, buttonSize)) { // creates a new element with the + button
+            if (ImGui.button("+", buttonSize, buttonSize)) {
+                // creates a new element with the + button
                 // uses the "new" function from the attribute's companion Type
                 createElement()
             }
 
-            // display the - button only if the attributes list is not empty
-            if (listAttributes.isNotEmpty()) {
-                ImGui.sameLine(0.0f, style.itemInnerSpacingX)
+            val hideMinusButton = listAttributes.isEmpty()
 
-                if (ImGui.button("-", buttonSize, buttonSize)) {
-                    // remove the last element from the list when - is pressed
-                    listAttributes.removeLastOrNull()
-                        ?.delete() // also delete it from the element id registry
-                }
+            // display the - button only if the attributes list is not empty
+            if (hideMinusButton) {
+                ImGui.pushStyleColor(ImGuiCol.Button, 0x00000000)
+                ImGui.pushStyleColor(ImGuiCol.ButtonHovered, 0x00000000)
+                ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0x00000000)
+                ImGui.pushStyleColor(ImGuiCol.Text, 0x00000000)
+            }
+
+            ImGui.sameLine(0.0f, style.itemInnerSpacingX)
+
+            if (ImGui.button("-", buttonSize, buttonSize) && !hideMinusButton) {
+                // remove the last element from the list when - is pressed
+                listAttributes.removeLastOrNull()
+                    ?.delete() // also delete it from the element id registry
+            }
+
+            if(hideMinusButton) {
+                ImGui.popStyleColor()
+                ImGui.popStyleColor()
+                ImGui.popStyleColor()
+                ImGui.popStyleColor()
             }
         }
     }

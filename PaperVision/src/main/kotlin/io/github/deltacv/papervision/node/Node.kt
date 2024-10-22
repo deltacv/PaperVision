@@ -189,7 +189,7 @@ abstract class Node<S: CodeGenSession>(
     }
 
     open fun makeSerializationData() = BasicNodeData(id, ImVec2().apply {
-        ImNodes.getNodeEditorSpacePos(id)
+        ImNodes.getNodeEditorSpacePos(id) // TODO: Fix this to get the actual position when SpaiR decides to merge my PR...
     })
 
     open fun takeDeserializationData(data: NodeSerializationData) { /* do nothing */ }

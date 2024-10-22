@@ -115,7 +115,15 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         scope.method(vis, returnType, name, methodScope, *parameters, isStatic = isStatic, isFinal = isFinal, isSynchronized = isSynchronized, isOverride = isOverride)
     }
 
-    fun returnMethod(value: Value? = null) = scope.returnMethod(value)
+    fun returnMethod(value: Value? = null) {
+        scope.returnMethod(value)
+    }
+
+    fun beforeReturning(block: ScopeContext.() -> Unit) {
+        scope.beforeReturning {
+            block(it.context)
+        }
+    }
 
     fun clazz(
         vis: Visibility, name: String,

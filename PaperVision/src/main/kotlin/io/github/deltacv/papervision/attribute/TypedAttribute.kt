@@ -48,6 +48,9 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
 
     open var icon = attributeType.icon
 
+    open var drawAfterTextSize = ImVec2()
+        protected set
+
     private var isFirstDraw = true
     private var isSecondDraw = false
 
@@ -97,11 +100,16 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
 
                 drawAfterText()
             } else {
-                val textSize = ImVec2()
-                ImGui.calcTextSize(textSize, t)
+                val textSize = ImGui.calcTextSize(t)
+
+                ImGui.pushFont(parentNode.fontAwesome.imfont)
+                textSize.plus(ImGui.calcTextSize(icon))
+                ImGui.popFont()
+
+                textSize.plus(drawAfterTextSize)
 
                 if(parentNode.nodeAttributes.size > 1) {
-                    ImGui.indent((nodeSize.x - (textSize.x * 1.2f)))
+                    ImGui.indent(nodeSize.x - (textSize.x))
                 } else {
                     ImGui.indent(textSize.x * 0.6f)
                 }

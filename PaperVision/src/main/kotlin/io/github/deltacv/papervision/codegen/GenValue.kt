@@ -9,16 +9,16 @@ sealed class GenValue {
 
     data class Mat(val value: Value, val color: ColorSpace, val isBinary: kotlin.Boolean = false) : GenValue() {
         fun requireBinary(attribute: Attribute) {
-            attribute.warnAssert(
+            attribute.raiseAssert(
                 isBinary,
-                "Input Mat is not binary as required, this might cause runtime issues."
+                "Mat is not binary as required, this causes runtime issues."
             )
         }
 
         fun requireNonBinary(attribute: Attribute) {
-            attribute.warnAssert(
+            attribute.raiseAssert(
                 !isBinary,
-                "Input Mat is binary where it shouldn't be, this might cause runtime issues."
+                "Mat is binary where it shouldn't be, this causes runtime issues."
             )
         }
     }
