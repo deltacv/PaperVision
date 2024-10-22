@@ -238,6 +238,7 @@ open class DrawRectanglesNode
 @PaperNode(
     name = "nod_drawrects_onimage",
     category = Category.OVERLAY,
-    description = "des_drawrects_onimage"
+    description = "des_drawrects_onimage",
+    showInList = false // executive decision
 )
 class DrawRectanglesOnImageNode : DrawRectanglesNode(true)

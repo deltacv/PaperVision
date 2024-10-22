@@ -79,9 +79,14 @@ class PrevizSession(
     }
 
     fun stopPreviz() {
+        if(!previzRunning) return
         previzRunning = false
 
         logger.info("Stopping previz session $sessionName")
+
+        if(streamer is EOCVSimEngineImageStreamer) {
+            streamer.stop()
+        }
 
         eocvSim.onMainUpdate.doOnce {
             eocvSim.pipelineManager.pipelines.removeAll { it.clazz == latestClass }

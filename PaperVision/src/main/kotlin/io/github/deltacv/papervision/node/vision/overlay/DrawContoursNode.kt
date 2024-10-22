@@ -176,6 +176,7 @@ open class DrawContoursNode
 @PaperNode(
     name = "nod_drawcontours_onimage",
     category = Category.OVERLAY,
-    description = "des_drawcontours_onimage"
+    description = "des_drawcontours_onimage",
+    showInList = false // executive decision
 )
 class DrawContoursOnImageNode : DrawContoursNode(true)

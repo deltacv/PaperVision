@@ -47,6 +47,8 @@ class InputSourceWindow(
         })
     }
 
+    private var firstDraw = true
+
     override fun drawContents() {
         if(ImGui.beginListBox("###$id")) {
             for (inputSource in inputSources) {
