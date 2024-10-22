@@ -12,6 +12,7 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.ColorSpace
 import io.github.deltacv.papervision.util.Range2i
+import io.github.deltacv.papervision.util.hexString
 
 class ScalarAttribute(
     mode: AttributeMode,

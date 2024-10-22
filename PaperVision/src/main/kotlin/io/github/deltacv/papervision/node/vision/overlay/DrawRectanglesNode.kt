@@ -47,7 +47,7 @@ open class DrawRectanglesNode
         + lineColor
         + lineThickness
 
-        lineThickness.value.set(1) // initial value
+        lineThickness.value.set(3) // initial value
 
         if (!isDrawOnInput) {
             + outputMat.enablePrevizButton().rebuildOnChange()

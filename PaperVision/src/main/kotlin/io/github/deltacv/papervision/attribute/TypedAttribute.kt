@@ -186,7 +186,7 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
         }
     }
 
-    private var cachedLabel: String? = null
+    protected var cachedLabel: String? = null
 
     @Suppress("UNCHECKED_CAST")
     open fun label(): String {

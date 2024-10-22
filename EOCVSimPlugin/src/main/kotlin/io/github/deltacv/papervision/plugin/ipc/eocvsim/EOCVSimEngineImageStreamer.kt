@@ -116,16 +116,19 @@ class EOCVSimEngineImageStreamer(
         val latestToCurrentMaskMat = maskMatMap.getOrPut(id) { Mat() }
         val latestMat = latestMatMap.getOrPut(id) { Mat() }
 
-        // create a mask mat to check if the image has changed
+        // create a diff mat to check if the image has changed since the last frame
         // if it hasn't, we don't need to send it
         try {
             if (!latestMat.empty() && latestMat.size() == scaledImg.size()) {
                 latestToCurrentMaskMat.release()
 
-                Core.bitwise_xor(latestMat, scaledImg, latestToCurrentMaskMat)
-                Core.extractChannel(latestToCurrentMaskMat, latestToCurrentMaskMat, 0)
+                // get the absolute difference between the latest mat and the current mat
+                Core.absdiff(latestMat, scaledImg, latestToCurrentMaskMat)
 
-                if (Core.countNonZero(latestToCurrentMaskMat) == 0) {
+                // convert to grayscale to check if there are any differences
+                Imgproc.cvtColor(latestToCurrentMaskMat, latestToCurrentMaskMat, Imgproc.COLOR_RGB2GRAY)
+
+                if (Core.countNonZero(latestToCurrentMaskMat) == 0) { // no differences
                     return
                 } else {
                     sendBytes()

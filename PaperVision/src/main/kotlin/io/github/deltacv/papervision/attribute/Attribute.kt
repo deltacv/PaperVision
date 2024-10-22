@@ -155,7 +155,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
     fun enabledLinkedAttribute(): Attribute? {
         if(!isInput) {
-            raise("Output attributes might have more than one link, so linkedAttribute() is not allowed")
+            raise("Output attributes might have more than one link, call linkedAttributes() instead")
         }
 
         if(!hasLink) {
@@ -169,7 +169,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         } else link.aAttrib
     }
 
-    fun linkedAttributes() = links.map {
+    fun linkedAttributes() = enabledLinks.map {
         if(it.aAttrib == this) {
             it.bAttrib
         } else it.aAttrib

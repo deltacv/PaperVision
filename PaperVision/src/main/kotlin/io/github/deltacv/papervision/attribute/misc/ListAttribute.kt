@@ -217,11 +217,11 @@ open class ListAttribute(
 
     override fun acceptLink(other: Attribute) = other is ListAttribute && other.elementAttributeType == elementAttributeType
 
-    override fun thisGet(): Array<Any> {
-        val list = mutableListOf<Any>()
+    override fun thisGet(): Array<Any?> {
+        val list = mutableListOf<Any?>()
 
         for(attribute in listAttributes) {
-            list.add(attribute.get() ?: continue)
+            list.add(attribute.get())
         }
 
         return list.toTypedArray()
@@ -236,7 +236,6 @@ open class ListAttribute(
         if(enable) element.enable() //enables the new element
 
         element.drawType = false // hides the variable type
-
         element.onChange.doPersistent(onChange::run)
 
         listAttributes.add(element)

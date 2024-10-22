@@ -12,6 +12,7 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.serialization.AttributeSerializationData
 import io.github.deltacv.papervision.util.Range2i
+import io.github.deltacv.papervision.util.hexString
 
 class IntAttribute(
     override val mode: AttributeMode,
@@ -32,10 +33,9 @@ class IntAttribute(
             field = value
         }
 
-    private var range: Range2i? = null
+    private var range: Range2i? = Range2i(0, Int.MAX_VALUE)
     private var sliders = false
 
-    private val sliderId by PaperVision.miscIds.nextId()
     override fun drawAttribute() {
         super.drawAttribute()
 
@@ -44,22 +44,18 @@ class IntAttribute(
 
             ImGui.pushItemWidth(110.0f)
 
-            if(!sliders) {
+            if(!sliders || disableInput) {
                 range?.let {
                     value.set(it.clip(value.get()))
                 }
 
                 ImGui.inputInt("", value, 1, 100, if(disableInput) ImGuiInputTextFlags.ReadOnly else 0)
             } else {
-                sliderValue.set(range!!.clip(sliderValue.get()))
-
-                ImGui.sliderInt("###$sliderId", sliderValue.data, range!!.min, range!!.max)
+                ImGui.sliderInt("", sliderValue.data, range!!.min, range!!.max)
                 value.set(sliderValue.get())
             }
 
-            if(!ImGui.isItemFocused()) {
-                checkChange()
-            }
+            checkChange()
 
             ImGui.popItemWidth()
 
