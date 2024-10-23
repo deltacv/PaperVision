@@ -36,9 +36,9 @@ import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 
 @PaperNode(
-    name = "nod_boundingrotated_rects",
+    name = "nod_boundingrotated_rect",
     category = Category.FEATURE_DET,
-    description = "des_boundingrotated_rects"
+    description = "des_boundingrotated_rect"
 )
 class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
 

@@ -45,9 +45,9 @@ import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.vision.ColorSpace
 
 @PaperNode(
-    name = "nod_drawrot_rects",
+    name = "nod_drawrotated_rects",
     category = Category.OVERLAY,
-    description = "des_drawrot_rects"
+    description = "des_drawrotated_rects"
 )
 open class DrawRotatedRectanglesNode
 @JvmOverloads constructor(val isDrawOnInput: Boolean = false) : DrawNode<DrawRotatedRectanglesNode.Session>() {

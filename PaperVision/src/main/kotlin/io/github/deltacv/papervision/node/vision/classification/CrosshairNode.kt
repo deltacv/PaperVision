@@ -63,16 +63,16 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
     val outputCrosshairImage = MatAttribute(OUTPUT, "$[att_crosshairimage]")
 
     override fun onEnable() {
-        +drawCrosshairOn.rebuildOnChange()
-        +input.rebuildOnChange()
-        +crosshairScale
+        + drawCrosshairOn.rebuildOnChange()
+        + input.rebuildOnChange()
+        + crosshairScale
 
-        +crosshairPosition
-        +crosshairLineThickness
-        +crosshairColor
+        + crosshairPosition
+        + crosshairColor
+        + crosshairLineThickness
 
-        +outputCrosshairImage.enablePrevizButton().rebuildOnChange()
-        +outputCrosshair.rebuildOnChange()
+        + outputCrosshairImage.enablePrevizButton().rebuildOnChange()
+        + outputCrosshair.rebuildOnChange()
     }
 
     override val generators = generators {
