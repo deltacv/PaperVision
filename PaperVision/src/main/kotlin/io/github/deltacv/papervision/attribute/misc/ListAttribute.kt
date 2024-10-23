@@ -175,6 +175,7 @@ open class ListAttribute(
                 GenValue.GList.List(listAttributes.map { it.value(current) }.toTypedArray())
             }
         } else {
+            parentNode.genCodeIfNecessary(current)
             val value = getOutputValue(current)
             raiseAssert(
                 value is GenValue.GList,

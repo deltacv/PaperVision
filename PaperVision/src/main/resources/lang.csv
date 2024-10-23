@@ -37,6 +37,8 @@ nod_sumintegers,Sum Integers,Sumar Enteros
 nod_codesnippet,Code Snippet,Trozo de Codigo
 att_input,Input,Entrada
 att_output,Output,Salida
+att_position,Position,Posicion
+att_scale,Scale,Escala
 att_crosshair,Crosshair,Crosshair
 att_exporteddata,Export Data,Datos Exportados
 att_value,Value,Valor

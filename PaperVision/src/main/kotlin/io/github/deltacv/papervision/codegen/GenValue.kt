@@ -32,12 +32,15 @@ sealed class GenValue {
 
     sealed class GRect : GenValue() {
         data class Rect(val x: Double, val y: Double, val w: Double, val h: Double) : GRect()
-        data class RotatedRect(val x: Double, val y: Double,
-                               val w: Double, val h: Double,
-                               val angle: Double) : GRect()
 
         data class RuntimeRect(val value: Value) : GRect()
-        data class RuntimeRotatedRect(val value: Value) : GRect()
+
+        sealed class Rotated : GRect() {
+            data class RotatedRect(val x: Double, val y: Double,
+                                   val w: Double, val h: Double,
+                                   val angle: Double) : Rotated()
+            data class RuntimeRotatedRect(val value: Value) : Rotated()
+        }
     }
 
     data class Enum<E: kotlin.Enum<E>>(val value: E, val clazz: Class<*>) : GenValue()

@@ -39,7 +39,7 @@ class EmptyInputAttribute(
     override fun acceptLink(other: Attribute) = true
 
     override fun value(current: CodeGen.Current): GenValue {
-        TODO("Not yet implemented")
+        throw NotImplementedError("value() is not implemented for EmptyInputAttribute")
     }
 }
 

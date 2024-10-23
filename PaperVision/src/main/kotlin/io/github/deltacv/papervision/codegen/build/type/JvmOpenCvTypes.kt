@@ -37,7 +37,10 @@ object JvmOpenCvTypes {
 
     val Size = Type("Size", "org.opencv.core")
     val Scalar = Type("Scalar", "org.opencv.core")
+
     val Rect = Type("Rect", "org.opencv.core")
+    val RotatedRect = Type("RotatedRect", "org.opencv.core")
+
     val Point = Type("Point", "org.opencv.core")
 
 }

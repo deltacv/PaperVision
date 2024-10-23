@@ -32,12 +32,12 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
         Center, Offset, Custom
     }
 
-    val drawCrosshairOn = MatAttribute(INPUT, "$[att_drawon]")
-    val input = ListAttribute(INPUT, PointsAttribute, "$[att_points]")
+    val drawCrosshairOn = MatAttribute(INPUT, "$[att_drawon_image]")
+    val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
 
-    val crosshairPosition = EnumAttribute(INPUT, CrosshairPosition.values(), "$[att_crosshairposition]")
+    val crosshairPosition = EnumAttribute(INPUT, CrosshairPosition.values(), "$[att_position]")
 
-    val crosshairScale = IntAttribute(INPUT, "$[att_crosshairscale]")
+    val crosshairScale = IntAttribute(INPUT, "$[att_scale]")
     val crosshairLineThickness = IntAttribute(INPUT, "$[att_linethickness]")
     val crosshairColor = ScalarAttribute(INPUT, ColorSpace.RGB, "$[att_linecolor]")
 

@@ -1,0 +1,238 @@
+package io.github.deltacv.papervision.node.vision.overlay
+
+import io.github.deltacv.papervision.attribute.Attribute
+import io.github.deltacv.papervision.attribute.math.IntAttribute
+import io.github.deltacv.papervision.attribute.misc.ListAttribute
+import io.github.deltacv.papervision.attribute.rebuildOnChange
+import io.github.deltacv.papervision.attribute.vision.MatAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.RotatedRectAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
+import io.github.deltacv.papervision.codegen.CodeGen
+import io.github.deltacv.papervision.codegen.CodeGenSession
+import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.Value
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
+import io.github.deltacv.papervision.codegen.build.type.JavaTypes
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Scalar
+import io.github.deltacv.papervision.codegen.dsl.ScopeContext
+import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.DrawNode
+import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.node.vision.ColorSpace
+
+@PaperNode(
+    name = "nod_drawrot_rects",
+    category = Category.OVERLAY,
+    description = "des_drawrot_rects"
+)
+open class DrawRotatedRectanglesNode
+@JvmOverloads constructor(val isDrawOnInput: Boolean = false) : DrawNode<DrawRotatedRectanglesNode.Session>() {
+
+    val inputMat = MatAttribute(INPUT, "$[att_input]")
+    val rectangles = ListAttribute(INPUT, RotatedRectAttribute, "$[att_rects]")
+
+    val lineColor = ScalarAttribute(INPUT, ColorSpace.RGB, "$[att_linecolor]")
+    val lineThickness = IntAttribute(INPUT, "$[att_linethickness]")
+
+    val outputMat = MatAttribute(OUTPUT, "$[att_output]")
+
+    override fun onEnable() {
+        + inputMat.rebuildOnChange()
+        + rectangles.rebuildOnChange()
+
+        + lineColor
+        + lineThickness
+
+        lineThickness.value.set(3) // initial value
+
+        if (!isDrawOnInput) {
+            + outputMat.enablePrevizButton().rebuildOnChange()
+        } else {
+            inputMat.variableName = "$[att_drawon_image]"
+        }
+    }
+
+    override val generators = generators {
+        generatorFor(JavaLanguage) {
+            current {
+                val session = Session()
+
+                val color = lineColor.value(current)
+                val colorScalar = uniqueVariable(
+                    "rotRectsColor",
+                    Scalar.new(
+                        color.a.v,
+                        color.b.v,
+                        color.c.v,
+                        color.d.v,
+                    )
+                )
+
+                val input = inputMat.value(current)
+                val rectanglesList = rectangles.value(current)
+
+                val thickness = lineThickness.value(current).value
+                val thicknessVariable = uniqueVariable("rotRectsThickness", thickness.v)
+
+                val output = uniqueVariable("${input.value.value!!}RotRects", Mat.new())
+
+                var drawMat = input.value
+
+                group {
+                    if (current.isForPreviz) {
+                        public(thicknessVariable, lineThickness.label())
+                    }
+
+                    public(colorScalar, lineColor.label())
+
+                    if (!isDrawOnInput) {
+                        private(output)
+                    }
+                }
+
+                current.scope {
+                    if (!isDrawOnInput) {
+                        drawMat = output
+                        input.value("copyTo", drawMat)
+                    }
+
+                    fun ScopeContext.drawRuntimeRect(rectValue: Value) {
+                        val rectPoints = uniqueVariable("rectPoints", JvmOpenCvTypes.Point.newArray(4.v))
+                        local(rectPoints)
+                        rectValue("points", rectPoints)
+
+                        val matOfPoint = uniqueVariable("matOfPoint", JvmOpenCvTypes.MatOfPoint.new(rectPoints))
+                        local(matOfPoint)
+
+                        separate()
+
+                        // Draw the rectangle using the points
+                        Imgproc(
+                            "polylines", drawMat,
+                            JavaTypes.Collections.callValue("singletonList", JavaTypes.List(JvmOpenCvTypes.MatOfPoint), matOfPoint), // list of points forming the rotated rectangle
+                            trueValue, // closed polygon
+                            colorScalar,
+                            thickness.v
+                        )
+                    }
+
+                    if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
+                        for (rectangle in (rectanglesList as GenValue.GList.ListOf<*>).elements) {
+                            if (rectangle is GenValue.GRect.Rect) {
+                                TODO("")
+                            } else if (rectangle is GenValue.GRect.Rotated.RuntimeRotatedRect) {
+                                drawRuntimeRect(rectangle.value)
+                            }
+                        }
+                    } else {
+                        foreach(variable(JvmOpenCvTypes.RotatedRect, "rect"), rectanglesList.value) {
+                            drawRuntimeRect(it)
+                        }
+                    }
+
+                    if (!isDrawOnInput) {
+                        outputMat.streamIfEnabled(output, input.color)
+                    }
+                }
+
+                session.outputMat = GenValue.Mat(drawMat, input.color, input.isBinary)
+
+                session
+            }
+        }
+
+        generatorFor(CPythonLanguage) {
+            val session = Session()
+
+            current {
+                val input = inputMat.value(current)
+                val rectanglesList = rectangles.value(current)
+
+                val thickness = lineThickness.value(current).value
+                val color = lineColor.value(current)
+
+                current.scope {
+                    val target = if (isDrawOnInput) {
+                        input.value
+                    } else {
+                        val output = uniqueVariable(
+                            "${input.value.value}_rects",
+                            input.value.callValue("copy", CPythonLanguage.NoType)
+                        )
+                        local(output)
+                        output
+                    }
+
+                    val colorScalar = CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
+
+                    fun ScopeContext.runtimeRect(rectValue: Value) {
+                        val rectangle = CPythonLanguage.tupleVariables(
+                            rectValue,
+                            "x", "y", "w", "h"
+                        )
+                        local(rectangle)
+
+                        // cv2.rectangle(mat, (x, y), (x + w, y + h), color, thickness)
+                        // color is a (r, g, b, a) tuple
+                        cv2(
+                            "rectangle", target,
+                            CPythonLanguage.tuple(rectangle.get("x"), rectangle.get("y")),
+                            CPythonLanguage.tuple(
+                                rectangle.get("x") + rectangle.get("w"),
+                                rectangle.get("y") + rectangle.get("h")
+                            ),
+                            colorScalar,
+                            thickness.v
+                        )
+                    }
+
+                    if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
+                        for (rectangle in (rectanglesList as GenValue.GList.ListOf<*>).elements) {
+                            if (rectangle is GenValue.GRect.Rect) {
+                                cv2(
+                                    "rectangle", target,
+                                    CPythonLanguage.tuple(rectangle.x.value.v, rectangle.y.value.v),
+                                    CPythonLanguage.tuple(
+                                        rectangle.x.value.v + rectangle.w.value.v,
+                                        rectangle.y.value.v + rectangle.h.value.v
+                                    ),
+                                    colorScalar,
+                                    thickness.v
+                                )
+                            } else if (rectangle is GenValue.GRect.RuntimeRect) {
+                                runtimeRect(rectangle.value)
+                            }
+                        }
+                    } else {
+                        foreach(variable(CPythonLanguage.NoType, "rect"), rectanglesList.value) { rect ->
+                            runtimeRect(rect)
+                        }
+                    }
+
+                    session.outputMat = GenValue.Mat(target, input.color, input.isBinary)
+                }
+            }
+
+            session
+        }
+    }
+
+    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+        if (attrib == outputMat) {
+            return lastGenSession!!.outputMat
+        }
+
+        noValue(attrib)
+    }
+
+    class Session : CodeGenSession {
+        lateinit var outputMat: GenValue.Mat
+    }
+
+}
