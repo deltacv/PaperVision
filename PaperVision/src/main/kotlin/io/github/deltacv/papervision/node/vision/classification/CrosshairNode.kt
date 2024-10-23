@@ -222,8 +222,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when (attrib) {
-            outputCrosshair -> lastGenSession!!.outputCrosshair
-            outputCrosshairImage -> lastGenSession!!.outputCrosshairImage
+            outputCrosshair -> current.sessionOf(this)!!.outputCrosshair
+            outputCrosshairImage -> current.sessionOf(this)!!.outputCrosshairImage
             else -> noValue(attrib)
         }
     }

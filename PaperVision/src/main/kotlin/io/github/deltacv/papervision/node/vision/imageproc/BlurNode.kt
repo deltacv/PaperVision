@@ -170,7 +170,7 @@ class BlurNode : DrawNode<BlurNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return lastGenSession!!.outputMatValue
+            return current.sessionOf(this)!!.outputMatValue
         }
 
         noValue(attrib)

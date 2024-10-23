@@ -110,7 +110,7 @@ class MaskNode : DrawNode<MaskNode.Session>(){
         genCodeIfNecessary(current)
 
         if(attrib == outputMat) {
-            return lastGenSession!!.outputMat
+            return current.sessionOf(this)!!.outputMat
         }
 
         noValue(attrib)

@@ -124,7 +124,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return lastGenSession!!.biggestContour
+            return current.sessionOf(this)!!.biggestContour
         }
 
         noValue(attrib)

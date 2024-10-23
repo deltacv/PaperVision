@@ -123,7 +123,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return lastGenSession!!.biggestRect
+            return current.sessionOf(this)!!.biggestRect
         }
 
         noValue(attrib)

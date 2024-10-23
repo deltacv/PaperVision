@@ -243,7 +243,7 @@ open class DrawRotatedRectanglesNode
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         if (attrib == outputMat) {
-            return lastGenSession!!.outputMat
+            return current.sessionOf(this)!!.outputMat
         }
 
         noValue(attrib)

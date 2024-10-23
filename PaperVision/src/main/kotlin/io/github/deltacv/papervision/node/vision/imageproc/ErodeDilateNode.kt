@@ -185,7 +185,7 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == outputMat) {
-            return lastGenSession!!.outputMatValue
+            return current.sessionOf(this)!!.outputMatValue
         }
 
         noValue(attrib)

@@ -176,7 +176,7 @@ class GroupContoursByShapeNode : DrawNode<GroupContoursByShapeNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return lastGenSession!!.output
+            return current.sessionOf(this)!!.output
         }
 
         noValue(attrib)

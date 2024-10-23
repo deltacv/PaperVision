@@ -115,7 +115,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == outputPoints) {
-            return lastGenSession!!.contoursList
+            return current.sessionOf(this)!!.contoursList
         }
 
         noValue(attrib)

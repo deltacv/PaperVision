@@ -179,7 +179,7 @@ open class DrawContoursNode
         genCodeIfNecessary(current)
 
         if(attrib == outputMat) {
-            return lastGenSession!!.outputMat
+            return current.sessionOf(this)!!.outputMat
         }
 
         noValue(attrib)

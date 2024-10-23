@@ -71,7 +71,7 @@ class CodeGen(
         val language get() = codeGen.language
 
         @Suppress("UNCHECKED_CAST")
-        fun <S: CodeGenSession> session(node: GenNode<S>) = codeGen.sessions[node] as S?
+        fun <S: CodeGenSession> sessionOf(node: GenNode<S>) = codeGen.sessions[node] as S?
 
         operator fun <T> invoke(scopeBlock: CodeGenContext.() -> T) = codeGen.invoke(scopeBlock)
     }

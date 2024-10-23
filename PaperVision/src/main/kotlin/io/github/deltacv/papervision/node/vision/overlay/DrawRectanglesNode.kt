@@ -28,7 +28,6 @@ import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.Scope
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
@@ -243,7 +242,7 @@ open class DrawRectanglesNode
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         if (attrib == outputMat) {
-            return lastGenSession!!.outputMat
+            return current.sessionOf(this)!!.outputMat
         }
 
         noValue(attrib)
