@@ -19,12 +19,11 @@
 package io.github.deltacv.papervision.node.vision.overlay
 
 import io.github.deltacv.papervision.attribute.Attribute
-import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.LineParametersAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.RotatedRectAttribute
-import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
@@ -34,7 +33,6 @@ import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Scalar
 import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generators
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
@@ -42,7 +40,6 @@ import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
-import io.github.deltacv.papervision.node.vision.ColorSpace
 
 @PaperNode(
     name = "nod_drawrotated_rects",
@@ -55,8 +52,7 @@ open class DrawRotatedRectanglesNode
     val inputMat = MatAttribute(INPUT, "$[att_input]")
     val rectangles = ListAttribute(INPUT, RotatedRectAttribute, "$[att_rects]")
 
-    val lineColor = ScalarAttribute(INPUT, ColorSpace.RGB, "$[att_linecolor]")
-    val lineThickness = IntAttribute(INPUT, "$[att_linethickness]")
+    val lineParams = LineParametersAttribute(INPUT, "$[att_params]")
 
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
@@ -64,10 +60,7 @@ open class DrawRotatedRectanglesNode
         + inputMat.rebuildOnChange()
         + rectangles.rebuildOnChange()
 
-        + lineColor
-        + lineThickness
-
-        lineThickness.value.set(3) // initial value
+        + lineParams
 
         if (!isDrawOnInput) {
             + outputMat.enablePrevizButton().rebuildOnChange()
@@ -81,34 +74,16 @@ open class DrawRotatedRectanglesNode
             current {
                 val session = Session()
 
-                val color = lineColor.value(current)
-                val colorScalar = uniqueVariable(
-                    "rotRectsColor",
-                    Scalar.new(
-                        color.a.v,
-                        color.b.v,
-                        color.c.v,
-                        color.d.v,
-                    )
-                )
+                val lineParams = (lineParams.value(current) as GenValue.LineParameters.Line).ensureRuntimeLine(current)
 
                 val input = inputMat.value(current)
                 val rectanglesList = rectangles.value(current)
-
-                val thickness = lineThickness.value(current).value
-                val thicknessVariable = uniqueVariable("rotRectsThickness", thickness.v)
 
                 val output = uniqueVariable("${input.value.value!!}RotRects", Mat.new())
 
                 var drawMat = input.value
 
                 group {
-                    if (current.isForPreviz) {
-                        public(thicknessVariable, lineThickness.label())
-                    }
-
-                    public(colorScalar, lineColor.label())
-
                     if (!isDrawOnInput) {
                         private(output)
                     }
@@ -135,8 +110,8 @@ open class DrawRotatedRectanglesNode
                             "polylines", drawMat,
                             JavaTypes.Collections.callValue("singletonList", JavaTypes.List(JvmOpenCvTypes.MatOfPoint), matOfPoint), // list of points forming the rotated rectangle
                             trueValue, // closed polygon
-                            colorScalar,
-                            thickness.v
+                            lineParams.colorScalarValue,
+                            lineParams.thicknessValue
                         )
                     }
 
@@ -172,8 +147,11 @@ open class DrawRotatedRectanglesNode
                 val input = inputMat.value(current)
                 val rectanglesList = rectangles.value(current)
 
-                val thickness = lineThickness.value(current).value
-                val color = lineColor.value(current)
+                val lineParams = (lineParams.value(current))
+
+                if(lineParams !is GenValue.LineParameters.Line) {
+                    raise("Line parameters must not be runtime")
+                }
 
                 current.scope {
                     val target = if (isDrawOnInput) {
@@ -187,7 +165,12 @@ open class DrawRotatedRectanglesNode
                         output
                     }
 
+                    val color = lineParams.color
+                    val thickness = lineParams.thickness.value
+
                     val colorScalar = CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
+
+                    // TODO: Implement rotated rect drawing in python
 
                     fun ScopeContext.runtimeRect(rectValue: Value) {
                         val rectangle = CPythonLanguage.tupleVariables(

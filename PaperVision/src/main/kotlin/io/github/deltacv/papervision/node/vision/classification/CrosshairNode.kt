@@ -24,6 +24,7 @@ import io.github.deltacv.papervision.attribute.misc.EnumAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.LineParametersAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
@@ -56,8 +57,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
     val crosshairPosition = EnumAttribute(INPUT, CrosshairPosition.values(), "$[att_position]")
 
     val crosshairScale = IntAttribute(INPUT, "$[att_scale]")
-    val crosshairLineThickness = IntAttribute(INPUT, "$[att_linethickness]")
-    val crosshairColor = ScalarAttribute(INPUT, ColorSpace.RGB, "$[att_linecolor]")
+
+    val crosshairLineParams = LineParametersAttribute(INPUT, "$[att_crosshairline_params]")
 
     val outputCrosshair = ListAttribute(OUTPUT, PointsAttribute, "$[att_crosshair]")
     val outputCrosshairImage = MatAttribute(OUTPUT, "$[att_crosshairimage]")
@@ -68,8 +69,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
         + crosshairScale
 
         + crosshairPosition
-        + crosshairColor
-        + crosshairLineThickness
+        + crosshairLineParams
 
         + outputCrosshairImage.enablePrevizButton().rebuildOnChange()
         + outputCrosshair.rebuildOnChange()
@@ -89,33 +89,21 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
             val drawOnValue = drawOn.value
 
             val crosshairPosValue = crosshairPosition.value(current).value
-            val crosshairThicknessValue = crosshairLineThickness.value(current).value
+
+            val crosshairLineParams = (crosshairLineParams.value(current) as GenValue.LineParameters.Line).ensureRuntimeLine(current)
+
             val crosshairSizeValue = crosshairScale.value(current).value
-            val crosshairColorValue = crosshairColor.value(current)
 
             current {
                 val crosshair = uniqueVariable("crosshair", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
                 val crosshairImage = uniqueVariable("crosshairImage", JvmOpenCvTypes.Mat.new())
-
-                val crosshairThickness = uniqueVariable("crosshairThickness", crosshairThicknessValue.v)
                 val crosshairSize = uniqueVariable("crosshairSize", crosshairSizeValue.v)
-                val crosshairCol = uniqueVariable(
-                    "crosshairColor",
-                    JvmOpenCvTypes.Scalar.new(
-                        crosshairColorValue.a.v,
-                        crosshairColorValue.b.v,
-                        crosshairColorValue.c.v,
-                        crosshairColorValue.d.v
-                    )
-                )
 
                 group {
                     private(crosshair)
                     private(crosshairImage)
 
-                    public(crosshairThickness, crosshairLineThickness.label())
                     public(crosshairSize, crosshairScale.label())
-                    public(crosshairCol, crosshairColor.label())
                 }
 
                 current.scope {
@@ -153,6 +141,9 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                     local(adjustedCrosshairSize)
 
                     separate()
+
+                    val crosshairCol = crosshairLineParams.colorScalarValue
+                    val crosshairThickness = crosshairLineParams.thicknessValue
 
                     Imgproc(
                         "line",

@@ -73,6 +73,11 @@ class CodeGen(
         @Suppress("UNCHECKED_CAST")
         fun <S: CodeGenSession> sessionOf(node: GenNode<S>) = codeGen.sessions[node] as S?
 
+        fun <S: CodeGenSession> nonNullSessionOf(node: GenNode<S>) = sessionOf(node) ?: {
+            node.genCodeIfNecessary(this)
+            sessionOf(node) ?: throw IllegalStateException("Node ${node::class.simpleName} did not generate a session")
+        }()
+
         operator fun <T> invoke(scopeBlock: CodeGenContext.() -> T) = codeGen.invoke(scopeBlock)
     }
 

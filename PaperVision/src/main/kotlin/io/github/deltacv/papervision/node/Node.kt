@@ -37,6 +37,8 @@ import io.github.deltacv.papervision.serialization.BasicNodeData
 import io.github.deltacv.papervision.serialization.NodeSerializationData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.event.EventListener
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 interface Type {
     val name: String
@@ -241,7 +243,12 @@ abstract class Node<S: CodeGenSession>(
         println("WARN: $message") // TODO: Warnings system...
     }
 
+    @OptIn(ExperimentalContracts::class)
     fun raiseAssert(condition: Boolean, message: String) {
+        contract {
+            returns() implies condition
+        }
+
         if(!condition) {
             raise(message)
         }

@@ -20,6 +20,7 @@ package io.github.deltacv.papervision.node.vision
 
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
+import imgui.type.ImInt
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.math.DoubleAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
@@ -52,14 +53,25 @@ class InputMatNode @JvmOverloads constructor(
 ) : DrawNode<NoSession>(allowDelete = false) {
 
     override fun init() {
-        editor.onDraw.doOnce {
-            if(serializedId != null) return@doOnce
+        editor.onDraw { remover ->
+            if(serializedId != null) {
+                remover.removeThis()
+                return@onDraw
+            }
+
+            remover.removeOn(editor.onEditorPan)
+
             windowSizeSupplier?.let {
                 val nodeSize = ImVec2()
                 ImNodes.getNodeDimensions(nodeSize, id)
 
                 val windowSize = it()
                 ImNodes.setNodeScreenSpacePos(id, nodeSize.x * 0.5f, windowSize.y / 2f - nodeSize.y / 2)
+
+                if(editor.nodes.inmutable.size > 3 || ImNodes.isNodeSelected(id)) {
+                    remover.removeThis()
+                    editor.onEditorPan.run()
+                }
             }
         }
     }
@@ -110,15 +122,25 @@ class OutputMatNode @JvmOverloads constructor(
     }
 
     override fun init() {
-        editor.onDraw.doOnce {
-            if(serializedId != null) return@doOnce
+        editor.onDraw { remover ->
+            if(serializedId != null) {
+                remover.removeThis()
+                return@onDraw
+            }
+
+            remover.removeOn(editor.onEditorPan)
 
             windowSizeSupplier?.let {
                 val nodeSize = ImVec2()
                 ImNodes.getNodeDimensions(nodeSize, id)
 
                 val windowSize = it()
-                ImNodes.setNodeScreenSpacePos(id, windowSize.x - nodeSize.x * 1.5f , windowSize.y / 2f - nodeSize.y / 2)
+                ImNodes.setNodeScreenSpacePos(id, windowSize.x - nodeSize.x * 1.5f, windowSize.y / 2f - nodeSize.y / 2f)
+
+                if(editor.nodes.inmutable.size > 3 || ImNodes.isNodeSelected(id)) {
+                    remover.removeThis()
+                    editor.onEditorPan.run()
+                }
             }
         }
     }

@@ -21,6 +21,7 @@ package io.github.deltacv.papervision.gui
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
+import imgui.extension.imnodes.flag.ImNodesMiniMapLocation
 import imgui.extension.texteditor.TextEditorLanguageDefinition
 import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiMouseButton
@@ -58,8 +59,8 @@ import io.github.deltacv.papervision.util.loggerForThis
 
 class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManager) : Window() {
     companion object {
-        val KEY_PAN_CONSTANT = 5f
-        val PAN_CONSTANT = 25f
+        const val KEY_PAN_CONSTANT = 5f
+        const val PAN_CONSTANT = 25f
     }
 
     var context = ImNodes.editorContextCreate()
@@ -105,6 +106,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     val onDraw = PaperVisionEventHandler("NodeEditor-OnDraw")
     val onEditorChange = PaperVisionEventHandler("NodeEditor-OnChange")
+    val onEditorPan = PaperVisionEventHandler("NodeEditor-OnPan")
 
     override var title = "editor"
     override val windowFlags = flags(
@@ -177,7 +179,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         ImNodes.setNodeGridSpacePos(originNode.id, 0f, 0f)
 
-        // ImNodes.miniMap(0.15f, ImNodesMiniMapLocation.TopLeft)
+        ImNodes.miniMap(0.15f, ImNodesMiniMapLocation.BottomLeft)
 
         for (node in nodes.inmutable) {
             node.editor = this
@@ -223,10 +225,9 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             ImNodes.clearLinkSelection()
             ImNodes.clearNodeSelection()
         } else if (
-            ImGui.isMouseDown(ImGuiMouseButton.Middle)
-            || (ImGui.isMouseDown(ImGuiMouseButton.Right) && rightClickMenuPopupTimer.millis >= 100 && (!rightClickedWhileHoveringNode || keyManager.pressing(
-                Keys.LeftControl
-            )))
+            ImGui.isMouseDown(ImGuiMouseButton.Middle) ||
+            (ImGui.isMouseDown(ImGuiMouseButton.Right)
+                    && rightClickMenuPopupTimer.millis >= 100 && (!rightClickedWhileHoveringNode || keyManager.pressing(Keys.LeftControl)))
         ) {
             editorPanning.x += (ImGui.getMousePosX() - prevMouseX)
             editorPanning.y += (ImGui.getMousePosY() - prevMouseY)
@@ -254,6 +255,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                 scrollTimer.reset()
             } else {
                 val plusPan = ImGui.getIO().mouseWheel * PAN_CONSTANT
+                val plusPanX = ImGui.getIO().mouseWheelH * PAN_CONSTANT
 
                 if (plusPan != 0f) {
                     scrollTimer.reset()
@@ -261,8 +263,10 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
                 if (keyManager.pressing(Keys.LeftShift) || keyManager.pressing(Keys.RightShift)) {
                     editorPanning.x += plusPan
+                    editorPanning.y += plusPanX
                 } else {
                     editorPanning.y += plusPan
+                    editorPanning.x += plusPanX
                 }
             }
         }
@@ -275,6 +279,10 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         editorPanningDelta.x = editorPanning.x - prevEditorPanning.x
         editorPanningDelta.y = editorPanning.y - prevEditorPanning.y
+
+        if(editorPanningDelta.x != 0f || editorPanningDelta.y != 0f) {
+            onEditorPan.run()
+        }
 
         prevEditorPanning.x = editorPanning.x
         prevEditorPanning.y = editorPanning.y

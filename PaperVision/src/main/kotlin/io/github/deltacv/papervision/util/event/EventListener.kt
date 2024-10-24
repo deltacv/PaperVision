@@ -33,4 +33,7 @@ class EventListenerRemover(
             handler.removePersistentListener(listener)
     }
 
+    fun removeOn(handler: PaperVisionEventHandler) = handler.doOnce {
+        removeThis()
+    }
 }

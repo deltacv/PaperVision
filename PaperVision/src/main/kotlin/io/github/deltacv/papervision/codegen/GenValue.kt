@@ -20,6 +20,7 @@ package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.build.Value
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.node.vision.ColorSpace
 import kotlin.reflect.KClass
 
@@ -68,6 +69,35 @@ sealed class GenValue {
     data class Double(val value: kotlin.Double) : GenValue()
 
     data class String(val value: kotlin.String) : GenValue()
+
+    sealed class LineParameters : GenValue() {
+        data class Line(val color: Scalar, val thickness: Int) : LineParameters()
+        data class RuntimeLine(val colorScalarValue: Value, val thicknessValue: Value) : LineParameters()
+
+        fun ensureRuntimeLine(current: CodeGen.Current): RuntimeLine {
+            return current {
+                val lineParams = this@LineParameters
+
+                when(lineParams) {
+                    is Line -> {
+                        val color = uniqueVariable("lineColor", JvmOpenCvTypes.Scalar.new(
+                            lineParams.color.a.v, lineParams.color.b.v, lineParams.color.c.v, lineParams.color.d.v
+                        ))
+
+                        val thickness = uniqueVariable("lineThickness", lineParams.thickness.value.v)
+
+                        group {
+                            public(color)
+                            public(thickness)
+                        }
+
+                        RuntimeLine(color, thickness)
+                    }
+                    is RuntimeLine -> lineParams
+                }
+            }
+        }
+    }
 
     data class Scalar(
         val a: kotlin.Double,
