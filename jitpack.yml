@@ -3,4 +3,4 @@ jdk:
 before_install:
   - chmod +x gradlew
 install:
-  - ./gradlew :clean :build :Shared:publishToMavenLocal :PaperVision:publishToMavenLocal :LwjglPlatform:publishToMavenLocal :EOCVSimPlugin:publishToMavenLocal  -x :test
+  - ./gradlew :clean :build :Shared:publishToMavenLocal :PaperVision:publishToMavenLocal :LwjglPlatform:publishToMavenLocal :EOCVSimPlugin:publishToMavenLocal
