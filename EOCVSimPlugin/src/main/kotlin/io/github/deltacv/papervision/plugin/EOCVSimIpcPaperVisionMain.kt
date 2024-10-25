@@ -55,7 +55,7 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
 
         val bridge = EOCVSimIpcEngineBridge(port)
 
-        app = PaperVisionApp(bridge, ::paperVisionUserCloseListener)
+        app = PaperVisionApp(bridge, false, ::paperVisionUserCloseListener)
 
         app.paperVision.onUpdate.doOnce  {
             if (queryProject) {

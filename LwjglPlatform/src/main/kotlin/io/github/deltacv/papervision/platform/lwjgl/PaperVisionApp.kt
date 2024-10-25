@@ -32,6 +32,7 @@ import org.lwjgl.glfw.GLFWKeyCallback
 
 class PaperVisionApp @JvmOverloads constructor(
     val bridge: PaperVisionEngineBridge? = null,
+    val showWelcomeWindow: Boolean = false,
     val windowCloseListener: (() -> Boolean)? = null
 ) : Application() {
 
@@ -39,6 +40,7 @@ class PaperVisionApp @JvmOverloads constructor(
         window = glfwWindow
         textureFactory = OpenGLTextureFactory
         keys = GlfwKeys
+        showWelcomeWindow = this@PaperVisionApp.showWelcomeWindow
         engineBridge = bridge
     }
 

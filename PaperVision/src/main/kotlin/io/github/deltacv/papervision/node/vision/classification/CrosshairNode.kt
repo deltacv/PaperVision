@@ -71,6 +71,17 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
         + crosshairPosition
         + crosshairLineParams
 
+        crosshairPosition.onChange {
+            when(crosshairPosition.get()) {
+                CrosshairPosition.Center -> {
+                }
+                CrosshairPosition.Offset -> {
+                }
+                CrosshairPosition.Custom -> {
+                }
+            }
+        }
+
         + outputCrosshairImage.enablePrevizButton().rebuildOnChange()
         + outputCrosshair.rebuildOnChange()
     }

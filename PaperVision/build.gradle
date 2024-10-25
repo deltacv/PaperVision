@@ -1,9 +1,24 @@
 plugins {
     id 'com.google.devtools.ksp' version '2.0.20-1.0.24'
     id 'org.jetbrains.kotlin.jvm'
+    id 'maven-publish'
 }
 
 apply from: '../build.common.gradle'
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = "sources"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+        }
+    }
+}
 
 dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib"

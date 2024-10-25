@@ -20,6 +20,7 @@ package io.github.deltacv.papervision.serialization
 
 import com.google.gson.JsonElement
 import io.github.deltacv.papervision.PaperVision
+import io.github.deltacv.papervision.node.FlagsNode
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.node.vision.InputMatNode
@@ -70,6 +71,9 @@ object PaperVisionSerializer {
         var createdInputNode = false
 
         val nodesData = data["nodes"]
+
+        var hasAddedFlags = false
+
         if(nodesData != null) {
             for(node in nodesData) {
                 if(node is Node<*>) {
@@ -83,6 +87,14 @@ object PaperVisionSerializer {
                             is OutputMatNode -> {
                                 paperVision.nodeEditor.outputNode = node
                                 createdOutputNode = true
+                            }
+                            is FlagsNode -> {
+                                if(hasAddedFlags) {
+                                    throw IllegalStateException("Huh? Only one FlagsNode can be present in the node editor.")
+                                }
+
+                                paperVision.nodeEditor.flagsNode = node
+                                hasAddedFlags = true
                             }
                         }
                         node.enable()
@@ -116,6 +128,8 @@ object PaperVisionSerializer {
                 }
             }
         }
+
+        paperVision?.onDeserialization?.run()
 
         return PaperVisionData(nodes, links)
     }

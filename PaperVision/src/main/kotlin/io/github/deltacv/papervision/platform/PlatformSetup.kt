@@ -26,6 +26,8 @@ class PlatformSetup(val name: String) {
 
     var keys: PlatformKeys? = null
 
+    var showWelcomeWindow = false
+
     var engineBridge: PaperVisionEngineBridge? = null
 }
 

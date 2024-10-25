@@ -59,6 +59,7 @@ class InputMatNode @JvmOverloads constructor(
                 return@onDraw
             }
 
+            // stop the node from adjusting when the user pans
             remover.removeOn(editor.onEditorPan)
 
             windowSizeSupplier?.let {
@@ -68,7 +69,11 @@ class InputMatNode @JvmOverloads constructor(
                 val windowSize = it()
                 ImNodes.setNodeScreenSpacePos(id, nodeSize.x * 0.5f, windowSize.y / 2f - nodeSize.y / 2)
 
-                if(editor.nodes.inmutable.size > 3 || ImNodes.isNodeSelected(id)) {
+                // by default, the node editor starts with 4 nodes
+                // InputMatNode, OutputMatNode, originNode, flagsNode
+                // if there are more than 4 nodes, we'll stop adjusting the position
+                // since it's likely the user is starting to work on their project
+                if(editor.nodes.inmutable.size > 4 || ImNodes.isNodeSelected(id)) {
                     remover.removeThis()
                     editor.onEditorPan.run()
                 }
@@ -128,6 +133,7 @@ class OutputMatNode @JvmOverloads constructor(
                 return@onDraw
             }
 
+            // stop the node from adjusting when the user pans
             remover.removeOn(editor.onEditorPan)
 
             windowSizeSupplier?.let {
@@ -137,7 +143,11 @@ class OutputMatNode @JvmOverloads constructor(
                 val windowSize = it()
                 ImNodes.setNodeScreenSpacePos(id, windowSize.x - nodeSize.x * 1.5f, windowSize.y / 2f - nodeSize.y / 2f)
 
-                if(editor.nodes.inmutable.size > 3 || ImNodes.isNodeSelected(id)) {
+                // by default, the node editor starts with 4 nodes
+                // InputMatNode, OutputMatNode, originNode, flagsNode
+                // if there are more than 4 nodes, we'll stop adjusting the position
+                // since it's likely the user is starting to work on their project
+                if(editor.nodes.inmutable.size > 4 || ImNodes.isNodeSelected(id)) {
                     remover.removeThis()
                     editor.onEditorPan.run()
                 }

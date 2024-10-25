@@ -46,7 +46,7 @@ abstract class DrawNode<S: CodeGenSession>(
 
     val annotationData by lazy {
         val annotation = this.javaClass.getAnnotation(PaperNode::class.java)
-            ?: throw IllegalArgumentException("Node ${javaClass.typeName} needs to have a @RegisterNode annotation")
+            ?: throw IllegalArgumentException("Node ${javaClass.typeName} needs to have a @PaperNode annotation")
 
         AnnotationData(annotation.name, annotation.description, annotation.category, annotation.showInList)
     }

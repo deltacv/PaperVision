@@ -1,9 +1,24 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'maven-publish'
 }
 
 apply from: '../build.common.gradle'
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = "sources"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+        }
+    }
+}
 
 shadowJar {
     baseName "PaperVisionPlugin"

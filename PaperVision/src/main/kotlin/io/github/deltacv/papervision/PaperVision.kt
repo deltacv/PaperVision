@@ -64,6 +64,8 @@ class PaperVision(
 
         lateinit var defaultImGuiFont: Font
             private set
+        lateinit var defaultImGuiFontSmall: Font
+            private set
 
         val miscIds = IdElementContainer<NoneIdElement>()
 
@@ -83,6 +85,7 @@ class PaperVision(
 
     val onInit = PaperVisionEventHandler("PaperVision-OnInit")
     val onUpdate = PaperVisionEventHandler("PaperVision-OnUpdate")
+    val onDeserialization = PaperVisionEventHandler("PaperVision-OnDeserialization")
 
     lateinit var textureProcessorQueue: TextureProcessorQueue
         private set
@@ -178,6 +181,7 @@ class PaperVision(
 
         codeFont = fontManager.makeFont("/fonts/JetBrainsMono-Regular.ttf", defaultFontConfig(28f))
         defaultImGuiFont = fontManager.makeDefaultFont(20f)
+        defaultImGuiFontSmall = fontManager.makeDefaultFont(12f)
 
         val rangesBuilder = ImFontGlyphRangesBuilder()
         rangesBuilder.addRanges(ImGui.getIO().fonts.glyphRangesDefault)
@@ -214,6 +218,32 @@ class PaperVision(
     fun firstProcess() {
         window.title = "PaperVision"
         window.icon = "/ico/ico_ezv.png"
+        window.maximized = true
+
+        onUpdate.doOnce {
+            if(setup.showWelcomeWindow) {
+                IntroModalWindow(
+                    defaultImGuiFontSmall,
+                    codeFont,
+                ).enable()
+            } else {
+                onDeserialization {
+                    logger.info("showWelcome = ${nodeEditor.flags["showWelcome"]}")
+
+                    if (nodeEditor.flags.getOrElse("showWelcome", { true })) {
+                        IntroModalWindow(
+                            defaultImGuiFontSmall,
+                            codeFont,
+                        ).apply {
+                            onDontShowAgain {
+                                nodeEditor.flags["showWelcome"] = false
+                                logger.info("showWelcome = ${nodeEditor.flags["showWelcome"]}")
+                            }
+                        }.enable()
+                    }
+                }
+            }
+        }
     }
 
     fun process() {

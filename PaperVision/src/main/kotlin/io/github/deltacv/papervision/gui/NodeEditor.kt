@@ -47,6 +47,7 @@ import io.github.deltacv.papervision.gui.util.Tooltip
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.id.DrawableIdElement
 import io.github.deltacv.papervision.io.KeyManager
+import io.github.deltacv.papervision.node.FlagsNode
 import io.github.deltacv.papervision.node.InvisibleNode
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
@@ -71,6 +72,9 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     private val winSizeSupplier: () -> ImVec2 = { paperVision.window.size }
 
     val originNode by lazy { InvisibleNode() }
+    lateinit var flagsNode: FlagsNode
+
+    val flags get() = flagsNode.flags
 
     var inputNode = InputMatNode(winSizeSupplier)
         set(value) {
@@ -134,6 +138,12 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         ImNodes.createContext()
 
         originNode.enable()
+
+        if(!::flagsNode.isInitialized) {
+            flagsNode = FlagsNode()
+        }
+        flagsNode.enable()
+
         inputNode.enable()
         rightClickMenuPopup.enable()
 
@@ -172,6 +182,10 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     override fun drawContents() {
         ImNodes.editorContextSet(context)
+
+        if(!flagsNode.isEnabled) {
+            flagsNode.enable()
+        }
 
         onDraw.run()
 

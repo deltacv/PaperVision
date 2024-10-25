@@ -26,7 +26,7 @@ import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.serialization.data.SerializeIgnore
 
 @SerializeIgnore
-class InvisibleNode : Node<NoSession>(allowDelete = false) {
+open class InvisibleNode : Node<NoSession>(allowDelete = false) {
 
     private val invisibleColor = rgbaColor(0, 0, 0, 0)
 

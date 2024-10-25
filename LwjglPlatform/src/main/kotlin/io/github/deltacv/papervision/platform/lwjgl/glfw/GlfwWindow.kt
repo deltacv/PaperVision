@@ -85,9 +85,17 @@ class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
             }
         }
 
+    private var hasCalledMaximized = false
+
     override var maximized: Boolean
         get() = glfwGetWindowAttrib(ptrSupplier(), GLFW_MAXIMIZED) == GLFW_TRUE
         set(value) {
+            if(!hasCalledMaximized) {
+                glfwSetWindowSizeCallback(ptrSupplier(), null) // get rid of the stupid imgui callback
+
+                hasCalledMaximized = true
+            }
+
             if(value) {
                 glfwMaximizeWindow(ptrSupplier())
             } else {
