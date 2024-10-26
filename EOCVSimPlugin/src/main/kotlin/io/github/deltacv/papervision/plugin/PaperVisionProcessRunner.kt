@@ -54,7 +54,7 @@ object PaperVisionProcessRunner {
 
     private var currentJob: Future<*>? = null
 
-    fun execPaperVision(pluginJar: File) {
+    fun execPaperVision(classpath: String) {
         if(isRunning) return
 
         isRunning = true
@@ -62,7 +62,7 @@ object PaperVisionProcessRunner {
         currentJob = pool.submit {
             logger.info("Starting PaperVision process...")
 
-            val classpath = pluginJar.absolutePath + File.pathSeparator + System.getProperty("java.class.path")
+            val classpath = classpath + File.pathSeparator + System.getProperty("java.class.path")
             val programParams = listOf("-q", "-p=${paperVisionEngine.server.port}")
 
             val exitCode = if(SysUtil.OS == SysUtil.OperatingSystem.MACOS) {

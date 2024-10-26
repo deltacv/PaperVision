@@ -37,8 +37,9 @@ dependencies {
 
     implementation project(":LwjglPlatform")
 
-    compileOnly 'com.github.deltacv.EOCV-Sim:EOCV-Sim:3.7.1' // jitpack
-    //compileOnly 'com.github.deltacv:EOCV-Sim:3.7.1-dev-240925-2310' // Maven local
+    // compileOnly 'com.github.deltacv.EOCV-Sim:EOCV-Sim:3.7.1' // jitpack
+    compileOnly 'com.github.deltacv.EOCV-Sim:EOCV-Sim:dev-5331522569-1' // jitpack dev
+    // compileOnly 'com.github.deltacv:EOCV-Sim:3.7.1-dev-240925-2310' // Maven local
 
     implementation 'org.codehaus.janino:janino:3.1.12'
 
