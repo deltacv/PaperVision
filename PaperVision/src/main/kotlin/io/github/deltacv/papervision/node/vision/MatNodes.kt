@@ -62,6 +62,11 @@ class InputMatNode @JvmOverloads constructor(
             // stop the node from adjusting when the user pans
             remover.removeOn(editor.onEditorPan)
 
+            if(!isOnEditor) {
+                remover.removeThis()
+                return@onDraw
+            }
+
             windowSizeSupplier?.let {
                 val nodeSize = ImVec2()
                 ImNodes.getNodeDimensions(nodeSize, id)
@@ -129,6 +134,11 @@ class OutputMatNode @JvmOverloads constructor(
     override fun init() {
         editor.onDraw { remover ->
             if(serializedId != null) {
+                remover.removeThis()
+                return@onDraw
+            }
+
+            if(!isOnEditor) {
                 remover.removeThis()
                 return@onDraw
             }
