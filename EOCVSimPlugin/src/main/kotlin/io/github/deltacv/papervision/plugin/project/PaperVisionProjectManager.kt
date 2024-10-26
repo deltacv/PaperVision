@@ -49,7 +49,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.pathString
 
 class PaperVisionProjectManager(
-    val pluginJarFile: File,
+    val classpath: String,
     val fileSystem: SandboxFileSystem,
     val engine: EOCVSimIpcEngine,
     val eocvSim: EOCVSim
@@ -105,7 +105,7 @@ class PaperVisionProjectManager(
         tree
     )
 
-    val recoveryDaemonProcessManager = RecoveryDaemonProcessManager(pluginJarFile).apply {
+    val recoveryDaemonProcessManager = RecoveryDaemonProcessManager(classpath).apply {
         start()
     }
 
@@ -230,7 +230,7 @@ class PaperVisionProjectManager(
             }
         }
 
-        PaperVisionProcessRunner.execPaperVision(pluginJar = pluginJarFile)
+        PaperVisionProcessRunner.execPaperVision(classpath)
 
         currentProject = project
     }

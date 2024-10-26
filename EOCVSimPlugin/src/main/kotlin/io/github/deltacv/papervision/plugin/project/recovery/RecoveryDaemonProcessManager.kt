@@ -30,7 +30,7 @@ import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 
 class RecoveryDaemonProcessManager(
-    val pluginJarFile: File
+    val classpath: String
 ) {
 
     val executor = Executors.newFixedThreadPool(2)
@@ -50,7 +50,7 @@ class RecoveryDaemonProcessManager(
             val exit = JavaProcess.execClasspath(
                 RecoveryDaemonClientMain::class.java,
                 SLF4JIOReceiver(logger),
-                pluginJarFile.path,
+                classpath,
                 null,
                 listOf(port.toString())
             )

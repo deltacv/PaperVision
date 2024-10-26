@@ -43,6 +43,7 @@ import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.replaceLast
 import org.opencv.core.Size
+import java.io.File;
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
@@ -55,7 +56,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     var currentPrevizSession: PrevizSession? = null
 
     val paperVisionProjectManager = PaperVisionProjectManager(
-        context.loader.pluginFile, fileSystem, engine, eocvSim
+        classpath.joinToString(File.pathSeparator), fileSystem, engine, eocvSim
     )
 
     val onEOCVSimUpdate = PaperVisionEventHandler("PaperVisionEOCVSimPlugin-OnEOCVSimUpdate")
