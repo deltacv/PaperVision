@@ -62,7 +62,6 @@ object PaperVisionProcessRunner {
         currentJob = pool.submit {
             logger.info("Starting PaperVision process...")
 
-            val classpath = classpath + File.pathSeparator + System.getProperty("java.class.path")
             val programParams = listOf("-q", "-p=${paperVisionEngine.server.port}")
 
             println("classpath: $classpath")

@@ -23,6 +23,7 @@ import com.github.serivesmejia.eocvsim.input.SourceType
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
+import io.github.deltacv.eocvsim.plugin.loader.PluginSource
 import io.github.deltacv.papervision.engine.client.message.*
 import io.github.deltacv.papervision.engine.client.response.ErrorResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
@@ -55,7 +56,11 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     var currentPrevizSession: PrevizSession? = null
 
-    val fullClasspath = (context.loader.pluginFile.absolutePath + File.pathSeparator + classpath.joinToString(File.pathSeparator)).trim(File.pathSeparatorChar)
+    val fullClasspath = if(pluginSource == PluginSource.FILE) {
+        context.loader.pluginFile.absolutePath + File.pathSeparator + System.getProperty("java.class.path")
+    } else {
+        classpath.joinToString(File.pathSeparator).trim(File.pathSeparatorChar)
+    }
 
     val paperVisionProjectManager = PaperVisionProjectManager(
         fullClasspath, fileSystem, engine, eocvSim
