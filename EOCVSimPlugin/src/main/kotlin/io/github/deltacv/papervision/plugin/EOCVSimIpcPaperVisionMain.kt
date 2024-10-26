@@ -33,7 +33,6 @@ import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentProjectMessage
 import io.github.deltacv.papervision.plugin.ipc.message.SaveCurrentProjectMessage
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer.deserializeAndApply
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer.serializeToTree
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import picocli.CommandLine
 import java.util.concurrent.Callable
