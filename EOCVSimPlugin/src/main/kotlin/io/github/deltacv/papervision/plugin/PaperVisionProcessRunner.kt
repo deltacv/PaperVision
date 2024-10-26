@@ -24,7 +24,6 @@ import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngine
 import io.github.deltacv.papervision.plugin.logging.SLF4JIOReceiver
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
-import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 

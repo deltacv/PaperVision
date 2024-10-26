@@ -18,13 +18,14 @@
 
 package io.github.deltacv.papervision.plugin.ipc
 
-import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.plugin.ipc.serialization.ipcGson
 import org.java_websocket.client.WebSocketClient
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.net.URI
 import java.nio.ByteBuffer
 import java.util.concurrent.TimeUnit
@@ -86,7 +87,8 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
         val port: Int,
         val bridge: EOCVSimIpcEngineBridge
     ) : WebSocketClient(URI.create("ws://localhost:$port")) {
-        val logger by loggerForThis()
+
+        private val logger = LoggerFactory.getLogger(this::class.java)
 
         override fun onOpen(handshakedata: org.java_websocket.handshake.ServerHandshake?) {
             logger.info("Connected to server in $port")

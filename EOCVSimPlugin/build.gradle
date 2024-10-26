@@ -38,6 +38,12 @@ configurations.all {
     }
 }
 
+tasks.withType(Jar) {
+    manifest {
+        attributes['Main-Class'] = 'com.github.serivesmejia.eocvsim.Main'
+    }
+}
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 

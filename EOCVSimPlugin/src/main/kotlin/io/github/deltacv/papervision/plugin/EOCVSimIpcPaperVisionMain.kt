@@ -48,7 +48,7 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
 
     private lateinit var app: PaperVisionApp
 
-    private val logger: Logger = LoggerFactory.getLogger(EOCVSimIpcPaperVisionMain::class.java)
+    private val logger = LoggerFactory.getLogger(this::class.java)
 
     override fun call(): Int {
         logger.info("IPC port {}", port)
