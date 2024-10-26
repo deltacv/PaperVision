@@ -38,9 +38,9 @@ configurations.all {
     }
 }
 
-tasks.withType(Jar) {
+tasks.withType(Jar).configureEach {
     manifest {
-        attributes['Main-Class'] = 'com.github.serivesmejia.eocvsim.Main'
+        attributes['Main-Class'] = 'io.github.deltacv.papervision.plugin.EOCVSimIpcPaperVisionMain'
     }
 }
 
