@@ -65,6 +65,8 @@ object PaperVisionProcessRunner {
             val classpath = classpath + File.pathSeparator + System.getProperty("java.class.path")
             val programParams = listOf("-q", "-p=${paperVisionEngine.server.port}")
 
+            println("classpath: $classpath")
+
             val exitCode = if(SysUtil.OS == SysUtil.OperatingSystem.MACOS) {
                 logger.info("Running on macOS, adding platform-specific flags")
                 JavaProcess.execClasspath(

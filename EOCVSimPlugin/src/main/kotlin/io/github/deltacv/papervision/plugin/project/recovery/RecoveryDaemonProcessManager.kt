@@ -50,7 +50,7 @@ class RecoveryDaemonProcessManager(
             val exit = JavaProcess.execClasspath(
                 RecoveryDaemonClientMain::class.java,
                 SLF4JIOReceiver(logger),
-                classpath,
+                classpath + File.pathSeparator + System.getProperty("java.class.path"),
                 null,
                 listOf(port.toString())
             )

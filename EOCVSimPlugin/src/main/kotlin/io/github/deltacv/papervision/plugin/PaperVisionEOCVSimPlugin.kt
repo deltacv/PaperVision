@@ -55,8 +55,10 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     var currentPrevizSession: PrevizSession? = null
 
+    val fullClasspath = (context.loader.pluginFile.absolutePath + File.pathSeparator + classpath.joinToString(File.pathSeparator)).trim(File.pathSeparatorChar)
+
     val paperVisionProjectManager = PaperVisionProjectManager(
-        classpath.joinToString(File.pathSeparator), fileSystem, engine, eocvSim
+        fullClasspath, fileSystem, engine, eocvSim
     )
 
     val onEOCVSimUpdate = PaperVisionEventHandler("PaperVisionEOCVSimPlugin-OnEOCVSimUpdate")
