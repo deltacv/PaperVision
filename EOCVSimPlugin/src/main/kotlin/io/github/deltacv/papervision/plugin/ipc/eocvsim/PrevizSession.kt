@@ -41,12 +41,26 @@ class PrevizSession(
     val logger by loggerForThis()
 
     init {
+        var isChangingPipeline = false
+
         eocvSim.pipelineManager.onPipelineChange {
             if(latestClass == null) return@onPipelineChange
+
+            if(isChangingPipeline) {
+                isChangingPipeline = false
+                return@onPipelineChange
+            }
+
             val current = eocvSim.pipelineManager.currentPipeline ?: return@onPipelineChange
 
             if(previzRunning && current::class.java != latestClass) {
+                // Temporarily disable the listener
+                isChangingPipeline = true
+
                 eocvSim.pipelineManager.forceChangePipeline(eocvSim.pipelineManager.getIndexOf(latestClass!!, PipelineSource.COMPILED_ON_RUNTIME))
+
+                // Re-enable the listener after the change
+                isChangingPipeline = false
             }
         }
 
