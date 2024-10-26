@@ -49,9 +49,17 @@ dependencies {
 
     implementation project(":LwjglPlatform")
 
-    // compileOnly 'com.github.deltacv.EOCV-Sim:EOCV-Sim:3.7.1' // jitpack
-    compileOnly('com.github.deltacv.EOCV-Sim:EOCV-Sim:dev-SNAPSHOT') { changing = true } // jitpack dev
-    // compileOnly 'com.github.deltacv:EOCV-Sim:3.7.1-dev-240925-2310' // Maven local
+    // compileOnly('com.github.deltacv.EOCV-Sim:EOCV-Sim:3.7.1') { transitive = false } // jitpack
+    // compileOnly('com.github.deltacv.EOCV-Sim:Common:3.7.1') { transitive = false } // jitpack
+    // compileOnly('com.github.deltacv.EOCV-Sim:Vision:3.7.1') // jitpack
+
+    compileOnly('com.github.deltacv.EOCV-Sim:EOCV-Sim:dev-SNAPSHOT') { changing = true; transitive = false} // jitpack dev
+    compileOnly('com.github.deltacv.EOCV-Sim:Common:dev-SNAPSHOT') { changing = true; transitive = false} // jitpack dev
+    compileOnly('com.github.deltacv.EOCV-Sim:Vision:dev-SNAPSHOT') { changing = true; } // jitpack dev
+
+    // compileOnly('com.github.deltacv:EOCV-Sim:3.7.1-dev-240925-2310') { transitive = false } // Maven local
+    // compileOnly('com.github.deltacv:Common:3.7.1-dev-240925-2310') { transitive = false } // Maven local
+    // compileOnly('com.github.deltacv:Vision:3.7.1-dev-240925-2310') // Maven local
 
     implementation 'org.codehaus.janino:janino:3.1.12'
 
