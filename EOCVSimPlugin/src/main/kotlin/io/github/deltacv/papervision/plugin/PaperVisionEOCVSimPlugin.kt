@@ -82,7 +82,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
             switchablePanel.addTab("PaperVision", PaperVisionTabPanel(paperVisionProjectManager))
 
-            val hint = HintManager.Hint("Try out the new way to develop your vision pipelines", switchablePanel, SwingConstants.BOTTOM, "", null)
+            val hint = HintManager.Hint("Try out the new way to develop your vision pipelines", switchablePanel.getTabComponentAt(switchablePanel.indexOfTab("PaperVision")), SwingConstants.TOP, "", null)
             HintManager.showHint(hint)
 
             switchablePanel.addChangeListener {
