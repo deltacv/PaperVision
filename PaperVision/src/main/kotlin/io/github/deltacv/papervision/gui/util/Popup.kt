@@ -19,11 +19,62 @@
 package io.github.deltacv.papervision.gui.util
 
 import imgui.ImGui
+import imgui.ImVec2
+import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImBoolean
+import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.util.ElapsedTime
+import io.github.deltacv.papervision.util.flags
 
-abstract class Popup : DrawableIdElementBase<Popup>() {
+class TooltipPopup(
+    val text: String,
+    override val position: ImVec2,
+    val timeoutSeconds: Double,
+    label: String
+) : Popup(label) {
+
+    companion object {
+        fun warning(text: String) {
+            for(popup in IdElementContainerStack.threadStack.peekNonNull<Popup>().inmutable) {
+                if(popup is TooltipPopup && popup.label == "Warning") {
+                    popup.delete()
+                }
+            }
+
+            val position = ImGui.getMousePos()
+            TooltipPopup(text, position, 6.0, "Warning").open()
+        }
+    }
+
+    override val title = "Tooltip"
+    override val flags = flags(
+        ImGuiWindowFlags.NoTitleBar,
+        ImGuiWindowFlags.NoResize,
+        ImGuiWindowFlags.NoMove,
+        ImGuiWindowFlags.NoScrollbar,
+    )
+
+    private val elapsedTime = ElapsedTime()
+
+    override fun onEnable() {
+        elapsedTime.reset()
+    }
+
+    override fun drawContents() {
+        if(elapsedTime.seconds >= timeoutSeconds) {
+            delete()
+        }
+
+        ImGui.text(tr(text))
+    }
+
+}
+
+abstract class Popup(
+    val label: String = ""
+) : DrawableIdElementBase<Popup>() {
     override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Popup>()
 
     abstract val title: String
@@ -34,7 +85,7 @@ abstract class Popup : DrawableIdElementBase<Popup>() {
     var isVisible = false
         private set
 
-    val position = ImGui.getMousePos()
+    open val position = ImGui.getMousePos()
     val idName by lazy { "${title}###$id" }
 
     private val pOpen = ImBoolean(false)
@@ -45,6 +96,10 @@ abstract class Popup : DrawableIdElementBase<Popup>() {
         if(open) {
             ImGui.openPopup(idName)
             open = false
+        }
+
+        if(isVisible) {
+            ImGui.setNextWindowPos(position)
         }
 
         if (ImGui.beginPopup(idName, flags)) {

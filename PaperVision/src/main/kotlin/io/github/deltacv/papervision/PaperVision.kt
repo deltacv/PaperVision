@@ -37,8 +37,6 @@ import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
 import io.github.deltacv.papervision.gui.util.Popup
-import io.github.deltacv.papervision.gui.util.Tooltip
-import io.github.deltacv.papervision.gui.util.Tooltip.Companion.WARN
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
@@ -110,9 +108,6 @@ class PaperVision(
     val actions = IdElementContainer<Action>()
 
     val popups = IdElementContainer<Popup>()
-    val tooltips = IdElementContainer<Tooltip>().apply {
-        reserveId(WARN)
-    }
 
     val isModalWindowOpen get() = windows.inmutable.find { it.isModal && it.isVisible } != null
 
@@ -147,7 +142,6 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(attributes)
         IdElementContainerStack.threadStack.push(links)
         IdElementContainerStack.threadStack.push(windows)
-        IdElementContainerStack.threadStack.push(tooltips)
         IdElementContainerStack.threadStack.push(textures)
         IdElementContainerStack.threadStack.push(streamDisplays)
         IdElementContainerStack.threadStack.push(actions)
@@ -206,7 +200,6 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<Attribute>()
         IdElementContainerStack.threadStack.pop<Link>()
         IdElementContainerStack.threadStack.pop<Window>()
-        IdElementContainerStack.threadStack.pop<Tooltip>()
         IdElementContainerStack.threadStack.pop<PlatformTexture>()
         IdElementContainerStack.threadStack.pop<ImageDisplay>()
         IdElementContainerStack.threadStack.pop<Action>()
@@ -251,7 +244,6 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(attributes)
         IdElementContainerStack.threadStack.push(links)
         IdElementContainerStack.threadStack.push(windows)
-        IdElementContainerStack.threadStack.push(tooltips)
         IdElementContainerStack.threadStack.push(textures)
         IdElementContainerStack.threadStack.push(streamDisplays)
         IdElementContainerStack.threadStack.push(actions)
@@ -281,9 +273,6 @@ class PaperVision(
         for(window in windows.inmutable) {
             window.draw()
         }
-        for(tooltip in tooltips.inmutable) {
-            tooltip.draw()
-        }
         for(popup in popups.inmutable) {
             popup.draw()
         }
@@ -298,7 +287,6 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<Attribute>()
         IdElementContainerStack.threadStack.pop<Link>()
         IdElementContainerStack.threadStack.pop<Window>()
-        IdElementContainerStack.threadStack.pop<Tooltip>()
         IdElementContainerStack.threadStack.pop<PlatformTexture>()
         IdElementContainerStack.threadStack.pop<ImageDisplay>()
         IdElementContainerStack.threadStack.pop<Action>()

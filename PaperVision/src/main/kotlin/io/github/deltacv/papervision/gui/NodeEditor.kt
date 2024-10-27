@@ -43,7 +43,7 @@ import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayWindow
 import io.github.deltacv.papervision.gui.util.Popup
-import io.github.deltacv.papervision.gui.util.Tooltip
+import io.github.deltacv.papervision.gui.util.TooltipPopup
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.id.DrawableIdElement
 import io.github.deltacv.papervision.io.KeyManager
@@ -409,7 +409,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             }
 
             if (!startAttrib.acceptLink(endAttrib) || !endAttrib.acceptLink(startAttrib)) {
-                Tooltip.warning("err_couldntlink_didntmatch")
+                TooltipPopup.warning("err_couldntlink_didntmatch")
                 return // one or both of the attributes didn't accept the link, abort.
             }
 
@@ -425,7 +425,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             CreateLinkAction(link).enable()
 
             if (Node.checkRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
-                Tooltip.warning("err_couldntlink_recursion")
+                TooltipPopup.warning("err_couldntlink_recursion")
                 // remove the link if a recursion case was detected (e.g both nodes were attached to each other already)
                 link.delete()
             } else {

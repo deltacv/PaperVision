@@ -18,6 +18,7 @@
 
 package io.github.deltacv.papervision.plugin
 
+import com.formdev.flatlaf.demo.HintManager
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.input.SourceType
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
@@ -41,13 +42,12 @@ import io.github.deltacv.papervision.plugin.ipc.message.OpenCreateInputSourceMes
 import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.replaceLast
 import org.opencv.core.Size
-import com.formdev.flatlaf.demo.HintManager
-import javax.swing.SwingConstants
-import java.io.File;
+import java.io.File
+import javax.swing.JLabel
 import javax.swing.JOptionPane
+import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
 
 class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
@@ -68,22 +68,34 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         fullClasspath, fileSystem, engine, eocvSim
     )
 
-    val onEOCVSimUpdate = PaperVisionEventHandler("PaperVisionEOCVSimPlugin-OnEOCVSimUpdate")
-
     override fun onLoad() {
-        eocvSim.onMainUpdate {
-            onEOCVSimUpdate.run()
-        }
-
         paperVisionProjectManager.init()
 
         eocvSim.visualizer.onPluginGuiAttachment.doOnce {
             val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
 
             switchablePanel.addTab("PaperVision", PaperVisionTabPanel(paperVisionProjectManager))
+            switchablePanel.setTabComponentAt(
+                switchablePanel.indexOfTab("PaperVision"),
+                JLabel("PaperVision", JLabel.CENTER)
+            )
 
-            val hint = HintManager.Hint("Try out the new way to develop your vision pipelines", switchablePanel.getTabComponentAt(switchablePanel.indexOfTab("PaperVision")), SwingConstants.TOP, "", null)
-            HintManager.showHint(hint)
+            val shouldShowHint = !eocvSim.config.flags.getOrElse("hasShownPaperVisionHint") { false }
+
+            if(shouldShowHint) {
+                eocvSim.onMainUpdate.doOnce {
+                    SwingUtilities.invokeLater {
+                        val hint = HintManager.Hint(
+                            "Try out the new way to develop your vision pipelines!",
+                            switchablePanel.getTabComponentAt(switchablePanel.indexOfTab("PaperVision")),
+                            SwingConstants.BOTTOM, null
+                        )
+
+                        HintManager.showHint(hint)
+                        eocvSim.config.flags["hasShownPaperVisionHint"] = true
+                    }
+                }
+            }
 
             switchablePanel.addChangeListener {
                 changeToPaperVisionPipelineIfNecessary()
