@@ -44,6 +44,8 @@ import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.replaceLast
 import org.opencv.core.Size
+import com.formdev.flatlaf.demo.HintManager
+import javax.swing.SwingConstants
 import java.io.File;
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
@@ -80,6 +82,9 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
             switchablePanel.addTab("PaperVision", PaperVisionTabPanel(paperVisionProjectManager))
 
+            val hint = HintManager.Hint("Try out the new way to develop your vision pipelines", switchablePanel, SwingConstants.BOTTOM, "", null)
+            HintManager.showHint(hint)
+
             switchablePanel.addChangeListener {
                 changeToPaperVisionPipelineIfNecessary()
             }
@@ -111,7 +116,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         eocvSim.onMainUpdate.doOnce(recoveredProjectsListener)
-
         PaperVisionProcessRunner.onPaperVisionExitError.doOnce(recoveredProjectsListener)
 
         eocvSim.pipelineManager.onPipelineChange {

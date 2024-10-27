@@ -1,7 +1,7 @@
 name = "PaperVision"
 author = "deltacv"
 version = "1.0.0"
-api-version = "3.7.1"
+min-api-version = "3.8.0"
 
 super-access = true
 super-access-reason = "PaperVision requires your permision to fully support all features related to rendering user interaction and filesystem access."

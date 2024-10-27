@@ -36,6 +36,7 @@ nod_drawcontours_onimage,Draw Contours on Image,Dibujar Contornos en Imagen
 nod_drawrects,Draw Rectangles,Dibujar Rectangulos
 nod_drawrects_onimage,Draw Rectangles on Image,Dibujar Rectangulos en Imagen
 nod_drawrotated_rects,Draw Rotated Rectangles,Dibujar Rectangulos Rotados
+nod_crosshair,Crosshair,Crosshair
 nod_lineparameters,Line Parameters,Parametros de Linea
 nod_sumintegers,Sum Integers,Sumar Enteros
 nod_codesnippet,Code Snippet,Trozo de Codigo
@@ -44,7 +45,7 @@ att_output,Output,Salida
 att_position,Position,Posicion
 att_scale,Scale,Escala
 att_crosshair,Crosshair,Crosshair
-att_crosshairimage,Crosshair Overlay,Overlay Crosshair
+att_crosshairimage,Overlay Output,Salida del Overlay
 att_crosshairline_params,Crosshair Line Params,Parametros de Linea Crosshair
 att_exporteddata,Export Data,Datos Exportados
 att_value,Value,Valor
@@ -62,7 +63,7 @@ att_biggestrect,Biggest Rect,Rectangulo Mas Grande
 att_biggestcontour,Biggest Contour,Contorno Mas Grande
 att_filteredcontours,Filtered Contours,Contornos Filtrados
 att_colorspace,Color Space,Espacio de Color
-att_drawon_image,Draw On,Dibujar En
+att_drawon_image,Overlay Input,Entrada para Overlay
 att_linecolor,Line Color,Color de Linea
 att_linethickness,Line Thickness,Grosor de Linea
 att_numbers,Numbers,Numeros
