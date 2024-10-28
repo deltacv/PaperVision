@@ -40,7 +40,7 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
     fun genCodeIfNecessary(current: CodeGen.Current) {
         val codeGen = current.codeGen
 
-        if(genOptions.genAtTheEnd && codeGen.stage != CodeGen.Stage.PRE_END) {
+        if(genOptions.genAtTheEnd && codeGen.stage != CodeGen.Stage.END_GEN) {
             if(!codeGen.endingNodes.contains(this)) {
                 codeGen.endingNodes.add(this)
             }

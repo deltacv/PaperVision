@@ -54,7 +54,7 @@ class CodeGenManager(val paperVision: PaperVision) {
 
             paperVision.nodeEditor.inputNode.startGen(current)
 
-            codeGen.stage = CodeGen.Stage.PRE_END
+            codeGen.stage = CodeGen.Stage.END_GEN
 
             for(node in codeGen.endingNodes) {
                 node.genCodeIfNecessary(current)

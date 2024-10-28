@@ -53,7 +53,7 @@ class CodeGen(
     private val flags = mutableListOf<String>()
 
     enum class Stage {
-        CREATION, INITIAL_GEN, PRE_END, ENDED_SUCCESS, ENDED_ERROR
+        CREATION, INITIAL_GEN, END_GEN, ENDED_SUCCESS, ENDED_ERROR
     }
 
     var stage = Stage.CREATION
