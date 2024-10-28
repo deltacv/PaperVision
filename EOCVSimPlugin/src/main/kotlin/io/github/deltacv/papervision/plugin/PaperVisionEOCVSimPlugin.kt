@@ -50,6 +50,10 @@ import javax.swing.JOptionPane
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
 
+/**
+ * Main entry point for the PaperVision plugin.
+ * Specified in the plugin.toml file.
+ */
 class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     val logger by loggerForThis()
@@ -58,6 +62,10 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     var currentPrevizSession: PrevizSession? = null
 
+    /**
+     * If the plugin comes from Maven, we will use the classpath of all the transitive dependencies.
+     * If the plugin comes from a file, we will use the JVM classpath.
+     */
     val fullClasspath = if(pluginSource == PluginSource.FILE) {
         context.loader.pluginFile.absolutePath + File.pathSeparator + System.getProperty("java.class.path")
     } else {
