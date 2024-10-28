@@ -4,6 +4,19 @@ Create your custom OpenCV algorithms using a user-friendly node editor interface
 
 https://github.com/user-attachments/assets/e2cfc9b6-d390-4b8c-b165-b36dcb664b62
 
+# Run with Gradle
+
+Use the following commands to run the project with gradle, this will allow you to test the latest features and changes, building from source.
+<br>
+
+```shell
+git clone https://github.com/deltacv/PaperVision.git
+cd PaperVision
+./gradlew runEv
+```
+
+<br>This option won't allow for EOCV-Sim integration with live previewing, since the backend runs in NO-OP mode, but it will let you to test the node editor.
+
 # Beta Testing the EOCV-Sim plugin
 
 Thank you for your interesting in beta-testing PaperVision. I'm really happy to finally have functional preview builds after stalling on this project numerous times through the last three years,
