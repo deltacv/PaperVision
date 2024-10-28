@@ -27,3 +27,30 @@ fun String.replaceLast(oldValue: String, newValue: String): String {
     val suffix = substring(lastIndex + oldValue.length)
     return "$prefix$newValue$suffix"
 }
+
+fun String.toValidIdentifier(
+    invalidCharReplacement: String = "_"
+): String {
+    if(invalidCharReplacement.isNotBlank()) {
+        for(c in invalidCharReplacement) {
+            if(!Character.isJavaIdentifierPart(c) || Character.isJavaIdentifierStart(c)) {
+                throw IllegalArgumentException("Invalid replacement character '$c'")
+            }
+        }
+    }
+
+    val sb = StringBuilder()
+    if(!Character.isJavaIdentifierStart(this[0])) {
+        sb.append(invalidCharReplacement);
+    }
+
+    for (c in toCharArray()) {
+        if(!Character.isJavaIdentifierPart(c)) {
+            sb.append(invalidCharReplacement);
+        } else {
+            sb.append(c);
+        }
+    }
+
+    return sb.toString()
+}

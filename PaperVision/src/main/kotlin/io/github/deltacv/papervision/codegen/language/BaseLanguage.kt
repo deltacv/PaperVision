@@ -24,6 +24,7 @@ import io.github.deltacv.papervision.codegen.build.*
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.csv
+import io.github.deltacv.papervision.util.toValidIdentifier
 
 open class LanguageBase(
     val usesSemicolon: Boolean = true,
@@ -267,7 +268,7 @@ open class LanguageBase(
         mainScope.newStatement()
 
         if(genInClass) {
-            mainScope.clazz(Visibility.PUBLIC, className, classBodyScope, extends = pipelineClass)
+            mainScope.clazz(Visibility.PUBLIC, className.toValidIdentifier(), classBodyScope, extends = pipelineClass)
         } else {
             mainScope.scope(classBodyScope, trimIndent = true)
         }
