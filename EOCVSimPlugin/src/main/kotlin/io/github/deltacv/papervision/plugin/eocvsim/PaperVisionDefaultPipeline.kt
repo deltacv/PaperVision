@@ -47,8 +47,6 @@ class PaperVisionDefaultPipeline(
                 it.readBytes()
             }
 
-            println(bytes.size)
-
             val logoBytes = MatOfByte(*bytes)
             val logoMat = Imgcodecs.imdecode(logoBytes, Imgcodecs.IMREAD_UNCHANGED)
             logoBytes.release()
