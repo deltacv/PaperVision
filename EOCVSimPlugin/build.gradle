@@ -63,8 +63,6 @@ dependencies {
 
     implementation 'org.codehaus.janino:janino:3.1.12'
 
-    implementation "ch.qos.logback:logback-classic:$logback_classic_version"
-
     implementation "com.google.code.gson:gson:$gson_version"
 
     implementation 'org.java-websocket:Java-WebSocket:1.5.7'

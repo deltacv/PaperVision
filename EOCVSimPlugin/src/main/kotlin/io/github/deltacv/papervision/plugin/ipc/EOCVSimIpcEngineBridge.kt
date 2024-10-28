@@ -24,7 +24,6 @@ import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.plugin.ipc.serialization.ipcGson
 import org.java_websocket.client.WebSocketClient
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.nio.ByteBuffer
