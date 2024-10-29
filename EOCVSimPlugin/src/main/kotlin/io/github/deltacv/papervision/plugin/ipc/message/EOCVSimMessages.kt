@@ -22,7 +22,8 @@ import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageBase
 
 data class InputSourceData(
     var name: String,
-    var type: InputSourceType
+    var type: InputSourceType,
+    var timestamp: Long
 )
 enum class InputSourceType {
     IMAGE, CAMERA, VIDEO
@@ -39,3 +40,5 @@ class SetInputSourceMessage(
 class OpenCreateInputSourceMessage(
     var sourceType: InputSourceType
 ) : PaperVisionEngineMessageBase()
+
+class InputSourceListChangeListenerMessage : PaperVisionEngineMessageBase()

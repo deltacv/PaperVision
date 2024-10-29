@@ -18,12 +18,21 @@
 
 package io.github.deltacv.papervision.plugin.ipc.serialization
 
+import com.github.serivesmejia.eocvsim.util.serialization.PolymorphicAdapter
 import com.google.gson.GsonBuilder
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 
-val ipcGson get() = GsonBuilder()
-    .registerTypeHierarchyAdapter(PaperVisionEngineMessage::class.java, IpcMessageAdapter)
-    .registerTypeHierarchyAdapter(PaperVisionEngineMessageResponse::class.java, IpcMessageResponseAdapter)
-    .registerTypeHierarchyAdapter(Any::class.java, AnyAdapter)
-    .create()
+object IpcGson {
+    object IpcMessageAdapter : PolymorphicAdapter<PaperVisionEngineMessage>("message", IpcGson::class.java.classLoader)
+    object IpcMessageResponseAdapter : PolymorphicAdapter<PaperVisionEngineMessageResponse>("messageResponse", IpcGson::class.java.classLoader)
+
+    object AnyAdapter : PolymorphicAdapter<Any>("mack")
+
+    val gson = GsonBuilder()
+        .registerTypeHierarchyAdapter(PaperVisionEngineMessage::class.java, IpcMessageAdapter)
+        .registerTypeHierarchyAdapter(PaperVisionEngineMessageResponse::class.java, IpcMessageResponseAdapter)
+        .create()
+}
+
+val ipcGson = IpcGson.gson

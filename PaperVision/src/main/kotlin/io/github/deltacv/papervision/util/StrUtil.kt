@@ -33,7 +33,7 @@ fun String.toValidIdentifier(
 ): String {
     if(invalidCharReplacement.isNotBlank()) {
         for(c in invalidCharReplacement) {
-            if(!Character.isJavaIdentifierPart(c) || Character.isJavaIdentifierStart(c)) {
+            if(!Character.isJavaIdentifierPart(c) || !Character.isJavaIdentifierStart(c)) {
                 throw IllegalArgumentException("Invalid replacement character '$c'")
             }
         }

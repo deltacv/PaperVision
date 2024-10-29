@@ -29,6 +29,7 @@ import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.GetInputSourcesMessage
 import io.github.deltacv.papervision.plugin.ipc.message.InputSourceData
+import io.github.deltacv.papervision.plugin.ipc.message.InputSourceListChangeListenerMessage
 import io.github.deltacv.papervision.plugin.ipc.message.InputSourceType
 import io.github.deltacv.papervision.plugin.ipc.message.OpenCreateInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
@@ -52,16 +53,16 @@ class InputSourceWindow(
     )
 
     init {
-        refreshWithClient()
-    }
-
-    fun refreshWithClient() {
         client.sendMessage(GetInputSourcesMessage().onResponseWith<InputSourcesListResponse> {
             inputSources = it.sources
 
             client.sendMessage(GetCurrentInputSourceMessage().onResponseWith<StringResponse> { currentSourceResponse ->
                 currentInputSource = currentSourceResponse.value
             })
+        })
+
+        client.sendMessage(InputSourceListChangeListenerMessage().onResponseWith<InputSourcesListResponse> {
+            inputSources = it.sources
         })
     }
 

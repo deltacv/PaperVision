@@ -38,6 +38,7 @@ import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentInputSourceMes
 import io.github.deltacv.papervision.plugin.ipc.message.GetInputSourcesMessage
 import io.github.deltacv.papervision.plugin.ipc.message.InputSourceData
 import io.github.deltacv.papervision.plugin.ipc.message.InputSourceType
+import io.github.deltacv.papervision.plugin.ipc.message.InputSourceListChangeListenerMessage
 import io.github.deltacv.papervision.plugin.ipc.message.OpenCreateInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
@@ -165,16 +166,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             eocvSim.onMainUpdate.doOnce {
                 respond(
                     InputSourcesListResponse(
-                        eocvSim.inputSourceManager.sources.map {
-                            InputSourceData(
-                                it.key,
-                                when(eocvSim.inputSourceManager.getSourceType(it.key)) {
-                                    SourceType.CAMERA -> InputSourceType.CAMERA
-                                    SourceType.VIDEO -> InputSourceType.VIDEO
-                                    else -> InputSourceType.IMAGE
-                                }
-                            )
-                        }.toTypedArray()
+                        inputSourcesToData()
                     )
                 )
             }
@@ -201,6 +193,16 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                     else -> SourceType.IMAGE
                 })
                 respond(OkResponse())
+            }
+        }
+
+        engine.setMessageHandlerOf<InputSourceListChangeListenerMessage> {
+            var currentSourceAmount = eocvSim.inputSourceManager.sources.size
+
+            eocvSim.onMainUpdate {
+                if(eocvSim.inputSourceManager.sources.size > currentSourceAmount) {
+                    respond(InputSourcesListResponse(inputSourcesToData()))
+                }
             }
         }
 
@@ -269,6 +271,18 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
     }
 
+    private fun inputSourcesToData() = eocvSim.inputSourceManager.sources.map {
+        InputSourceData(
+            it.key,
+            when(eocvSim.inputSourceManager.getSourceType(it.key)) {
+                SourceType.CAMERA -> InputSourceType.CAMERA
+                SourceType.VIDEO -> InputSourceType.VIDEO
+                else -> InputSourceType.IMAGE
+            },
+            it.value.creationTime
+        )
+    }.toTypedArray().apply { sortBy { it.timestamp } }
+
     override fun onDisable() {
     }
 
@@ -300,5 +314,4 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             eocvSim.pipelineManager.refreshGuiPipelineList()
         }
     }
-
 }
