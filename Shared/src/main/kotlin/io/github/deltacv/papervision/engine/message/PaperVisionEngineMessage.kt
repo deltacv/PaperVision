@@ -23,7 +23,8 @@ fun interface OnResponseCallback {
 }
 
 interface PaperVisionEngineMessage {
-    val id: Int
+    var id: Int
+    var persistent: Boolean
 
     fun acceptResponse(response: PaperVisionEngineMessageResponse)
 

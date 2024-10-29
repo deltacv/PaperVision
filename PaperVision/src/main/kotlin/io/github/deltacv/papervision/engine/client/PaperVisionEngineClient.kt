@@ -47,7 +47,13 @@ class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
     }
 
     fun acceptResponse(response: PaperVisionEngineMessageResponse) {
-        messagesAwaitingResponse.remove(response.id)?.acceptResponse(response)
+        val message = messagesAwaitingResponse[response.id] ?: return
+
+        message.acceptResponse(response)
+
+        if(!message.persistent) {
+            messagesAwaitingResponse.remove(response.id)
+        }
     }
 
     @Suppress("SENSELESS_COMPARISON") // uh, i have gotten NPEs from bytes being null somehow

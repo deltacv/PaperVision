@@ -18,7 +18,9 @@
 
 package io.github.deltacv.papervision.engine.message
 
-abstract class PaperVisionEngineMessageBase : PaperVisionEngineMessage {
+abstract class PaperVisionEngineMessageBase(
+    override var persistent: Boolean = false
+) : PaperVisionEngineMessage {
 
     companion object {
         private var idCount = -1
@@ -32,7 +34,7 @@ abstract class PaperVisionEngineMessageBase : PaperVisionEngineMessage {
     @Transient
     private val onResponseCallbacks = mutableListOf<OnResponseCallback>()
 
-    override val id = nextId()
+    override var id = nextId()
 
     override fun acceptResponse(response: PaperVisionEngineMessageResponse) {
         for(callback in onResponseCallbacks) {

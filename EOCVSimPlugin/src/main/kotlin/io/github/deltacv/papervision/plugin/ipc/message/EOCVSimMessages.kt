@@ -40,5 +40,3 @@ class SetInputSourceMessage(
 class OpenCreateInputSourceMessage(
     var sourceType: InputSourceType
 ) : PaperVisionEngineMessageBase()
-
-class InputSourceListChangeListenerMessage : PaperVisionEngineMessageBase()

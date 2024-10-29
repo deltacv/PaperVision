@@ -21,6 +21,12 @@ package io.github.deltacv.papervision.plugin.ipc.message
 import com.google.gson.JsonElement
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageBase
 
+// LISTENERS FOR EOCV-SIM
+
 class EditorChangeMessage(
     val json: JsonElement
 ) : PaperVisionEngineMessageBase()
+
+// LISTENERS FOR PAPERVISION
+
+class InputSourceListChangeListenerMessage : PaperVisionEngineMessageBase(persistent = true)
