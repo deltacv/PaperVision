@@ -20,21 +20,16 @@ cd PaperVision
 # Beta Testing the EOCV-Sim plugin
 
 Thank you for your interesting in beta-testing PaperVision. I'm really happy to finally have functional preview builds after stalling on this project numerous times through the last three years,
-Although PaperVision is able to run the user interface on its own, it was made with EOCV-Sim integration in mind since day one as the backend engine, which pretty much allows to have a live visualization of the pipeline as you mess around in the node editor.
+Although PaperVision is able to run the user interface on its own, it was made with EOCV-Sim integration in mind since day one as the backend engine, which pretty much allows to have a live visualization of the pipeline as you mess around in the node editor. Use the following instructions to get it all up and running.
 
-EOCV-Sim recently implemented its own plugin system inspired by Minecraft Bukkit, so adding PaperVision to the latest releases of the simulator turns out to be fairly simple as it will be explained next;
-
-1. Download and run [EOCV-Sim 3.7.1+](https://deltacv.gitbook.io/eocv-sim/downloading-eocv-sim). Close EOCV-Sim after running it for the first time.
-2. Download the PaperVision plugin jar file from the [development release page](https://github.com/deltacv/PaperVision/releases/tag/Dev)
-3. Locate the .eocvsim folder in your filesystem:
-   - On Windows: `C:\Users\<your user>\.eocvsim`
-   - On MacOS: `/Users/<your user>/.eocvsim`
-   - On Linux: `/home/<your user>/.eocvsim`
-   - In the case of MacOS/Linux, you will have to enable some "Show Hidden Files" option in your file explorer.
-4. Locate the `plugins` folder inside `.eocvsim` and copy the PaperVision plugin jar into it
-5. Run EOCV-Sim and accept the SuperAccess prompt (PaperVision won't work without SuperAccess as it needs it to load LWJGL onto your system, among other filesystem interactions)
-   - As a beta-tester, it is recommended to run EOCV-Sim on a terminal with `java -jar /path/to/EOCV-Sim-<version>-all.jar` to catch any issues and report them to GitHub issues or the discord server
-6. Locate the PaperVision tab in the simulator's top-right, create a new project using the provided interface, and open it right away.
-7. Happy testing!
+1. Download and open [EOCV-Sim 3.8.0+](https://deltacv.gitbook.io/eocv-sim/downloading-eocv-sim).<br><br>
+2. Go to `File -> Manage Plugins` and click on "Open Plugins Folder". You'll find a `repository.toml` file in that folder, open it with your favorite text editor.<br><br>
+5. Add the following line under the `[plugins]` section:
+   - `PaperVision = "com.github.deltacv.PaperVision:EOCVSimPlugin:master-SNAPSHOT"`<br><br>
+6. Restart EOCV-Sim and accept the SuperAccess prompt (PaperVision won't work without SuperAccess as it needs it to load LWJGL onto your system, among other filesystem interactions)
+   - **Please note that EOCV-Sim will complain about the unverified origin of the plugin.** As long as you are copying the PaperVision plugin entry correctly and not adding additional entries under the `[repositories]` section, you can safely ignore those warnings.
+   - As a beta-tester, it is recommended to run EOCV-Sim on a terminal with `java -jar /path/to/EOCV-Sim-<version>-all.jar` to catch any issues and report them to GitHub issues or the discord server<br><br>
+8. Locate the PaperVision tab in the simulator's top-right, create a new project using the provided interface, and open it right away.<br><br>
+9. Happy testing!<br><br>
 
 Please [join the discord server](https://discord.gg/A3RMYzf6DA) to keep an active beta testing community, where you'll be able to report issues and suggest new features. Please note that off-topic discourse is not allowed on the server, and in the case of underage FIRST participants, YPP policies will be actively enforced.
