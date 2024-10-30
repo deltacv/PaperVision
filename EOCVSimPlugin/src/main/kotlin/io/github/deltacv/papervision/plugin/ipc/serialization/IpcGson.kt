@@ -18,7 +18,6 @@
 
 package io.github.deltacv.papervision.plugin.ipc.serialization
 
-import com.github.serivesmejia.eocvsim.util.serialization.PolymorphicAdapter
 import com.google.gson.GsonBuilder
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
