@@ -108,7 +108,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     private val scrollTimer = ElapsedTime()
 
-    val onDraw = PaperVisionEventHandler("NodeEditor-OnDraw")
     val onEditorChange = PaperVisionEventHandler("NodeEditor-OnChange")
     val onEditorPan = PaperVisionEventHandler("NodeEditor-OnPan")
 
@@ -186,8 +185,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         if(!flagsNode.isEnabled) {
             flagsNode.enable()
         }
-
-        onDraw.run()
 
         ImNodes.beginNodeEditor()
 

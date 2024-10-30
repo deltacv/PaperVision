@@ -19,6 +19,7 @@
 package io.github.deltacv.papervision.plugin.gui.imgui
 
 import imgui.ImGui
+import imgui.ImVec2
 import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
@@ -64,9 +65,16 @@ class InputSourceWindow(
         client.sendMessage(InputSourceListChangeListenerMessage().onResponseWith<InputSourcesListResponse> {
             inputSources = it.sources
         })
+
+        onDraw.doOnce {
+            onDraw.doOnce {
+                 position = ImVec2(
+                     ImGui.getMainViewport().size.x - size.x - position.y, position.y
+                 )
+            }
+        }
     }
 
-    private var firstDraw = true
 
     override fun drawContents() {
         if(ImGui.beginListBox("###$id")) {

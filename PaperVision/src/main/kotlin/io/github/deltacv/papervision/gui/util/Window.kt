@@ -24,6 +24,7 @@ import imgui.type.ImBoolean
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 
 abstract class Window(
     override val requestedId: Int? = null,
@@ -41,6 +42,8 @@ abstract class Window(
 
     private var nextPosition: ImVec2? = null
     private var internalPosition = ImVec2()
+
+    val onDraw = PaperVisionEventHandler("Window-$title-OnDraw")
 
     var position: ImVec2
         get() = internalPosition
@@ -111,6 +114,8 @@ abstract class Window(
 
             isVisible = ImGui.isItemVisible()
         }
+
+        onDraw.run()
 
         firstDraw = false
     }

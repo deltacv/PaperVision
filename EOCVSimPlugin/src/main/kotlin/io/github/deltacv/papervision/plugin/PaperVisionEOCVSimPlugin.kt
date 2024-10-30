@@ -64,14 +64,14 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     var currentPrevizSession: PrevizSession? = null
 
     /**
-     * If the plugin comes from Maven, we will use the classpath of all the transitive dependencies.
-     * If the plugin comes from a file, we will use the JVM classpath.
+     * If the plugin comes from Maven, we will also use the classpath of all the transitive dependencies.
+     * If the plugin comes from a file, we will only use the JVM classpath.
      */
     val fullClasspath = if(pluginSource == PluginSource.FILE) {
-        context.loader.pluginFile.absolutePath + File.pathSeparator + System.getProperty("java.class.path")
+        context.loader.pluginFile.absolutePath
     } else {
         classpath.joinToString(File.pathSeparator).trim(File.pathSeparatorChar)
-    }
+    } + File.pathSeparator + System.getProperty("java.class.path")
 
     val paperVisionProjectManager = PaperVisionProjectManager(
         fullClasspath, fileSystem, engine, eocvSim
