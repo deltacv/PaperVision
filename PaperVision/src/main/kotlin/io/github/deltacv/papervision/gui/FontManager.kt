@@ -28,8 +28,6 @@ class FontManager {
 
     val fonts = mutableMapOf<String, Font>()
 
-    val ttfFiles = mutableMapOf<String, File>()
-
     fun makeFont(
         ttfPath: String,
         fontConfig: ImFontConfig,
@@ -41,30 +39,33 @@ class FontManager {
             return fonts[hashName]!!
         }
 
-        if(!ttfFiles.containsKey(ttfPath) || !ttfFiles[ttfPath]!!.exists()) {
-            ttfFiles[ttfPath] = copyToTempFile(
-                FontManager::class.java.getResourceAsStream(ttfPath)!!,
-                File(ttfPath).name, true
+        val inputStream = FontManager::class.java.getResourceAsStream(ttfPath)
+        if(inputStream == null) {
+            throw IllegalArgumentException("Font file $ttfPath not found in resources")
+        }
+
+        inputStream.use {
+            val imguiFont = if (glyphRanges != null) {
+                ImGui.getIO().fonts.addFontFromMemoryTTF(
+                    it.readAllBytes(),
+                    fontConfig.sizePixels,
+                    fontConfig,
+                    glyphRanges
+                )
+            } else {
+                ImGui.getIO().fonts.addFontFromMemoryTTF(it.readAllBytes(), fontConfig.sizePixels, fontConfig)
+            }
+
+            val font = Font(
+                imguiFont,
+                fontConfig,
+                ttfPath,
+                fontConfig.sizePixels
             )
+            fonts[hashName] = font
+
+            return font
         }
-
-        val file = ttfFiles[ttfPath]!!
-
-        val imguiFont = if(glyphRanges != null) {
-            ImGui.getIO().fonts.addFontFromFileTTF(file.absolutePath, fontConfig.sizePixels, fontConfig, glyphRanges)
-        } else {
-            ImGui.getIO().fonts.addFontFromFileTTF(file.absolutePath, fontConfig.sizePixels, fontConfig)
-        }
-
-        val font = Font(
-            imguiFont,
-            fontConfig,
-            ttfPath,
-            fontConfig.sizePixels
-        )
-        fonts[hashName] = font
-
-        return font
     }
 
     fun makeDefaultFont(size: Float): Font {
