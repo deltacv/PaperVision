@@ -28,8 +28,6 @@ shadowJar {
     exclude "META-INF/*.SF"
     exclude "META-INF/*.DSA"
     exclude "META-INF/*.RSA"
-    // Exclude Kotlin standard library to avoid classloader conflicts
-    exclude "kotlin/**"
 }
 
 configurations.all {
@@ -67,4 +65,6 @@ dependencies {
 
     implementation 'org.java-websocket:Java-WebSocket:1.5.7'
     implementation 'info.picocli:picocli:4.7.6'
+
+    implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 }
