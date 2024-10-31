@@ -162,8 +162,7 @@ class EOCVSimEngineImageStreamer(
             synchronized(bytes) {
                 scaledImg.get(0, 0, bytes)
                 engine.sendBytes(byteTag, id, bytes)
-
-                println("stream $byteTag ${bytes.size}")
+                // println("stream $byteTag ${bytes.size}")
             }
         }
 
