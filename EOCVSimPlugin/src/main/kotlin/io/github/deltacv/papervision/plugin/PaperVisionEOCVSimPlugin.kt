@@ -251,6 +251,14 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             respond(OkResponse())
         }
 
+        engine.setMessageHandlerOf<PrevizPingMessage> {
+            if(currentPrevizSession == null || currentPrevizSession?.sessionName != message.previzName) {
+                respond(ErrorResponse("Previz is not running"))
+            } else {
+                currentPrevizSession?.ensurePrevizPipelineRunning()
+            }
+        }
+
         engine.setMessageHandlerOf<PrevizStopMessage> {
             if (currentPrevizSession?.sessionName == message.previzName) {
                 currentPrevizSession?.stopPreviz()

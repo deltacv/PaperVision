@@ -73,28 +73,6 @@ class PaperVisionProjectManager(
     var currentPaperVisionProject: PaperVisionProject? = null
         private set
 
-    init {
-        engine.setMessageHandlerOf<DiscardCurrentRecoveryMessage> {
-            discardCurrentRecovery()
-            respond(OkResponse())
-        }
-
-        engine.setMessageHandlerOf<SaveCurrentProjectMessage> {
-            saveCurrentProject(message.json)
-            respond(OkResponse())
-        }
-
-        engine.setMessageHandlerOf<GetCurrentProjectMessage> {
-            respond(JsonElementResponse(currentPaperVisionProject!!.json))
-        }
-
-        engine.setMessageHandlerOf<EditorChangeMessage> {
-            if(currentProject != null) {
-                sendRecoveryProject(currentProject!!, message.json)
-            }
-        }
-    }
-
     fun paperVisionProjectFrom(
         project: PaperVisionProjectTree.ProjectTreeNode.Project,
         tree: JsonElement
@@ -152,6 +130,20 @@ class PaperVisionProjectManager(
     val onRefresh = PaperVisionEventHandler("PaperVisionProjectManager-onRefresh")
 
     fun init() {
+        engine.setMessageHandlerOf<DiscardCurrentRecoveryMessage> {
+            discardCurrentRecovery()
+            respond(OkResponse())
+        }
+
+        engine.setMessageHandlerOf<SaveCurrentProjectMessage> {
+            saveCurrentProject(message.json)
+            respond(OkResponse())
+        }
+
+        engine.setMessageHandlerOf<GetCurrentProjectMessage> {
+            respond(JsonElementResponse(currentPaperVisionProject!!.json))
+        }
+
         engine.setMessageHandlerOf<EditorChangeMessage> {
             if(currentProject != null) {
                 sendRecoveryProject(currentProject!!, message.json)

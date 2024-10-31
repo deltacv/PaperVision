@@ -216,7 +216,7 @@ class EOCVSimEngineImageStreamer(
             }
         } finally {
             scaledImg.copyTo(latestMat) // Update the latest mat
-            scaledImg.returnMat() // Return the scaled image mat
+            scaledImg.returnMat() // Return the scaled image mat to the recycler
         }
     }
 

@@ -37,6 +37,7 @@ class PrevizSession(
         private set
 
     private var latestClass: Class<*>? = null
+    private var latestSourceCode: String? = null
 
     val logger by loggerForThis()
 
@@ -93,6 +94,8 @@ class PrevizSession(
 
             latestClass = SinglePipelineCompiler.compilePipeline(sessionName, sourceCode)
 
+            latestSourceCode = sourceCode
+
             eocvSim.pipelineManager.pipelines.removeAll { it.clazz == beforeClass }
             eocvSim.pipelineManager.refreshGuiPipelineList()
 
@@ -106,6 +109,14 @@ class PrevizSession(
                         PipelineSource.COMPILED_ON_RUNTIME
                     )
                 )
+            }
+        }
+    }
+
+    fun ensurePrevizPipelineRunning() {
+        eocvSim.onMainUpdate.doOnce {
+            if(eocvSim.pipelineManager.currentPipeline?.javaClass?.name != sessionName && latestSourceCode != null) {
+                refreshPreviz(latestSourceCode!!)
             }
         }
     }

@@ -22,12 +22,14 @@ import io.github.deltacv.papervision.codegen.CodeGenManager
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
+import io.github.deltacv.papervision.engine.client.message.PrevizPingMessage
 import io.github.deltacv.papervision.engine.client.message.PrevizSourceCodeMessage
 import io.github.deltacv.papervision.engine.client.message.PrevizStartMessage
 import io.github.deltacv.papervision.engine.client.message.PrevizStopMessage
 import io.github.deltacv.papervision.engine.client.response.OkResponse
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bufferedImageFromResource
+import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 import io.github.deltacv.papervision.util.toValidIdentifier
@@ -63,6 +65,8 @@ class ClientPrevizManager(
 
     var previzRunning = false
         private set
+
+    private val pingTimer = ElapsedTime()
 
     fun startPreviz(previzName: String) {
         startPreviz(previzName, JavaLanguage)
@@ -108,6 +112,7 @@ class ClientPrevizManager(
                 )
 
                 stream.start()
+                pingTimer.reset()
             }
         })
     }
@@ -150,6 +155,10 @@ class ClientPrevizManager(
     }
 
     fun update() {
+        if(previzName != null && previzRunning && pingTimer.seconds > 2) {
+            client.sendMessage(PrevizPingMessage(previzName!!))
+        }
+
         if(stream.popRequestedMaximize() && previzName != null) {
             logger.info("Maximizing previz session $previzName")
 
