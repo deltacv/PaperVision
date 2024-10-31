@@ -33,7 +33,7 @@ import io.github.deltacv.papervision.plugin.eocvsim.PaperVisionDefaultPipeline
 import io.github.deltacv.papervision.plugin.gui.eocvsim.PaperVisionTabPanel
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import io.github.deltacv.papervision.plugin.ipc.eocvsim.EOCVSimEngineImageStreamer
-import io.github.deltacv.papervision.plugin.ipc.eocvsim.PrevizSession
+import io.github.deltacv.papervision.plugin.ipc.eocvsim.EOCVSimPrevizSession
 import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.GetInputSourcesMessage
 import io.github.deltacv.papervision.plugin.ipc.message.InputSourceData
@@ -43,6 +43,7 @@ import io.github.deltacv.papervision.plugin.ipc.message.OpenCreateInputSourceMes
 import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
+import io.github.deltacv.papervision.util.hexString
 import io.github.deltacv.papervision.util.replaceLast
 import io.github.deltacv.papervision.util.toValidIdentifier
 import org.opencv.core.Size
@@ -62,7 +63,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     val engine = PaperVisionProcessRunner.paperVisionEngine
 
-    var currentPrevizSession: PrevizSession? = null
+    var currentPrevizSession: EOCVSimPrevizSession? = null
 
     /**
      * If the plugin comes from a file, we will just use the file classpath, since it's a single fat jar.
@@ -232,14 +233,14 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
             val streamer = EOCVSimEngineImageStreamer(
                 engine,
-                message.previzName,
+                message.previzName.hexString,
                 Size(
                     message.streamWidth.toDouble(),
                     message.streamHeight.toDouble()
                 )
             )
 
-            currentPrevizSession = PrevizSession(
+            currentPrevizSession = EOCVSimPrevizSession(
                 message.previzName,
                 eocvSim, streamer
             )

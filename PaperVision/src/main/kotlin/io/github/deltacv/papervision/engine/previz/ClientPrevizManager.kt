@@ -31,6 +31,7 @@ import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bufferedImageFromResource
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.hexString
 import io.github.deltacv.papervision.util.loggerForThis
 import io.github.deltacv.papervision.util.toValidIdentifier
 
@@ -105,7 +106,7 @@ class ClientPrevizManager(
                 onPrevizStart.run()
 
                 stream = PipelineStream(
-                    previzName, client, textureProcessorQueue,
+                    previzName.hexString, client, textureProcessorQueue,
                     width = streamWidth, height = streamHeight,
                     offlineImages = offlineImages,
                     status = streamStatus

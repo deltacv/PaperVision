@@ -27,7 +27,7 @@ import io.github.deltacv.eocvsim.stream.ImageStreamer
 import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
 import io.github.deltacv.papervision.plugin.eocvsim.SinglePipelineCompiler
 
-class PrevizSession(
+class EOCVSimPrevizSession(
     val sessionName: String,
     val eocvSim: EOCVSim,
     val streamer: ImageStreamer = NoOpEngineImageStreamer
