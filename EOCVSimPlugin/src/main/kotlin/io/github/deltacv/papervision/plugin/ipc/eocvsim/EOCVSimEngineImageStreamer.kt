@@ -59,6 +59,7 @@ class EOCVSimEngineImageStreamer(
     private val changeRateAvgs = mutableMapOf<Int, MovingStatistics>()
     private val changeRateTimers = mutableMapOf<Int, ElapsedTime>()
     private val diffSlowDownTimers = mutableMapOf<Int, ElapsedTime>()
+    private val hasSent = mutableMapOf<Int, Boolean>()
 
     var resolution = resolution
         set(value) {
@@ -163,8 +164,12 @@ class EOCVSimEngineImageStreamer(
             synchronized(bytes) {
                 scaledImg.get(0, 0, bytes)
                 engine.sendBytes(byteTag, id, bytes)
-                sleep(1)
             }
+        }
+
+        if(!hasSent.getOrDefault(id, false)) {
+            sendBytes()
+            hasSent[id] = true
         }
 
         val latestToCurrentMaskMat = maskMatMap.getOrPut(id) { Mat() }
