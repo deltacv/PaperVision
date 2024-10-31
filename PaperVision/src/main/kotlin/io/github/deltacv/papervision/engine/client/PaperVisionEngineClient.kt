@@ -89,6 +89,8 @@ class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
 
             val tag = ByteMessageTag(ByteMessages.tagFromBytes(it))
 
+            println(tag)
+
             val handler = byteMessageHandlers[tag] ?: return@forEach
 
             handler(it)

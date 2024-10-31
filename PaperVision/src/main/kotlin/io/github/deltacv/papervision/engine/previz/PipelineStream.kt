@@ -93,7 +93,7 @@ class PipelineStream(
     fun start() {
         logger.info("Starting pipeline stream of $sessionName at {}x{}", width, height)
 
-        engineClient.setByteMessageHandlerOf(tag) {
+        engineClient.setByteMessageHandlerOf(tag) { // take the bytes
             val id = ByteMessages.idFromBytes(it)
             val message = ByteMessages.messageFromBytes(it)
 
