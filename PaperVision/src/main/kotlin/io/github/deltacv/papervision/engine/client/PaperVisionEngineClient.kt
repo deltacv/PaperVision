@@ -79,22 +79,23 @@ class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
     }
 
     fun process() {
-        val binaryMessages = synchronized(bytesQueue) {
-            bytesQueue.toTypedArray()
-        }
+        synchronized(bytesQueue) {
+            val binaryMessages = bytesQueue.toTypedArray()
 
-        @Suppress("SENSELESS_COMPARISON")
-        binaryMessages.forEach {
-            if(it == null) return@forEach
+            @Suppress("SENSELESS_COMPARISON")
+            binaryMessages.forEach {
+                if(it == null) return@forEach
 
-            val tag = ByteMessageTag(ByteMessages.tagFromBytes(it))
+                val tag = ByteMessageTag(ByteMessages.tagFromBytes(it))
 
-            Thread.sleep(10)
+                Thread.sleep(10) // what the fuck
 
-            val handler = byteMessageHandlers[tag] ?: return@forEach
+                val handler = byteMessageHandlers[tag] ?: return@forEach
 
-            handler(it)
-            bytesQueue.remove(it)
+                handler(it)
+                bytesQueue.remove(it)
+            }
+
         }
 
         onProcess.run()
