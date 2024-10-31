@@ -44,6 +44,7 @@ import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.util.replaceLast
+import io.github.deltacv.papervision.util.toValidIdentifier
 import org.opencv.core.Size
 import java.io.File
 import javax.swing.JLabel
@@ -231,7 +232,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
             val streamer = EOCVSimEngineImageStreamer(
                 engine,
-                message.previzName,
+                message.previzName.toValidIdentifier(),
                 Size(
                     message.streamWidth.toDouble(),
                     message.streamHeight.toDouble()
@@ -239,7 +240,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             )
 
             currentPrevizSession = PrevizSession(
-                message.previzName,
+                message.previzName.toValidIdentifier(),
                 eocvSim, streamer
             )
 
@@ -251,7 +252,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<PrevizStopMessage> {
-            if (currentPrevizSession?.sessionName == message.previzName) {
+            if (currentPrevizSession?.sessionName == message.previzName.toValidIdentifier()) {
                 currentPrevizSession?.stopPreviz()
                 currentPrevizSession = null
             }
@@ -260,14 +261,14 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<PrevizSourceCodeMessage> {
-            if (currentPrevizSession?.sessionName == message.previzName) {
+            if (currentPrevizSession?.sessionName == message.previzName.toValidIdentifier()) {
                 currentPrevizSession!!.refreshPreviz(message.sourceCode)
                 logger.info("Received source code\n{}", message.sourceCode)
 
                 respond(OkResponse())
             }
 
-            respond(ErrorResponse("No previz session with name ${message.previzName}"))
+            respond(ErrorResponse("No previz session with name ${message.previzName.toValidIdentifier()}"))
         }
     }
 
