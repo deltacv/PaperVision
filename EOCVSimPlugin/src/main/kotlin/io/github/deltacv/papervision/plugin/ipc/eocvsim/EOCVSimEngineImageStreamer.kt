@@ -162,6 +162,8 @@ class EOCVSimEngineImageStreamer(
             synchronized(bytes) {
                 scaledImg.get(0, 0, bytes)
                 engine.sendBytes(byteTag, id, bytes)
+
+                println("stream $byteTag ${bytes.size}")
             }
         }
 
@@ -214,7 +216,7 @@ class EOCVSimEngineImageStreamer(
     }
 
     fun stop() {
-        logger.info("Stopping ${tag} EOCVSimEngineImageStreamer MatPoster")
+        logger.info("Stopping $tag EOCVSimEngineImageStreamer MatPoster")
         poster.stop()
     }
 
