@@ -31,6 +31,7 @@ import org.firstinspires.ftc.robotcore.internal.collections.EvictingBlockingQueu
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
 import org.openftc.easyopencv.MatRecycler
+import java.lang.Thread.sleep
 
 import java.util.concurrent.ArrayBlockingQueue
 
@@ -162,7 +163,7 @@ class EOCVSimEngineImageStreamer(
             synchronized(bytes) {
                 scaledImg.get(0, 0, bytes)
                 engine.sendBytes(byteTag, id, bytes)
-                // println("stream $byteTag ${bytes.size}")
+                sleep(1)
             }
         }
 
