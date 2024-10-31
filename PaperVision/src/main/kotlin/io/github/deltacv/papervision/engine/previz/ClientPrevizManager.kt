@@ -30,6 +30,7 @@ import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bufferedImageFromResource
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
+import io.github.deltacv.papervision.util.toValidIdentifier
 
 class ClientPrevizManager(
     val defaultPrevizStreamWidth: Int,

@@ -37,8 +37,8 @@ import io.github.deltacv.papervision.plugin.ipc.eocvsim.PrevizSession
 import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.GetInputSourcesMessage
 import io.github.deltacv.papervision.plugin.ipc.message.InputSourceData
-import io.github.deltacv.papervision.plugin.ipc.message.InputSourceType
 import io.github.deltacv.papervision.plugin.ipc.message.InputSourceListChangeListenerMessage
+import io.github.deltacv.papervision.plugin.ipc.message.InputSourceType
 import io.github.deltacv.papervision.plugin.ipc.message.OpenCreateInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
@@ -210,7 +210,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         engine.setMessageHandlerOf<PrevizAskNameMessage> {
             respond(
                 StringResponse(
-                    paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "") ?: "Mack"
+                    paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "")?.toValidIdentifier() ?: "Mack"
                 )
             )
         }
@@ -218,7 +218,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         engine.setMessageHandlerOf<AskProjectGenClassNameMessage> {
             respond(
                 StringResponse(
-                    paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "") ?: "Mack"
+                    paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "")?.toValidIdentifier() ?: "Mack"
                 )
             )
         }
@@ -232,7 +232,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
             val streamer = EOCVSimEngineImageStreamer(
                 engine,
-                message.previzName.toValidIdentifier(),
+                message.previzName,
                 Size(
                     message.streamWidth.toDouble(),
                     message.streamHeight.toDouble()
@@ -240,7 +240,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             )
 
             currentPrevizSession = PrevizSession(
-                message.previzName.toValidIdentifier(),
+                message.previzName,
                 eocvSim, streamer
             )
 
@@ -252,7 +252,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<PrevizStopMessage> {
-            if (currentPrevizSession?.sessionName == message.previzName.toValidIdentifier()) {
+            if (currentPrevizSession?.sessionName == message.previzName) {
                 currentPrevizSession?.stopPreviz()
                 currentPrevizSession = null
             }
@@ -261,14 +261,14 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<PrevizSourceCodeMessage> {
-            if (currentPrevizSession?.sessionName == message.previzName.toValidIdentifier()) {
+            if (currentPrevizSession?.sessionName == message.previzName) {
                 currentPrevizSession!!.refreshPreviz(message.sourceCode)
                 logger.info("Received source code\n{}", message.sourceCode)
 
                 respond(OkResponse())
             }
 
-            respond(ErrorResponse("No previz session with name ${message.previzName.toValidIdentifier()}"))
+            respond(ErrorResponse("No previz session with name ${message.previzName}"))
         }
     }
 
