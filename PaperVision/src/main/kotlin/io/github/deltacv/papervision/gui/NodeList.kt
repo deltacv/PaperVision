@@ -244,8 +244,6 @@ class NodeList(
             }
         }
 
-        ImNodes.getNodeEditorSpacePos(9999)
-
         ImNodes.getStyle().gridSpacing = 32f // back to normal
         ImNodes.popColorStyle()
 
