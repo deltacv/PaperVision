@@ -26,8 +26,6 @@ object IpcGson {
     object IpcMessageAdapter : PolymorphicAdapter<PaperVisionEngineMessage>("message", IpcGson::class.java.classLoader)
     object IpcMessageResponseAdapter : PolymorphicAdapter<PaperVisionEngineMessageResponse>("messageResponse", IpcGson::class.java.classLoader)
 
-    object AnyAdapter : PolymorphicAdapter<Any>("mack")
-
     val gson = GsonBuilder()
         .registerTypeHierarchyAdapter(PaperVisionEngineMessage::class.java, IpcMessageAdapter)
         .registerTypeHierarchyAdapter(PaperVisionEngineMessageResponse::class.java, IpcMessageResponseAdapter)

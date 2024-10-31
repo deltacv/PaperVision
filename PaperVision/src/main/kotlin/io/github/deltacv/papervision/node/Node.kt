@@ -208,9 +208,7 @@ abstract class Node<S: CodeGenSession>(
         deadEndNodes.forEach { it.receivePropagation(current) }
     }
 
-    open fun makeSerializationData() = BasicNodeData(id, ImVec2().apply {
-        ImNodes.getNodeEditorSpacePos(id) // TODO: Fix this to get the actual position when SpaiR decides to merge my PR...
-    })
+    open fun makeSerializationData() = BasicNodeData(id, ImNodes.getNodeEditorSpacePos(id))
 
     open fun takeDeserializationData(data: NodeSerializationData) { /* do nothing */ }
 
@@ -230,9 +228,7 @@ abstract class Node<S: CodeGenSession>(
         val data = makeSerializationData()
         data.id = id
 
-        // val pos = ImVec2()
-        // ImNodes.getNodeEditorSpacePos(id) // TODO: Fix this to get the actual position when SpaiR decides to merge my PR...
-        data.nodePos = position
+        data.nodePos = ImNodes.getNodeEditorSpacePos(id)
 
         return data
     }

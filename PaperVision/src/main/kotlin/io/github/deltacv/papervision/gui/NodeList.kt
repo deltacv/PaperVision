@@ -244,6 +244,8 @@ class NodeList(
             }
         }
 
+        ImNodes.getNodeEditorSpacePos(9999)
+
         ImNodes.getStyle().gridSpacing = 32f // back to normal
         ImNodes.popColorStyle()
 
@@ -265,8 +267,7 @@ class NodeList(
                 ) // add node with the class by using reflection
 
                 if(instance is DrawNode<*>) {
-                    val nodePos = ImVec2()
-                    // ImNodes.getNodeScreenSpacePos(instance.id) TODO: fix this
+                    val nodePos = ImNodes.getNodeScreenSpacePos(hoveredNode)
 
                     val mousePos = ImGui.getMousePos()
 
