@@ -18,6 +18,9 @@
 
 package io.github.deltacv.papervision.plugin.gui.eocvsim
 
+import com.github.serivesmejia.eocvsim.gui.component.PopupX
+import com.github.serivesmejia.eocvsim.gui.component.PopupX.Companion.popUpXOnThis
+import com.github.serivesmejia.eocvsim.gui.util.Corner
 import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
@@ -39,7 +42,7 @@ class PaperVisionTabButtonsPanel(
 ) : JPanel(GridBagLayout()) {
 
     val newProjectBtt  = JButton("New Project")
-    val deleteProjectBtt = JButton("Delete Selection")
+    val editSelectionBtt = JButton("Edit")
 
     val openSelectionBtt = JButton("Open Selected Project")
 
@@ -48,27 +51,60 @@ class PaperVisionTabButtonsPanel(
             insets = Insets(0, 0, 0, 5)
         })
 
-        newProjectBtt.addActionListener {
-            PaperVisionDialogFactory.displayNewProjectDialog(
-                SwingUtilities.getWindowAncestor(this) as JFrame,
-                projectManager.projectTree.projects,
-                projectManager.projectTree.folders,
-            ) { projectGroup, projectName ->
-                projectManager.newProject(projectGroup ?: "", projectName)
+        var lastNewProjectPopup: PopupX? = null
 
-                JOptionPane.showConfirmDialog(
-                    SwingUtilities.getWindowAncestor(this),
-                    "Do you wish to open the project that was just created?",
-                    "Project Created",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE
-                ).takeIf { it == JOptionPane.YES_OPTION }?.run {
-                    projectManager.openProject(projectManager.findProject(projectGroup ?: "", "$projectName.paperproj")!!)
-                }
+        newProjectBtt.addActionListener {
+            val location = newProjectBtt.locationOnScreen
+
+            val window = SwingUtilities.getWindowAncestor(this)
+            val popup = PopupX(window, NewProjectPanel(projectManager, SwingUtilities.getWindowAncestor(this)), location.x, location.y)
+
+            popup.onShow {
+                val popupX = location.x + (newProjectBtt.size.width / 2) - (popup.window.size.width / 2)
+                val popupY = popup.window.location.y // Keep the original Y position, or update as needed
+
+                popup.setLocation(popupX, popupY)
             }
+
+            lastNewProjectPopup?.hide()
+            popup.show()
+            lastNewProjectPopup = popup
         }
 
-        add(deleteProjectBtt, GridBagConstraints().apply { gridx = 1 })
+        var lastEditSelectionPopup: PopupX? = null
+
+        editSelectionBtt.addActionListener {
+            if(projectsJTree.selectionPaths == null) return@addActionListener
+
+            val projects = mutableListOf<PaperVisionProjectTree.ProjectTreeNode.Project>()
+
+            for(selection in projectsJTree.selectionPaths!!) {
+                val selectedProject = selection.lastPathComponent
+                if(selectedProject !is DefaultMutableTreeNode || selectedProject.userObject !is PaperVisionProjectTree.ProjectTreeNode.Project)
+                    continue
+
+                if(projects.contains(selectedProject.userObject)) continue // avoid duplication
+                projects.add(selectedProject.userObject as PaperVisionProjectTree.ProjectTreeNode.Project)
+            }
+
+            val location = editSelectionBtt.locationOnScreen
+
+            val window = SwingUtilities.getWindowAncestor(this)
+            val popup = PopupX(window, EditSelectionPanel(projects, projectManager, SwingUtilities.getWindowAncestor(this)), location.x, location.y)
+
+            popup.onShow {
+                val popupX = location.x + (editSelectionBtt.size.width / 2) - (popup.window.size.width / 2)
+                val popupY = popup.window.location.y // Keep the original Y position, or update as needed
+
+                popup.setLocation(popupX, popupY)
+            }
+
+            lastEditSelectionPopup?.hide()
+            popup.show()
+            lastEditSelectionPopup = popup
+        }
+
+        add(editSelectionBtt, GridBagConstraints().apply { gridx = 1 })
 
         openSelectionBtt.addActionListener {
             val selectedProject = projectsJTree.lastSelectedPathComponent
@@ -78,38 +114,13 @@ class PaperVisionTabButtonsPanel(
             projectManager.openProject(selectedProject.userObject as PaperVisionProjectTree.ProjectTreeNode.Project)
         }
 
-        deleteProjectBtt.addActionListener {
-            if(projectsJTree.selectionPaths == null) return@addActionListener
-
-            JOptionPane.showConfirmDialog(
-                SwingUtilities.getWindowAncestor(this),
-                "Are you sure you want to delete the selected project(s)?",
-                "Delete Project",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
-            ).takeIf { it == JOptionPane.YES_OPTION }?.let {
-                val toDelete = mutableListOf<PaperVisionProjectTree.ProjectTreeNode.Project>()
-
-                for(selection in projectsJTree.selectionPaths!!) {
-                    val selectedProject = selection.lastPathComponent
-                    if(selectedProject !is DefaultMutableTreeNode || selectedProject.userObject !is PaperVisionProjectTree.ProjectTreeNode.Project)
-                        continue
-
-                    if(toDelete.contains(selectedProject.userObject)) continue
-                    toDelete.add(selectedProject.userObject as PaperVisionProjectTree.ProjectTreeNode.Project)
-                }
-
-                projectManager.bulkDeleteProjects(*toDelete.toTypedArray())
-            }
-        }
-
         projectsJTree.addTreeSelectionListener {
             val selectedProject = projectsJTree.lastSelectedPathComponent
 
             val state = selectedProject is DefaultMutableTreeNode &&
                     selectedProject.userObject is PaperVisionProjectTree.ProjectTreeNode.Project
 
-            deleteProjectBtt.isEnabled = state
+            editSelectionBtt.isEnabled = state
             openSelectionBtt.isEnabled = state
         }
 
@@ -124,8 +135,7 @@ class PaperVisionTabButtonsPanel(
             anchor = GridBagConstraints.CENTER
         })
 
-
-        deleteProjectBtt.isEnabled = false
+        editSelectionBtt.isEnabled = false
         openSelectionBtt.isEnabled = false
     }
 

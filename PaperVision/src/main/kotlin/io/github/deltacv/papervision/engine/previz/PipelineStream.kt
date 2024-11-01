@@ -29,7 +29,6 @@ import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.animation.TimedTextureAnimation
 import io.github.deltacv.papervision.util.loggerForThis
 import java.awt.image.BufferedImage
-import java.nio.ByteBuffer
 
 class PipelineStream(
     val sessionName: String,
@@ -38,8 +37,8 @@ class PipelineStream(
     val width: Int = 160,
     val height: Int = 120,
     val status: Status = Status.MINIMIZED,
-    offlineImages: Array<BufferedImage>? = null,
-    offlineImagesFps: Double = 1.0
+    val offlineImages: Array<BufferedImage>? = null,
+    val offlineImagesFps: Double = 1.0
 ) {
 
     enum class Status {
@@ -61,6 +60,10 @@ class PipelineStream(
         private set
 
     init {
+        initOfflineImages()
+    }
+
+    private fun initOfflineImages() {
         if(offlineImages != null && offlineImages.isNotEmpty()) {
             if(offlineImages.size == 1) {
                 var img = offlineImages[0]

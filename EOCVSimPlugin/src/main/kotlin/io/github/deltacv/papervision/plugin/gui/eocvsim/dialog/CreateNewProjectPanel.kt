@@ -22,14 +22,14 @@ import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
-import java.awt.event.KeyEvent
 import java.nio.file.FileAlreadyExistsException
 import javax.swing.*
 import javax.swing.border.EmptyBorder
 
-class NewProjectPanel(
+class CreateNewProjectPanel(
     projects: List<String>,
     groups: List<String>,
+    projectName: String? = null,
     newProjectCallback: (group: String?, name: String) -> Unit
 ) : JPanel() {
 
@@ -42,8 +42,7 @@ class NewProjectPanel(
 
         border = EmptyBorder(5, 15, 15, 15)
 
-        add(JLabel("Project Name:").apply
-        {
+        add(JLabel("Project Name:").apply {
             horizontalAlignment = JLabel.RIGHT
             border = EmptyBorder(0,0,0,10)
         }, GridBagConstraints().apply {
@@ -51,6 +50,8 @@ class NewProjectPanel(
             gridy = 0
             insets = Insets(10, 0, 0, 0)
         })
+
+        projectNameField.text = projectName ?: ""
 
         add(projectNameField, GridBagConstraints().apply {
             gridx = 1
@@ -90,7 +91,7 @@ class NewProjectPanel(
 
         add(JButton("New Group").apply {
             addActionListener {
-                val newGroup = JOptionPane.showInputDialog(this@NewProjectPanel, "Enter new group name:") ?: return@addActionListener
+                val newGroup = JOptionPane.showInputDialog(this@CreateNewProjectPanel, "Enter new group name:") ?: return@addActionListener
                 (groupComboBox.model as DefaultComboBoxModel<String>).addElement(newGroup)
                 groupComboBox.selectedItem = newGroup
             }
@@ -106,7 +107,7 @@ class NewProjectPanel(
             layout = BoxLayout(this, BoxLayout.X_AXIS)
             add(Box.createHorizontalGlue())
 
-            add(JButton("Create").apply {
+            add(JButton(if(projectName != null) "Import" else "Create").apply {
                 addActionListener {
                     if(!projects.contains(projectNameField.text)) {
                         if(projectNameField.text.trim().isNotBlank()) {
@@ -117,7 +118,7 @@ class NewProjectPanel(
                                     if (projectName == "None") null else projectName,
                                     projectNameField.text
                                 )
-                            } catch(e: FileAlreadyExistsException) {
+                            } catch(_: FileAlreadyExistsException) {
                                 JOptionPane.showMessageDialog(this, "Project already exists")
                                 return@addActionListener
                             }

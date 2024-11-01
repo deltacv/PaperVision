@@ -19,7 +19,9 @@
 package io.github.deltacv.papervision.plugin.project
 
 import com.github.serivesmejia.eocvsim.EOCVSim
+import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.extension.plus
+import com.github.serivesmejia.eocvsim.util.extension.removeFromEnd
 import com.github.serivesmejia.eocvsim.util.io.EOCVSimFolder
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.google.gson.JsonElement
@@ -45,6 +47,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.time.Instant
 import javax.swing.SwingUtilities
+import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.pathString
 
@@ -175,6 +178,10 @@ class PaperVisionProjectManager(
         return list
     }
 
+    fun importProject(path: String, name: String, file: File) {
+        newProject(path, name, jsonElement = PaperVisionProject.fromJson(SysUtil.loadFileStr(file)).json)
+    }
+
     fun newProject(path: String, name: String, jsonElement: JsonElement? = null, appendExtension: Boolean = true) {
         val projectPath = fileSystem.getPath("/").resolve(path)
         fileSystem.createDirectories(projectPath)
@@ -203,14 +210,18 @@ class PaperVisionProjectManager(
         refresh()
     }
 
-    fun openProject(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
-        val path = findProjectPath(project) ?: throw FileNotFoundException("Project $project not found in tree")
-
-        logger.info("Opening ${path.pathString}")
-
-        currentPaperVisionProject = PaperVisionProject.fromJson(
-            String(fileSystem.readAllBytes(path), StandardCharsets.UTF_8)
+    fun readProjectFile(project: PaperVisionProjectTree.ProjectTreeNode.Project) =
+        String(
+            fileSystem.readAllBytes(
+                findProjectPath(project) ?: throw FileNotFoundException("Project $project not found in tree")
+            ),
+            StandardCharsets.UTF_8
         )
+
+    fun openProject(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
+        logger.info("Opening ${project.name}")
+
+        currentPaperVisionProject = PaperVisionProject.fromJson(readProjectFile(project))
 
         SwingUtilities.invokeLater {
             eocvSim.visualizer.frame.isVisible = false

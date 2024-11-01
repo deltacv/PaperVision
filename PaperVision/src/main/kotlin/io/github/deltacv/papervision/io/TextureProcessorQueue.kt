@@ -39,8 +39,15 @@ class TextureProcessorQueue(
     private val queuedTextures = ArrayBlockingQueue<FutureTexture>(5)
     private val textures = mutableMapOf<Int, PlatformTexture>()
 
+    private var currentHandler: PaperVisionEventHandler? = null
+
     fun subscribeTo(handler: PaperVisionEventHandler) {
         handler {
+            if(currentHandler == handler) { // can only subscribe to one event loop at a time
+                it.removeThis()
+                return@handler
+            }
+
             while(queuedTextures.isNotEmpty()) {
                 val futureTex = queuedTextures.poll()
 
@@ -68,6 +75,8 @@ class TextureProcessorQueue(
                 returnReusableArray(futureTex.data)
             }
         }
+
+        currentHandler = handler
     }
 
     private fun returnReusableArray(array: ByteArray) {

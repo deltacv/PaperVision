@@ -26,9 +26,9 @@ import javax.swing.SwingUtilities
 
 object PaperVisionDialogFactory {
 
-    fun displayNewProjectDialog(parent: JFrame, projects: List<String>, groups: List<String>, callback: (String?, String) -> Unit) {
-        val panel = NewProjectPanel(projects, groups, callback)
-        displayDialog("New Project", panel, parent)
+    fun displayNewProjectDialog(parent: JFrame, projects: List<String>, groups: List<String>, name: String? = null, callback: (String?, String) -> Unit) {
+        val panel = CreateNewProjectPanel(projects, groups, name, callback)
+        displayDialog("${if(name == null) "New" else "Import"} Project", panel, parent)
     }
 
     fun displayProjectRecoveryDialog(parent: JFrame, recoveredProjects: List<RecoveredProject>, callback: (List<RecoveredProject>) -> Unit) {
