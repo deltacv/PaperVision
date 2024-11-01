@@ -53,6 +53,9 @@ abstract class PlatformTextureAnimation : PlatformTexture() {
     override fun set(bytes: ByteBuffer, colorSpace: ColorSpace) =
         throw UnsupportedOperationException("set() is not supported on animations")
 
+    override fun setJpeg(bytes: ByteArray) =
+        throw kotlin.UnsupportedOperationException("setJpeg() is not supported on animations")
+
     companion object {
         val animations = IdElementContainer<PlatformTextureAnimation>()
     }

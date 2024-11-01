@@ -20,25 +20,22 @@ package io.github.deltacv.papervision.plugin.ipc.eocvsim
 
 import com.github.serivesmejia.eocvsim.gui.util.ThreadedMatPoster
 import com.github.serivesmejia.eocvsim.util.loggerForThis
-import com.qualcomm.robotcore.util.MovingStatistics
 import io.github.deltacv.eocvsim.stream.ImageStreamer
 import io.github.deltacv.papervision.engine.PaperVisionEngine
 import io.github.deltacv.papervision.engine.message.ByteMessageTag
-import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.vision.external.util.extension.aspectRatio
 import io.github.deltacv.vision.external.util.extension.clipTo
 import org.firstinspires.ftc.robotcore.internal.collections.EvictingBlockingQueue
 import org.opencv.core.*
+import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 import org.openftc.easyopencv.MatRecycler
-import java.lang.Thread.sleep
-
 import java.util.concurrent.ArrayBlockingQueue
 
 class EOCVSimEngineImageStreamer(
     val engine: PaperVisionEngine,
     val tag: String,
-    resolution: Size
+    var resolution: Size
 ) : ImageStreamer {
 
     companion object {
@@ -51,21 +48,9 @@ class EOCVSimEngineImageStreamer(
     private val queuesLock = Any()
 
     private val matRecycler = MatRecycler(3)
-    private var bytes = ByteArray(resolution.width.toInt() * resolution.height.toInt() * 3)
 
-    private val latestMatMap = mutableMapOf<Int, Mat>()
-    private val maskMatMap = mutableMapOf<Int, Mat>()
-
-    private val changeRateAvgs = mutableMapOf<Int, MovingStatistics>()
-    private val changeRateTimers = mutableMapOf<Int, ElapsedTime>()
-    private val diffSlowDownTimers = mutableMapOf<Int, ElapsedTime>()
-    private val hasSent = mutableMapOf<Int, Boolean>()
-
-    var resolution = resolution
-        set(value) {
-            field = value
-            bytes = ByteArray(value.width.toInt() * value.height.toInt() * 3)
-        }
+    private var byteArray = ByteArray(resolution.width.toInt() * resolution.height.toInt() * 3)
+    private var bytes = MatOfByte()
 
     val byteTag = ByteMessageTag.fromString(tag)
 
@@ -160,62 +145,19 @@ class EOCVSimEngineImageStreamer(
             return
         }
 
-        fun sendBytes() {
-            synchronized(bytes) {
-                scaledImg.get(0, 0, bytes)
-                engine.sendBytes(byteTag, id, bytes)
-            }
-        }
-
-        if(!hasSent.getOrDefault(id, false)) {
-            sendBytes()
-            hasSent[id] = true
-        }
-
-        val latestToCurrentMaskMat = maskMatMap.getOrPut(id) { Mat() }
-        val latestMat = latestMatMap.getOrPut(id) { Mat() }
-
-        val changeRateTimer = changeRateTimers.getOrPut(id) { ElapsedTime() }
-        val diffSlowDownTimer = diffSlowDownTimers.getOrPut(id) { ElapsedTime() }
-        val changeRateAvg = changeRateAvgs.getOrPut(id) { MovingStatistics(50) }
-
-        changeRateAvg.add(changeRateTimer.seconds)
-
-        val mean = changeRateAvg.mean
-
-        val isFastChange = mean <= 0.5
-
-        // Perform the diff check only if the change rate is slow enough
         try {
-            // Skip diff check if changes are frequent
-            if (isFastChange) {
-                sendBytes()
-            } else if (!latestMat.empty() && latestMat.size() == scaledImg.size()) {
-                // Slow down diff check after 3 seconds of no changes
-                if(changeRateTimer.seconds > 3) {
-                    val slowDown = ((changeRateTimer.seconds - 3) * 0.1).coerceAtMost(0.5)
-                    if(diffSlowDownTimer.seconds <= slowDown) {
-                        return
-                    } else {
-                        diffSlowDownTimer.reset()
-                    }
-                }
+            Imgcodecs.imencode(".jpg", scaledImg, bytes)
 
-                Core.absdiff(latestMat, scaledImg, latestToCurrentMaskMat)
-                Imgproc.cvtColor(latestToCurrentMaskMat, latestToCurrentMaskMat, Imgproc.COLOR_RGB2GRAY)
+            val length = bytes.rows() * bytes.cols() * bytes.channels()
 
-                val diffPixels = Core.countNonZero(latestToCurrentMaskMat)
-
-                // If there are significant differences or change rate indicates slower changes, send bytes
-                if (diffPixels > 0) {
-                    sendBytes()
-                    changeRateTimer.reset()
-                }
-            } else {
-                sendBytes() // Send if there is no latest mat (first frame or no latest)
+            if(byteArray.size != length) {
+                byteArray = ByteArray(length)
             }
+
+            bytes.get(0, 0, byteArray)
+
+            engine.sendBytes(byteTag, id, byteArray)
         } finally {
-            scaledImg.copyTo(latestMat) // Update the latest mat
             scaledImg.returnMat() // Return the scaled image mat to the recycler
         }
     }

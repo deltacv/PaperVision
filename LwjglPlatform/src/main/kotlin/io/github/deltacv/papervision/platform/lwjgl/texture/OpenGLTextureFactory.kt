@@ -19,11 +19,17 @@
 package io.github.deltacv.papervision.platform.lwjgl.texture
 
 import io.github.deltacv.papervision.platform.ColorSpace
+import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.PlatformTextureFactory
+import io.github.deltacv.papervision.platform.lwjgl.util.ImageData
 import io.github.deltacv.papervision.platform.lwjgl.util.loadImageFromResource
 import org.lwjgl.opengl.GL12.*
+import org.lwjgl.stb.STBImage.stbi_failure_reason
+import org.lwjgl.stb.STBImage.stbi_load_from_memory
+import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import java.nio.ByteBuffer
+import kotlin.use
 
 object OpenGLTextureFactory : PlatformTextureFactory {
 
@@ -74,6 +80,23 @@ object OpenGLTextureFactory : PlatformTextureFactory {
         val image = loadImageFromResource(resource)
 
         return create(image.width, image.height, image.buffer)
+    }
+
+    override fun createFromJpegBytes(bytes: ByteBuffer): PlatformTexture {
+        MemoryStack.stackPush().use {
+            val buffer = it.malloc(bytes.capacity())
+            buffer.put(bytes)
+            buffer.flip()
+
+            val comp = it.mallocInt(1)
+            val w = it.mallocInt(1)
+            val h = it.mallocInt(1)
+
+            val img = stbi_load_from_memory(buffer, w, h, comp, 3)
+                ?: throw RuntimeException("Failed to load image due to ${stbi_failure_reason()}")
+
+            return create(w.get(), h.get(), img, ColorSpace.BGR)
+        }
     }
 
 }

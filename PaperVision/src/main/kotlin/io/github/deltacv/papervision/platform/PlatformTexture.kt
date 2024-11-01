@@ -36,6 +36,8 @@ abstract class PlatformTexture : DrawableIdElementBase<PlatformTexture>() {
     abstract fun set(bytes: ByteArray, colorSpace: ColorSpace = ColorSpace.RGB)
     abstract fun set(bytes: ByteBuffer, colorSpace: ColorSpace = ColorSpace.RGB)
 
+    abstract fun setJpeg(bytes: ByteArray)
+
     override fun draw() {
         ImGui.image(textureId, width.toFloat(), height.toFloat())
     }
@@ -52,6 +54,8 @@ interface PlatformTextureFactory {
     fun create(width: Int, height: Int, bytes: ByteBuffer, colorSpace: ColorSpace = ColorSpace.RGB): PlatformTexture
 
     fun create(resource: String): PlatformTexture
+
+    fun createFromJpegBytes(bytes: ByteBuffer): PlatformTexture
 }
 
 enum class ColorSpace(val channels: Int) {

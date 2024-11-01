@@ -47,7 +47,9 @@ class TextureProcessorQueue(
                 if(textures.contains(futureTex.id)) {
                     val existingTex = textures[futureTex.id]!!
                     if(existingTex.width == futureTex.width && existingTex.height == futureTex.height) {
-                        existingTex.set(futureTex.data, futureTex.colorSpace)
+                        if(futureTex.jpeg) {
+                            existingTex.setJpeg(futureTex.data)
+                        }
                         returnReusableArray(futureTex.data)
 
                         continue
@@ -56,9 +58,13 @@ class TextureProcessorQueue(
                     }
                 }
 
-                textures[futureTex.id] = textureFactory.create(
-                    futureTex.width, futureTex.height, futureTex.data, futureTex.colorSpace
-                )
+                if(futureTex.jpeg) {
+                    textures[futureTex.id] = textureFactory.createFromJpegBytes(ByteBuffer.wrap(futureTex.data))
+                } else {
+                    textures[futureTex.id] = textureFactory.create(
+                        futureTex.width, futureTex.height, futureTex.data, futureTex.colorSpace
+                    )
+                }
                 returnReusableArray(futureTex.data)
             }
         }
@@ -70,8 +76,11 @@ class TextureProcessorQueue(
         }
     }
 
-    fun offer(id: Int, width: Int, height: Int, data: ByteBuffer, colorSpace: ColorSpace = ColorSpace.RGB) {
-        val size = data.remaining()
+    fun offerJpeg(id: Int, width: Int, height: Int, data: ByteArray) =
+        offer(id, width, height, data, jpeg = true)
+
+    fun offer(id: Int, width: Int, height: Int, data: ByteArray, colorSpace: ColorSpace = ColorSpace.RGB, jpeg: Boolean = false) {
+        val size = data.size
         val array: ByteArray
 
         synchronized(reusableArrays) {
@@ -91,14 +100,14 @@ class TextureProcessorQueue(
             reusableArrays.remove(size)
         }
 
-        System.arraycopy(data.array(), 0, array, 0, size)
+        System.arraycopy(data, 0, array, 0, size)
 
         synchronized(queuedTextures) {
             if(queuedTextures.remainingCapacity() == 0) {
                 queuedTextures.poll()
             }
 
-            queuedTextures.offer(FutureTexture(id, width, height, array, colorSpace))
+            queuedTextures.offer(FutureTexture(id, width, height, array, colorSpace, jpeg))
         }
     }
 
@@ -112,6 +121,6 @@ class TextureProcessorQueue(
         textures.clear()
     }
 
-    data class FutureTexture(val id: Int, val width: Int, val height: Int, val data: ByteArray, val colorSpace: ColorSpace)
+    data class FutureTexture(val id: Int, val width: Int, val height: Int, val data: ByteArray, val colorSpace: ColorSpace, val jpeg: Boolean)
 
 }

@@ -20,9 +20,14 @@ package io.github.deltacv.papervision.platform.lwjgl.texture
 
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
+import io.github.deltacv.papervision.platform.lwjgl.texture.OpenGLTextureFactory.create
 import org.lwjgl.opengl.GL12.*
+import org.lwjgl.stb.STBImage.stbi_failure_reason
+import org.lwjgl.stb.STBImage.stbi_load_from_memory
+import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import java.nio.ByteBuffer
+import kotlin.use
 
 data class OpenGLTexture(
     override val textureId: Long,
@@ -64,6 +69,23 @@ data class OpenGLTexture(
 
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, format, GL_UNSIGNED_BYTE, bytes)
         glBindTexture(GL_TEXTURE_2D, 0)
+    }
+
+    override fun setJpeg(bytes: ByteArray) {
+        MemoryStack.stackPush().use {
+            val buffer = it.malloc(bytes.size)
+            buffer.put(bytes)
+            buffer.flip()
+
+            val comp = it.mallocInt(1)
+            val w = it.mallocInt(1)
+            val h = it.mallocInt(1)
+
+            val img = stbi_load_from_memory(buffer, w, h, comp, 3)
+                ?: throw RuntimeException("Failed to load image due to ${stbi_failure_reason()}")
+
+            return set(img, ColorSpace.BGR)
+        }
     }
 
     override fun delete() {
