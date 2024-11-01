@@ -42,6 +42,7 @@ import io.github.deltacv.papervision.plugin.ipc.message.InputSourceType
 import io.github.deltacv.papervision.plugin.ipc.message.OpenCreateInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
+import io.github.deltacv.papervision.plugin.ipc.stream.JpegStreamServer
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.util.hexString
 import io.github.deltacv.papervision.util.replaceLast
@@ -63,6 +64,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     val engine = PaperVisionProcessRunner.paperVisionEngine
 
+    val server = JpegStreamServer()
+
     var currentPrevizSession: EOCVSimPrevizSession? = null
 
     /**
@@ -77,7 +80,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     val paperVisionProjectManager = PaperVisionProjectManager(
         fullClasspath, fileSystem, engine, eocvSim
-    )
+    ) { server.port }
 
     override fun onLoad() {
         paperVisionProjectManager.init()
@@ -151,6 +154,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     }
 
     override fun onEnable() {
+        server.start()
+
         engine.setMessageHandlerOf<TunerChangeValueMessage> {
             eocvSim.tunerManager.getTunableFieldWithLabel(message.label)?.setFieldValue(message.index, message.value)
             respond(OkResponse())
@@ -232,7 +237,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             }
 
             val streamer = EOCVSimEngineImageStreamer(
-                engine,
+                server,
                 message.previzName.hexString,
                 Size(
                     message.streamWidth.toDouble(),

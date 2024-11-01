@@ -21,7 +21,6 @@ package io.github.deltacv.papervision.plugin.project
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.extension.plus
-import com.github.serivesmejia.eocvsim.util.extension.removeFromEnd
 import com.github.serivesmejia.eocvsim.util.io.EOCVSimFolder
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.google.gson.JsonElement
@@ -29,7 +28,6 @@ import com.google.gson.JsonObject
 import io.github.deltacv.eocvsim.sandbox.nio.SandboxFileSystem
 import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
-import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
 import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngine
 import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMessage
@@ -47,7 +45,6 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.time.Instant
 import javax.swing.SwingUtilities
-import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.pathString
 
@@ -55,7 +52,8 @@ class PaperVisionProjectManager(
     val classpath: String,
     val fileSystem: SandboxFileSystem,
     val engine: EOCVSimIpcEngine,
-    val eocvSim: EOCVSim
+    val eocvSim: EOCVSim,
+    val jpegPortProvider: () -> Int
 ) {
 
     companion object {
@@ -233,7 +231,7 @@ class PaperVisionProjectManager(
             }
         }
 
-        PaperVisionProcessRunner.execPaperVision(classpath)
+        PaperVisionProcessRunner.execPaperVision(jpegPortProvider(), classpath)
 
         currentProject = project
     }

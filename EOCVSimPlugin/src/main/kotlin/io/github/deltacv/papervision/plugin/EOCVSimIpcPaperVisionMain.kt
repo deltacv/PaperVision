@@ -31,6 +31,7 @@ import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMe
 import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
 import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentProjectMessage
 import io.github.deltacv.papervision.plugin.ipc.message.SaveCurrentProjectMessage
+import io.github.deltacv.papervision.plugin.ipc.stream.JpegStreamClient
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer.deserializeAndApply
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer.serializeToTree
 import org.slf4j.LoggerFactory
@@ -39,8 +40,11 @@ import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
 class EOCVSimIpcPaperVisionMain : Callable<Int?> {
-    @CommandLine.Option(names = ["-p", "--port"], description = ["Engine IPC server port"])
-    var port: Int = 0
+    @CommandLine.Option(names = ["-i", "--ipcport"], description = ["Engine IPC server port"])
+    var ipcPort: Int = 0
+
+    @CommandLine.Option(names = ["-j", "--jpegport"], description = ["JPEG stream server port"])
+    var jpegPort: Int = 0
 
     @CommandLine.Option(names = ["-q", "--queryproject"], description = ["Asks the engine for the current project"])
     var queryProject: Boolean = false
@@ -50,9 +54,12 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     override fun call(): Int {
-        logger.info("IPC port {}", port)
+        logger.info("IPC port {}, JPEG port {}", ipcPort, jpegPort)
 
-        val bridge = EOCVSimIpcEngineBridge(port)
+        val bridge = EOCVSimIpcEngineBridge(ipcPort)
+        val jpegStream = JpegStreamClient(jpegPort, bridge).apply {
+            start()
+        }
 
         app = PaperVisionApp(bridge, false, ::paperVisionUserCloseListener)
 

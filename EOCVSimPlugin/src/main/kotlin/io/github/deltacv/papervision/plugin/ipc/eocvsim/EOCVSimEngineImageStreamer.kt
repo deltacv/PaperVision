@@ -23,6 +23,7 @@ import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.stream.ImageStreamer
 import io.github.deltacv.papervision.engine.PaperVisionEngine
 import io.github.deltacv.papervision.engine.message.ByteMessageTag
+import io.github.deltacv.papervision.plugin.ipc.stream.JpegStreamServer
 import io.github.deltacv.vision.external.util.extension.aspectRatio
 import io.github.deltacv.vision.external.util.extension.clipTo
 import org.firstinspires.ftc.robotcore.internal.collections.EvictingBlockingQueue
@@ -33,8 +34,8 @@ import org.openftc.easyopencv.MatRecycler
 import java.util.concurrent.ArrayBlockingQueue
 
 class EOCVSimEngineImageStreamer(
-    val engine: PaperVisionEngine,
-    val tag: String,
+    val server: JpegStreamServer,
+    tag: String,
     var resolution: Size
 ) : ImageStreamer {
 
@@ -48,11 +49,10 @@ class EOCVSimEngineImageStreamer(
     private val queuesLock = Any()
 
     private val matRecycler = MatRecycler(3)
-
-    private var byteArray = ByteArray(resolution.width.toInt() * resolution.height.toInt() * 3)
     private var bytes = MatOfByte()
+    private var byteArray: ByteArray? = null
 
-    val byteTag = ByteMessageTag.fromString(tag)
+    val tag = ByteMessageTag.fromString(tag)
 
     val logger by loggerForThis()
 
@@ -147,24 +147,24 @@ class EOCVSimEngineImageStreamer(
 
         try {
             Imgcodecs.imencode(".jpg", scaledImg, bytes)
+            val size = bytes.rows() * bytes.cols() * bytes.channels()
 
-            val length = bytes.rows() * bytes.cols() * bytes.channels()
-
-            if(byteArray.size != length) {
-                byteArray = ByteArray(length)
+            if(byteArray == null || byteArray!!.size < size) {
+                byteArray = ByteArray(size)
             }
 
             bytes.get(0, 0, byteArray)
 
-            engine.sendBytes(byteTag, id, byteArray)
+            server.submit(tag, id, byteArray!!)
         } finally {
             scaledImg.returnMat() // Return the scaled image mat to the recycler
         }
     }
 
     fun stop() {
-        logger.info("Stopping $tag EOCVSimEngineImageStreamer MatPoster")
+        logger.info("Stopping EOCVSimEngineImageStreamer MatPoster")
         poster.stop()
+        server.close()
     }
 
     private data class MatData(

@@ -67,4 +67,5 @@ dependencies {
     implementation 'info.picocli:picocli:4.7.6'
 
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
+    implementation 'io.netty:netty-all:4.1.114.Final'
 }
