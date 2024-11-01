@@ -97,8 +97,6 @@ class PipelineStream(
             val id = ByteMessages.idFromBytes(it)
             val message = ByteMessages.messageFromBytes(it)
 
-            println("Received ${message.size}")
-
             queue.offerJpeg(id, width, height, message)
         }
 
