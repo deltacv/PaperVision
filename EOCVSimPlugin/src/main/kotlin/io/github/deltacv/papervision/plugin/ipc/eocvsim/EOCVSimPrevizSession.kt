@@ -79,7 +79,7 @@ class EOCVSimPrevizSession(
     fun startPreviz(sourceCode: String) {
         previzRunning = true
 
-        logger.info("Starting previz session $sessionName")
+        logger.info("Starting previz session $sessionName with streamer ${streamer.javaClass.simpleName}")
 
         refreshPreviz(sourceCode)
     }
