@@ -157,6 +157,7 @@ class EOCVSimEngineImageStreamer(
             bytes.get(0, 0, byteArray)
 
             engine.sendBytes(byteTag, id, byteArray)
+            println("hola")
         } finally {
             scaledImg.returnMat() // Return the scaled image mat to the recycler
         }
