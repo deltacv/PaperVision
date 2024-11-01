@@ -21,10 +21,15 @@ package io.github.deltacv.papervision.engine.bridge
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import java.util.concurrent.ArrayBlockingQueue
 
 object NoOpPaperVisionEngineBridge : PaperVisionEngineBridge {
     override val isConnected: Boolean
         get() = false
+
+    override val onClientProcess = PaperVisionEventHandler("LocalPaperVisionEngineBridge-OnClientProcess")
+    override val processedBinaryMessagesHashes = ArrayBlockingQueue<Int>(0)
 
     override fun connectClient(client: PaperVisionEngineClient) {
         // No-op

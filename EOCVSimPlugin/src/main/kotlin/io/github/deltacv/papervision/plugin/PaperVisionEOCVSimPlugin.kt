@@ -76,7 +76,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         context.loader.pluginFile.absolutePath
     } else {
         classpath.joinToString(File.pathSeparator).trim(File.pathSeparatorChar)
-    }
+    } + File.pathSeparator
 
     val paperVisionProjectManager = PaperVisionProjectManager(
         fullClasspath, fileSystem, engine, eocvSim

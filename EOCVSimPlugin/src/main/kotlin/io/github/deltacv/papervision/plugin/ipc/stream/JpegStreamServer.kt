@@ -3,21 +3,27 @@ package io.github.deltacv.papervision.plugin.ipc.stream
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.papervision.engine.message.ByteMessageTag
 import io.netty.bootstrap.ServerBootstrap
-import io.netty.buffer.ByteBuf
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
-import io.netty.channel.SimpleChannelInboundHandler
+import io.netty.channel.ChannelOutboundHandlerAdapter
+import io.netty.channel.ChannelPromise
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.logging.LogLevel
 import io.netty.handler.logging.LoggingHandler
-import org.firstinspires.ftc.robotcore.internal.collections.EvictingBlockingQueue
+import io.netty.handler.timeout.IdleStateHandler
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
-import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.ConcurrentLinkedQueue
+
+internal data class FrameData(
+    val tag: ByteMessageTag,
+    val id: Int,
+    val bytes: ByteBuffer
+)
 
 class JpegStreamServer(
     queueSize: Int = 2
@@ -28,8 +34,9 @@ class JpegStreamServer(
     private val bossGroup = NioEventLoopGroup(1)
     private val workerGroup = NioEventLoopGroup()
 
-    private val byteBufferPool = EvictingBlockingQueue<ByteBuffer>(ArrayBlockingQueue(queueSize + 2)) // Pool of reusable byte arrays for image data
-    private val frameQueue = EvictingBlockingQueue(ArrayBlockingQueue<ByteBuffer>(queueSize))
+    // Replace EvictingBlockingQueue with ConcurrentLinkedQueue
+    private val byteBufferPool = ConcurrentLinkedQueue<ByteBuffer>()
+    private val frameQueue = ConcurrentLinkedQueue<FrameData>()
 
     var port = 0
         private set
@@ -39,6 +46,7 @@ class JpegStreamServer(
         bootstrap.group(bossGroup, workerGroup)
             .channel(NioServerSocketChannel::class.java)
             .option(ChannelOption.SO_BACKLOG, 100)
+            .option(ChannelOption.SO_KEEPALIVE, true)
             .handler(LoggingHandler(LogLevel.INFO))
             .childHandler(object : ChannelInitializer<SocketChannel>() {
                 override fun initChannel(ch: SocketChannel) {
@@ -66,45 +74,47 @@ class JpegStreamServer(
     }
 
     fun submit(tag: ByteMessageTag, id: Int, bytes: ByteArray) {
-        val size = 4 + tag.tag.size + 4 + bytes.size
+        val size = bytes.size
         var buffer = byteBufferPool.find { it.capacity() == size }
 
         if (buffer == null) {
             buffer = ByteBuffer.allocate(size)
             byteBufferPool.add(buffer)
+        } else {
+            byteBufferPool.remove(buffer)
         }
 
-        buffer.clear()
-            .putInt(tag.tag.size)
-            .put(tag.tag)
-            .putInt(id)
-            .put(bytes)
+        System.arraycopy(bytes, 0, buffer.array(), 0, size)
 
-        frameQueue.offer(buffer)
+        frameQueue.offer(FrameData(tag, id, buffer))
+        println("offered frame ${buffer.capacity()}")
     }
 }
 
 private class JpegServerHandler(
-    val frameQueue: EvictingBlockingQueue<ByteBuffer>,
-    val byteArrayPool: EvictingBlockingQueue<ByteBuffer>
-) : SimpleChannelInboundHandler<ByteBuf>() {
+    val frameQueue: ConcurrentLinkedQueue<FrameData>,
+    val byteArrayPool: ConcurrentLinkedQueue<ByteBuffer>
+) : ChannelOutboundHandlerAdapter() {
 
-    val logger by loggerForThis()
+    override fun write(ctx: ChannelHandlerContext, msg: Any?, promise: ChannelPromise) {
+        val frame = frameQueue.poll() ?: return
 
-    override fun channelActive(ctx: ChannelHandlerContext) {
-        val frame = frameQueue.poll() ?: return // Get the next frame from the queue
+        val buf = Unpooled.buffer(frame.bytes.capacity())
 
-        val buf = Unpooled.wrappedBuffer(frame)
-        ctx.writeAndFlush(buf) // fluuuuush
+        // see ByteMessages.kt
+        buf.writeInt(frame.tag.tag.size)
+        buf.writeBytes(frame.tag.tag)
+        buf.writeInt(frame.id)
+        buf.writeBytes(frame.bytes.array())
 
-        byteArrayPool.offer(frame)
+        ctx.write(buf, promise)
+
+        buf.release()
+
+        println("sent buf ${buf.capacity()}")
+
+        // Return the buffer to the pool
+        byteArrayPool.offer(frame.bytes)
     }
 
-    override fun channelInactive(ctx: ChannelHandlerContext) {
-        // Client disconnected
-    }
-
-    override fun channelRead0(ctx: ChannelHandlerContext, msg: ByteBuf) {
-        // Server does not expect incoming messages in this example
-    }
 }

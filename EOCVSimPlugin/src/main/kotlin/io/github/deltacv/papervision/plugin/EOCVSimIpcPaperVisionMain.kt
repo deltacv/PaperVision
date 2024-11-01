@@ -63,6 +63,10 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
 
         app = PaperVisionApp(bridge, false, ::paperVisionUserCloseListener)
 
+        app.paperVision.onUpdate {
+            jpegStream.ping()
+        }
+
         app.paperVision.onUpdate.doOnce  {
             if (queryProject) {
                 app.paperVision.engineClient.sendMessage(GetCurrentProjectMessage().onResponse { response ->

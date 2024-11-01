@@ -22,12 +22,17 @@ import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.LocalPaperVisionEngine
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import java.util.concurrent.ArrayBlockingQueue
 
 class LocalPaperVisionEngineBridge(
     val paperVisionEngine: LocalPaperVisionEngine
 ) : PaperVisionEngineBridge {
 
     private val clients = mutableListOf<PaperVisionEngineClient>()
+
+    override val onClientProcess = PaperVisionEventHandler("LocalPaperVisionEngineBridge-OnClientProcess")
+    override val processedBinaryMessagesHashes = ArrayBlockingQueue<Int>(100)
 
     override val isConnected: Boolean
         get() = true
@@ -39,6 +44,17 @@ class LocalPaperVisionEngineBridge(
     @Synchronized
     override fun connectClient(client: PaperVisionEngineClient) {
         clients.add(client)
+
+        client.onProcess {
+            if(!clients.contains(client)) {
+                it.removeThis()
+                return@onProcess
+            }
+
+            while(client.processedBinaryMessagesHashes.remainingCapacity() != 0) {
+                processedBinaryMessagesHashes.add(client.processedBinaryMessagesHashes.poll())
+            }
+        }
     }
 
     @Synchronized

@@ -25,6 +25,7 @@ import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
+import java.util.concurrent.ArrayBlockingQueue
 
 class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
     val logger by loggerForThis()
@@ -32,6 +33,8 @@ class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
     val onProcess = PaperVisionEventHandler("PaperVisionEngineClient-OnProcess")
 
     private val messagesAwaitingResponse = mutableMapOf<Int, PaperVisionEngineMessage>()
+
+    val processedBinaryMessagesHashes = ArrayBlockingQueue<Int>(100)
 
     private val bytesQueue = mutableListOf<ByteArray>()
     private val byteMessageHandlers = mutableMapOf<ByteMessageTag, (ByteArray) -> Unit>()
@@ -91,8 +94,12 @@ class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
 
                 handler(it)
                 bytesQueue.remove(it)
-            }
 
+                if(processedBinaryMessagesHashes.size >= processedBinaryMessagesHashes.remainingCapacity()) {
+                    processedBinaryMessagesHashes.poll()
+                }
+                processedBinaryMessagesHashes.offer(it.hashCode())
+            }
         }
 
         onProcess.run()
