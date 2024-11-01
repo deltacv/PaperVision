@@ -33,7 +33,6 @@ import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.hexString
 import io.github.deltacv.papervision.util.loggerForThis
-import io.github.deltacv.papervision.util.toValidIdentifier
 
 class ClientPrevizManager(
     val defaultPrevizStreamWidth: Int,
@@ -158,6 +157,7 @@ class ClientPrevizManager(
     fun update() {
         if(previzName != null && previzRunning && pingTimer.seconds > 2) {
             client.sendMessage(PrevizPingMessage(previzName!!))
+            pingTimer.reset()
         }
 
         if(stream.popRequestedMaximize() && previzName != null) {
