@@ -31,7 +31,6 @@ import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMe
 import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
 import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentProjectMessage
 import io.github.deltacv.papervision.plugin.ipc.message.SaveCurrentProjectMessage
-import io.github.deltacv.papervision.plugin.ipc.stream.JpegStreamClient
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer.deserializeAndApply
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer.serializeToTree
 import org.slf4j.LoggerFactory
@@ -57,15 +56,8 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
         logger.info("IPC port {}, JPEG port {}", ipcPort, jpegPort)
 
         val bridge = EOCVSimIpcEngineBridge(ipcPort)
-        val jpegStream = JpegStreamClient(jpegPort, bridge).apply {
-            start()
-        }
 
         app = PaperVisionApp(bridge, false, ::paperVisionUserCloseListener)
-
-        app.paperVision.onUpdate {
-            jpegStream.ping()
-        }
 
         app.paperVision.onUpdate.doOnce  {
             if (queryProject) {

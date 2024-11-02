@@ -27,8 +27,15 @@ import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 import java.util.concurrent.ArrayBlockingQueue
 
-class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
+class ClientByteMessageReceiver : ByteMessageReceiver()
+
+class PaperVisionEngineClient(
+    val bridge: PaperVisionEngineBridge
+) {
+
     val logger by loggerForThis()
+
+    val byteReceiver = ClientByteMessageReceiver()
 
     val onProcess = PaperVisionEventHandler("PaperVisionEngineClient-OnProcess")
 
@@ -37,7 +44,6 @@ class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
     val processedBinaryMessagesHashes = ArrayBlockingQueue<Int>(100)
 
     private val bytesQueue = mutableListOf<ByteArray>()
-    private val byteMessageHandlers = mutableMapOf<ByteMessageTag, (ByteArray) -> Unit>()
 
     fun connect() {
         logger.info("Connecting through bridge ${bridge.javaClass.simpleName}")
@@ -73,14 +79,6 @@ class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
         bridge.sendMessage(this, message)
     }
 
-    fun setByteMessageHandlerOf(tag: ByteMessageTag, handler: (ByteArray) -> Unit) {
-        byteMessageHandlers[tag] = handler
-    }
-
-    fun clearByteMessageHandlerOf(tag: ByteMessageTag) {
-        byteMessageHandlers.remove(tag)
-    }
-
     fun process() {
         synchronized(bytesQueue) {
             val binaryMessages = bytesQueue.toTypedArray()
@@ -90,10 +88,11 @@ class PaperVisionEngineClient(val bridge: PaperVisionEngineBridge) {
                 if(it == null) return@forEach
 
                 val tag = ByteMessageTag(ByteMessages.tagFromBytes(it))
-                val handler = byteMessageHandlers[tag] ?: return@forEach
+                val id = ByteMessages.idFromBytes(it)
 
-                handler(it)
                 bytesQueue.remove(it)
+
+                byteReceiver.callHandlers(id, tag.toString(), it)
 
                 if(processedBinaryMessagesHashes.size >= processedBinaryMessagesHashes.remainingCapacity()) {
                     processedBinaryMessagesHashes.poll()

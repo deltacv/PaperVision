@@ -53,7 +53,7 @@ object PaperVisionProcessRunner {
 
     private var currentJob: Future<*>? = null
 
-    fun execPaperVision(jpegPort: Int, classpath: String) {
+    fun execPaperVision(classpath: String) {
         if(isRunning) return
 
         isRunning = true
@@ -61,7 +61,7 @@ object PaperVisionProcessRunner {
         currentJob = pool.submit {
             logger.info("Starting PaperVision process...")
 
-            val programParams = listOf("-q", "-i=${paperVisionEngine.server.port}", "-j=$jpegPort")
+            val programParams = listOf("-q", "-i=${paperVisionEngine.server.port}")
 
             println("classpath: $classpath")
 

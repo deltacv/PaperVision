@@ -67,5 +67,8 @@ dependencies {
     implementation 'info.picocli:picocli:4.7.6'
 
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
-    implementation 'io.netty:netty-all:4.1.114.Final'
+
+    implementation 'com.github.deltacv.visionloop:visionloop:32a2e72f24'
+    implementation 'com.github.deltacv.visionloop:streaming:32a2e72f24'
+    implementation("io.javalin:javalin:6.3.0")
 }

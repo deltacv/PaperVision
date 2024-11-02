@@ -18,47 +18,25 @@
 
 package io.github.deltacv.papervision.plugin.ipc.eocvsim
 
-import com.github.serivesmejia.eocvsim.gui.util.ThreadedMatPoster
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.stream.ImageStreamer
-import io.github.deltacv.papervision.engine.PaperVisionEngine
-import io.github.deltacv.papervision.engine.message.ByteMessageTag
-import io.github.deltacv.papervision.plugin.ipc.stream.JpegStreamServer
-import io.github.deltacv.vision.external.util.extension.aspectRatio
-import io.github.deltacv.vision.external.util.extension.clipTo
-import org.firstinspires.ftc.robotcore.internal.collections.EvictingBlockingQueue
+import io.github.deltacv.visionloop.receiver.MjpegHttpStreamerReceiver
+import io.javalin.http.Handler
 import org.opencv.core.*
-import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
-import org.openftc.easyopencv.MatRecycler
-import java.util.concurrent.ArrayBlockingQueue
 
 class EOCVSimEngineImageStreamer(
-    val server: JpegStreamServer,
-    tag: String,
-    var resolution: Size
+    val resolution: Size
 ) : ImageStreamer {
 
-    companion object {
-        const val QUEUE_SIZE = 5
-    }
-
-    private val poster = ThreadedMatPoster("EOCVSimEngineImageStreamer-Poster", QUEUE_SIZE)
-    private val matDataQueue = EvictingBlockingQueue(ArrayBlockingQueue<MatData>(QUEUE_SIZE))
+    private val handlers = mutableMapOf<Int, Handler>()
+    val receivers = mutableMapOf<Int, MjpegHttpStreamerReceiver>()
 
     private val queuesLock = Any()
 
-    private val matRecycler = MatRecycler(3)
-    private var bytes = MatOfByte()
-    private var byteArray: ByteArray? = null
-
-    val tag = ByteMessageTag.fromString(tag)
-
     val logger by loggerForThis()
 
-    init {
-        poster.addPostable(this::processFrame)
-    }
+    private val tempMat = Mat()
 
     override fun sendFrame(
         id: Int,
@@ -66,109 +44,40 @@ class EOCVSimEngineImageStreamer(
         cvtCode: Int?
     ) {
         synchronized(queuesLock) {
-            poster.post(image)
-            matDataQueue.add(MatData(id, cvtCode))
-        }
-    }
+            if(!receivers.containsKey(id)) {
+                val receiver = MjpegHttpStreamerReceiver(0, resolution)
+                handlers[id] = receiver.handler // save handler for later
 
-    private fun processFrame(image: Mat) {
-        if(image.empty()) return
+                logger.info("Creating new Mjpeg stream for id $id")
 
-        val matData = synchronized(queuesLock) { matDataQueue.poll() ?: return }
-        val id = matData.id
-        val cvtCode = matData.cvtCode
-
-        val scaledImg = matRecycler.takeMatOrNull()
-
-        scaledImg.create(resolution, image.type())
-        scaledImg.setTo(Scalar(0.0, 0.0, 0.0))
-
-        try {
-            if (image.size() == resolution) { //nice, the mat size is the exact same as the video size
-                image.copyTo(scaledImg)
-            } else { //uh oh, this might get a bit harder here...
-                val targetR = resolution.aspectRatio()
-                val inputR = image.aspectRatio()
-
-                //ok, we have the same aspect ratio, we can just scale to the required size
-                if (targetR == inputR) {
-                    Imgproc.resize(image, scaledImg, resolution, 0.0, 0.0, Imgproc.INTER_AREA)
-                } else { //hmm, not the same aspect ratio, we'll need to do some fancy stuff here...
-                    val inputW = image.size().width
-                    val inputH = image.size().height
-
-                    val widthRatio = resolution.width / inputW
-                    val heightRatio = resolution.height / inputH
-                    val bestRatio = widthRatio.coerceAtMost(heightRatio)
-
-                    val newSize = Size(inputW * bestRatio, inputH * bestRatio).clipTo(resolution)
-
-                    //get offsets so that we center the image instead of leaving it at (0,0)
-                    //(basically the black bars you see)
-                    val xOffset = (resolution.width - newSize.width) / 2
-                    val yOffset = (resolution.height - newSize.height) / 2
-
-                    val resizedImg = matRecycler.takeMatOrNull()
-                    resizedImg.create(newSize, image.type())
-
-                    try {
-                        Imgproc.resize(image, resizedImg, newSize, 0.0, 0.0, Imgproc.INTER_AREA)
-
-                        //get submat of the exact required size and offset position from the "videoMat",
-                        //which has the user-defined size of the current video.
-                        val submat = scaledImg.submat(Rect(Point(xOffset, yOffset), newSize))
-
-                        //then we copy our adjusted mat into the gotten submat. since a submat is just
-                        //a reference to the parent mat, when we copy here our data will be actually
-                        //copied to the actual mat, and so our new mat will be of the correct size and
-                        //centered with the required offset
-                        resizedImg.copyTo(submat)
-                    } finally {
-                        resizedImg.returnMat()
-                    }
-                }
+                receiver.init(emptyArray())
+                receivers[id] = receiver
             }
+
+            val receiver = receivers[id]!!
 
             if(cvtCode != null) {
-                Imgproc.cvtColor(scaledImg, scaledImg, cvtCode)
+                // convert image to the desired color space
+                Imgproc.cvtColor(image, tempMat, cvtCode)
+                receiver.take(tempMat)
+            } else {
+                receiver.take(image)
             }
-
-            if(scaledImg.type() == CvType.CV_8UC1) {
-                Imgproc.cvtColor(scaledImg, scaledImg, Imgproc.COLOR_GRAY2RGB)
-            } else if(scaledImg.type() != CvType.CV_8UC3) {
-                throw IllegalArgumentException("Image must be of type CV_8UC3")
-                return
-            }
-        } catch(e: Exception) {
-            scaledImg.returnMat()
-            logger.error("Error while scaling streamed image", e)
-            return
-        }
-
-        try {
-            Imgcodecs.imencode(".jpg", scaledImg, bytes)
-            val size = bytes.rows() * bytes.cols() * bytes.channels()
-
-            if(byteArray == null || byteArray!!.size < size) {
-                byteArray = ByteArray(size)
-            }
-
-            bytes.get(0, 0, byteArray)
-
-            server.submit(tag, id, byteArray!!)
-        } finally {
-            scaledImg.returnMat() // Return the scaled image mat to the recycler
         }
     }
+
+    /**
+     * Get the handler for a specific id
+     * Used to attach the handler to a Javalin instance
+     * @param id the id of the stream
+     */
+    fun handlerFor(id: Int) = handlers[id]
 
     fun stop() {
-        logger.info("Stopping EOCVSimEngineImageStreamer MatPoster")
-        poster.stop()
-        server.close()
-    }
+        logger.info("Stopping EOCVSimEngineImageStreamer")
 
-    private data class MatData(
-        val id: Int,
-        val cvtCode: Int?
-    )
+        for((_, receiver) in receivers) {
+            receiver.close()
+        }
+    }
 }

@@ -42,13 +42,15 @@ import io.github.deltacv.papervision.plugin.ipc.message.InputSourceType
 import io.github.deltacv.papervision.plugin.ipc.message.OpenCreateInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
-import io.github.deltacv.papervision.plugin.ipc.stream.JpegStreamServer
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.util.hexString
 import io.github.deltacv.papervision.util.replaceLast
 import io.github.deltacv.papervision.util.toValidIdentifier
+import io.javalin.Javalin
+import io.javalin.jetty.JettyServer
 import org.opencv.core.Size
 import java.io.File
+import java.util.concurrent.Executors
 import javax.swing.JLabel
 import javax.swing.JOptionPane
 import javax.swing.SwingConstants
@@ -64,7 +66,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     val engine = PaperVisionProcessRunner.paperVisionEngine
 
-    val server = JpegStreamServer()
+    var streamerServerPort = 0
+        private set
 
     var currentPrevizSession: EOCVSimPrevizSession? = null
 
@@ -80,7 +83,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     val paperVisionProjectManager = PaperVisionProjectManager(
         fullClasspath, fileSystem, engine, eocvSim
-    ) { server.port }
+    )
 
     override fun onLoad() {
         paperVisionProjectManager.init()
@@ -154,7 +157,33 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     }
 
     override fun onEnable() {
-        server.start()
+        var streamerServer: Javalin? = null
+
+        Executors.newSingleThreadExecutor().execute {
+            streamerServer = Javalin.create()
+                .get("/{id}") { ctx ->
+                    val streamer = currentPrevizSession?.streamer
+
+                    if (streamer is EOCVSimEngineImageStreamer) {
+                        val handler = streamer.handlerFor(ctx.pathParam("id").toInt())
+
+                        if (handler != null) {
+                            handler.handle(ctx)
+                        } else {
+                            ctx.result("Resource not found")
+                        }
+                    }
+                }
+
+            streamerServer.start()
+        }
+
+        Thread {
+            while(streamerServer == null || !streamerServer.jettyServer().server().isRunning);
+
+            streamerServerPort = streamerServer.jettyServer().port()
+            logger.info("Started streamer server in port $streamerServerPort")
+        }.start()
 
         engine.setMessageHandlerOf<TunerChangeValueMessage> {
             eocvSim.tunerManager.getTunableFieldWithLabel(message.label)?.setFieldValue(message.index, message.value)
@@ -237,8 +266,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             }
 
             val streamer = EOCVSimEngineImageStreamer(
-                server,
-                message.previzName.hexString,
                 Size(
                     message.streamWidth.toDouble(),
                     message.streamHeight.toDouble()

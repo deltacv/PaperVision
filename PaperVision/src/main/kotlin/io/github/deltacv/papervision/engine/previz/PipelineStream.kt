@@ -18,9 +18,9 @@
 
 package io.github.deltacv.papervision.engine.previz
 
+import io.github.deltacv.papervision.engine.client.ByteMessageReceiver
+import io.github.deltacv.papervision.engine.client.Handler
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
-import io.github.deltacv.papervision.engine.message.ByteMessageTag
-import io.github.deltacv.papervision.engine.message.ByteMessages
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bytes
 import io.github.deltacv.papervision.io.scaleToFit
@@ -32,7 +32,7 @@ import java.awt.image.BufferedImage
 
 class PipelineStream(
     val sessionName: String,
-    val engineClient: PaperVisionEngineClient,
+    val byteReceiver: ByteMessageReceiver,
     val queue: TextureProcessorQueue,
     val width: Int = 160,
     val height: Int = 120,
@@ -44,6 +44,12 @@ class PipelineStream(
     enum class Status {
         MINIMIZED, MAXIMIZED
     }
+
+    private val defaultHandler: Handler = { id, tag, bytes ->
+        if(tag == sessionName) {
+            queue.offerJpeg(id, width, height, bytes)
+        }
+    }
     
     val logger by loggerForThis()
 
@@ -54,10 +60,19 @@ class PipelineStream(
 
     private var requestedMinimize = false
 
-    val tag = ByteMessageTag.fromString(sessionName)
-
     var offlineTexture: PlatformTexture? = null
         private set
+
+    constructor(
+        sessionName: String,
+        engineClient: PaperVisionEngineClient,
+        queue: TextureProcessorQueue,
+        width: Int = 160,
+        height: Int = 120,
+        status: Status = Status.MINIMIZED,
+        offlineImages: Array<BufferedImage>? = null,
+        offlineImagesFps: Double = 1.0
+    ) : this(sessionName, engineClient.byteReceiver, queue, width, height, status, offlineImages, offlineImagesFps)
 
     init {
         initOfflineImages()
@@ -96,19 +111,16 @@ class PipelineStream(
     fun start() {
         logger.info("Starting pipeline stream of $sessionName at {}x{}", width, height)
 
-        engineClient.setByteMessageHandlerOf(tag) { // take the bytes
-            val id = ByteMessages.idFromBytes(it)
-            val message = ByteMessages.messageFromBytes(it)
-
-            queue.offerJpeg(id, width, height, message)
-        }
+        byteReceiver.addHandler(sessionName, defaultHandler)
 
         isStarted = true
     }
 
     fun stop() {
         isStarted = false
-        engineClient.clearByteMessageHandlerOf(tag)
+
+        byteReceiver.removeHandler(defaultHandler)
+
         clear()
     }
 
