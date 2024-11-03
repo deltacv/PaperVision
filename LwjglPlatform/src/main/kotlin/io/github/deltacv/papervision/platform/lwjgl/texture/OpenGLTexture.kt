@@ -84,7 +84,7 @@ data class OpenGLTexture(
             val img = stbi_load_from_memory(buffer, w, h, comp, 3)
                 ?: throw RuntimeException("Failed to load image due to ${stbi_failure_reason()}")
 
-            return set(img, ColorSpace.BGR)
+            return set(img, ColorSpace.RGB)
         }
     }
 

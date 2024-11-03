@@ -45,7 +45,7 @@ class NewProjectPanel(
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.WARNING_MESSAGE
                 ).takeIf { it == JOptionPane.YES_OPTION }?.run {
-                    projectManager.openProject(projectManager.findProject(projectGroup ?: "", "$projectName.paperproj")!!)
+                    projectManager.requestOpenProject(projectManager.findProject(projectGroup ?: "", "$projectName.paperproj")!!)
                 }
             }
         }
@@ -82,7 +82,7 @@ class NewProjectPanel(
                             JOptionPane.YES_NO_OPTION,
                             JOptionPane.WARNING_MESSAGE
                         ).takeIf { it == JOptionPane.YES_OPTION }?.run {
-                            projectManager.openProject(projectManager.findProject(projectGroup ?: "", "$projectName.paperproj")!!)
+                            projectManager.requestOpenProject(projectManager.findProject(projectGroup ?: "", "$projectName.paperproj")!!)
                         }
                     }
                 }

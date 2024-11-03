@@ -95,7 +95,7 @@ object OpenGLTextureFactory : PlatformTextureFactory {
             val img = stbi_load_from_memory(buffer, w, h, comp, 3)
                 ?: throw RuntimeException("Failed to load image due to ${stbi_failure_reason()}")
 
-            return create(w.get(), h.get(), img, ColorSpace.BGR)
+            return create(w.get(), h.get(), img, ColorSpace.RGB)
         }
     }
 

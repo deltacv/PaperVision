@@ -19,6 +19,7 @@
 package io.github.deltacv.papervision.platform
 
 import io.github.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
+import io.github.deltacv.papervision.engine.client.ByteMessageReceiver
 
 class PlatformSetup(val name: String) {
     var window: PlatformWindow? = null
@@ -29,6 +30,8 @@ class PlatformSetup(val name: String) {
     var showWelcomeWindow = false
 
     var engineBridge: PaperVisionEngineBridge? = null
+
+    var previzByteMessageReceiverProvider: (() -> ByteMessageReceiver)? = null
 }
 
 data class PlatformSetupCallback(val name: String, val block: PlatformSetup.() -> Unit) {

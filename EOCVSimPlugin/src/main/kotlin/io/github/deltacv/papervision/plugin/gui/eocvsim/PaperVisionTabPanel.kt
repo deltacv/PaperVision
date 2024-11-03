@@ -52,7 +52,7 @@ class PaperVisionTabPanel(
                         val nodeObject = node.userObject
                         if(nodeObject !is PaperVisionProjectTree.ProjectTreeNode.Project) return
 
-                        projectManager.openProject(nodeObject)
+                        projectManager.requestOpenProject(nodeObject)
                     }
                 }
             })

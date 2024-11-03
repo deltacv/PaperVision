@@ -44,12 +44,6 @@ class PipelineStream(
     enum class Status {
         MINIMIZED, MAXIMIZED
     }
-
-    private val defaultHandler: Handler = { id, tag, bytes ->
-        if(tag == sessionName) {
-            queue.offerJpeg(id, width, height, bytes)
-        }
-    }
     
     val logger by loggerForThis()
 
@@ -108,6 +102,12 @@ class PipelineStream(
         }
     }
 
+    private val defaultHandler: Handler = { id, tag, bytes ->
+        if(tag == sessionName) {
+            queue.offerJpeg(id, width, height, bytes)
+        }
+    }
+
     fun start() {
         logger.info("Starting pipeline stream of $sessionName at {}x{}", width, height)
 
@@ -120,6 +120,7 @@ class PipelineStream(
         isStarted = false
 
         byteReceiver.removeHandler(defaultHandler)
+        byteReceiver.stop()
 
         clear()
     }

@@ -20,6 +20,7 @@ package io.github.deltacv.papervision.plugin.project
 
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.util.SysUtil
+import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.extension.plus
 import com.github.serivesmejia.eocvsim.util.io.EOCVSimFolder
 import com.github.serivesmejia.eocvsim.util.loggerForThis
@@ -52,7 +53,8 @@ class PaperVisionProjectManager(
     val classpath: String,
     val fileSystem: SandboxFileSystem,
     val engine: EOCVSimIpcEngine,
-    val eocvSim: EOCVSim
+    val eocvSim: EOCVSim,
+    val streamerServerPortProvider: () -> Int
 ) {
 
     companion object {
@@ -60,6 +62,8 @@ class PaperVisionProjectManager(
     }
 
     val root = fileSystem.getPath("")
+
+    val onMainUpdate = eocvSim.onMainUpdate
 
     var projectTree = PaperVisionProjectTree(root)
         private set
@@ -215,6 +219,12 @@ class PaperVisionProjectManager(
             StandardCharsets.UTF_8
         )
 
+    fun requestOpenProject(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
+        onMainUpdate.doOnce {
+            openProject(project)
+        }
+    }
+
     fun openProject(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
         logger.info("Opening ${project.name}")
 
@@ -230,7 +240,7 @@ class PaperVisionProjectManager(
             }
         }
 
-        PaperVisionProcessRunner.execPaperVision(classpath)
+        PaperVisionProcessRunner.execPaperVision(classpath, streamerServerPortProvider())
 
         currentProject = project
     }

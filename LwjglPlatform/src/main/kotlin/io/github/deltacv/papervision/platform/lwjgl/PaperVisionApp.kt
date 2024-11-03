@@ -22,6 +22,7 @@ import imgui.app.Application
 import imgui.app.Configuration
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
+import io.github.deltacv.papervision.engine.client.ByteMessageReceiver
 import io.github.deltacv.papervision.io.KeyAction
 import io.github.deltacv.papervision.platform.lwjgl.glfw.GlfwKeys
 import io.github.deltacv.papervision.platform.lwjgl.glfw.GlfwWindow
@@ -33,7 +34,8 @@ import org.lwjgl.glfw.GLFWKeyCallback
 class PaperVisionApp @JvmOverloads constructor(
     val bridge: PaperVisionEngineBridge? = null,
     val showWelcomeWindow: Boolean = false,
-    val windowCloseListener: (() -> Boolean)? = null
+    val windowCloseListener: (() -> Boolean)? = null,
+    val previzByteMessageReceiverProvider: (() -> ByteMessageReceiver)? = null
 ) : Application() {
 
     val setup = platformSetup("LWJGL") {
@@ -42,6 +44,7 @@ class PaperVisionApp @JvmOverloads constructor(
         keys = GlfwKeys
         showWelcomeWindow = this@PaperVisionApp.showWelcomeWindow
         engineBridge = bridge
+        previzByteMessageReceiverProvider = this@PaperVisionApp.previzByteMessageReceiverProvider
     }
 
     val glfwWindow = GlfwWindow { handle }

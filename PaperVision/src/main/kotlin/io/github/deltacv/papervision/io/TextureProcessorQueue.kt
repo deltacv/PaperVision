@@ -43,7 +43,7 @@ class TextureProcessorQueue(
 
     fun subscribeTo(handler: PaperVisionEventHandler) {
         handler {
-            if(currentHandler == handler) { // can only subscribe to one event loop at a time
+            if(currentHandler != handler) { // can only subscribe to one event loop at a time
                 it.removeThis()
                 return@handler
             }

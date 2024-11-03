@@ -6,7 +6,7 @@ plugins {
 
 apply from: '../build.common.gradle'
 
-task sourcesJar(type: Jar) {
+tasks.register('sourcesJar', Jar) {
     from sourceSets.main.allJava
     archiveClassifier = "sources"
 }
@@ -68,7 +68,9 @@ dependencies {
 
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 
-    implementation 'com.github.deltacv.visionloop:visionloop:32a2e72f24'
-    implementation 'com.github.deltacv.visionloop:streaming:32a2e72f24'
+    implementation 'com.github.deltacv.visionloop:visionloop:69e676a5b5'
+    implementation 'com.github.deltacv.visionloop:streaming:69e676a5b5'
     implementation("io.javalin:javalin:6.3.0")
+
+    implementation 'commons-io:commons-io:2.17.0'
 }

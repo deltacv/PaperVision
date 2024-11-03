@@ -12,12 +12,14 @@ abstract class ByteMessageReceiver {
         }
     }
 
-    fun addHandler(tag: String, handler: Handler) {
+    open fun addHandler(tag: String, handler: Handler) {
         handlers.add(handler)
     }
 
-    fun removeHandler(handlerInstance: Handler) {
+    open fun removeHandler(handlerInstance: Handler) {
         handlers.remove(handlerInstance)
     }
+
+    open fun stop() { }
 
 }

@@ -160,7 +160,7 @@ class PaperVision(
         textureProcessorQueue.subscribeTo(onUpdate)
 
         engineClient = PaperVisionEngineClient(setup.engineBridge ?: NoOpPaperVisionEngineBridge)
-        previzManager = ClientPrevizManager(160, 120, codeGenManager, textureProcessorQueue, engineClient)
+        previzManager = ClientPrevizManager(160, 120, codeGenManager, textureProcessorQueue, engineClient, setup.previzByteMessageReceiverProvider)
 
         engineClient.connect()
 

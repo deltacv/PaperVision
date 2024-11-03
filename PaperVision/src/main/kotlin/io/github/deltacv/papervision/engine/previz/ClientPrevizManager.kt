@@ -21,6 +21,7 @@ package io.github.deltacv.papervision.engine.previz
 import io.github.deltacv.papervision.codegen.CodeGenManager
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.engine.client.ByteMessageReceiver
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.client.message.PrevizPingMessage
 import io.github.deltacv.papervision.engine.client.message.PrevizSourceCodeMessage
@@ -39,7 +40,8 @@ class ClientPrevizManager(
     val defaultPrevizStreamHeight: Int,
     val codeGenManager: CodeGenManager,
     val textureProcessorQueue: TextureProcessorQueue,
-    val client: PaperVisionEngineClient
+    val client: PaperVisionEngineClient,
+    val byteReceiverProvider: (() -> ByteMessageReceiver)? = null
 ) {
 
     val offlineImages = arrayOf(
@@ -104,12 +106,25 @@ class ClientPrevizManager(
 
                 onPrevizStart.run()
 
-                stream = PipelineStream(
-                    previzName.hexString, client, textureProcessorQueue,
-                    width = streamWidth, height = streamHeight,
-                    offlineImages = offlineImages,
-                    status = streamStatus
-                )
+                stream.stop()
+
+                stream = if(byteReceiverProvider == null) {
+                    PipelineStream(
+                        previzName, client,
+                        textureProcessorQueue,
+                        width = streamWidth, height = streamHeight,
+                        offlineImages = offlineImages,
+                        status = streamStatus
+                    )
+                } else {
+                    PipelineStream(
+                        previzName, byteReceiverProvider(),
+                        textureProcessorQueue,
+                        width = streamWidth, height = streamHeight,
+                        offlineImages = offlineImages,
+                        status = streamStatus
+                    )
+                }
 
                 stream.start()
                 pingTimer.reset()

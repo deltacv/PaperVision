@@ -53,7 +53,7 @@ object PaperVisionProcessRunner {
 
     private var currentJob: Future<*>? = null
 
-    fun execPaperVision(classpath: String) {
+    fun execPaperVision(classpath: String, jpegPort: Int) {
         if(isRunning) return
 
         isRunning = true
@@ -61,9 +61,7 @@ object PaperVisionProcessRunner {
         currentJob = pool.submit {
             logger.info("Starting PaperVision process...")
 
-            val programParams = listOf("-q", "-i=${paperVisionEngine.server.port}")
-
-            println("classpath: $classpath")
+            val programParams = listOf("-q", "-i=${paperVisionEngine.server.port}", "-j=${jpegPort}")
 
             val exitCode = if(SysUtil.OS == SysUtil.OperatingSystem.MACOS) {
                 logger.info("Running on macOS, adding platform-specific flags")

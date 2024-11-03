@@ -46,7 +46,7 @@ class EOCVSimEngineImageStreamer(
         synchronized(queuesLock) {
             if(!receivers.containsKey(id)) {
                 val receiver = MjpegHttpStreamerReceiver(0, resolution)
-                handlers[id] = receiver.handler // save handler for later
+                handlers[id] = receiver.takeHandler() // save handler for later
 
                 logger.info("Creating new Mjpeg stream for id $id")
 
@@ -63,6 +63,7 @@ class EOCVSimEngineImageStreamer(
             } else {
                 receiver.take(image)
             }
+
         }
     }
 
@@ -72,6 +73,8 @@ class EOCVSimEngineImageStreamer(
      * @param id the id of the stream
      */
     fun handlerFor(id: Int) = handlers[id]
+
+    fun handlers() = handlers.toMap()
 
     fun stop() {
         logger.info("Stopping EOCVSimEngineImageStreamer")

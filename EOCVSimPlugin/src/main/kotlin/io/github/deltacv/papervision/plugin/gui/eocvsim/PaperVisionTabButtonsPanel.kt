@@ -111,7 +111,7 @@ class PaperVisionTabButtonsPanel(
             if(selectedProject !is DefaultMutableTreeNode || selectedProject.userObject !is PaperVisionProjectTree.ProjectTreeNode.Project)
                 return@addActionListener
 
-            projectManager.openProject(selectedProject.userObject as PaperVisionProjectTree.ProjectTreeNode.Project)
+            projectManager.requestOpenProject(selectedProject.userObject as PaperVisionProjectTree.ProjectTreeNode.Project)
         }
 
         projectsJTree.addTreeSelectionListener {

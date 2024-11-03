@@ -1,106 +1,67 @@
 package io.github.deltacv.papervision.plugin.ipc.stream;
 
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-/**
- * Implementation of a connection to motion jpeg (multipart/x-mixed-replace) stream, and using it as an Itarable like this:
- *   <pre>
- *   public static void main(String... strings) {
- *       VideoSource src = new VideoSource("http://91.85.203.9/axis-cgi/mjpg/video.cgi");
- *       try {
- *           src.start();
- *           for (byte[] img : src) {
- *               Files.write(Paths.get("c:/tmp/mjpeg/" + UUID.randomUUID().toString() + ".jpg"), img);
- *           }
- *       } catch (IOException e) {
- *           e.printStackTrace();
- *       }
- *   }
- *   </pre>
- *
- *
- * @author Arseny Kovalchuk<br/><a href="http://www.linkedin.com/in/arsenykovalchuk/">LinkedIn&reg; Profile</a>
- *
- */
 public class MJpegHttpReader implements Iterable<byte[]> {
 
     private final static String MULTIPART_MIXED_REPLACE = "multipart/x-mixed-replace";
     private final static String BOUNDARY_PART = "boundary=";
-    private final static String CONTENT_TYPE_HEADER = "content-length";
+    private final static String CONTENT_LENGTH_HEADER = "content-length";
 
     private String boundaryPart;
-
     private final URL url;
-
     private HttpURLConnection connection;
-    private BufferedInputStream inputStream;
-
     private boolean connected = false;
 
     public MJpegHttpReader(URL url) {
         this.url = url;
     }
 
-    public MJpegHttpReader(String url) throws MalformedURLException {
+    public MJpegHttpReader(String url) throws IOException {
         this.url = new URL(url);
     }
 
-    public URL getUrl() {
-        return url;
-    }
+    public void start() {
+        if (connected) throw new IllegalStateException("Already connected");
 
-    private void start() {
         try {
             connection = (HttpURLConnection) url.openConnection();
             connection.connect();
 
-            inputStream = new BufferedInputStream(connection.getInputStream());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+            String contentType = connection.getContentType();
+            if (contentType != null && !contentType.startsWith(MULTIPART_MIXED_REPLACE)) {
+                throw new IOException("Unsupported Content-Type: " + contentType);
+            }
 
-        connected = true;
+            assert contentType != null;
+            boundaryPart = contentType.substring(contentType.indexOf(BOUNDARY_PART) + BOUNDARY_PART.length());
+            connected = true;
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to start MJPEG reader", e);
+        }
     }
 
     public void stop() {
-        try {
-            if (inputStream != null) {
-                inputStream.close();
-                connection.disconnect();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (connection != null) {
+            connection.disconnect();
         }
-
         connected = false;
     }
 
-    public void run() {
-        start();
-        if (!connected)
-            throw new IllegalStateException(
-                    "connection lost immediately after connect");
-
-        String contentType = connection.getContentType();
-        if (contentType != null && !contentType.startsWith(MULTIPART_MIXED_REPLACE))
-            throw new IllegalArgumentException("Unsupported Content-Type: " + contentType);
-
-
-        boundaryPart = contentType.substring(contentType.indexOf(BOUNDARY_PART)
-                + BOUNDARY_PART.length());
-    }
-
-
+    @NotNull
     @Override
     public Iterator<byte[]> iterator() {
         try {
@@ -113,127 +74,100 @@ public class MJpegHttpReader implements Iterable<byte[]> {
     private class ImagesIterator implements Iterator<byte[]> {
 
         private final String boundary;
-
         private final InputStream stream;
         private boolean hasNext;
 
-        private byte[] buffer = new byte[0];
+        private Logger logger = LoggerFactory.getLogger(ImagesIterator.class);
 
         ImagesIterator(String boundaryPart, HttpURLConnection conn) throws IOException {
-            // Some cameras provide Content-Type header with ; boundary=--myboundary,
-            // then they use it as is without prefixing it with --
             this.boundary = boundaryPart.startsWith("--") ? boundaryPart : "--" + boundaryPart;
+            logger.info("Boundary: {}", boundary);
+
             this.stream = new BufferedInputStream(conn.getInputStream(), 8192);
             this.hasNext = true;
         }
 
         private String readLine() throws IOException {
-            int capacity = 512;
-            byte[] buffer = new byte[capacity];
-            StringBuilder stringBuffer = new StringBuilder(512);
+            ByteArrayOutputStream lineBuffer = new ByteArrayOutputStream();
+            int nextByte;
 
-            for (; ; ) {
-                stream.mark(capacity);
-                int i = 0;
-
-                for (; i < capacity; i++) {
-                    byte LF = 0x0A;
-
-                    if (buffer[i] == LF) {
-                        stream.reset();
-                        stream.read(buffer, 0, i + 1);
-                        stringBuffer.append(new String(buffer, 0, i));
-                        return stringBuffer.toString().trim();
-                    }
-                }
-                stringBuffer.append(new String(buffer, 0, capacity));
+            while ((nextByte = stream.read()) != -1) {
+                if (nextByte == '\n') break;
+                if (nextByte != '\r') lineBuffer.write(nextByte);
             }
 
+            return lineBuffer.toString().trim();
         }
 
-        private void readUntilBoundary() throws IOException, InterruptedException {
-            for(;;) {
-                String s = readLine();
-                if (boundary.equals(s) || !hasNext) {
-                    break;
-                } else if (s.equals(boundary + "--")) /* end of stream */{
+        private void readUntilBoundary() throws IOException {
+            while (hasNext) {
+                String line = readLine();
+                if (line.equals(boundary)) break;
+                if (line.equals(boundary + "--")) {
                     hasNext = false;
                     break;
                 }
             }
         }
 
-        /**
-         * Reads headers from the stream
-         * @return
-         * @throws IOException
-         * @throws InterruptedException
-         */
-        private Map<String, String> readHeaders() throws IOException, InterruptedException {
-            String line = null;
+        private Map<String, String> readHeaders() throws IOException {
             Map<String, String> headers = new HashMap<>();
-            for(;;) {
-                line = readLine();
 
-                if (line.trim().isEmpty()) {
-                    return headers;
-                } else {
-                    String[] parts = line.split(": ");
+            while (true) {
+                String line = readLine();
+                if (line.isEmpty()) break;
+
+                String[] parts = line.split(": ", 2);
+                if (parts.length == 2) {
                     headers.put(parts[0].toLowerCase(), parts[1]);
                 }
             }
+
+            return headers;
         }
 
         @Override
         public boolean hasNext() {
-            synchronized (this)  {
+            synchronized (this) {
                 return this.hasNext;
             }
         }
 
-        /**
-         * Note! Throws RuntimeException(IOException | InterruptedException).
-         *
-         * It's usable especially in case of InterruptedException, when this source
-         * is being to use in the thread like StreamThread
-         */
         @Override
         public byte[] next() {
             synchronized (this) {
                 try {
                     readUntilBoundary();
                     Map<String, String> headers = readHeaders();
-                    String contentLength = headers.get(CONTENT_TYPE_HEADER);
+                    String contentLengthHeader = headers.get(CONTENT_LENGTH_HEADER);
 
-                    int length = 0;
+                    int length;
                     try {
-                        length = Integer.parseInt(contentLength);
+                        length = Integer.parseInt(contentLengthHeader);
                     } catch (NumberFormatException e) {
-                        return buffer;
+                        throw new IOException("Invalid content length", e);
                     }
 
-                    if(buffer.length < length) {
-                        buffer = new byte[length];
+                    byte[] frameData = new byte[length];
+                    int bytesRead = 0;
+
+                    while (bytesRead < length) {
+                        int read = stream.read(frameData, bytesRead, length - bytesRead);
+                        if (read == -1) throw new IOException("Unexpected end of stream");
+                        bytesRead += read;
                     }
 
-                    int bytes = 0;
-                    while (bytes < length) {
-                        bytes += stream.read(buffer, bytes, length - bytes);
-                    }
+                    return frameData;
 
-                    return buffer;
-                } catch (IOException | InterruptedException e) {
-                    // e.printStackTrace();
-                    // see StreamThread how it's to be used.
-                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to read MJPEG frame", e);
                 }
             }
         }
 
         @Override
         public void remove() {
+            throw new UnsupportedOperationException("remove");
         }
-
     }
-
 }
