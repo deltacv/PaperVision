@@ -30,6 +30,7 @@ class IntroModalWindow(
 
     companion object {
         val icon = resourceToString("/ico/ico_ezv.txt")
+        val iconLogo = resourceToString("/ico/ico_ezv_logo.txt")
     }
 
     override fun drawContents() {

@@ -29,7 +29,7 @@ object NoOpPaperVisionEngineBridge : PaperVisionEngineBridge {
         get() = false
 
     override val onClientProcess = PaperVisionEventHandler("LocalPaperVisionEngineBridge-OnClientProcess")
-    override val processedBinaryMessagesHashes = ArrayBlockingQueue<Int>(0)
+    override val processedBinaryMessagesHashes = ArrayBlockingQueue<Int>(1)
 
     override fun connectClient(client: PaperVisionEngineClient) {
         // No-op

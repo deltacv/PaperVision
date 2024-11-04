@@ -147,7 +147,7 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(actions)
         IdElementContainerStack.threadStack.push(popups)
 
-        logger.info("Starting PaperVision...")
+        logger.info("Starting PaperVision...\n\n${IntroModalWindow.iconLogo}\n")
 
         logger.info("Using the ${setupCall.name} platform")
         setup = setupCall.setup()
