@@ -23,7 +23,6 @@ import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipeline
-import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipelineAccessor
 import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipelineInstantiator
 import io.github.deltacv.eocvsim.stream.ImageStreamer
 import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
