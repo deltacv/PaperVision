@@ -43,12 +43,11 @@ import io.github.deltacv.papervision.plugin.ipc.message.OpenCreateInputSourceMes
 import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
-import io.github.deltacv.papervision.util.hexString
 import io.github.deltacv.papervision.util.replaceLast
 import io.github.deltacv.papervision.util.toValidIdentifier
 import io.javalin.Javalin
-import io.javalin.config.JettyConfig
-import io.javalin.jetty.JettyServer
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.server.handler.StatisticsHandler
 import org.opencv.core.Size
 import java.io.File
 import java.util.concurrent.Executors
@@ -76,7 +75,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
      * If the plugin comes from a file, we will just use the file classpath, since it's a single fat jar.
      * If the plugin comes from Maven, we will use the classpath of all the transitive dependencies.
      */
-    val fullClasspath = if(pluginSource == PluginSource.FILE) {
+    val fullClasspath = if (pluginSource == PluginSource.FILE) {
         context.loader.pluginFile.absolutePath
     } else {
         classpath.joinToString(File.pathSeparator).trim(File.pathSeparatorChar)
@@ -85,7 +84,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     val paperVisionProjectManager = PaperVisionProjectManager(
         fullClasspath, fileSystem, engine, eocvSim
     ) {
-        if(streamerServerPort == 0) {
+        if (streamerServerPort == 0) {
             waitForStreamerServerPort()
         }
 
@@ -111,7 +110,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
             val shouldShowHint = !eocvSim.config.flags.getOrElse("hasShownPaperVisionHint") { false }
 
-            if(shouldShowHint) {
+            if (shouldShowHint) {
                 eocvSim.onMainUpdate.doOnce {
                     SwingUtilities.invokeLater {
                         val hint = HintManager.Hint(
@@ -187,38 +186,49 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         var streamerServer: Javalin? = null
 
         Executors.newSingleThreadExecutor().execute {
-            streamerServer = Javalin.create()
-                .get("/") {
-                    it.redirect("/0")
-                }
-                .get("/available") { ctx ->
-                    val streamer = currentPrevizSession?.streamer
+            streamerServer = Javalin.create {
+                // Create the Jetty server
+                val server = Server(0)
 
-                    if (streamer is EOCVSimEngineImageStreamer) {
-                        ctx.result(streamer.handlers().keys.joinToString(","))
+                // Create and configure the StatisticsHandler
+                val statisticsHandler = StatisticsHandler()
+
+                // Wrap Javalin's main handler with the StatisticsHandler
+                statisticsHandler.handler = server.handler
+
+                // Set the StatisticsHandler as the server's handler
+                server.handler = statisticsHandler
+
+                server
+            }.get("/") {
+                it.redirect("/0")
+            }.get("/available") { ctx ->
+                val streamer = currentPrevizSession?.streamer
+
+                if (streamer is EOCVSimEngineImageStreamer) {
+                    ctx.result(streamer.handlers().keys.joinToString(","))
+                }
+            }.get("/{id}") { ctx ->
+                val streamer = currentPrevizSession?.streamer
+
+                if (streamer is EOCVSimEngineImageStreamer) {
+                    val handler = try {
+                        streamer.handlerFor(ctx.pathParam("id").toInt())
+                    } catch (_: Exception) {
+                        null
                     }
+
+                    handler?.handle(ctx)
                 }
-                .get("/{id}") { ctx ->
-                    val streamer = currentPrevizSession?.streamer
 
-                    if (streamer is EOCVSimEngineImageStreamer) {
-                        val handler = try {
-                            streamer.handlerFor(ctx.pathParam("id").toInt())
-                        } catch(_: Exception) {
-                            null
-                        }
-
-                        handler?.handle(ctx)
-                    }
-
-                    ctx.result("Resource not found")
-                }
+                ctx.result("Resource not found")
+            }
 
             streamerServer.start(0)
         }
 
         Thread({
-            while(true) {
+            while (true) {
                 try {
                     if (streamerServer != null && streamerServer.jettyServer()?.port()!! >= 1) {
                         break
@@ -227,7 +237,11 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                     continue
                 }
 
-                logger.info("Waiting for streamer server to start (current port ${streamerServer?.jettyServer()?.port()})...")
+                logger.info(
+                    "Waiting for streamer server to start (current port ${
+                        streamerServer?.jettyServer()?.port()
+                    })..."
+                )
                 Thread.sleep(1000)
             }
 
@@ -275,11 +289,13 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
         engine.setMessageHandlerOf<OpenCreateInputSourceMessage> {
             eocvSim.onMainUpdate.doOnce {
-                DialogFactory.createSourceDialog(eocvSim, when(message.sourceType) {
-                    InputSourceType.CAMERA -> SourceType.CAMERA
-                    InputSourceType.VIDEO -> SourceType.VIDEO
-                    else -> SourceType.IMAGE
-                })
+                DialogFactory.createSourceDialog(
+                    eocvSim, when (message.sourceType) {
+                        InputSourceType.CAMERA -> SourceType.CAMERA
+                        InputSourceType.VIDEO -> SourceType.VIDEO
+                        else -> SourceType.IMAGE
+                    }
+                )
                 respond(OkResponse())
             }
         }
@@ -288,7 +304,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             var currentSourceAmount = eocvSim.inputSourceManager.sources.size
 
             eocvSim.onMainUpdate {
-                if(eocvSim.inputSourceManager.sources.size > currentSourceAmount) {
+                if (eocvSim.inputSourceManager.sources.size > currentSourceAmount) {
                     respond(InputSourcesListResponse(inputSourcesToData()))
                 }
             }
@@ -297,7 +313,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         engine.setMessageHandlerOf<PrevizAskNameMessage> {
             respond(
                 StringResponse(
-                    paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "")?.toValidIdentifier() ?: "Mack"
+                    paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "")?.toValidIdentifier()
+                        ?: "Mack"
                 )
             )
         }
@@ -305,7 +322,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         engine.setMessageHandlerOf<AskProjectGenClassNameMessage> {
             respond(
                 StringResponse(
-                    paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "")?.toValidIdentifier() ?: "Mack"
+                    paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "")?.toValidIdentifier()
+                        ?: "Mack"
                 )
             )
         }
@@ -336,7 +354,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<PrevizPingMessage> {
-            if(currentPrevizSession == null || currentPrevizSession?.sessionName != message.previzName) {
+            if (currentPrevizSession == null || currentPrevizSession?.sessionName != message.previzName) {
                 respond(ErrorResponse("Previz is not running"))
             } else {
                 currentPrevizSession?.ensurePrevizPipelineRunning()
@@ -367,7 +385,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     private fun inputSourcesToData() = eocvSim.inputSourceManager.sources.map {
         InputSourceData(
             it.key,
-            when(eocvSim.inputSourceManager.getSourceType(it.key)) {
+            when (eocvSim.inputSourceManager.getSourceType(it.key)) {
                 SourceType.CAMERA -> InputSourceType.CAMERA
                 SourceType.VIDEO -> InputSourceType.VIDEO
                 else -> InputSourceType.IMAGE
