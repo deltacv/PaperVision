@@ -16,6 +16,15 @@ publishing {
         mavenJava(MavenPublication) {
             from components.java
             artifact sourcesJar
+
+            pom.withXml {
+                Node pomNode = asNode()
+                pomNode.dependencies.'*'.findAll() {
+                    it.artifactId.text() == 'EOCV-Sim'
+                }.each() {
+                    it.parent().remove(it)
+                }
+            }
         }
     }
 }
@@ -51,9 +60,9 @@ dependencies {
     // compileOnly('com.github.deltacv.EOCV-Sim:Common:3.8.0') { transitive = false } // jitpack
     // compileOnly('com.github.deltacv.EOCV-Sim:Vision:3.8.0') // jitpack
 
-    compileOnly('com.github.deltacv.EOCV-Sim:EOCV-Sim:dev-SNAPSHOT') { changing = true; transitive = false} // jitpack dev
-    compileOnly('com.github.deltacv.EOCV-Sim:Common:dev-SNAPSHOT') { changing = true; transitive = false} // jitpack dev
-    compileOnly('com.github.deltacv.EOCV-Sim:Vision:dev-SNAPSHOT') { changing = true; } // jitpack dev
+    compileOnly('com.github.deltacv.EOCV-Sim:EOCV-Sim:15e7f07bea') { changing = true; transitive = false} // jitpack dev
+    compileOnly('com.github.deltacv.EOCV-Sim:Common:15e7f07bea') { changing = true; transitive = false} // jitpack dev
+    compileOnly('com.github.deltacv.EOCV-Sim:Vision:15e7f07bea') { changing = true; } // jitpack dev
 
     // compileOnly('com.github.deltacv:EOCV-Sim:3.7.1-dev-240925-2310') { transitive = false } // Maven local
     // compileOnly('com.github.deltacv:Common:3.7.1-dev-240925-2310') { transitive = false } // Maven local

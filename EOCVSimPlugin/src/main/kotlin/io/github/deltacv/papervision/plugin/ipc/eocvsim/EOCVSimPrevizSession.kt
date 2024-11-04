@@ -143,7 +143,7 @@ class EOCVSimPrevizSession(
             val pipeline = eocvSim.pipelineManager.currentPipeline
 
             if(pipeline is StreamableOpenCvPipeline) {
-                StreamableOpenCvPipelineAccessor.setStreamerOf(pipeline, streamer)
+                pipeline.streamer = streamer
             }
         }
     }
