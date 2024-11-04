@@ -47,6 +47,7 @@ import io.github.deltacv.papervision.util.replaceLast
 import io.github.deltacv.papervision.util.toValidIdentifier
 import io.javalin.Javalin
 import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.server.handler.HandlerWrapper
 import org.eclipse.jetty.server.handler.StatisticsHandler
 import org.opencv.core.Size
 import java.io.File
@@ -182,49 +183,41 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         return streamerServerPort
     }
 
+    private fun attachJavalinHandlers(javalin: Javalin) {
+        javalin.get("/") {
+            it.redirect("/0")
+        }.get("/available") { ctx ->
+            val streamer = currentPrevizSession?.streamer
+
+            if (streamer is EOCVSimEngineImageStreamer) {
+                ctx.result(streamer.handlers().keys.joinToString(","))
+            }
+        }.get("/{id}") { ctx ->
+            val streamer = currentPrevizSession?.streamer
+
+            if (streamer is EOCVSimEngineImageStreamer) {
+                val handler = try {
+                    streamer.handlerFor(ctx.pathParam("id").toInt())
+                } catch (_: Exception) {
+                    null
+                }
+
+                handler?.handle(ctx)
+            }
+
+            ctx.result("Resource not found")
+        }
+    }
+
     private fun startJavalinServer() {
         var streamerServer: Javalin? = null
 
         Executors.newSingleThreadExecutor().execute {
-            streamerServer = Javalin.create {
-                // Create the Jetty server
-                val server = Server(0)
-
-                // Create and configure the StatisticsHandler
-                val statisticsHandler = StatisticsHandler()
-
-                // Wrap Javalin's main handler with the StatisticsHandler
-                statisticsHandler.handler = server.handler
-
-                // Set the StatisticsHandler as the server's handler
-                server.handler = statisticsHandler
-
-                server
-            }.get("/") {
-                it.redirect("/0")
-            }.get("/available") { ctx ->
-                val streamer = currentPrevizSession?.streamer
-
-                if (streamer is EOCVSimEngineImageStreamer) {
-                    ctx.result(streamer.handlers().keys.joinToString(","))
-                }
-            }.get("/{id}") { ctx ->
-                val streamer = currentPrevizSession?.streamer
-
-                if (streamer is EOCVSimEngineImageStreamer) {
-                    val handler = try {
-                        streamer.handlerFor(ctx.pathParam("id").toInt())
-                    } catch (_: Exception) {
-                        null
-                    }
-
-                    handler?.handle(ctx)
-                }
-
-                ctx.result("Resource not found")
+            streamerServer = Javalin.create { config ->
+                config.pvt.jetty.server = Server()
             }
 
-            streamerServer.start(0)
+            attachJavalinHandlers(streamerServer!!)
         }
 
         Thread({
