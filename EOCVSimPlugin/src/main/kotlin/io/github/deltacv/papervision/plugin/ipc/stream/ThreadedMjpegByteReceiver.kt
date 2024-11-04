@@ -19,12 +19,12 @@
 package io.github.deltacv.papervision.plugin.ipc.stream
 
 import io.github.deltacv.papervision.engine.client.ByteMessageReceiver
-import io.github.deltacv.visionloop.io.MJpegHttpReader
+import io.github.deltacv.visionloop.io.MjpegHttpReader
 import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
 import java.net.URL
 
-class ThreadedMJpegByteReceiver(
+class ThreadedMjpegByteReceiver(
     val tagProvider: () -> String,
     val url: String
 ) : ByteMessageReceiver() {
@@ -59,7 +59,7 @@ class ThreadedMJpegByteReceiver(
             for(id in ids) {
                 if(!threads.contains(id)) {
                     val thread = Thread({
-                        val stream = MJpegHttpReader("${url.trimEnd('/')}/$id")
+                        val stream = MjpegHttpReader("${url.trimEnd('/')}/$id")
                         stream.start()
 
                         for(frame in stream) {

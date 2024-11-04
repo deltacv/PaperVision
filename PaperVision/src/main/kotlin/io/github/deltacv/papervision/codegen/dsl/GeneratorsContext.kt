@@ -32,7 +32,7 @@ class GeneratorsContext<S: CodeGenSession> {
     fun generatorFor(vararg languages: Language, generator: Generator<S>) = languages.forEach { generators[it] = generator }
 }
 
-fun <S: CodeGenSession> generators(init: GeneratorsContext<S>.() -> Unit) = GeneratorsContext<S>().run {
+fun <S: CodeGenSession> generatorsBuilder(init: GeneratorsContext<S>.() -> Unit) = GeneratorsContext<S>().run {
     init()
     generators
 }

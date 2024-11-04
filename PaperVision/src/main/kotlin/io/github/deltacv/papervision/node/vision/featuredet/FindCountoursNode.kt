@@ -31,7 +31,7 @@ import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.MatOfPoint
-import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
@@ -53,7 +53,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
         + outputPoints.rebuildOnChange()
     }
 
-    override val generators = generators {
+    override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
             current {
                 val session = Session()

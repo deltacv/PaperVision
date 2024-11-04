@@ -19,6 +19,7 @@
 package io.github.deltacv.papervision.attribute.vision.structs
 
 import imgui.ImGui
+import imgui.ImVec2
 import imgui.flag.ImGuiCol
 import io.github.deltacv.papervision.action.editor.CreateLinkAction
 import io.github.deltacv.papervision.attribute.AttributeMode
@@ -46,7 +47,6 @@ class LineParametersAttribute(
             ImGui.sameLine()
 
             ImGui.pushFont(parentNode.fontAwesome.imfont)
-            ImGui.pushStyleColor(ImGuiCol.Button, 0)
 
             if(!hasLink && ImGui.button(FontAwesomeIcons.PencilAlt)) {
                 val node = parentNode.editor.addNode(LineParametersNode::class.java)
@@ -54,16 +54,15 @@ class LineParametersAttribute(
                 parentNode.editor.onDraw.doOnce {
                     CreateLinkAction(
                         Link(
-                            (node as LineParametersNode).output.id,
-                            id
+                            (node as LineParametersNode).output.id, id
                         )
                     ).enable()
 
                     node.pinToMouse = true
+                    node.pinToMouseOffset = ImVec2(0f, -10f)
                 }
             }
 
-            ImGui.popStyleColor()
             ImGui.popFont()
         }
     }

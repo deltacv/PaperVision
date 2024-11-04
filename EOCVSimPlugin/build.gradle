@@ -77,11 +77,11 @@ dependencies {
 
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 
-    implementation('com.github.deltacv.visionloop:visionloop:b6d9404dd7') {
+    implementation('com.github.deltacv.visionloop:visionloop:e5a4c23d1e') {
         exclude group: 'com.github.deltacv.EOCVSim'
     }
 
-    implementation('com.github.deltacv.visionloop:streaming:b6d9404dd7') {
+    implementation('com.github.deltacv.visionloop:streaming:e5a4c23d1e') {
         exclude group: 'com.github.deltacv.EOCVSim'
     }
 

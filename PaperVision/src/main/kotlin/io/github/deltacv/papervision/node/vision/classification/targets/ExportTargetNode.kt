@@ -20,9 +20,8 @@ package io.github.deltacv.papervision.node.vision.classification.targets
 
 import io.github.deltacv.papervision.attribute.misc.StringAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
-import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.NoSession
-import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.dsl.targets
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
@@ -45,7 +44,7 @@ class ExportTargetNode : DrawNode<NoSession>() {
         + label
     }
 
-    override val generators = generators {
+    override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
             current.targets {
                 current.scope {

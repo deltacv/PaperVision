@@ -32,7 +32,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Core
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Scalar
-import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
@@ -85,7 +85,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         lastColor = color
     }
 
-    override val generators = generators {
+    override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
             current {
                 val session = Session()

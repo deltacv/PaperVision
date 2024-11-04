@@ -20,7 +20,6 @@ package io.github.deltacv.papervision.node.vision
 
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
-import imgui.type.ImInt
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.math.DoubleAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
@@ -35,7 +34,7 @@ import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorFor
-import io.github.deltacv.papervision.codegen.dsl.generators
+import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
@@ -182,7 +181,7 @@ class OutputMatNode @JvmOverloads constructor(
         exportedData.enable()
     }
 
-    override val generators = generators {
+    override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
             current {
                 val inputValue = input.value(current)

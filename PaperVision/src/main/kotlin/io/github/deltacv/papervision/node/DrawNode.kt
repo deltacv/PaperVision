@@ -37,8 +37,10 @@ abstract class DrawNode<S: CodeGenSession>(
     var nextNodePosition: ImVec2? = null
 
     var pinToMouse = false
+    var pinToMouseOffset = ImVec2()
+
     private var lastPinToMouse = false
-    private var pinToMouseOffset = ImVec2()
+    private var pinToMouseNewOffset = ImVec2()
 
     private var isFirstDraw = true
 
@@ -113,14 +115,14 @@ abstract class DrawNode<S: CodeGenSession>(
                 // i have no idea why this is needed
                 ImNodes.getNodeDimensions(nodeDims, id)
 
-                pinToMouseOffset = ImVec2(
-                    nodeDims.x / 2,
-                    nodeDims.y / 2
+                pinToMouseNewOffset = ImVec2(
+                    (nodeDims.x / 2) + pinToMouseOffset.x,
+                    (nodeDims.y / 2) + pinToMouseOffset.y
                 )
             }
 
-            val newPosX = mousePos.x - pinToMouseOffset.x
-            val newPosY = mousePos.y - pinToMouseOffset.y
+            val newPosX = mousePos.x - pinToMouseNewOffset.x
+            val newPosY = mousePos.y - pinToMouseNewOffset.y
 
             ImNodes.setNodeEditorSpacePos(id, newPosX, newPosY)
 
