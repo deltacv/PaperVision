@@ -30,7 +30,8 @@ import io.github.deltacv.papervision.plugin.eocvsim.SinglePipelineCompiler
 class EOCVSimPrevizSession(
     val sessionName: String,
     val eocvSim: EOCVSim,
-    val streamer: ImageStreamer = NoOpEngineImageStreamer
+    val streamer: ImageStreamer = NoOpEngineImageStreamer,
+    val initialSourceCode: String
 ) {
 
     var previzRunning = false
@@ -45,6 +46,11 @@ class EOCVSimPrevizSession(
         var isChangingPipeline = false
 
         eocvSim.pipelineManager.onPipelineChange {
+            if(!previzRunning) {
+                it.removeThis()
+                return@onPipelineChange
+            }
+
             if(latestClass == null) return@onPipelineChange
 
             if(isChangingPipeline) {
@@ -68,15 +74,19 @@ class EOCVSimPrevizSession(
         eocvSim.pipelineManager.onPause {
             if(previzRunning) {
                 eocvSim.pipelineManager.setPaused(false, PipelineManager.PauseReason.NOT_PAUSED)
+            } else {
+                it.removeThis()
             }
         }
 
         PaperVisionProcessRunner.onPaperVisionExit.doOnce {
             stopPreviz()
         }
+
+        startPreviz(initialSourceCode)
     }
 
-    fun startPreviz(sourceCode: String) {
+    private fun startPreviz(sourceCode: String) {
         previzRunning = true
 
         logger.info("Starting previz session $sessionName with streamer ${streamer.javaClass.simpleName}")

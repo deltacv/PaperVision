@@ -95,6 +95,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     override fun onLoad() {
         paperVisionProjectManager.init()
 
+        startJavalinServer()
+
         eocvSim.visualizer.onPluginGuiAttachment.doOnce {
             val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
 
@@ -163,12 +165,13 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
     }
 
-    fun waitForStreamerServerPort(timeoutSeconds: Double = 5.0): Int {
+    fun waitForStreamerServerPort(timeoutSeconds: Double = 10.0): Int {
         val start = System.currentTimeMillis()
 
         while (streamerServerPort == 0) {
             if (System.currentTimeMillis() - start >= timeoutSeconds * 1000) {
                 logger.warn("Streamer server port not available after $timeoutSeconds seconds.")
+                break
             }
 
             Thread.sleep(300)
@@ -231,8 +234,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     }
 
     override fun onEnable() {
-        startJavalinServer()
-
         engine.setMessageHandlerOf<TunerChangeValueMessage> {
             eocvSim.tunerManager.getTunableFieldWithLabel(message.label)?.setFieldValue(message.index, message.value)
             respond(OkResponse())
@@ -322,10 +323,9 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
             currentPrevizSession = EOCVSimPrevizSession(
                 message.previzName,
-                eocvSim, streamer
+                eocvSim, streamer,
+                message.sourceCode
             )
-
-            currentPrevizSession?.startPreviz(message.sourceCode)
 
             logger.info("Received source code\n{}", message.sourceCode)
 
