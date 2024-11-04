@@ -20,6 +20,7 @@ package io.github.deltacv.papervision.plugin.eocvsim
 
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.qualcomm.robotcore.eventloop.opmode.Disabled
+import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipeline
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.opencv.core.Mat
 import org.opencv.core.MatOfByte
@@ -32,7 +33,7 @@ import org.openftc.easyopencv.OpenCvPipeline
 @Disabled
 class PaperVisionDefaultPipeline(
     val telemetry: Telemetry
-) : OpenCvPipeline() {
+) : StreamableOpenCvPipeline() {
 
     val logger by loggerForThis()
 
@@ -71,6 +72,9 @@ class PaperVisionDefaultPipeline(
     override fun processFrame(input: Mat): Mat {
         telemetry.addLine("Making computer vision accessible to everyone")
         telemetry.update()
+
+        streamFrame(0, input, null)
+
         return drawMat
     }
 

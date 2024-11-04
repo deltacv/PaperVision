@@ -23,6 +23,7 @@ import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.input.SourceType
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.loggerForThis
+import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipelineInstantiator
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
 import io.github.deltacv.eocvsim.plugin.loader.PluginSource
 import io.github.deltacv.papervision.engine.client.message.*
@@ -403,6 +404,11 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                 )
 
                 eocvSim.pipelineManager.onUpdate.doOnce {
+                    eocvSim.pipelineManager.addInstantiator(
+                        PaperVisionDefaultPipeline::class.java,
+                        StreamableOpenCvPipelineInstantiator(EOCVSimEngineImageStreamer(Size(320.0, 240.0)))
+                    )
+
                     eocvSim.pipelineManager.changePipeline(
                         eocvSim.pipelineManager.getIndexOf(
                             PaperVisionDefaultPipeline::class.java,
