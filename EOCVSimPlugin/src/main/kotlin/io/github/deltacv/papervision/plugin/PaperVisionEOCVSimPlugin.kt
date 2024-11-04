@@ -95,6 +95,9 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     override fun onLoad() {
         paperVisionProjectManager.init()
 
+        System.setProperty("org.eclipse.jetty.DEBUG", "OFF");
+        System.setProperty("org.eclipse.jetty.TRACE", "OFF");
+
         startJavalinServer()
 
         eocvSim.visualizer.onPluginGuiAttachment.doOnce {
