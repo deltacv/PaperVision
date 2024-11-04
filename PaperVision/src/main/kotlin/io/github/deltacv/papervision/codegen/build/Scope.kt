@@ -93,21 +93,17 @@ class Scope(
     }
 
     fun tryName(name: String): String {
-        if(!usedNames.contains(name)) {
-            return name
-        } else {
-            var count = 1
+        if (name !in usedNames) return name
 
-            while(true) {
-                val newName = "$name$count"
+        var count = 1
+        var newName: String
 
-                if(!usedNames.contains(newName)) {
-                    return newName
-                }
+        do {
+            newName = "$name$count"
+            count++
+        } while (newName in usedNames)
 
-                count++
-            }
-        }
+        return newName
     }
 
     fun variableSet(variable: Variable, v: Value) {
@@ -116,7 +112,6 @@ class Scope(
 
         builder.append("$tabs${language.variableSetDeclaration(variable, v)}")
     }
-
 
     fun arraySet(variable: Variable, index: Value, v: Value) {
         newStatement()

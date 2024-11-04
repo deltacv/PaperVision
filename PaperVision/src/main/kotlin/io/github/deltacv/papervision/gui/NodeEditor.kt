@@ -118,8 +118,13 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         ImGuiWindowFlags.NoTitleBar, ImGuiWindowFlags.NoDecoration
     )
 
-    val rightClickMenuPopup by lazy {
-        RightClickMenuPopup(paperVision.nodeList, paperVision::undo, paperVision::redo)
+    private val popupSelection = mutableListOf<DrawableIdElement>()
+
+    private var currentRightClickMenuPopup: RightClickMenuPopup? = null
+    val rightClickMenuPopup: RightClickMenuPopup get() {
+        val popup = RightClickMenuPopup(paperVision.nodeList, paperVision::undo, paperVision::redo, popupSelection)
+        currentRightClickMenuPopup = popup
+        return popup
     }
 
     private val rightClickMenuPopupTimer = ElapsedTime()
@@ -144,7 +149,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         flagsNode.enable()
 
         inputNode.enable()
-        rightClickMenuPopup.enable()
 
         outputNode.streamId = outputImageDisplay.id
         outputNode.enable()
@@ -342,11 +346,11 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     }
 
     private fun updateRightClickMenuSelection() {
-        if (rightClickMenuPopup.isVisible) {
+        if (currentRightClickMenuPopup?.isVisible == true) {
             return
         }
 
-        rightClickMenuPopup.selection.clear()
+        popupSelection.clear()
 
         val nodeSelection = IntArray(ImNodes.numSelectedNodes())
         ImNodes.getSelectedNodes(nodeSelection)
@@ -355,7 +359,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             if (node < 0) continue
 
             nodes[node]?.let {
-                rightClickMenuPopup.selection.add(it)
+                popupSelection.add(it)
             }
         }
 
@@ -366,13 +370,13 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             if (link < 0) continue
 
             links[link]?.let {
-                rightClickMenuPopup.selection.add(it)
+                popupSelection.add(it)
             }
         }
 
         if (ImNodes.getHoveredNode() >= 0) {
             nodes[ImNodes.getHoveredNode()]?.let {
-                rightClickMenuPopup.selection.add(it)
+                popupSelection.add(it)
             }
         }
     }
@@ -492,12 +496,17 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     class RightClickMenuPopup(
         val nodeList: NodeList,
         val undo: () -> Unit,
-        val redo: () -> Unit
+        val redo: () -> Unit,
+        val selection: List<DrawableIdElement>
     ) : Popup() {
-        var selection = mutableListOf<DrawableIdElement>()
 
         override val title = "right click menu"
-        override val flags = flags(ImGuiWindowFlags.NoTitleBar, ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoMove)
+        override val flags = flags(
+            ImGuiWindowFlags.NoTitleBar,
+            ImGuiWindowFlags.NoResize,
+            ImGuiWindowFlags.NoMove,
+            ImGuiWindowFlags.Popup
+        )
 
         override fun drawContents() {
             ImGui.pushStyleColor(ImGuiCol.Button, 0)
