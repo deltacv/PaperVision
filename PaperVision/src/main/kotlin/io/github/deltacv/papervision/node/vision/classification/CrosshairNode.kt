@@ -210,7 +210,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                         }
                     }
 
-                    drawCrosshairOn.streamIfEnabled(crosshairImage, drawOn.color)
+                    outputCrosshairImage.streamIfEnabled(crosshairImage, drawOn.color)
 
                     session.outputCrosshair =
                         GenValue.GList.RuntimeListOf(crosshair, GenValue.GPoints.RuntimePoints::class)

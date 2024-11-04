@@ -26,6 +26,7 @@ import com.github.serivesmejia.eocvsim.util.io.EOCVSimFolder
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import io.github.deltacv.eocvsim.plugin.loader.PluginManager
 import io.github.deltacv.eocvsim.sandbox.nio.SandboxFileSystem
 import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
@@ -58,7 +59,7 @@ class PaperVisionProjectManager(
 ) {
 
     companion object {
-        val recoveryFolder = EOCVSimFolder + File.separator + "recovery"
+        val recoveryFolder = (PluginManager.PLUGIN_CACHING_FOLDER + File.separator + "papervision_recovery").apply { mkdir() }
     }
 
     val root = fileSystem.getPath("")

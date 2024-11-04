@@ -171,7 +171,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                 logger.warn("Streamer server port not available after $timeoutSeconds seconds.")
             }
 
-            Thread.sleep(100)
+            Thread.sleep(300)
         }
 
         return streamerServerPort
@@ -203,9 +203,9 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                         }
 
                         handler?.handle(ctx)
-
-                        ctx.result("Resource not found")
                     }
+
+                    ctx.result("Resource not found")
                 }
 
             streamerServer.start(0)
