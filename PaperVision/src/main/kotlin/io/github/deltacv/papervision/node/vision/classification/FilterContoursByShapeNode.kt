@@ -47,7 +47,7 @@ enum class Shape(val sides: Int?) {
     category = Category.CLASSIFICATION,
     description = "des_groupcontours_byshape"
 )
-class GroupContoursByShapeNode : DrawNode<GroupContoursByShapeNode.Session>() {
+class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() {
 
     val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
 

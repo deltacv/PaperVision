@@ -25,7 +25,7 @@ nod_erodedilate,Erode and Dilate,Erosionar y Dilatar
 nod_boundingrect,Bounding Rectangles,Rectangulos Delimitantes
 nod_boundingrotated_rect,Bounding Rotated Rectangles,Rectangulos Delimitantes Rotados
 nod_findcontours,Simple Find Contours,Deteccion de Contornos
-nod_groupcontours_byshape,Group Contours by Shape, Agrupar Contornos por Figura
+nod_groupcontours_byshape,Filter Contours by Shape, Filtrar Contornos por Figura
 nod_grouprects_insidearea,Group Rectangles Inside Area,Agrupar Rectangulos Dentro de Area
 nod_exporttarget,Export Target,Exportar Objetivo
 nod_exporttargets,Export Targets,Exportar Objetivos
