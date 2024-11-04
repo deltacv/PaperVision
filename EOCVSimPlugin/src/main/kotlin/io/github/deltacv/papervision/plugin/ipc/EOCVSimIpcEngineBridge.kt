@@ -104,7 +104,7 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
     class WsClient(
         val port: Int,
         val bridge: EOCVSimIpcEngineBridge
-    ) : WebSocketClient(URI.create("ws://localhost:$port")) {
+    ) : WebSocketClient(URI.create("ws://127.0.0.1:$port")) {
 
         private val logger = LoggerFactory.getLogger(this::class.java)
 

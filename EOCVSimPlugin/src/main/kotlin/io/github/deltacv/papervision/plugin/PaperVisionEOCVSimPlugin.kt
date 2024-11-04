@@ -219,7 +219,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
             attachJavalinHandlers(streamerServer!!)
 
-            streamerServer.start(0)
+            streamerServer.start("127.0.0.1", 0)
         }
 
         Thread({

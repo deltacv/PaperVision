@@ -67,7 +67,7 @@ class RecoveryDaemonProcessManager(
 
     private class WsServer(
         val manager: RecoveryDaemonProcessManager
-    ) : WebSocketServer(InetSocketAddress(0)) {
+    ) : WebSocketServer(InetSocketAddress("127.0.0.1", 0)) {
         val logger by loggerForThis()
 
         override fun onOpen(ws: WebSocket, p1: ClientHandshake?) {

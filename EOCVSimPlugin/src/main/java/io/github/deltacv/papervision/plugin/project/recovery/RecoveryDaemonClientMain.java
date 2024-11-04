@@ -18,7 +18,7 @@ public class RecoveryDaemonClientMain extends WebSocketClient {
     public static final Logger logger = LoggerFactory.getLogger(RecoveryDaemonClientMain.class);
 
     public RecoveryDaemonClientMain(int port) throws URISyntaxException {
-        super(new URI("ws://localhost:" + port));
+        super(new URI("ws://127.0.0.1:" + port));
     }
 
     @Override

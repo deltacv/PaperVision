@@ -45,7 +45,7 @@ class EOCVSimIpcEngine : MessageHandlerPaperVisionEngine() {
         server.broadcast(ipcGson.toJson(response))
     }
 
-    class WsServer(val engine: EOCVSimIpcEngine) : WebSocketServer(InetSocketAddress(0)) {
+    class WsServer(val engine: EOCVSimIpcEngine) : WebSocketServer(InetSocketAddress("127.0.0.1",0)) {
         val logger by loggerForThis()
 
         override fun onOpen(conn: WebSocket, handshake: ClientHandshake?) {
