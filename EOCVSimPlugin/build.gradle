@@ -68,8 +68,16 @@ dependencies {
 
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 
-    implementation 'com.github.deltacv.visionloop:visionloop:69e676a5b5'
-    implementation 'com.github.deltacv.visionloop:streaming:69e676a5b5'
+    implementation('com.github.deltacv.visionloop:visionloop:69e676a5b5') {
+        exclude group: 'com.github.deltacv.EOCVSim', module: 'Common'
+        exclude group: 'com.github.deltacv.EOCVSim', module: 'Vision'
+    }
+
+    implementation('com.github.deltacv.visionloop:streamer:69e676a5b5') {
+        exclude group: 'com.github.deltacv.EOCVSim', module: 'Common'
+        exclude group: 'com.github.deltacv.EOCVSim', module: 'Vision'
+    }
+
     implementation("io.javalin:javalin:6.3.0")
 
     implementation 'commons-io:commons-io:2.17.0'
