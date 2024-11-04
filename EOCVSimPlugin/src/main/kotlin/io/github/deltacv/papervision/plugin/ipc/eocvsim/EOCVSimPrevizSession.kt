@@ -22,6 +22,8 @@ import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.loggerForThis
+import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipeline
+import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipelineAccessor
 import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipelineInstantiator
 import io.github.deltacv.eocvsim.stream.ImageStreamer
 import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
@@ -31,7 +33,7 @@ class EOCVSimPrevizSession(
     val sessionName: String,
     val eocvSim: EOCVSim,
     val streamer: ImageStreamer = NoOpEngineImageStreamer,
-    val initialSourceCode: String
+    initialSourceCode: String
 ) {
 
     var previzRunning = false
@@ -65,6 +67,7 @@ class EOCVSimPrevizSession(
                 isChangingPipeline = true
 
                 eocvSim.pipelineManager.forceChangePipeline(eocvSim.pipelineManager.getIndexOf(latestClass!!, PipelineSource.COMPILED_ON_RUNTIME))
+                refreshPrevizPipelineStreamer()
 
                 // Re-enable the listener after the change
                 isChangingPipeline = false
@@ -119,6 +122,8 @@ class EOCVSimPrevizSession(
                         PipelineSource.COMPILED_ON_RUNTIME
                     )
                 )
+
+                refreshPrevizPipelineStreamer()
             }
         }
     }
@@ -127,6 +132,18 @@ class EOCVSimPrevizSession(
         eocvSim.onMainUpdate.doOnce {
             if(eocvSim.pipelineManager.currentPipeline?.javaClass?.name != sessionName && latestSourceCode != null) {
                 refreshPreviz(latestSourceCode!!)
+            }
+        }
+    }
+
+    fun refreshPrevizPipelineStreamer() {
+        if(!previzRunning) return
+
+        eocvSim.onMainUpdate.doOnce {
+            val pipeline = eocvSim.pipelineManager.currentPipeline
+
+            if(pipeline is StreamableOpenCvPipeline) {
+                StreamableOpenCvPipelineAccessor.setStreamerOf(pipeline, streamer)
             }
         }
     }
