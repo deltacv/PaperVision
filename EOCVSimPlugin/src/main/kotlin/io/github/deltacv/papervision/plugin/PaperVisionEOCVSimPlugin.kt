@@ -279,7 +279,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                     val tunableField = tunableFieldOf(field)
 
                     tunableField.setFieldValue(0, message.value)
-                    logger.info("Received tuner change value message for ${message.label} to ${message.value} ")
                 }
 
                 respond(OkResponse())
@@ -296,8 +295,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                     for (i in message.values.indices) {
                         tunableField.setFieldValue(i, message.values[i])
                     }
-
-                    logger.info("Received tuner change values message for ${message.label} to ${message.values}")
                 }
 
                 respond(OkResponse())
