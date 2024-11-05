@@ -23,6 +23,7 @@ import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.input.SourceType
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
+import com.github.serivesmejia.eocvsim.tuner.TunableField
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipelineInstantiator
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
@@ -50,10 +51,9 @@ import io.github.deltacv.papervision.util.replaceLast
 import io.github.deltacv.papervision.util.toValidIdentifier
 import io.javalin.Javalin
 import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.server.handler.HandlerWrapper
-import org.eclipse.jetty.server.handler.StatisticsHandler
 import org.opencv.core.Size
 import java.io.File
+import java.util.WeakHashMap
 import java.util.concurrent.Executors
 import javax.swing.JLabel
 import javax.swing.JOptionPane
@@ -74,6 +74,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         private set
 
     var currentPrevizSession: EOCVSimPrevizSession? = null
+
+    private val tunableFieldCache = WeakHashMap<VirtualField, TunableField<*>>()
 
     /**
      * If the plugin comes from a file, we will just use the file classpath, since it's a single fat jar.
@@ -248,12 +250,35 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     }
 
     override fun onEnable() {
+        fun tunableFieldOf(field: VirtualField): TunableField<*> {
+            if(tunableFieldCache.containsKey(field)) {
+                return tunableFieldCache[field]!!
+            }
+
+            val tunableFieldClass = eocvSim.tunerManager.getTunableFieldOf(field)
+
+            val tunableField = tunableFieldClass.getConstructor(
+                Object::class.java,
+                VirtualField::class.java,
+                EOCVSim::class.java
+            ).newInstance(
+                currentPrevizSession!!.latestPipeline,
+                field,
+                eocvSim
+            )
+
+            tunableFieldCache[field] = tunableField
+            return tunableField
+        }
+
         engine.setMessageHandlerOf<TunerChangeValueMessage> {
             eocvSim.onMainUpdate.doOnce {
                 val field = currentPrevizSession?.latestVirtualReflect?.getLabeledField(message.label)
 
                 if (field != null) {
-                    field.set(message.value)
+                    val tunableField = tunableFieldOf(field)
+
+                    tunableField.setFieldValue(0, message.value)
                     logger.info("Received tuner change value message for ${message.label} to ${message.value} ")
                 }
 
@@ -266,24 +291,13 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                 val field = currentPrevizSession?.latestVirtualReflect?.getLabeledField(message.label)
 
                 if(field != null) {
-                    val tunableFieldClass = eocvSim.tunerManager.getTunableFieldOf(field)
-
-                    val tunableField = tunableFieldClass.getConstructor(
-                        Object::class.java,
-                        VirtualField::class.java,
-                        EOCVSim::class.java
-                    ).newInstance(
-                        currentPrevizSession!!.latestPipeline,
-                        field,
-                        eocvSim
-                    )
+                    val tunableField = tunableFieldOf(field)
 
                     for (i in message.values.indices) {
                         tunableField.setFieldValue(i, message.values[i])
                     }
 
                     logger.info("Received tuner change values message for ${message.label} to ${message.values}")
-
                 }
 
                 respond(OkResponse())

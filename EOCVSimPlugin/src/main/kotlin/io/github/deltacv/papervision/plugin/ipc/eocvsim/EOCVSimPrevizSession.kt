@@ -23,7 +23,6 @@ import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipeline
-import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipelineInstantiator
 import io.github.deltacv.eocvsim.stream.ImageStreamer
 import io.github.deltacv.eocvsim.virtualreflect.VirtualReflectContext
 import io.github.deltacv.eocvsim.virtualreflect.jvm.JvmVirtualReflection
@@ -75,8 +74,13 @@ class EOCVSimPrevizSession(
 
                 eocvSim.pipelineManager.forceChangePipeline(eocvSim.pipelineManager.getIndexOf(latestClass!!, PipelineSource.COMPILED_ON_RUNTIME))
 
-                latestPipeline = eocvSim.pipelineManager.currentPipeline!!
-                latestVirtualReflect = JvmVirtualReflection.contextOf(latestPipeline!!)
+                latestPipeline = eocvSim.pipelineManager.currentPipeline
+
+                latestVirtualReflect = if(latestPipeline != null) {
+                    JvmVirtualReflection.contextOf(latestPipeline!!)
+                } else {
+                    null
+                }
 
                 refreshPrevizPipelineStreamer()
 
