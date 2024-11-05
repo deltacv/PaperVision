@@ -32,8 +32,6 @@ class EOCVSimEngineImageStreamer(
     private val handlers = mutableMapOf<Int, Handler>()
     val receivers = mutableMapOf<Int, MjpegHttpStreamerReceiver>()
 
-    private val queuesLock = Any()
-
     val logger by loggerForThis()
 
     private val tempMat = Mat()
@@ -43,27 +41,24 @@ class EOCVSimEngineImageStreamer(
         image: Mat,
         cvtCode: Int?
     ) {
-        synchronized(queuesLock) {
-            if(!receivers.containsKey(id)) {
-                val receiver = MjpegHttpStreamerReceiver(0, resolution)
-                handlers[id] = receiver.takeHandler() // save handler for later
+        if (!receivers.containsKey(id)) {
+            val receiver = MjpegHttpStreamerReceiver(0, resolution)
+            handlers[id] = receiver.takeHandler() // save handler for later
 
-                logger.info("Creating new Mjpeg stream for id $id")
+            logger.info("Creating new Mjpeg stream for id $id")
 
-                receiver.init(emptyArray())
-                receivers[id] = receiver
-            }
+            receiver.init(emptyArray())
+            receivers[id] = receiver
+        }
 
-            val receiver = receivers[id]!!
+        val receiver = receivers[id]!!
 
-            if(cvtCode != null) {
-                // convert image to the desired color space
-                Imgproc.cvtColor(image, tempMat, cvtCode)
-                receiver.take(tempMat)
-            } else {
-                receiver.take(image)
-            }
-
+        if (cvtCode != null) {
+            // convert image to the desired color space
+            Imgproc.cvtColor(image, tempMat, cvtCode)
+            receiver.take(tempMat)
+        } else {
+            receiver.take(image)
         }
     }
 
@@ -79,7 +74,7 @@ class EOCVSimEngineImageStreamer(
     fun stop() {
         logger.info("Stopping EOCVSimEngineImageStreamer")
 
-        for((_, receiver) in receivers) {
+        for ((_, receiver) in receivers) {
             receiver.close()
         }
     }

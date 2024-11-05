@@ -139,10 +139,17 @@ class ClientPrevizManager(
         status: PipelineStream.Status = stream.status
     ) {
         if(previzRunning) {
-            stopPreviz()
-        }
+            logger.info("Restarting previz session $previzName with new stream resolution")
 
-        startPreviz(previzName, previzStreamWidth, previzStreamHeight, status)
+            onPrevizStop.doOnce {
+                startPreviz(previzName, previzStreamWidth, previzStreamHeight, status)
+            }
+
+            stopPreviz()
+        } else {
+            logger.info("Starting previz session $previzName with new stream resolution")
+            startPreviz(previzName, previzStreamWidth, previzStreamHeight, status)
+        }
     }
 
     fun refreshPreviz() = previzName?.let{
@@ -161,12 +168,17 @@ class ClientPrevizManager(
 
     fun stopPreviz() {
         logger.info("Stopping previz session $previzName")
-        previzRunning = false
 
-        client.sendMessage(PrevizStopMessage(previzName!!))
+        client.sendMessage(PrevizStopMessage(previzName!!).onResponseWith<OkResponse> {
+            client.onProcess.doOnce {
+                logger.info("Previz session $previzName stopped")
+                stream.stop()
 
-        stream.stop()
-        onPrevizStop.run()
+                previzRunning = false
+
+                onPrevizStop.run()
+            }
+        })
     }
 
     fun update() {

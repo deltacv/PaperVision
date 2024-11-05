@@ -112,8 +112,8 @@ class EOCVSimPrevizSession(
             eocvSim.pipelineManager.refreshGuiPipelineList()
 
             eocvSim.pipelineManager.onUpdate.doOnce {
-                eocvSim.pipelineManager.addPipelineClass(latestClass!!, PipelineSource.COMPILED_ON_RUNTIME)
                 eocvSim.pipelineManager.addInstantiator(latestClass!!, StreamableOpenCvPipelineInstantiator(streamer))
+                eocvSim.pipelineManager.addPipelineClass(latestClass!!, PipelineSource.COMPILED_ON_RUNTIME)
 
                 eocvSim.pipelineManager.forceChangePipeline(
                     eocvSim.pipelineManager.getIndexOf(

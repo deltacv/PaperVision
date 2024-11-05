@@ -95,10 +95,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     override fun onLoad() {
         paperVisionProjectManager.init()
-
-        System.setProperty("org.eclipse.jetty.DEBUG", "OFF");
-        System.setProperty("org.eclipse.jetty.TRACE", "OFF");
-
         startJavalinServer()
 
         eocvSim.visualizer.onPluginGuiAttachment.doOnce {
@@ -188,6 +184,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         javalin.get("/") {
             it.redirect("/0")
         }.get("/available") { ctx ->
+
             val streamer = currentPrevizSession?.streamer
 
             if (streamer is EOCVSimEngineImageStreamer) {
@@ -325,56 +322,66 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<PrevizStartMessage> {
-            if (currentPrevizSession != null) {
-                logger.warn("Stopping current previz session ${currentPrevizSession?.sessionName} to start new one")
-                logger.warn("Please make sure to stop the previz session before starting a new one")
-                currentPrevizSession?.stopPreviz()
-            }
+            eocvSim.onMainUpdate.doOnce {
+                if (currentPrevizSession != null) {
+                    logger.warn("Stopping current previz session ${currentPrevizSession?.sessionName} to start new one")
+                    logger.warn("Please make sure to stop the previz session before starting a new one")
 
-            val streamer = EOCVSimEngineImageStreamer(
-                Size(
-                    message.streamWidth.toDouble(),
-                    message.streamHeight.toDouble()
+                    currentPrevizSession?.stopPreviz()
+                }
+
+                val streamer = EOCVSimEngineImageStreamer(
+                    Size(
+                        message.streamWidth.toDouble(),
+                        message.streamHeight.toDouble()
+                    )
                 )
-            )
 
-            currentPrevizSession = EOCVSimPrevizSession(
-                message.previzName,
-                eocvSim, streamer,
-                message.sourceCode
-            )
+                currentPrevizSession = EOCVSimPrevizSession(
+                    message.previzName,
+                    eocvSim, streamer,
+                    message.sourceCode
+                )
 
-            logger.info("Received source code\n{}", message.sourceCode)
+                logger.info("Received source code\n{}", message.sourceCode)
 
-            respond(OkResponse())
+                respond(OkResponse())
+            }
         }
 
         engine.setMessageHandlerOf<PrevizPingMessage> {
-            if (currentPrevizSession == null || currentPrevizSession?.sessionName != message.previzName) {
-                respond(ErrorResponse("Previz is not running"))
-            } else {
-                currentPrevizSession?.ensurePrevizPipelineRunning()
+            eocvSim.onMainUpdate.doOnce {
+                if (currentPrevizSession == null || currentPrevizSession?.sessionName != message.previzName) {
+                    respond(ErrorResponse("Previz is not running"))
+                } else {
+                    currentPrevizSession?.ensurePrevizPipelineRunning()
+                    respond(OkResponse())
+                }
             }
         }
 
         engine.setMessageHandlerOf<PrevizStopMessage> {
-            if (currentPrevizSession?.sessionName == message.previzName) {
-                currentPrevizSession?.stopPreviz()
-                currentPrevizSession = null
+            eocvSim.onMainUpdate.doOnce {
+                if (currentPrevizSession?.sessionName == message.previzName) {
+                    currentPrevizSession?.stopPreviz()
+                    currentPrevizSession = null
+                }
             }
 
             respond(OkResponse())
         }
 
         engine.setMessageHandlerOf<PrevizSourceCodeMessage> {
-            if (currentPrevizSession?.sessionName == message.previzName) {
-                currentPrevizSession!!.refreshPreviz(message.sourceCode)
-                logger.info("Received source code\n{}", message.sourceCode)
+            eocvSim.onMainUpdate.doOnce {
+                if (currentPrevizSession?.sessionName == message.previzName) {
+                    currentPrevizSession!!.refreshPreviz(message.sourceCode)
+                    logger.info("Received source code\n{}", message.sourceCode)
 
-                respond(OkResponse())
+                    respond(OkResponse())
+                } else {
+                    respond(ErrorResponse("No previz session with name ${message.previzName}"))
+                }
             }
-
-            respond(ErrorResponse("No previz session with name ${message.previzName}"))
         }
     }
 
