@@ -1,6 +1,7 @@
 package io.github.deltacv.papervision.node.vision.classification
 
 import io.github.deltacv.papervision.attribute.Attribute
+import io.github.deltacv.papervision.attribute.math.DoubleAttribute
 import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
@@ -29,8 +30,8 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
 
     val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
 
-    val minArea = IntAttribute(INPUT, "$[att_minarea]")
-    val maxArea = IntAttribute(INPUT, "$[att_maxarea]")
+    val minArea = DoubleAttribute(INPUT, "$[att_minarea]")
+    val maxArea = DoubleAttribute(INPUT, "$[att_maxarea]")
 
     val output = ListAttribute(OUTPUT, PointsAttribute, "$[att_filteredcontours]")
 
@@ -40,7 +41,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
         + minArea
         + maxArea
 
-        maxArea.value.set(100)
+        maxArea.value.set(100.0)
 
         + output.rebuildOnChange()
     }

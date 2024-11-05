@@ -41,6 +41,10 @@ class EOCVSimEngineImageStreamer(
         image: Mat,
         cvtCode: Int?
     ) {
+        if(image.empty()) {
+            return // silly user
+        }
+
         if (!receivers.containsKey(id)) {
             val receiver = MjpegHttpStreamerReceiver(0, resolution)
             handlers[id] = receiver.takeHandler() // save handler for later
