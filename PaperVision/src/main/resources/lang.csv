@@ -26,6 +26,7 @@ nod_boundingrect,Bounding Rectangles,Rectangulos Delimitantes
 nod_boundingrotated_rect,Bounding Rotated Rectangles,Rectangulos Delimitantes Rotados
 nod_findcontours,Simple Find Contours,Deteccion de Contornos
 nod_groupcontours_byshape,Filter Contours by Shape, Filtrar Contornos por Figura
+nod_groupcontours_byarea,Filter Contours by Area,Filtrar Contornos por Area
 nod_grouprects_insidearea,Group Rectangles Inside Area,Agrupar Rectangulos Dentro de Area
 nod_exporttarget,Export Target,Exportar Objetivo
 nod_exporttargets,Export Targets,Exportar Objetivos
@@ -67,6 +68,8 @@ att_drawon_image,Overlay Input,Entrada para Overlay
 att_linecolor,Line Color,Color de Linea
 att_linethickness,Line Thickness,Grosor de Linea
 att_numbers,Numbers,Numeros
+att_minarea,Min Area,Area Minima
+att_maxarea,Max Area,Area Maxima
 att_result,Result,Resultado
 att_shape,Shape,Figura
 att_sides,Sides,Lados
@@ -84,6 +87,7 @@ att_label,Label,Etiqueta
 des_exporttargets,Export detected targets to hand to another program.,Exporta objetivos detectados para pasarlos a otro programa.
 des_exporttarget,Export detected target to hand to another program.,Exporta el objetivo detectado para pasarlo a otro programa.
 des_groupcontours_byshape,Finds contours that match a specific shape.,Encuentra los contornos que encajan<br>en una figura especificada.
+des_groupcontours_byarea,Finds contours that have an area within a specified range.,Encuentra los contornos que tienen un área<br>dentro de un rango especificado.
 des_grouprects_insidearea,Selects rectangles that are inside a specified area.,Selecciona los rectángulos que están<br>dentro de un área especificada.
 des_filterbiggest_rect,Finds the biggest rectangle from a list of rectangles.,Encuentra el rectángulo más grande<br>de una lista de rectángulos.
 des_boundingrect,Calculates the bounding rectangles<br>of a given list of points.,Calcula los rectángulos delimitadores<br>de una lista de puntos dada.

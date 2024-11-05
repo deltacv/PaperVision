@@ -77,11 +77,13 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
      * If the plugin comes from a file, we will just use the file classpath, since it's a single fat jar.
      * If the plugin comes from Maven, we will use the classpath of all the transitive dependencies.
      */
-    val fullClasspath = if (pluginSource == PluginSource.FILE) {
-        context.loader.pluginFile.absolutePath
-    } else {
-        classpath.joinToString(File.pathSeparator).trim(File.pathSeparatorChar)
-    } + File.pathSeparator
+    val fullClasspath by lazy {
+        if (pluginSource == PluginSource.FILE) {
+            context.loader.pluginFile.absolutePath
+        } else {
+            classpath.joinToString(File.pathSeparator).trim(File.pathSeparatorChar)
+        } + File.pathSeparator
+    }
 
     val paperVisionProjectManager = PaperVisionProjectManager(
         fullClasspath, fileSystem, engine, eocvSim

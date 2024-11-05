@@ -125,6 +125,8 @@ class PipelineStream(
         clear()
     }
 
+    fun isAtOfflineTexture(id: Int) = !isStarted || queue[id] == null
+
     fun textureOf(id: Int) = if(isStarted)
         queue[id] ?: offlineTexture
     else offlineTexture

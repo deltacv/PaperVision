@@ -53,5 +53,9 @@ class ImageDisplayWindow(
                 pipelineStream.minimize()
             }
         }
+
+        ImGui.sameLine()
+
+        ImGui.text(if(pipelineStream.isAtOfflineTexture(imageDisplay.id)) "Loading pre-visualization..." else "Running OK")
     }
 }

@@ -27,7 +27,6 @@ import io.github.deltacv.papervision.node.PaperNode
 )
 class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
 
-
     val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
 
     val minArea = IntAttribute(INPUT, "$[att_minarea]")
