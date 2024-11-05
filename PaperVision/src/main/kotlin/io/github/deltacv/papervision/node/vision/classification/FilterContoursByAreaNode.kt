@@ -30,8 +30,8 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
 
     val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
 
-    val minArea = DoubleAttribute(INPUT, "$[att_minarea]")
-    val maxArea = DoubleAttribute(INPUT, "$[att_maxarea]")
+    val minArea = IntAttribute(INPUT, "$[att_minarea]")
+    val maxArea = IntAttribute(INPUT, "$[att_maxarea]")
 
     val output = ListAttribute(OUTPUT, PointsAttribute, "$[att_filteredcontours]")
 
@@ -41,7 +41,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
         + minArea
         + maxArea
 
-        maxArea.value.set(100.0)
+        maxArea.value.set(100)
 
         + output.rebuildOnChange()
     }

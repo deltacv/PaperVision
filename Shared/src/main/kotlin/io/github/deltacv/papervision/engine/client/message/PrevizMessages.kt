@@ -44,7 +44,6 @@ class PrevizAskNameMessage : PaperVisionEngineMessageBase()
 
 class TunerChangeValueMessage(
     var label: String,
-    var index: Int,
     var value: Any
 ) : PaperVisionEngineMessageBase()
 

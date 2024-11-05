@@ -235,7 +235,7 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
             when (value) {
                 is Array<*> -> TunerChangeValuesMessage(label, value)
                 is Iterable<*> -> TunerChangeValuesMessage(label, value.map { it as Any }.toTypedArray())
-                else -> TunerChangeValueMessage(label, 0, value)
+                else -> TunerChangeValueMessage(label, value)
             }
         )
     }
