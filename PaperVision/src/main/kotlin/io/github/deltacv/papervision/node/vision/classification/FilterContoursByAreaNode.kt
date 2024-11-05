@@ -75,7 +75,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                     contoursVar("clear")
 
                     foreach(Variable(JvmOpenCvTypes.MatOfPoint, "contour"), contours.value) { contour ->
-                        val areaVar = uniqueVariable("area", JvmOpenCvTypes.Imgproc.callValue("contourArea", IntType, contour))
+                        val areaVar = uniqueVariable("area", JvmOpenCvTypes.Imgproc.callValue("contourArea", DoubleType, contour))
                         local(areaVar)
 
                         ifCondition((minAreaVar greaterOrEqualThan areaVar) and (areaVar lessOrEqualThan maxAreaVar)) {
