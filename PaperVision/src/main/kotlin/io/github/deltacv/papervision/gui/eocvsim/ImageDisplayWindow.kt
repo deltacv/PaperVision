@@ -20,6 +20,7 @@ package io.github.deltacv.papervision.gui.eocvsim
 
 import imgui.ImGui
 import imgui.flag.ImGuiWindowFlags
+import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.engine.previz.PipelineStream
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.util.flags
@@ -56,6 +57,10 @@ class ImageDisplayWindow(
 
         ImGui.sameLine()
 
-        ImGui.text(if(pipelineStream.isAtOfflineTexture(imageDisplay.id)) "Loading pre-visualization..." else "Running OK")
+        val statusText = if(pipelineStream.isAtOfflineTexture(imageDisplay.id))
+            "mis_loading"
+        else "mis_runningok"
+
+        ImGui.text(tr(statusText))
     }
 }

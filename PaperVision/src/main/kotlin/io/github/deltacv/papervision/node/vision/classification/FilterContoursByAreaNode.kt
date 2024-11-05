@@ -76,6 +76,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
 
                     foreach(Variable(JvmOpenCvTypes.MatOfPoint, "contour"), contours.value) { contour ->
                         val areaVar = uniqueVariable("area", JvmOpenCvTypes.Imgproc.callValue("contourArea", IntType, contour))
+                        local(areaVar)
 
                         ifCondition((minAreaVar greaterOrEqualThan areaVar) and (areaVar lessOrEqualThan maxAreaVar)) {
                             contoursVar("add", contour)
@@ -109,6 +110,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
 
                     foreach(Variable(CPythonLanguage.NoType, "contour"), contours.value) { contour ->
                         val areaVar = uniqueVariable("area", CPythonOpenCvTypes.cv2.callValue("contourArea", CPythonLanguage.NoType, contour))
+                        local(areaVar)
 
                         ifCondition((areaVar greaterOrEqualThan minArea) and (areaVar lessOrEqualThan maxArea)) {
                             contoursVar("append", contour)
