@@ -62,7 +62,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                 val minAreaVar = uniqueVariable("minArea", minAreaVal.value.v)
                 val maxAreaVar = uniqueVariable("maxArea", maxAreaVal.value.v)
 
-                val contoursVar = uniqueVariable("byAreaContours", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
+                val contoursVar = uniqueVariable("${contours.value.value}ByArea", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
 
                 group {
                     public(minAreaVar, minArea.label())
@@ -78,7 +78,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                         val areaVar = uniqueVariable("area", JvmOpenCvTypes.Imgproc.callValue("contourArea", DoubleType, contour))
                         local(areaVar)
 
-                        ifCondition((minAreaVar greaterOrEqualThan areaVar) and (areaVar lessOrEqualThan maxAreaVar)) {
+                        ifCondition((areaVar greaterOrEqualThan minAreaVar) and (areaVar lessOrEqualThan maxAreaVar)) {
                             contoursVar("add", contour)
                         }
                     }
@@ -112,7 +112,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                         val areaVar = uniqueVariable("area", CPythonOpenCvTypes.cv2.callValue("contourArea", CPythonLanguage.NoType, contour))
                         local(areaVar)
 
-                        ifCondition((areaVar greaterOrEqualThan minArea) and (areaVar lessOrEqualThan maxArea)) {
+                        ifCondition((areaVar greaterOrEqualThan minAreaVar) and (areaVar lessOrEqualThan maxArea)) {
                             contoursVar("append", contour)
                         }
                     }
