@@ -112,7 +112,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                         val areaVar = uniqueVariable("area", CPythonOpenCvTypes.cv2.callValue("contourArea", CPythonLanguage.NoType, contour))
                         local(areaVar)
 
-                        ifCondition((areaVar greaterOrEqualThan minAreaVar) and (areaVar lessOrEqualThan maxArea)) {
+                        ifCondition((areaVar greaterOrEqualThan minArea) and (areaVar lessOrEqualThan maxArea)) {
                             contoursVar("append", contour)
                         }
                     }
