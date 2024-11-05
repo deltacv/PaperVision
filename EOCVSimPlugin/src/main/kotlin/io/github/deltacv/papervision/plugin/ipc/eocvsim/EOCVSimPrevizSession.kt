@@ -76,7 +76,7 @@ class EOCVSimPrevizSession(
                 eocvSim.pipelineManager.forceChangePipeline(eocvSim.pipelineManager.getIndexOf(latestClass!!, PipelineSource.COMPILED_ON_RUNTIME))
 
                 latestPipeline = eocvSim.pipelineManager.currentPipeline!!
-                latestVirtualReflect = JvmVirtualReflection.contextOf(latestPipeline!!::class.java)
+                latestVirtualReflect = JvmVirtualReflection.contextOf(latestPipeline!!)
 
                 refreshPrevizPipelineStreamer()
 

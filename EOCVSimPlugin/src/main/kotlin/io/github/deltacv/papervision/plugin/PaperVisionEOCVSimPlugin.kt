@@ -251,6 +251,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         engine.setMessageHandlerOf<TunerChangeValueMessage> {
             eocvSim.onMainUpdate.doOnce {
                 val field = currentPrevizSession?.latestVirtualReflect?.getLabeledField(message.label)
+
                 if (field != null) {
                     field.set(message.value)
                     logger.info("Received tuner change value message for ${message.label} to ${message.value} ")
