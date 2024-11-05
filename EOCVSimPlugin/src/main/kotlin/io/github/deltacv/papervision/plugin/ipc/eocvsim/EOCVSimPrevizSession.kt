@@ -25,8 +25,11 @@ import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipeline
 import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipelineInstantiator
 import io.github.deltacv.eocvsim.stream.ImageStreamer
+import io.github.deltacv.eocvsim.virtualreflect.VirtualReflectContext
+import io.github.deltacv.eocvsim.virtualreflect.jvm.JvmVirtualReflection
 import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
 import io.github.deltacv.papervision.plugin.eocvsim.SinglePipelineCompiler
+import org.openftc.easyopencv.OpenCvPipeline
 
 class EOCVSimPrevizSession(
     val sessionName: String,
@@ -40,6 +43,11 @@ class EOCVSimPrevizSession(
 
     private var latestClass: Class<*>? = null
     private var latestSourceCode: String? = null
+
+    var latestPipeline: OpenCvPipeline? = null
+        private set
+    var latestVirtualReflect: VirtualReflectContext? = null
+        private set
 
     val logger by loggerForThis()
 
@@ -66,6 +74,10 @@ class EOCVSimPrevizSession(
                 isChangingPipeline = true
 
                 eocvSim.pipelineManager.forceChangePipeline(eocvSim.pipelineManager.getIndexOf(latestClass!!, PipelineSource.COMPILED_ON_RUNTIME))
+
+                latestPipeline = eocvSim.pipelineManager.currentPipeline!!
+                latestVirtualReflect = JvmVirtualReflection.contextOf(latestPipeline!!::class.java)
+
                 refreshPrevizPipelineStreamer()
 
                 // Re-enable the listener after the change
@@ -112,7 +124,7 @@ class EOCVSimPrevizSession(
             eocvSim.pipelineManager.refreshGuiPipelineList()
 
             eocvSim.pipelineManager.onUpdate.doOnce {
-                eocvSim.pipelineManager.addInstantiator(latestClass!!, StreamableOpenCvPipelineInstantiator(streamer))
+                eocvSim.pipelineManager.addInstantiator(latestClass!!, StreamableNoReflectOpenCvPipelineInstantiator(streamer))
                 eocvSim.pipelineManager.addPipelineClass(latestClass!!, PipelineSource.COMPILED_ON_RUNTIME)
 
                 eocvSim.pipelineManager.forceChangePipeline(
@@ -121,6 +133,9 @@ class EOCVSimPrevizSession(
                         PipelineSource.COMPILED_ON_RUNTIME
                     )
                 )
+
+                latestPipeline = eocvSim.pipelineManager.currentPipeline!!
+                latestVirtualReflect = JvmVirtualReflection.contextOf(latestPipeline!!::class.java)
 
                 refreshPrevizPipelineStreamer()
             }

@@ -19,6 +19,7 @@
 package io.github.deltacv.papervision.plugin
 
 import com.formdev.flatlaf.demo.HintManager
+import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.gui.DialogFactory
 import com.github.serivesmejia.eocvsim.input.SourceType
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
@@ -26,6 +27,7 @@ import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipelineInstantiator
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
 import io.github.deltacv.eocvsim.plugin.loader.PluginSource
+import io.github.deltacv.eocvsim.virtualreflect.VirtualField
 import io.github.deltacv.papervision.engine.client.message.*
 import io.github.deltacv.papervision.engine.client.response.ErrorResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
@@ -248,23 +250,40 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     override fun onEnable() {
         engine.setMessageHandlerOf<TunerChangeValueMessage> {
             eocvSim.onMainUpdate.doOnce {
-                val field = eocvSim.tunerManager.getTunableFieldWithLabel(message.label) ?: return@doOnce
+                val field = currentPrevizSession?.latestVirtualReflect?.getLabeledField(message.label)
+                if (field != null) {
+                    field.set(message.value)
+                    logger.info("Received tuner change value message for ${message.label} to ${message.value} ")
+                }
 
-                field.setPipelineFieldValue(message.value)
-                logger.info("Received tuner change value message for ${message.label} to ${message.value} ")
                 respond(OkResponse())
             }
         }
 
         engine.setMessageHandlerOf<TunerChangeValuesMessage> {
             eocvSim.onMainUpdate.doOnce {
-                val field = eocvSim.tunerManager.getTunableFieldWithLabel(message.label) ?: return@doOnce
+                val field = currentPrevizSession?.latestVirtualReflect?.getLabeledField(message.label)
 
-                for (i in message.values.indices) {
-                    field.setFieldValue(i, message.values[i])
+                if(field != null) {
+                    val tunableFieldClass = eocvSim.tunerManager.getTunableFieldOf(field)
+
+                    val tunableField = tunableFieldClass.getConstructor(
+                        Object::class.java,
+                        VirtualField::class.java,
+                        EOCVSim::class.java
+                    ).newInstance(
+                        currentPrevizSession!!.latestPipeline,
+                        field,
+                        eocvSim
+                    )
+
+                    for (i in message.values.indices) {
+                        tunableField.setFieldValue(i, message.values[i])
+                    }
+
+                    logger.info("Received tuner change values message for ${message.label} to ${message.values}")
+
                 }
-
-                logger.info("Received tuner change values message for ${message.label} to ${message.values}")
 
                 respond(OkResponse())
             }
