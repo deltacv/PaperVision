@@ -248,16 +248,23 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     override fun onEnable() {
         engine.setMessageHandlerOf<TunerChangeValueMessage> {
             eocvSim.onMainUpdate.doOnce {
-                eocvSim.tunerManager.getTunableFieldWithLabel(message.label)?.setPipelineFieldValue(message.value)
+                val field = eocvSim.tunerManager.getTunableFieldWithLabel(message.label) ?: return@doOnce
+
+                field.setPipelineFieldValue(message.value)
+                logger.info("Received tuner change value message for ${message.label} to ${message.value} ")
                 respond(OkResponse())
             }
         }
 
         engine.setMessageHandlerOf<TunerChangeValuesMessage> {
             eocvSim.onMainUpdate.doOnce {
+                val field = eocvSim.tunerManager.getTunableFieldWithLabel(message.label) ?: return@doOnce
+
                 for (i in message.values.indices) {
-                    eocvSim.tunerManager.getTunableFieldWithLabel(message.label)?.setFieldValue(i, message.values[i])
+                    field.setFieldValue(i, message.values[i])
                 }
+
+                logger.info("Received tuner change values message for ${message.label} to ${message.values}")
 
                 respond(OkResponse())
             }

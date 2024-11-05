@@ -187,7 +187,7 @@ class ClientPrevizManager(
             pingTimer.reset()
         }
 
-        if(stream.popRequestedMaximize() && previzName != null) {
+        if(stream.popRequestedMaximize() && previzName != null && previzRunning) {
             logger.info("Maximizing previz session $previzName")
 
             restartWithStreamResolution(
@@ -197,7 +197,7 @@ class ClientPrevizManager(
             )
         }
 
-        if(stream.popRequestedMinimize() && previzName != null) {
+        if(stream.popRequestedMinimize() && previzName != null && previzRunning) {
             logger.info("Minimizing previz session $previzName")
 
             restartWithStreamResolution(
