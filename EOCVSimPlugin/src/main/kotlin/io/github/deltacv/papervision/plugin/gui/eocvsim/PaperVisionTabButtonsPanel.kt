@@ -41,7 +41,7 @@ class PaperVisionTabButtonsPanel(
     projectManager: PaperVisionProjectManager
 ) : JPanel(GridBagLayout()) {
 
-    val newProjectBtt  = JButton("New Project")
+    val newProjectBtt  = JButton("New")
     val editSelectionBtt = JButton("Edit")
 
     val openSelectionBtt = JButton("Open Selected Project")

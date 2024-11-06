@@ -345,6 +345,8 @@ class NodeList(
             }
 
             if(list.isNotEmpty()) {
+                // sort alphabetically
+                list.sortBy { if(it is DrawNode<*>) it.annotationData.name else it::class.java.simpleName }
                 map[category] = list
             }
         }
@@ -503,7 +505,11 @@ class NodeList(
                         ImGui.newLine()
                         ImGui.indent(10f)
 
+                        ImGui.pushStyleVar(ImGuiStyleVar.CellPadding, 20f, 20f)
+
                         table.draw()
+
+                        ImGui.popStyleVar()
 
                         ImGui.newLine()
                         ImGui.unindent(10f)

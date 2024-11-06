@@ -27,11 +27,11 @@ nod_boundingrotated_rect,Bounding Rotated Rectangles,Rectangulos Delimitantes Ro
 nod_findcontours,Simple Find Contours,Deteccion de Contornos
 nod_groupcontours_byshape,Filter Contours by Shape, Filtrar Contornos por Figura
 nod_groupcontours_byarea,Filter Contours by Area,Filtrar Contornos por Area
-nod_grouprects_insidearea,Group Rectangles Inside Area,Agrupar Rectangulos Dentro de Area
+nod_grouprects_byratio,Filter Rectangles by Ratio,Filtrar Rectangulos por Ratio
 nod_exporttarget,Export Target,Exportar Objetivo
 nod_exporttargets,Export Targets,Exportar Objetivos
-nod_filterbiggest_rect,Filter Biggest Rectangle,Filtar Rectangulo Mas Grande
-nod_filterbiggest_contour,Filter Biggest Contour,Filtrar Contorno Mas Grande
+nod_filterbiggest_rect,Find Biggest Rectangle,Encontrar Rectangulo Mas Grande
+nod_filterbiggest_contour,Find Biggest Contour,Encontrar Contorno Mas Grande
 nod_drawcontours,Draw Contours,Dibujar Contornos
 nod_drawcontours_onimage,Draw Contours on Image,Dibujar Contornos en Imagen
 nod_drawrects,Draw Rectangles,Dibujar Rectangulos
@@ -63,6 +63,7 @@ att_boundingrects,Bounding Rects,Rectangulos
 att_biggestrect,Biggest Rect,Rectangulo Mas Grande
 att_biggestcontour,Biggest Contour,Contorno Mas Grande
 att_filteredcontours,Filtered Contours,Contornos Filtrados
+att_filteredrects,Filtered Rects,Rectangulos Filtrados
 att_colorspace,Color Space,Espacio de Color
 att_drawon_image,Overlay Input,Entrada para Overlay
 att_linecolor,Line Color,Color de Linea
@@ -70,6 +71,8 @@ att_linethickness,Line Thickness,Grosor de Linea
 att_numbers,Numbers,Numeros
 att_minarea,Min Area,Area Minima
 att_maxarea,Max Area,Area Maxima
+att_minratio,Min Ratio,Ratio Minimo
+att_maxratio,Max Ratio,Ratio Maximo
 att_result,Result,Resultado
 att_shape,Shape,Figura
 att_sides,Sides,Lados
