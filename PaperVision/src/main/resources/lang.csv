@@ -27,6 +27,7 @@ nod_boundingrotated_rect,Bounding Rotated Rectangles,Rectangulos Delimitantes Ro
 nod_findcontours,Simple Find Contours,Deteccion de Contornos
 nod_groupcontours_byshape,Filter Contours by Shape, Filtrar Contornos por Figura
 nod_groupcontours_byarea,Filter Contours by Area,Filtrar Contornos por Area
+nod_groupcontours_byratio,Filter Contours by Ratio,Filtrar Contornos por Ratio
 nod_grouprects_byratio,Filter Rectangles by Ratio,Filtrar Rectangulos por Ratio
 nod_exporttarget,Export Target,Exportar Objetivo
 nod_exporttargets,Export Targets,Exportar Objetivos
