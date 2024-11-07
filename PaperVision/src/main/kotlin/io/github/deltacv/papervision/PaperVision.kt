@@ -80,6 +80,8 @@ class PaperVision(
         private set
     lateinit var textureFactory: PlatformTextureFactory
         private set
+    lateinit var config: PlatformConfig
+        private set
 
     val onInit = PaperVisionEventHandler("PaperVision-OnInit")
     val onUpdate = PaperVisionEventHandler("PaperVision-OnUpdate")
@@ -155,6 +157,9 @@ class PaperVision(
         keyManager = KeyManager(setup.keys ?: throw IllegalArgumentException("Platform ${setup.name} must provide PlatformKeys"))
         window = setup.window ?: throw IllegalArgumentException("Platform ${setup.name} must provide a Window")
         textureFactory = setup.textureFactory ?: throw IllegalArgumentException("Platform ${setup.name} must provide a TextureFactory")
+        config = setup.config
+
+        config.load()
 
         textureProcessorQueue = TextureProcessorQueue(textureFactory)
         textureProcessorQueue.subscribeTo(onUpdate)

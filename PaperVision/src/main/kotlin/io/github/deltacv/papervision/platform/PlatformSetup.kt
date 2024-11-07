@@ -30,8 +30,9 @@ class PlatformSetup(val name: String) {
     var showWelcomeWindow = false
 
     var engineBridge: PaperVisionEngineBridge? = null
-
     var previzByteMessageReceiverProvider: (() -> ByteMessageReceiver)? = null
+
+    var config: PlatformConfig = DefaultFilePlatformConfig()
 }
 
 data class PlatformSetupCallback(val name: String, val block: PlatformSetup.() -> Unit) {
