@@ -357,7 +357,7 @@ class NodeList(
     }
 
     fun clearHighlight() {
-        highlightedNodeClass = null
+        highlightedNode = null
     }
 
     override fun delete() {

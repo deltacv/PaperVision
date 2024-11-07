@@ -248,6 +248,8 @@ val Stage9: Stage = {
 val Stage10: Stage = {
     val node = nodeEditor.paperVision.nodes.find { it is DrawContoursNode } as DrawContoursNode?
 
+    nodeEditor.paperVision.nodeList.clearHighlight()
+
     if (node == null) {
         currentStage = Stage6
     } else {
