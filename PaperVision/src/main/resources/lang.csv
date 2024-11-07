@@ -123,6 +123,48 @@ mis_welcome4,"If you are new, make sure to click on the 'Guided Tour' button bel
 mis_welcome5,Made with <3 by the deltacv team. Have fun!,Hecho con <3 por el equipo de deltacv. Buena suerte!
 mis_gotit,Got it!,Entendido!
 mis_dontshow_again,Don't Show Again,No Mostrar de Nuevo
+mis_next,Next,Siguiente
+mis_close,Close,Cerrar
+mis_cancel,Cancel,Cancelar
 mis_guidedtour,Guided Tour,Visita Guiada
+mis_guidedtour_1,Welcome to the guided tour!,¡Bienvenido al recorrido guiado!
+mis_guidedtour_2,This will help you get started with PaperVision.<br>Read each step carefully !,Esto te ayudará a comenzar con PaperVision.<br>¡Lee cada paso con cuidado!
+mis_guidedtour_3,A pipeline is a sequence of nodes that transform data in a series of steps.,Un pipeline es una secuencia de nodos que transforman datos en una serie de pasos.
+mis_guidedtour_4,"This is the entry point, from which the pipeline receives the input images.","Este es el punto de entrada, desde donde el pipeline recibe las imágenes de entrada."
+mis_guidedtour_5,"This is the exit point, where the pipeline outputs the final result.","Este es el punto de salida, donde el pipeline genera el resultado final."
+mis_guidedtour_6,"The output image can be visualized, you can draw various graphics and<br>annotations that represent the results of your processing.","La imagen de salida puede ser visualizada, puedes dibujar diversos gráficos<br>y anotaciones que representan los resultados de tu procesamiento."
+mis_guidedtour_7,Press SPACE or<br>click this button \\/,Presiona ESPACIO o<br>haz clic en este botón \\/
+mis_guidedtour_8_0,This is the node list. Here you can find all the nodes available to you.,Esta es la lista de nodos. Aquí puedes encontrar todos los nodos disponibles para ti.
+mis_guidedtour_8_1,You can drag and drop nodes from here to the editor to create a pipeline.,Puedes arrastrar y soltar nodos desde aquí al editor para crear un pipeline.
+mis_guidedtour_8_2,**Grab the "Color Threshold" Node to proceed.**,**Toma el nodo "Umbral de Color" para continuar.**
+mis_guidedtour_9,You need to add the "Color Threshold" node to proceed.<br>Try opening the node list and dragging the node to the editor.,Necesitas agregar el nodo "Umbral de Color" para continuar.<br>Intenta abrir la lista de nodos y arrastrar el nodo al editor.
+mis_guidedtour_10,Great! You've added the "Color Threshold" node.,¡Genial! Has agregado el nodo "Umbral de Color".
+mis_guidedtour_11_0,"Now, let's connect the input node to the threshold node.","Ahora, conectemos el nodo de entrada al nodo de umbral."
+mis_guidedtour_11_1,Click on the pin of the input attribute of this node.,Haz clic en el pin del atributo de entrada de este nodo.
+mis_guidedtour_11_2,"Then, drag the connection to the input node of the pipeline.","Luego, arrastra la conexión al nodo de entrada del pipeline."
+mis_guidedtour_12,Great! Let's add a few more nodes to the pipeline.<br>Open the node list and drag the "Simple Find Contours" node to the editor.,¡Genial! Agreguemos unos cuantos nodos más al pipeline.<br>Abre la lista de nodos y arrastra el nodo "Deteccion de Contornos" al editor.
+mis_guidedtour_13,You've added the "Simple Find Contours" node.,Has agregado el nodo "Deteccion de Contornos".
+mis_guidedtour_14,"Now, connect the threshold node to it!","¡Ahora, conecta el nodo de umbral a este!"
+mis_guidedtour_15,You need to add the "Simple Find Contours" node to proceed.,Necesitas agregar el nodo "Deteccion de Contornos" para continuar.
+mis_guidedtour_16,"Great! You've connected the nodes. Let's add one more node !","¡Genial! Has conectado los nodos. ¡Agreguemos un nodo más!"
+mis_guidedtour_17,"Open the node list and drag the "Draw Contours" node to the editor.","Abre la lista de nodos y arrastra el nodo "Dibujar Contornos" al editor."
+mis_guidedtour_18,"You need to add the "Draw Contours" node to proceed.","Necesitas agregar el nodo "Dibujar Contornos" para continuar."
+mis_guidedtour_19,"You've added the "Draw Contours" node.","Has agregado el nodo "Dibujar Contornos"."
+mis_guidedtour_20,"Now, connect the "Simple Find Contours" node to it !","¡Ahora, conecta el nodo "Deteccion de Contornos" a este!"
+mis_guidedtour_21,"Ensure you are connecting it to the right input type.","Asegúrate de conectarlo al tipo de entrada correcto."
+mis_guidedtour_22,"Almost there ! Link the "Input" attribute of this node","¡Casi terminamos! Conecta el atributo "Entrada" de este nodo"
+mis_guidedtour_23,"to the "Pipeline Input" all the way from the beginning !","a la "Entrada" del Pipeline que se encuentra hasta el principio !"
+mis_guidedtour_24,"Connect the output of the "Draw Contours" node to the","Conecta la salida del nodo "Dibujar Contornos" a la"
+mis_guidedtour_25,""Pipeline Output" to wrap up the process.",""Salida" del pipeline para finalizar el proceso."
+mis_guidedtour_26,"You're all set !","¡Todo listo!"
+mis_guidedtour_27,"Press this button to run the pipeline. \\/","Presiona este botón para ejecutar el pipeline. \\/"
+mis_guidedtour_28,"Click on the Eye button to visualize the output of certain nodes.","Haz clic en el botón de Ojo para visualizar la salida de ciertos nodos."
+mis_guidedtour_29,"This lets you see the output at different steps of the pipeline.","Esto te permite ver la salida en diferentes pasos del pipeline."
+mis_guidedtour_30,"Play around with the threshold values to see how it affects the output.","Juega con los valores de umbral para ver cómo afecta la salida."
+mis_guidedtour_31,"That's it for the guided tour. Have fun !","¡Eso es todo para la visita guiada. ¡Diviertete!"
+mis_guidedtour_32,"After you're done, you can export the pipeline to different formats.","Después de terminar, puedes exportar el pipeline a diferentes formatos."
+mis_guidedtour_33,"Press this button to export your pipeline as source code. \\/","Presiona este botón para exportar tu pipeline como código fuente. \\/"
+mis_guidedtour_notavailable_1,"This guided tour is not available for existing projects.","Esta visita guiada no está disponible para proyectos existentes."
+mis_guidedtour_notavailable_2,"Please create a new project and try again.","Por favor, crea un nuevo proyecto e intenta de nuevo."
 mis_loading,Loading...,Cargando...
 mis_runningok,Running OK,Estatus OK

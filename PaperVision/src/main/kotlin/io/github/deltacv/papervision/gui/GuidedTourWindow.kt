@@ -3,6 +3,7 @@ package io.github.deltacv.papervision.gui
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
+import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.node.vision.featuredet.FindContoursNode
 import io.github.deltacv.papervision.node.vision.imageproc.ThresholdNode
@@ -12,11 +13,11 @@ import io.github.deltacv.papervision.util.flags
 typealias Stage = GuidedTourWindow.() -> Unit
 
 val Next: GuidedTourWindow.() -> Boolean = {
-    ImGui.button("Next")
+    ImGui.button(tr("mis_next"))
 }
 
 val Close: Stage = {
-    if (ImGui.button("Close")) {
+    if (ImGui.button(tr("mis_cancel"))) {
         delete()
     }
 }
@@ -24,8 +25,8 @@ val Close: Stage = {
 val InitialStage: Stage = {
     centerWindow()
 
-    ImGui.text("Welcome to the guided tour!")
-    ImGui.text("This will help you get started with PaperVision.")
+    ImGui.text(tr("mis_guidedtour_1"))
+    ImGui.text(tr("mis_guidedtour_2"))
 
     if (Next()) {
         currentStage = Stage1
@@ -41,8 +42,8 @@ val Stage1: Stage = {
         nodeEditor.inputNode.position.y + (nodeEditor.inputNode.size.y / 2f)
     )
 
-    ImGui.text("A pipeline is a sequence of nodes that transform data in a series of steps.")
-    ImGui.text("This is the entry point, from which the pipeline receives the input images.")
+    ImGui.text(tr("mis_guidedtour_3"))
+    ImGui.text(tr("mis_guidedtour_4"))
 
     if (Next()) {
         currentStage = Stage2
@@ -58,9 +59,8 @@ val Stage2: Stage = {
         nodeEditor.outputNode.position.y + (nodeEditor.outputNode.size.y * 0.8f)
     )
 
-    ImGui.text("This is the exit point, where the pipeline outputs the final result.")
-    ImGui.text("The output image can be visualized, you can draw various graphics and")
-    ImGui.text("annotations that represent the results of your processing.")
+    ImGui.text(tr("mis_guidedtour_5"))
+    ImGui.text(tr("mis_guidedtour_6"))
 
 
     if (Next()) {
@@ -79,8 +79,7 @@ val Stage3: Stage = {
         floatingButton.position.y - size.y
     )
 
-    ImGui.text("Press SPACE or")
-    ImGui.text("click this button \\/")
+    ImGui.text(tr("mis_guidedtour_7"))
 
     if (nodeEditor.paperVision.nodeList.isNodesListOpen) {
         currentStage = Stage4
@@ -100,15 +99,14 @@ val Stage4: Stage = {
         if (nodeEditor.paperVision.nodes.find { it is ThresholdNode } != null) {
             currentStage = Stage5
         } else {
-            ImGui.text("You need to add the \"Color Threshold\" node to proceed.")
-            ImGui.text("Try opening the node list and dragging the node to the editor.")
+            ImGui.text(tr("mis_guidedtour_9"))
             Close()
         }
     } else {
-        ImGui.text("This is the node list. Here you can find all the nodes available to you.")
-        ImGui.text("You can drag and drop nodes from here to the editor to create a pipeline.")
+        ImGui.text(tr("mis_guidedtour_8_0"))
+        ImGui.text(tr("mis_guidedtour_8_1"))
         ImGui.text("")
-        ImGui.text("**Grab the \"Color Threshold\" Node to proceed.**")
+        ImGui.text(tr("mis_guidedtour_8_2"))
 
         Close()
 
@@ -121,16 +119,16 @@ val Stage5: Stage = {
     val node = nodeEditor.paperVision.nodes.find { it is ThresholdNode } as ThresholdNode?
 
     if (node == null) {
-        ImGui.text("You need to add the \"Color Threshold\" node to proceed.")
+        ImGui.text(tr("mis_guidedtour_9"))
         Close()
     } else {
         centerWindow()
 
-        ImGui.text("Great! You've added the \"Color Threshold\" node.")
-        ImGui.text("Now, let's connect the input node to the threshold node.")
+        ImGui.text(tr("mis_guidedtour_10"))
+        ImGui.text(tr("mis_guidedtour_11_0"))
         ImGui.text("")
-        ImGui.text("Click on the pin of the input attribute of this node.")
-        ImGui.text("Then, drag the connection to the input node of the pipeline.")
+        ImGui.text(tr("mis_guidedtour_11_1"))
+        ImGui.text(tr("mis_guidedtour_11_2"))
 
         Close()
 
@@ -149,7 +147,7 @@ val Stage6: Stage = {
     val node = nodeEditor.paperVision.nodes.find { it is ThresholdNode } as ThresholdNode?
 
     if (node == null) {
-        ImGui.text("You need to add the \"Color Threshold\" node to proceed.")
+        ImGui.text(tr("mis_guidedtour_9"))
         Close()
     } else {
         position = ImVec2(
@@ -157,8 +155,7 @@ val Stage6: Stage = {
             node.input.position.y
         )
 
-        ImGui.text("Great! Let's add a few more nodes to the pipeline.")
-        ImGui.text("Open the node list and drag the \"Simple Find Contours\" node to the editor.")
+        ImGui.text(tr("mis_guidedtour_12"))
 
         Close()
 
@@ -172,15 +169,15 @@ val Stage7: Stage = {
     val node = nodeEditor.paperVision.nodes.find { it is FindContoursNode } as FindContoursNode?
 
     if (node == null) {
-        ImGui.text("You need to add the \"Simple Find Contours\" node to proceed.")
+        ImGui.text(tr("mis_guidedtour_15"))
         Close()
 
         nodeEditor.paperVision.nodeList.highlight(FindContoursNode::class.java)
     } else {
         centerWindow()
 
-        ImGui.text("You've added the \"Simple Find Contours\" node.")
-        ImGui.text("Now, connect the threshold node to it !")
+        ImGui.text(tr("mis_guidedtour_13"))
+        ImGui.text(tr("mis_guidedtour_14"))
 
         Close()
 
@@ -206,8 +203,8 @@ val Stage8: Stage = {
             node.inputMat.position.y
         )
 
-        ImGui.text("Great! You've connected the nodes. Let's add one more node !")
-        ImGui.text("Open the node list and drag the \"Draw Contours\" node to the editor.")
+        ImGui.text(tr("mis_guidedtour_16"))
+        ImGui.text(tr("mis_guidedtour_17"))
 
         Close()
 
@@ -221,16 +218,16 @@ val Stage9: Stage = {
     val node = nodeEditor.paperVision.nodes.find { it is DrawContoursNode } as DrawContoursNode?
 
     if (node == null) {
-        ImGui.text("You need to add the \"Draw Contours\" node to proceed.")
+        ImGui.text(tr("mis_guidedtour_18"))
         Close()
 
         nodeEditor.paperVision.nodeList.highlight(DrawContoursNode::class.java)
     } else {
         centerWindow()
 
-        ImGui.text("You've added the \"Draw Contours\" node.")
-        ImGui.text("Now, connect the \"Simple Find Contours\" node to it !")
-        ImGui.text("Ensure you are connecting it to the right input type.")
+        ImGui.text(tr("mis_guidedtour_19"))
+        ImGui.text(tr("mis_guidedtour_20"))
+        ImGui.text(tr("mis_guidedtour_21"))
 
         Close()
 
@@ -255,8 +252,8 @@ val Stage10: Stage = {
     } else {
         centerWindow()
 
-        ImGui.text("Almost there ! Link the \"Input\" attribute of this node")
-        ImGui.text("to the \"Pipeline Input\", all the way to the beginning !.")
+        ImGui.text(tr("mis_guidedtour_22"))
+        ImGui.text(tr("mis_guidedtour_23"))
 
         Close()
 
@@ -284,8 +281,8 @@ val Stage11: Stage = {
             node.contours.position.y
         )
 
-        ImGui.text("Connect the output of the \"Draw Contours\" node to the")
-        ImGui.text("\"Pipeline Output\" to wrap up the process.")
+        ImGui.text(tr("mis_guidedtour_24"))
+        ImGui.text(tr("mis_guidedtour_25"))
 
         if(node.outputMat.hasLink) {
             currentStage = Stage12
@@ -303,8 +300,8 @@ val Stage12: Stage = {
         floatingButton.position.y - size.y
     )
 
-    ImGui.text("You're all set !")
-    ImGui.text("Press this button to run the pipeline. \\/")
+    ImGui.text(tr("mis_guidedtour_26"))
+    ImGui.text(tr("mis_guidedtour_27"))
 
     if(floatingButton.isPressed) {
         currentStage = Stage13
@@ -322,16 +319,13 @@ val Stage13: Stage = {
             node.output.position.y
         )
 
-        ImGui.text("Click on the Eye button to visualize the output of certain nodes.")
-        ImGui.text("This lets you see the output at different steps of the pipeline.")
-        ImGui.text("Play around with the node's threshold values to see how it affects the output.")
+        ImGui.text(tr("mis_guidedtour_28"))
+        ImGui.text(tr("mis_guidedtour_29"))
+        ImGui.text(tr("mis_guidedtour_30"))
 
         if(Next() || node.output.isPrevizEnabled) {
             currentStage = Stage14
         }
-
-        ImGui.sameLine()
-        Close()
     }
 }
 
@@ -343,9 +337,9 @@ val Stage14: Stage = {
         floatingButton.position.y - size.y
     )
 
-    ImGui.text("That's it for the guided tour. Have fun !")
-    ImGui.text("After you're done, you can export the pipeline to different formats.")
-    ImGui.text("Press this button to export your pipeline as source code. \\/")
+    ImGui.text(tr("mis_guidedtour_31"))
+    ImGui.text(tr("mis_guidedtour_32"))
+    ImGui.text(tr("mis_guidedtour_33"))
 
     if(floatingButton.isPressed) {
         delete()
@@ -357,7 +351,7 @@ class GuidedTourWindow(
     val nodeEditor: NodeEditor
 ) : Window() {
 
-    override var title = "Guided Tour"
+    override var title = "$[mis_guidedtour]"
 
     var currentStage: Stage = InitialStage
 
@@ -376,8 +370,8 @@ class GuidedTourWindow(
     override fun drawContents() {
         if(nodeEditor.paperVision.nodes.elements.size > 4 && currentStage == InitialStage) {
             centerWindow()
-            ImGui.text("This guided tour is not available for existing projects.")
-            ImGui.text("Please create a new project and try again.")
+            ImGui.text(tr("mis_guidedtour_notavailable_1"))
+            ImGui.text(tr("mis_guidedtour_notavailable_2"))
 
             Close()
             return
