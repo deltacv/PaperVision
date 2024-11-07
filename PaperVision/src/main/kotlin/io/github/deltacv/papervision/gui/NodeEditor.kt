@@ -635,6 +635,9 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         val frameWidth get() = floatingButtonSupplier().frameWidth
 
+        var isPressed = false
+            private set
+
         override fun preDrawContents() {
             position = ImVec2(
                 floatingButtonSupplier().position.x - NodeList.PLUS_FONT_SIZE * 1.7f,
@@ -645,12 +648,13 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         override fun drawContents() {
             ImGui.pushFont(paperVision.fontAwesomeBig.imfont)
 
-            if (ImGui.button(
-                    FontAwesomeIcons.FileCode,
-                    floatingButtonSupplier().frameWidth,
-                    floatingButtonSupplier().frameWidth
-                )
-            ) {
+            isPressed = ImGui.button(
+                FontAwesomeIcons.FileCode,
+                floatingButtonSupplier().frameWidth,
+                floatingButtonSupplier().frameWidth
+            )
+
+            if (isPressed) {
                 SourceCodeExportSelectLanguageWindow(paperVision, nodeEditorSizeSupplier).enable()
             }
 
@@ -673,6 +677,9 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         private var lastButton = false
 
+        var isPressed = false
+            private set
+
         override fun preDrawContents() {
             val floatingButton = sourceCodeExportButton
 
@@ -691,9 +698,9 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                 FontAwesomeIcons.Stop
             } else FontAwesomeIcons.Play
 
-            val button = ImGui.button(text, floatingButton.frameWidth, floatingButton.frameWidth)
+            isPressed = ImGui.button(text, floatingButton.frameWidth, floatingButton.frameWidth)
 
-            if (lastButton != button && button) {
+            if (lastButton != isPressed && isPressed) {
                 if (!paperVision.previzManager.previzRunning) {
                     paperVision.startPrevizAsk()
                 } else {
@@ -703,7 +710,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
             ImGui.popFont()
 
-            lastButton = button
+            lastButton = isPressed
         }
     }
 }

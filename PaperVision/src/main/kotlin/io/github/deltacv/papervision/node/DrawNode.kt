@@ -92,6 +92,8 @@ abstract class DrawNode<S: CodeGenSession>(
             drawAttributes()
         ImNodes.endNode()
 
+        ImNodes.getNodeDimensions(size, id)
+
         if(isFirstDraw) {
             init()
             isFirstDraw = false

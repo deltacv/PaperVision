@@ -11,7 +11,9 @@ import io.github.deltacv.papervision.util.flags
 
 class IntroModalWindow(
     val imguiFont: Font,
-    val monoFont: Font
+    val monoFont: Font,
+    val defaultFontBig: Font,
+    val nodeEditor: NodeEditor
 ) : Window() {
     override var title = "win_welcome"
 
@@ -80,6 +82,7 @@ class IntroModalWindow(
         ImGui.sameLine()
 
         if(ImGui.button(tr("mis_guidedtour"))) {
+            GuidedTourWindow(defaultFontBig, nodeEditor).enable()
             delete()
         }
 

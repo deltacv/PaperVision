@@ -19,6 +19,8 @@
 package io.github.deltacv.papervision.gui.style
 
 import imgui.ImColor
+import imgui.ImVec4
+import kotlin.math.roundToInt
 
 fun rgbaColor(r: Int, g: Int, b: Int, a: Int) = ImColor.rgba(
     r.toFloat() / 255f,
@@ -28,3 +30,39 @@ fun rgbaColor(r: Int, g: Int, b: Int, a: Int) = ImColor.rgba(
 )
 
 fun hexColor(hex: String) = ImColor.rgb(hex)
+
+fun Int.opacity(opacity: Float): Int {
+    // Ensure the opacity is within 0 and 1
+    val clampedOpacity = opacity.coerceIn(0f, 1f)
+
+    // Extract the color components assuming the format is RGBA
+    val r = (this shr 24) and 0xFF
+    val g = (this shr 16) and 0xFF
+    val b = (this shr 8) and 0xFF
+    val a = this and 0xFF
+
+    // Apply the opacity to the alpha component
+    val opaqueA = (a * clampedOpacity).roundToInt().coerceIn(0, 255)
+
+    // Recombine the components back into a color integer
+    return rgbaColor(r, g, b, opaqueA)
+}
+
+fun Int.darken(factor: Float): Int {
+    // Ensure the factor is within 0 and 1
+    val clampedFactor = factor.coerceIn(0f, 1f)
+
+    // Extract the color components assuming the format is RGBA
+    val r = (this shr 24) and 0xFF
+    val g = (this shr 16) and 0xFF
+    val b = (this shr 8) and 0xFF
+    val a = this and 0xFF
+
+    // Apply the darkening factor to each RGB component
+    val darkenedR = (r * clampedFactor).roundToInt().coerceIn(0, 255)
+    val darkenedG = (g * clampedFactor).roundToInt().coerceIn(0, 255)
+    val darkenedB = (b * clampedFactor).roundToInt().coerceIn(0, 255)
+
+    // Recombine the components back into a color integer
+    return rgbaColor(darkenedR, darkenedG, darkenedB, a)
+}

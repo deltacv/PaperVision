@@ -26,6 +26,8 @@ import imgui.flag.*
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.Attribute
+import io.github.deltacv.papervision.gui.style.darken
+import io.github.deltacv.papervision.gui.style.opacity
 import io.github.deltacv.papervision.gui.util.FrameWidthWindow
 import io.github.deltacv.papervision.gui.util.Table
 import io.github.deltacv.papervision.gui.util.Window
@@ -45,7 +47,7 @@ class NodeList(
     val paperVision: PaperVision,
     val keyManager: KeyManager,
     val nodeClasses: CategorizedNodes
-): Window() {
+) : Window() {
 
     companion object {
         const val PLUS_FONT_SIZE = 60f
@@ -68,8 +70,14 @@ class NodeList(
         private set
     lateinit var headers: Headers
         private set
-    
+
     private lateinit var listContext: ImNodesEditorContext
+
+    private var highlightedNodeClass: Class<out Node<*>>? = null
+    private var highlightedNode: Int? = null
+
+    private var highlightTimer = ElapsedTime()
+    private var highlightStatus = false
 
     var hoveredNode = -1
         private set
@@ -90,19 +98,22 @@ class NodeList(
 
     override fun onEnable() {
         paperVision.onUpdate {
-            if(isCompletelyDeleted) {
+            if (isCompletelyDeleted) {
                 it.removeThis()
-            } else if(!paperVision.nodeEditor.isNodeFocused && keyManager.released(Keys.Spacebar)) {
+            } else if (!paperVision.nodeEditor.isNodeFocused && keyManager.released(Keys.Spacebar)) {
                 showList()
             }
         }
 
-        floatingButton = FloatingButton(this, paperVision.window, paperVision.defaultFontBig, paperVision.fontAwesomeBig)
+        floatingButton =
+            FloatingButton(this, paperVision.window, paperVision.defaultFontBig, paperVision.fontAwesomeBig)
         floatingButton.enable()
 
         floatingButton.onPressed {
-            if (!isNodesListOpen && openButtonTimeout.millis > 200) {
-                showList()
+            paperVision.onUpdate.doOnce {
+                if (!isNodesListOpen && openButtonTimeout.millis > 200) {
+                    showList()
+                }
             }
         }
 
@@ -116,7 +127,7 @@ class NodeList(
     }
 
     override fun preDrawContents() {
-        if(!isNodesListOpen) {
+        if (!isNodesListOpen) {
             return
         }
 
@@ -129,7 +140,7 @@ class NodeList(
     }
 
     override fun drawContents() {
-        if(!isNodesListOpen) {
+        if (!isNodesListOpen) {
             closeList()
             return
         }
@@ -139,7 +150,7 @@ class NodeList(
 
         val size = paperVision.window.size
 
-        if(keyManager.released(Keys.Escape)) {
+        if (keyManager.released(Keys.Escape)) {
             closeList()
         }
 
@@ -154,13 +165,22 @@ class NodeList(
         ImNodes.clearLinkSelection()
 
         ImNodes.beginNodeEditor()
-        for(category in Category.values()) {
-            if(nodes.containsKey(category)) {
+
+        if (highlightTimer.millis > 500) {
+            highlightStatus = !highlightStatus
+            highlightTimer.reset()
+        }
+
+        for (category in Category.values()) {
+            if (nodes.containsKey(category)) {
                 val table = headers.tablesCategories[category] ?: continue
 
                 if (headers.categoriesState[category] == true) {
                     for (node in nodes[category]!!) {
-                        if(drawnNodes.contains(node.id)) {
+                        var imNodesPushColorCount = 0
+                        var imGuiPushColorCount = 0
+
+                        if (drawnNodes.contains(node.id)) {
                             if (!table.contains(node.id)) {
                                 val nodeSize = ImVec2()
                                 ImNodes.getNodeDimensions(nodeSize, node.id)
@@ -172,44 +192,71 @@ class NodeList(
                             }
                         }
 
-                        var titleColor = 0
+                        val titleColor = if(node is DrawNode<*>) {
+                            node.titleColor
+                        } else 0
 
-                        if(isHoverManuallyDetected && hoveredNode == node.id) {
-                            if(node.description != null) {
+                        val highlighted = (isHoverManuallyDetected && hoveredNode == node.id) || (highlightedNode == node.id && highlightStatus)
+
+                        if (highlighted) {
+                            if (node.description != null && hoveredNode == node.id) {
                                 ImGui.pushFont(paperVision.defaultFontBig.imfont)
 
                                 ImGui.beginTooltip()
-                                    ImGui.textUnformatted(tr(node.description!!))
+                                ImGui.textUnformatted(tr(node.description!!))
                                 ImGui.endTooltip()
 
                                 ImGui.popFont()
                             }
 
-                            if(node is DrawNode<*>) {
-                                titleColor = node.titleColor
+                            if (node is DrawNode<*>) {
                                 node.titleColor = node.titleHoverColor
                             } else {
                                 ImNodes.pushColorStyle(ImNodesCol.TitleBar, PaperVision.imnodesStyle.titleBarHovered)
+                                imNodesPushColorCount++
                             }
 
-                            ImNodes.pushColorStyle(ImNodesCol.NodeBackground, PaperVision.imnodesStyle.nodeBackgroundHovered)
+                            ImNodes.pushColorStyle(
+                                ImNodesCol.NodeBackground,
+                                PaperVision.imnodesStyle.nodeBackgroundHovered
+                            )
+
+                            imNodesPushColorCount++
+                        } else if(highlightedNode != null && highlightedNode != node.id) {
+                            if (node is DrawNode<*>) {
+                                node.titleColor = node.titleColor.opacity(0.5f)
+                            } else {
+                                ImNodes.pushColorStyle(ImNodesCol.TitleBar, PaperVision.imnodesStyle.titleBar.opacity(0.5f))
+                                imNodesPushColorCount++
+                            }
+
+                            ImNodes.pushColorStyle(
+                                ImNodesCol.NodeBackground,
+                                PaperVision.imnodesStyle.nodeBackground.opacity(0.5f)
+                            )
+                            imNodesPushColorCount++
+
+                            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgba(ImGui.getStyleColorVec4(ImGuiCol.Text)).opacity(0.5f))
+                            imGuiPushColorCount++
                         }
 
                         node.fontAwesome = paperVision.fontAwesome
                         node.draw()
 
-                        if(!drawnNodes.contains(node.id)) {
+                        if (!drawnNodes.contains(node.id)) {
                             drawnNodes.add(node.id)
                         }
 
-                        if(isHoverManuallyDetected && hoveredNode == node.id) {
-
-                            if(node is DrawNode<*>) {
+                        if (highlighted || (highlightedNode != null && highlightedNode != node.id)) {
+                            if (node is DrawNode<*>) {
                                 node.titleColor = titleColor
-                            } else {
-                                ImNodes.popColorStyle()
                             }
+                        }
 
+                        repeat(imGuiPushColorCount) {
+                            ImGui.popStyleColor()
+                        }
+                        repeat(imNodesPushColorCount) {
                             ImNodes.popColorStyle()
                         }
                     }
@@ -229,13 +276,35 @@ class NodeList(
         hoveredNode = ImNodes.getHoveredNode()
         isHoverManuallyDetected = false
 
-        if(hoveredNode < 0) {
-            tableLoop@ for((_, table) in headers.tablesCategories) {
-                for((id, rect) in table.currentRects) {
+        if (highlightedNodeClass != null) {
+            for (node in listNodes) {
+                if (node::class.java == highlightedNodeClass) {
+                    if(node.id != highlightedNode) {
+                        highlightedNode = node.id
+
+                        val nodePos = ImNodes.getNodeScreenSpacePos(highlightedNode!!).y - ImNodes.getNodeDimensionsY(highlightedNode!!) * 1.3f
+
+                        val scrollPos = if(nodePos >= size.y * 0.9) {
+                            99999f // trigger max scroll
+                        } else nodePos
+
+                        headers.nextScroll = scrollPos
+                    }
+                    break
+                }
+            }
+            highlightedNodeClass = null
+        }
+
+        if (hoveredNode < 0) {
+            tableLoop@ for ((_, table) in headers.tablesCategories) {
+                for ((id, rect) in table.currentRects) {
                     // AABB collision check with any node
-                    if(mousePos.x > rect.min.x && mousePos.x < rect.max.x + 6 &&
-                        mousePos.y > rect.min.y && mousePos.y < rect.max.y) {
+                    if (mousePos.x > rect.min.x && mousePos.x < rect.max.x + 6 &&
+                        mousePos.y > rect.min.y && mousePos.y < rect.max.y
+                    ) {
                         hoveredNode = id
+
                         isHoverManuallyDetected = true
 
                         break@tableLoop
@@ -258,13 +327,13 @@ class NodeList(
     }
 
     private fun handleClick(closeOnClick: Boolean) {
-        if(ImGui.isMouseClicked(ImGuiMouseButton.Left)) {
-            if(hoveredNode >= 0) {
+        if (ImGui.isMouseClicked(ImGuiMouseButton.Left)) {
+            if (hoveredNode >= 0) {
                 val instance = paperVision.nodeEditor.addNode(
                     listNodes[hoveredNode]!!::class.java
                 ) // add node with the class by using reflection
 
-                if(instance is DrawNode<*>) {
+                if (instance is DrawNode<*>) {
                     val nodePos = ImNodes.getNodeScreenSpacePos(hoveredNode)
 
                     val mousePos = ImGui.getMousePos()
@@ -277,10 +346,18 @@ class NodeList(
                 }
 
                 closeList()
-            } else if(closeOnClick && !isHoveringScrollBar) { // don't close when the scroll bar is clicked
+            } else if (closeOnClick && !isHoveringScrollBar) { // don't close when the scroll bar is clicked
                 closeList()
             }
         }
+    }
+
+    fun highlight(nodeClass: Class<out Node<*>>) {
+        highlightedNodeClass = nodeClass
+    }
+
+    fun clearHighlight() {
+        highlightedNodeClass = null
     }
 
     override fun delete() {
@@ -294,8 +371,8 @@ class NodeList(
     }
 
     fun showList() {
-        if(!isNodesListOpen) {
-            if(::listContext.isInitialized) {
+        if (!isNodesListOpen) {
+            if (::listContext.isInitialized) {
                 ImNodes.editorContextFree(listContext)
             }
             listContext = ImNodes.editorContextCreate()
@@ -323,17 +400,17 @@ class NodeList(
     val nodes by lazy {
         val map = mutableMapOf<Category, MutableList<Node<*>>>()
 
-        for((category, nodeClasses) in nodeClasses) {
+        for ((category, nodeClasses) in nodeClasses) {
             val list = mutableListOf<Node<*>>()
 
-            for(nodeClass in nodeClasses) {
-                if(nodeClass.getAnnotation(PaperNode::class.java)?.showInList == false) {
+            for (nodeClass in nodeClasses) {
+                if (nodeClass.getAnnotation(PaperNode::class.java)?.showInList == false) {
                     continue
                 }
 
                 val instance = try {
                     instantiateNode(nodeClass)
-                } catch(e: UnsupportedOperationException) {
+                } catch (e: UnsupportedOperationException) {
                     logger.warn("Skipping node", e)
                     continue
                 }
@@ -344,9 +421,9 @@ class NodeList(
                 list.add(instance)
             }
 
-            if(list.isNotEmpty()) {
+            if (list.isNotEmpty()) {
                 // sort alphabetically
-                list.sortBy { if(it is DrawNode<*>) it.annotationData.name else it::class.java.simpleName }
+                list.sortBy { if (it is DrawNode<*>) it.annotationData.name else it::class.java.simpleName }
                 map[category] = list
             }
         }
@@ -388,18 +465,19 @@ class NodeList(
 
             frameWidth = ImGui.getFrameHeight() * 1.3f
 
-            val button = ImGui.button(if(nodeList.isNodesListOpen) "x" else FontAwesomeIcons.Plus, frameWidth, frameWidth)
+            val button =
+                ImGui.button(if (nodeList.isNodesListOpen) "x" else FontAwesomeIcons.Plus, frameWidth, frameWidth)
 
             ImGui.popFont()
 
-            if(ImGui.isItemHovered()) {
-                if(hoveringPlusTime.millis > 500) {
-                    val tooltipText = if(nodeList.isNodesListOpen) "mis_nodeslist_close" else "mis_nodeslist_open"
+            if (ImGui.isItemHovered()) {
+                if (hoveringPlusTime.millis > 500) {
+                    val tooltipText = if (nodeList.isNodesListOpen) "mis_nodeslist_close" else "mis_nodeslist_open"
 
                     ImGui.pushFont(defaultFontBig.imfont)
 
                     ImGui.beginTooltip()
-                        ImGui.text(tr(tooltipText))
+                    ImGui.text(tr(tooltipText))
                     ImGui.endTooltip()
 
                     ImGui.popFont()
@@ -409,7 +487,7 @@ class NodeList(
             }
 
             // falling edge detector
-            if(lastButton != button && button) {
+            if (lastButton != button && button) {
                 onPressed.run()
             }
 
@@ -435,6 +513,8 @@ class NodeList(
         val categoriesState = mutableMapOf<Category, Boolean>()
 
         var currentScroll = 0f
+        var nextScroll: Float? = null
+
         private var previousScroll = 0f
 
         var isHeaderHovered = false
@@ -452,9 +532,11 @@ class NodeList(
                 keyManager.pressing(Keys.ArrowUp) -> {
                     -0.8f
                 }
+
                 keyManager.pressing(Keys.ArrowDown) -> {
                     0.8f
                 }
+
                 else -> {
                     -ImGui.getIO().mouseWheel
                 }
@@ -464,8 +546,8 @@ class NodeList(
 
             isHeaderHovered = false
 
-            for(category in Category.values()) {
-                if(nodesSupplier().containsKey(category)) {
+            for (category in Category.values()) {
+                if (nodesSupplier().containsKey(category)) {
                     if (!tablesCategories.containsKey(category)) {
                         tablesCategories[category] = Table()
                     }
@@ -492,16 +574,8 @@ class NodeList(
                         isHeaderHovered = true
                     }
 
-                    if(isOpen) {
+                    if (isOpen) {
                         val table = tablesCategories[category]!!
-
-                        if(previousScroll != currentScroll) {
-                            currentScroll = ImGui.getScrollY() + scrollValue * 20.0f
-                            ImGui.setScrollY(currentScroll)
-                        } else {
-                            currentScroll = ImGui.getScrollY()
-                        }
-
                         ImGui.newLine()
                         ImGui.indent(10f)
 
@@ -515,6 +589,18 @@ class NodeList(
                         ImGui.unindent(10f)
                     }
                 }
+            }
+
+            if (nextScroll == null) {
+                if (previousScroll != currentScroll) {
+                    currentScroll = ImGui.getScrollY() + scrollValue * 20.0f
+                    ImGui.setScrollY(currentScroll)
+                } else {
+                    currentScroll = ImGui.getScrollY()
+                }
+            } else {
+                ImGui.setScrollY(nextScroll!!.coerceIn(0f, ImGui.getScrollMaxY()))
+                nextScroll = null
             }
 
             ImGui.popStyleColor()

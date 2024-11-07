@@ -218,6 +218,8 @@ class PaperVision(
                 IntroModalWindow(
                     defaultImGuiFontSmall,
                     codeFont,
+                    defaultFontBig,
+                    nodeEditor
                 ).enable()
             } else {
                 onDeserialization {
@@ -227,6 +229,8 @@ class PaperVision(
                         IntroModalWindow(
                             defaultImGuiFontSmall,
                             codeFont,
+                            defaultFontBig,
+                            nodeEditor
                         ).apply {
                             onDontShowAgain {
                                 nodeEditor.flags["showWelcome"] = false
