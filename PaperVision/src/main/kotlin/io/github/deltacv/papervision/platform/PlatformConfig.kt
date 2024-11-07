@@ -19,7 +19,7 @@ abstract class PlatformConfig {
     abstract fun save()
 }
 
-val defaultConfigPath = System.getProperty("user.home") + "/.papervision/config.json"
+val defaultConfigPath = System.getProperty("user.home") + File.separator + ".papervision" + File.separator + "config.json"
 
 class DefaultFilePlatformConfig : FilePlatformConfig(defaultConfigPath) {
     init {

@@ -161,6 +161,12 @@ class PaperVision(
 
         config.load()
 
+        if(!langManager.availableLangs.contains(config.fields.lang)) {
+            langManager.lang = config.fields.lang
+        } else {
+            logger.warn("Configured language ${config.fields.lang} is not available, defaulting")
+        }
+
         textureProcessorQueue = TextureProcessorQueue(textureFactory)
         textureProcessorQueue.subscribeTo(onUpdate)
 
