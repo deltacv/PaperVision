@@ -1,5 +1,6 @@
 name = "PaperVision"
 author = "deltacv"
+author-email = "serivesmejia@deltacv.org"
 version = "1.0.0"
 description = "PaperVision is a vision processing tool designed to assist developers in creating, testing, and visualizing computer vision pipelines, aimed for the FTC robotics competition. Built on top of EOCV-Sim, PaperVision provides a user-friendly interface for constructing OpenCV-based pipelines with ease. Featuring node-based editing, and real-time image analysis, PaperVision aims to streamline the development process from prototyping to deployment. Whether you're a beginner exploring vision algorithms or an experienced developer, PaperVision offers the tools you need to bring your vision processing projects to life."
 
