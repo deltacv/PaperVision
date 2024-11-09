@@ -62,9 +62,6 @@ class IntroModalWindow(
             if(ImGui.button(tr("lan_en"))) {
                 nodeEditor.paperVision.langManager.lang = "en"
                 choosingLanguage = false
-
-                nodeEditor.paperVision.config.fields.lang = "es"
-                nodeEditor.paperVision.config.fields.shouldAskForLang = false
             }
 
             ImGui.sameLine(alignment + 30f + ImGui.calcTextSize(tr("lan_en")).x)
@@ -72,10 +69,10 @@ class IntroModalWindow(
             if(ImGui.button(tr("lan_es"))) {
                 nodeEditor.paperVision.langManager.lang = "es"
                 choosingLanguage = false
-
-                nodeEditor.paperVision.config.fields.lang = "es"
-                nodeEditor.paperVision.config.fields.shouldAskForLang = false
             }
+
+            nodeEditor.paperVision.config.fields.lang = nodeEditor.paperVision.langManager.lang
+            nodeEditor.paperVision.config.fields.shouldAskForLang = false
 
             ImGui.popFont()
 

@@ -309,12 +309,12 @@ class PaperVision(
     }
 
     fun undo() {
-        logger.info("Undo, stack; size: ${actions.size}, pointer: ${actions.stackPointer}, peek: ${actions.peek()}")
+        logger.info("undo | stack; size: ${actions.size}, pointer: ${actions.stackPointer}, peek: ${actions.peek()}")
         actions.peekAndPushback()?.undo()
     }
 
     fun redo() {
-        logger.info("redo, stack; size: ${actions.size}, pointer: ${actions.stackPointer}, peek: ${actions.peek()}")
+        logger.info("redo | stack; size: ${actions.size}, pointer: ${actions.stackPointer}, peek: ${actions.peek()}")
 
         actions.pushforwardIfNonNull()
         actions.peek()?.execute()
