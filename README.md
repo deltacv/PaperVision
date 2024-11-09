@@ -9,7 +9,7 @@ https://github.com/user-attachments/assets/e2cfc9b6-d390-4b8c-b165-b36dcb664b62
 Thank you for your interesting in beta-testing PaperVision. I'm really happy to finally have functional preview builds after stalling on this project numerous times through the last three years,
 Although PaperVision is able to run the user interface on its own, it was made with EOCV-Sim integration in mind since day one as the backend engine, which pretty much allows to have a live visualization of the pipeline as you mess around in the node editor. Use the following instructions to get it all up and running.
 
-1. Download and open [EOCV-Sim 3.8.1+](https://deltacv.gitbook.io/eocv-sim/downloading-eocv-sim).<br><br>
+1. [Download and open EOCV-Sim 3.8.1+](https://docs.deltacv.org/eocv-sim/downloading-eocv-sim).<br><br>
 2. Go to `File -> Manage Plugins` and click on "Open Plugins Folder". You'll find a `repository.toml` file in that folder, open it with your favorite text editor.<br><br>
 3. Add the following line under the `[plugins]` section:
    - `PaperVision = "com.github.deltacv.PaperVision:EOCVSimPlugin:master-SNAPSHOT"`<br><br>
