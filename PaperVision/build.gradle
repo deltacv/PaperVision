@@ -29,7 +29,7 @@ dependencies {
 
     api "org.slf4j:slf4j-api:$slf4j_version"
 
-    implementation 'com.github.deltacv:mai18n:1.1.2'
+    api 'com.github.deltacv:mai18n:1.1.2'
 
     implementation "org.java-websocket:Java-WebSocket:1.5.2"
 

@@ -38,8 +38,8 @@ val InitialStage: Stage = {
 
 val Stage1: Stage = {
     position = ImVec2(
-        nodeEditor.inputNode.position.x,
-        nodeEditor.inputNode.position.y + (nodeEditor.inputNode.size.y / 2f)
+        nodeEditor.inputNode.screenPosition.x,
+        nodeEditor.inputNode.screenPosition.y + (nodeEditor.inputNode.size.y / 2f)
     )
 
     ImGui.text(tr("mis_guidedtour_3"))
@@ -55,8 +55,8 @@ val Stage1: Stage = {
 
 val Stage2: Stage = {
     position = ImVec2(
-        nodeEditor.outputNode.position.x - size.x + nodeEditor.outputNode.size.x,
-        nodeEditor.outputNode.position.y + (nodeEditor.outputNode.size.y * 0.8f)
+        nodeEditor.outputNode.screenPosition.x - size.x + nodeEditor.outputNode.size.x,
+        nodeEditor.outputNode.screenPosition.y + (nodeEditor.outputNode.size.y * 0.8f)
     )
 
     ImGui.text(tr("mis_guidedtour_5"))

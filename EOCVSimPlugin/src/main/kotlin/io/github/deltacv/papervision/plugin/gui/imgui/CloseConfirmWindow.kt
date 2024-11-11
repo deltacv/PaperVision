@@ -20,6 +20,7 @@ package io.github.deltacv.papervision.plugin.gui.imgui
 
 import imgui.ImGui
 import imgui.flag.ImGuiWindowFlags
+import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.util.flags
 
@@ -32,7 +33,7 @@ class CloseConfirmWindow(
         CANCEL
     }
 
-    override var title = "Confirm"
+    override var title = "win_confirm"
     override val windowFlags = flags(
         ImGuiWindowFlags.NoResize,
         ImGuiWindowFlags.NoMove,
@@ -46,20 +47,20 @@ class CloseConfirmWindow(
     }
 
     override fun drawContents() {
-        ImGui.text("Do you wanna save before exiting?")
+        ImGui.text(tr("mis_savebefore_exit"))
         ImGui.separator()
 
-        if(ImGui.button("Yes")) {
+        if(ImGui.button(tr("mis_save"))) {
             callback(Action.YES)
             ImGui.closeCurrentPopup()
         }
         ImGui.sameLine()
-        if(ImGui.button("No")) {
+        if(ImGui.button(tr("mis_discard"))) {
             callback(Action.NO)
             ImGui.closeCurrentPopup()
         }
         ImGui.sameLine()
-        if(ImGui.button("Cancel")) {
+        if(ImGui.button(tr("mis_cancel"))) {
             callback(Action.CANCEL)
             ImGui.closeCurrentPopup()
         }

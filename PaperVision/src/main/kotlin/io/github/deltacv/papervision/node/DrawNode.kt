@@ -77,6 +77,11 @@ abstract class DrawNode<S: CodeGenSession>(
             changeQueue.poll()
         }
 
+        nextNodePosition?.let {
+            ImNodes.setNodeEditorSpacePos(id, it.x, it.y)
+            nextNodePosition = null
+        }
+
         ImNodes.pushColorStyle(ImNodesCol.TitleBar, titleColor)
         ImNodes.pushColorStyle(ImNodesCol.TitleBarHovered, titleHoverColor)
         ImNodes.pushColorStyle(ImNodesCol.TitleBarSelected, titleHoverColor)
@@ -86,13 +91,13 @@ abstract class DrawNode<S: CodeGenSession>(
                 ImGui.textUnformatted(tr(title))
             ImNodes.endNodeTitleBar()
 
-            ImGui.getCursorPos(position)
-
             drawNode()
             drawAttributes()
         ImNodes.endNode()
 
         ImNodes.getNodeDimensions(size, id)
+        ImNodes.getNodeEditorSpacePos(position, id)
+        ImNodes.getNodeScreenSpacePos(screenPosition, id)
 
         if(isFirstDraw) {
             init()
@@ -102,11 +107,6 @@ abstract class DrawNode<S: CodeGenSession>(
         ImNodes.popColorStyle()
         ImNodes.popColorStyle()
         ImNodes.popColorStyle()
-
-        nextNodePosition?.let {
-            ImNodes.setNodeScreenSpacePos(id, it.x, it.y)
-            nextNodePosition = null
-        }
 
         if(pinToMouse) {
             val mousePos = ImGui.getMousePos()

@@ -20,7 +20,9 @@ package io.github.deltacv.papervision.node.vision.imageproc
 
 import imgui.ImGui
 import imgui.type.ImInt
+import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.attribute.Attribute
+import io.github.deltacv.papervision.attribute.misc.EnumAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.ScalarRangeAttribute
@@ -69,7 +71,13 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         input.drawHere()
 
         ImGui.newLine()
-        ImGui.text("(Enum) Color Space")
+
+        ImGui.pushFont(fontAwesome.imfont)
+        ImGui.text(EnumAttribute.icon)
+        ImGui.popFont()
+
+        ImGui.sameLine()
+        ImGui.text(tr("att_colorspace"))
 
         ImGui.pushItemWidth(110.0f)
         val color = ExtraWidgets.enumCombo(ColorSpace.values(), colorValue)

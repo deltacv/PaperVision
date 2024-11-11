@@ -52,6 +52,8 @@ abstract class Node<S: CodeGenSession>(
     override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Node<*>>()
     override val requestedId get() = serializedId
 
+    private var beforeDeletingPosition = ImVec2()
+
     val description by lazy { this::class.java.getAnnotation(PaperNode::class.java)?.description }
 
     var serializedId: Int? = null
@@ -70,6 +72,7 @@ abstract class Node<S: CodeGenSession>(
     val isOnEditor get() = ::editor.isInitialized && idElementContainer.contains(this)
 
     // it is the responsibility of the inheriting class to set this value in draw()
+    val screenPosition = ImVec2()
     val position = ImVec2()
     val size = ImVec2()
 
@@ -109,6 +112,8 @@ abstract class Node<S: CodeGenSession>(
     }
 
     fun forceDelete() {
+        beforeDeletingPosition = ImVec2(position)
+
         for (attribute in nodeAttributes.toTypedArray()) {
             attribute.delete()
         }
@@ -131,7 +136,7 @@ abstract class Node<S: CodeGenSession>(
         idElementContainer[id] = this
 
         if(this is DrawNode<*>) {
-            nextNodePosition = position
+            nextNodePosition = beforeDeletingPosition
         }
     }
 

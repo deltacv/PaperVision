@@ -71,8 +71,8 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
                         app.paperVision.onUpdate.doOnce {
                             deserializeAndApply(json, app.paperVision)
 
-                            app.paperVision.onUpdate.doOnce {
-                                app.paperVision.nodeEditor.onEditorChange {
+                            app.paperVision.nodeEditor.onEditorChange {
+                                app.paperVision.onUpdate.doOnce {
                                     app.paperVision.engineClient.sendMessage(EditorChangeMessage(
                                         serializeToTree(app.paperVision.nodes.inmutable, app.paperVision.links.inmutable)
                                     ))

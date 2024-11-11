@@ -5,6 +5,7 @@ win_inputsources,Input Sources,Fuentes de Entrada
 win_createinput_sources,Create Input Sources,Crear Fuentes de Entrada
 win_selectlanguage,Select Language,Seleccionar Lenguaje
 win_welcome,Welcome!,Bienvenid@!
+win_confirm,Confirm,Confirmar
 cat_pipeline_flow,Pipeline Flow,Ejecucion
 cat_coding,Coding,Codigo
 cat_high_level_cv,High Level,Alto Nivel
@@ -169,3 +170,7 @@ mis_guidedtour_notavailable_1,"This guided tour is not available for existing pr
 mis_guidedtour_notavailable_2,"Please create a new project and try again.","Por favor, crea un nuevo proyecto e intenta de nuevo."
 mis_loading,Loading...,Cargando...
 mis_runningok,Running OK,Estatus OK
+mis_savebefore_exit,Do you wanna save before exiting?,¿Quieres guardar antes de salir?
+mis_save,Save,Guardar
+mis_discard,Discard,Descartar
+mis_cancel,Cancel,Cancelar

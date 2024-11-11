@@ -18,6 +18,7 @@
 
 package io.github.deltacv.papervision.codegen
 
+import imgui.ImVec2
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -62,14 +63,24 @@ class CodeGenManager(val paperVision: PaperVision) {
         } catch (attrEx: AttributeGenException) {
             codeGen.stage = CodeGen.Stage.ENDED_ERROR
 
-            TooltipPopup(attrEx.message, attrEx.attribute.position, 8.0, label = "Gen-Error").open()
+            TooltipPopup(
+                attrEx.message,
+                ImVec2(attrEx.attribute.position.x + 5, attrEx.attribute.position.y + 20),
+                8.0,
+                label = "Gen-Error"
+            ).open()
 
             logger.warn("Code gen stopped due to attribute exception", attrEx)
             return null
         } catch(nodeEx: NodeGenException) {
             codeGen.stage = CodeGen.Stage.ENDED_ERROR
 
-            TooltipPopup(nodeEx.message, nodeEx.node.position, 8.0, label = "Gen-Error").open()
+            TooltipPopup(
+                nodeEx.message,
+                ImVec2(nodeEx.node.screenPosition.x, nodeEx.node.screenPosition.y - 20),
+                8.0,
+                label = "Gen-Error"
+            ).open()
 
             logger.warn("Code gen stopped due to node exception", nodeEx)
             return null
