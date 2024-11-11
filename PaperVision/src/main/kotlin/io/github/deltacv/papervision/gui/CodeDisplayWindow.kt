@@ -52,7 +52,7 @@ class CodeDisplayWindow(
 
         EDITOR.isReadOnly
 
-        EDITOR.setLanguageDefinition(language)
+        EDITOR.languageDefinition = language
         EDITOR.textLines = code.lines().toTypedArray()
 
         size = ImVec2(500f, 400f)

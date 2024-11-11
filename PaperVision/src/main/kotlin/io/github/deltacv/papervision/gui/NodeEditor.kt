@@ -39,9 +39,11 @@ import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguag
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.engine.client.message.AskProjectGenClassNameMessage
 import io.github.deltacv.papervision.engine.client.response.StringResponse
+import io.github.deltacv.papervision.gui.NodeEditor.SourceCodeExportSelectLanguageWindow.Companion.separationMultiplier
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayWindow
+import io.github.deltacv.papervision.gui.util.FrameWidthWindow
 import io.github.deltacv.papervision.gui.util.Popup
 import io.github.deltacv.papervision.gui.util.TooltipPopup
 import io.github.deltacv.papervision.gui.util.Window
@@ -57,6 +59,11 @@ import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
 import io.github.deltacv.papervision.util.loggerForThis
+
+data class Option(
+    val description: String,
+    val action: () -> Unit
+)
 
 class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManager) : Window() {
     companion object {
@@ -88,6 +95,11 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             value.streamId = outputImageDisplay.id
             field = value
         }
+
+    val options = mutableMapOf<String, Option>()
+
+    lateinit var optionsButton: OptionsButtonWindow
+        private set
 
     lateinit var playButton: EOCVSimPlayButtonWindow
         private set
@@ -168,6 +180,19 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         )
 
         playButton.enable()
+
+        options[FontAwesomeIcons.EarthAmericas] = Option("Change Language") {
+            paperVision.showWelcome(askLanguage = true)
+        }
+
+        optionsButton = OptionsButtonWindow(
+            playButton,
+            paperVision, options,
+            paperVision.defaultFontBig,
+            paperVision.fontAwesomeBig
+        )
+
+        optionsButton.enable()
 
         paperVision.previzManager.onStreamChange {
             outputImageDisplay.pipelineStream = paperVision.previzManager.stream
@@ -589,7 +614,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             ImGui.popStyleColor()
         }
 
-
         private fun openSourceCodeWindow(language: Language) {
             fun openWindow(code: String?) {
                 if (code == null) {
@@ -680,6 +704,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         var isPressed = false
             private set
 
+        val frameWidth get() = sourceCodeExportButton.frameWidth
+
         override fun preDrawContents() {
             val floatingButton = sourceCodeExportButton
 
@@ -713,6 +739,96 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             lastButton = isPressed
         }
     }
+
+
+    class OptionsButtonWindow(
+        val eocvSimPlayButtonWindow: EOCVSimPlayButtonWindow,
+        val paperVision: PaperVision,
+        val options: Map<String, Option>,
+        val tooltipFont: Font,
+        val fontAwesome: Font
+    ) : Window() {
+
+        override var title = "options control"
+        override val windowFlags = flags(
+            ImGuiWindowFlags.NoBackground, ImGuiWindowFlags.NoTitleBar,
+            ImGuiWindowFlags.NoDecoration, ImGuiWindowFlags.NoMove,
+            ImGuiWindowFlags.AlwaysAutoResize
+        )
+
+        private var lastButton = false
+
+        var isPressed = false
+            private set
+
+        override fun preDrawContents() {
+            val floatingButton = eocvSimPlayButtonWindow
+
+            position = ImVec2(
+                floatingButton.position.x - NodeList.PLUS_FONT_SIZE * 1.7f,
+                floatingButton.position.y,
+            )
+        }
+
+        override fun drawContents() {
+            val floatingButton = eocvSimPlayButtonWindow
+
+            ImGui.pushFont(fontAwesome.imfont)
+
+            val text = FontAwesomeIcons.Gear
+
+            isPressed = ImGui.button(text, floatingButton.frameWidth, floatingButton.frameWidth)
+
+            if (lastButton != isPressed && isPressed) {
+                OptionsWindow(options, tooltipFont, fontAwesome).enable()
+            }
+
+            ImGui.popFont()
+
+            lastButton = isPressed
+        }
+    }
+
+    class OptionsWindow(
+        val options: Map<String, Option>,
+        val tooltipFont: Font,
+        val fontAwesomeBig: Font
+    ) : Window() {
+        override var title = "$[win_options]"
+        override val windowFlags = flags(
+            ImGuiWindowFlags.NoResize,
+            ImGuiWindowFlags.NoMove,
+            ImGuiWindowFlags.NoCollapse
+        )
+
+        override val isModal = true
+
+        override fun drawContents() {
+            ImGui.pushFont(fontAwesomeBig.imfont)
+            ImGui.pushStyleColor(ImGuiCol.Button, 0)
+            ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0)
+
+            for ((name, option) in options) {
+                if (ImGui.button(name)) {
+                    option.action()
+                    delete()
+                }
+
+                if(ImGui.isItemHovered()) {
+                    ImGui.pushFont(tooltipFont.imfont)
+                    ImGui.setTooltip(option.description)
+                    ImGui.popFont()
+                }
+
+                ImGui.sameLine()
+                ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+            }
+
+            ImGui.popStyleColor()
+            ImGui.popStyleColor()
+            ImGui.popFont()
+        }
+    }
 }
 
 fun instantiateNode(nodeClazz: Class<out Node<*>>) = try {
@@ -722,6 +838,6 @@ fun instantiateNode(nodeClazz: Class<out Node<*>>) = try {
         "Node ${nodeClazz.typeName} does not implement a constructor with no parameters",
         e
     )
-} catch (e: IllegalStateException) {
-    throw UnsupportedOperationException("Error while instantiating node ${nodeClazz.typeName}", e)
+} catch (e: Exception) {
+    throw RuntimeException("Error while instantiating node ${nodeClazz.typeName}", e)
 }

@@ -226,32 +226,32 @@ class PaperVision(
 
         onUpdate.doOnce {
             if(setup.showWelcomeWindow) {
-                IntroModalWindow(
-                    defaultImGuiFontSmall,
-                    codeFont,
-                    defaultFontBig,
-                    nodeEditor
-                ).enable()
+                showWelcome()
             } else {
                 onDeserialization {
                     logger.info("showWelcome = ${nodeEditor.flags["showWelcome"]}")
 
                     if (nodeEditor.flags.getOrElse("showWelcome", { true })) {
-                        IntroModalWindow(
-                            defaultImGuiFontSmall,
-                            codeFont,
-                            defaultFontBig,
-                            nodeEditor
-                        ).apply {
-                            onDontShowAgain {
-                                nodeEditor.flags["showWelcome"] = false
-                                logger.info("showWelcome = ${nodeEditor.flags["showWelcome"]}")
-                            }
-                        }.enable()
+                        showWelcome()
                     }
                 }
             }
         }
+    }
+
+    fun showWelcome(askLanguage: Boolean = setup.config.fields.shouldAskForLang) {
+        IntroModalWindow(
+            defaultImGuiFontSmall,
+            codeFont,
+            defaultFontBig,
+            nodeEditor,
+            chooseLanguage = askLanguage
+        ).apply {
+            onDontShowAgain {
+                nodeEditor.flags["showWelcome"] = false
+                logger.info("showWelcome = ${nodeEditor.flags["showWelcome"]}")
+            }
+        }.enable()
     }
 
     fun process() {
