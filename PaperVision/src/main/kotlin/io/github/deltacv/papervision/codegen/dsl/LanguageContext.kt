@@ -120,6 +120,8 @@ open class LanguageContext(val language: Language) {
 
     fun Type.newArray(size: Value) = language.newArrayOf(this, size)
 
+    fun Type.newArray() = language.newArrayOf(this)
+
     fun value(type: Type, value: String) = language.value(type, value)
 
     fun String.callValue(returnType: Type, vararg parameters: Value) =

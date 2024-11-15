@@ -200,7 +200,6 @@ object CPythonLanguage : LanguageBase(
         mainScope.get()
     }
 
-
     class TupleVariable(value: Value, vararg names: String) : Variable(names.csv(), value) {
         val names = names.toSet()
 
@@ -212,6 +211,18 @@ object CPythonLanguage : LanguageBase(
             return ConValue(NoType, name);
         }
     }
+
+    override fun int(value: Value) = callValue("int", language.IntType, value)
+    override fun int(value: Int) = int(value.toString().v)
+
+    override fun long(value: Value) = callValue("int", language.IntType, value)
+    override fun long(value: Long) = long(value.toString().v)
+
+    override fun float(value: Value) = callValue("float", language.IntType, value)
+    override fun float(value: Float) = float(value.toString().v)
+
+    override fun double(value: Value) = callValue("float", language.IntType, value)
+    override fun double(value: Double) = double(value.toString().v)
 
     fun tupleVariables(value: Value, vararg names: String) = TupleVariable(value, *names)
 

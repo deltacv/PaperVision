@@ -27,6 +27,7 @@ import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiMouseButton
 import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImInt
+import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.action.editor.CreateLinkAction
 import io.github.deltacv.papervision.action.editor.CreateNodeAction
@@ -181,7 +182,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         playButton.enable()
 
-        options[FontAwesomeIcons.EarthAmericas] = Option("Change Language") {
+        options[FontAwesomeIcons.EarthAmericas] = Option("mis_changelanguage") {
             paperVision.showWelcome(askLanguage = true)
         }
 
@@ -816,7 +817,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
                 if(ImGui.isItemHovered()) {
                     ImGui.pushFont(tooltipFont.imfont)
-                    ImGui.setTooltip(option.description)
+                    ImGui.setTooltip(tr(option.description))
                     ImGui.popFont()
                 }
 

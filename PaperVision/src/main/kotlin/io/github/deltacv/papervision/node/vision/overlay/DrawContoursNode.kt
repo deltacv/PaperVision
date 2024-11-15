@@ -71,7 +71,7 @@ open class DrawContoursNode
             current {
                 val session = Session()
 
-                val lineParams = (lineParams.value(current) as GenValue.LineParameters).ensureRuntimeLine(current)
+                val lineParams = (lineParams.value(current) as GenValue.LineParameters).ensureRuntimeLineJava(current)
 
                 val input = inputMat.value(current)
                 val contoursList = contours.value(current)

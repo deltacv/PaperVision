@@ -74,7 +74,7 @@ sealed class GenValue {
         data class Line(val color: Scalar, val thickness: Int) : LineParameters()
         data class RuntimeLine(val colorScalarValue: Value, val thicknessValue: Value) : LineParameters()
 
-        fun ensureRuntimeLine(current: CodeGen.Current): RuntimeLine {
+        fun ensureRuntimeLineJava(current: CodeGen.Current): RuntimeLine {
             return current {
                 val lineParams = this@LineParameters
 

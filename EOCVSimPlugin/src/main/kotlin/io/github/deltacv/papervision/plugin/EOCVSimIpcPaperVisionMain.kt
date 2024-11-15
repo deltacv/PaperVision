@@ -18,6 +18,7 @@
 
 package io.github.deltacv.papervision.plugin
 
+import imgui.ImGui
 import imgui.app.Application
 import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
@@ -25,6 +26,8 @@ import io.github.deltacv.papervision.engine.message.OnResponseCallback
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.Option
+import io.github.deltacv.papervision.gui.util.Popup
+import io.github.deltacv.papervision.gui.util.TooltipPopup
 import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
 import io.github.deltacv.papervision.plugin.gui.imgui.CloseConfirmWindow
 import io.github.deltacv.papervision.plugin.gui.imgui.InputSourceWindow
@@ -93,8 +96,6 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
                 app.paperVision.engineClient
             )
 
-            inputSourceWindow.enable()
-
             app.paperVision.previzManager.onPrevizStart {
                 inputSourceWindow.enable()
             }
@@ -103,14 +104,20 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
                 inputSourceWindow.delete()
             }
 
-            app.paperVision.nodeEditor.options[FontAwesomeIcons.Save] = Option("Save project") {
-                SaveCurrentProjectMessage(
-                    serializeToTree(
-                        app.paperVision.nodes.inmutable, app.paperVision.links.inmutable
-                    )
-                ).onResponseWith<OkResponse> {
-                    logger.info("Project saved")
-                }
+            app.paperVision.nodeEditor.options[FontAwesomeIcons.Save] = Option("mis_saveproject") {
+                app.paperVision.engineClient.sendMessage(
+                    SaveCurrentProjectMessage(
+                        serializeToTree(
+                            app.paperVision.nodes.inmutable, app.paperVision.links.inmutable
+                        )
+                    ).onResponseWith<OkResponse> {
+                        app.paperVision.onUpdate.doOnce {
+                            TooltipPopup("mis_projectsaved", ImGui.getMousePos(), 4.0).open()
+                        }
+
+                        logger.info("Project saved")
+                    }
+                )
             }
         }
 

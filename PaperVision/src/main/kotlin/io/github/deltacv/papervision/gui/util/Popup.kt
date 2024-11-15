@@ -32,7 +32,7 @@ class TooltipPopup(
     val text: String,
     override val position: ImVec2,
     val timeoutSeconds: Double,
-    label: String
+    label: String = "mack"
 ) : Popup(label) {
 
     companion object {

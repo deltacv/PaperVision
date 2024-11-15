@@ -53,6 +53,8 @@ class InputSourceWindow(
         ImGuiWindowFlags.AlwaysAutoResize,
     )
 
+    private var initialPosition: ImVec2? = null
+
     init {
         client.sendMessage(GetInputSourcesMessage().onResponseWith<InputSourcesListResponse> {
             inputSources = it.sources
@@ -67,16 +69,18 @@ class InputSourceWindow(
         })
 
         onDraw.doOnce {
-            onDraw.doOnce {
-                 position = ImVec2(
-                     ImGui.getMainViewport().size.x - size.x - position.y, position.y
-                 )
-            }
+            initialPosition = ImVec2(position.x, position.y)
         }
     }
 
 
     override fun drawContents() {
+        if(initialPosition != null) {
+            position = ImVec2(
+                ImGui.getMainViewport().size.x - size.x - initialPosition!!.y, initialPosition!!.y
+            )
+        }
+
         if(ImGui.beginListBox("###$id")) {
             for (inputSource in inputSources) {
                 ImGui.pushFont(fontAwesome.imfont)

@@ -6,13 +6,14 @@ win_createinput_sources,Create Input Sources,Crear Fuentes de Entrada
 win_selectlanguage,Select Language,Seleccionar Lenguaje
 win_welcome,Welcome!,Bienvenid@!
 win_confirm,Confirm,Confirmar
+win_options,Options,Opciones
 cat_pipeline_flow,Pipeline Flow,Ejecucion
 cat_coding,Coding,Codigo
 cat_high_level_cv,High Level,Alto Nivel
 cat_image_proc,Image Processing,Procesamiento de Imagen
-cat_feature_det,Feature Detection and Filtering,Deteccion de Caracteristicas y Filtrado
+cat_feature_det,Feature Detection,Deteccion de Caracteristicas
 cat_overlay,Overlay,Overlay
-cat_class,Classification,Clasificacion
+cat_class,Classification and Filtering,Clasificacion y Filtrado
 cat_math,Math,Matematicas
 cat_misc,Miscellaneous,Miscelaneo
 nod_previewdisplay,Preview,Previsualizacion
@@ -49,7 +50,7 @@ att_position,Position,Posicion
 att_scale,Scale,Escala
 att_crosshair,Crosshair,Crosshair
 att_crosshairimage,Overlay Output,Salida del Overlay
-att_crosshairline_params,Crosshair Line Params,Parametros de Linea Crosshair
+att_crosshairline_params,Crosshair Line,Linea del Crosshair
 att_exporteddata,Export Data,Datos Exportados
 att_value,Value,Valor
 att_params,Parameters,Parametros
@@ -174,3 +175,6 @@ mis_savebefore_exit,Do you wanna save before exiting?,¿Quieres guardar antes de
 mis_save,Save,Guardar
 mis_discard,Discard,Descartar
 mis_cancel,Cancel,Cancelar
+mis_changelanguage,Change Language,Cambiar Lenguaje
+mis_saveproject,Save Project,Guardar Proyecto
+mis_projectsaved,Project Saved Successfully !,Proyecto Guardado Correctamente !

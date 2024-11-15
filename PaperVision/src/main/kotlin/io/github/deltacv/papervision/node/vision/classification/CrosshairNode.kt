@@ -29,14 +29,17 @@ import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import jdk.nashorn.internal.codegen.types.BooleanType
 
 @PaperNode(
     name = "nod_crosshair",
@@ -62,26 +65,30 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
     val outputCrosshairImage = MatAttribute(OUTPUT, "$[att_crosshairimage]")
 
     override fun onEnable() {
-        + drawCrosshairOn.rebuildOnChange()
-        + input.rebuildOnChange()
-        + crosshairScale
+        +drawCrosshairOn.rebuildOnChange()
+        +input.rebuildOnChange()
+        +crosshairScale
 
-        + crosshairPosition
-        + crosshairLineParams
+        crosshairScale.value.set(5)
+
+        +crosshairPosition
+        +crosshairLineParams
 
         crosshairPosition.onChange {
-            when(crosshairPosition.get()) {
+            when (crosshairPosition.get()) {
                 CrosshairPosition.Center -> {
                 }
+
                 CrosshairPosition.Offset -> {
                 }
+
                 CrosshairPosition.Custom -> {
                 }
             }
         }
 
-        + outputCrosshairImage.enablePrevizButton().rebuildOnChange()
-        + outputCrosshair.rebuildOnChange()
+        +outputCrosshairImage.enablePrevizButton().rebuildOnChange()
+        +outputCrosshair.rebuildOnChange()
     }
 
     override val generators = generatorsBuilder {
@@ -99,7 +106,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
             val crosshairPosValue = crosshairPosition.value(current).value
 
-            val crosshairLineParams = (crosshairLineParams.value(current) as GenValue.LineParameters).ensureRuntimeLine(current)
+            val crosshairLineParams =
+                (crosshairLineParams.value(current) as GenValue.LineParameters).ensureRuntimeLineJava(current)
 
             val crosshairSizeValue = crosshairScale.value(current).value
 
@@ -146,7 +154,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                     separate()
 
                     // Adjust crosshairSize based on the scale factor
-                    val adjustedCrosshairSize = uniqueVariable("adjustedCrosshairSize", crosshairSize * scaleFactor / 100.v)
+                    val adjustedCrosshairSize =
+                        uniqueVariable("adjustedCrosshairSize", crosshairSize * scaleFactor / 100.v)
                     local(adjustedCrosshairSize)
 
                     separate()
@@ -209,6 +218,149 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                     }
 
                     outputCrosshairImage.streamIfEnabled(crosshairImage, drawOn.color)
+
+                    session.outputCrosshair =
+                        GenValue.GList.RuntimeListOf(crosshair, GenValue.GPoints.RuntimePoints::class)
+                    session.outputCrosshairImage = GenValue.Mat(crosshairImage, drawOn.color, drawOn.isBinary)
+                }
+            }
+
+            session
+        }
+
+        generatorFor(CPythonLanguage) {
+            val session = Session()
+
+            val inputPoints = input.value(current)
+
+            if (inputPoints !is GenValue.GList.RuntimeListOf<*>) {
+                raise("") // TODO: Handle non-runtime lists
+            }
+
+            val lineParams = crosshairLineParams.value(current)
+            if (lineParams !is GenValue.LineParameters.Line) {
+                raise("Line parameters must not be runtime")
+            }
+
+            val drawOn = drawCrosshairOn.value(current)
+            val drawOnValue = drawOn.value
+
+            val crosshairPosValue = crosshairPosition.value(current).value
+            val crosshairLineParams = (crosshairLineParams.value(current) as GenValue.LineParameters.Line)
+            val crosshairSizeValue = crosshairScale.value(current).value
+
+            current {
+                val crosshair = uniqueVariable("crosshair", CPythonLanguage.NoType.newArray())
+                val crosshairImage = uniqueVariable("crosshair_image", drawOnValue.callValue("copy", CPythonLanguage.NoType))
+
+                current.scope {
+                    local(crosshair)
+                    local(crosshairImage)
+
+                    separate()
+
+                    val rowsCols = CPythonLanguage.tupleVariables(
+                        crosshairImage.propertyValue("shape", CPythonLanguage.NoType),
+                        "height", "width", "channels"
+                    )
+
+                    local(rowsCols)
+
+                    val rows = rowsCols.get("height")
+                    val cols = rowsCols.get("width")
+
+                    separate()
+
+                    val (crosshairPointX, crosshairPointY) = if (crosshairPosValue == CrosshairPosition.Center) {
+                        // draw crosshair at center
+                        Pair(cols / 2.v, rows / 2.v)
+                    } else if (crosshairPosValue == CrosshairPosition.Offset) {
+                        TODO()
+                    } else {
+                        TODO()
+                    }
+
+                    val pointX = uniqueVariable("crosshair_point_x", crosshairPointX)
+                    val pointY = uniqueVariable("crosshair_point_y", crosshairPointY)
+
+                    local(pointX)
+                    local(pointY)
+
+                    // Define a scale factor based on the image dimensions
+                    val scaleFactor = uniqueVariable("scale_factor", (rows + cols) / 2.v)
+                    local(scaleFactor)
+
+                    separate()
+
+                    // Adjust crosshairSize based on the scale factor
+                    val adjustedCrosshairSize =
+                        uniqueVariable("adjusted_crosshair_size", crosshairSizeValue.v * scaleFactor / 100.v)
+                    local(adjustedCrosshairSize)
+
+                    separate()
+
+                    val crosshairCol = crosshairLineParams.color.elements.map { it.value.v }.toTypedArray()
+                    val crosshairThickness = crosshairLineParams.thickness.value.v
+
+                    CPythonOpenCvTypes.cv2(
+                        "line",
+                        crosshairImage,
+                        CPythonLanguage.tuple(
+                            int(pointX - adjustedCrosshairSize),
+                            int(pointY)
+                        ),
+                        CPythonLanguage.tuple(
+                            int(pointX + adjustedCrosshairSize),
+                            int(pointY)
+                        ),
+                        CPythonLanguage.tuple(*crosshairCol),
+                        crosshairThickness
+                    )
+
+                    CPythonOpenCvTypes.cv2(
+                        "line",
+                        crosshairImage,
+                        CPythonLanguage.tuple(
+                            int(pointX),
+                            int(pointY - adjustedCrosshairSize)
+                        ),
+                        CPythonLanguage.tuple(
+                            int(pointX),
+                            int(pointY + adjustedCrosshairSize)
+                        ),
+                        CPythonLanguage.tuple(*crosshairCol),
+                        crosshairThickness
+                    )
+
+                    separate()
+
+                    foreach(variable(CPythonLanguage.NoType, "contour"), inputPoints.value) {
+                        // Get the bounding rectangle of the current contour
+                        val boundingRect = CPythonLanguage.tupleVariables(
+                            CPythonOpenCvTypes.cv2.callValue("bounding_rect", CPythonLanguage.NoType, it),
+                            "x", "y", "w", "h"
+                        )
+                        local(boundingRect)
+
+                        separate()
+                        // Extract x, y, w, h values
+                        val x = boundingRect.get("x")
+                        val y = boundingRect.get("y")
+                        val w = boundingRect.get("w")
+                        val h = boundingRect.get("h")
+
+                        // Check if the crosshair rectangle is inside the bounding rectangle
+                        // perform aabb check
+                        ifCondition(
+                            (pointX greaterOrEqualThan x)
+                                    and (pointX lessOrEqualThan (x + w))
+                                    and (pointY greaterOrEqualThan y)
+                                    and (pointY lessOrEqualThan (y + h))
+                        ) {
+                            // Add the contour to the crosshair if the bounding rectangle contains the crosshair
+                            crosshair("append", it)
+                        }
+                    }
 
                     session.outputCrosshair =
                         GenValue.GList.RuntimeListOf(crosshair, GenValue.GPoints.RuntimePoints::class)
