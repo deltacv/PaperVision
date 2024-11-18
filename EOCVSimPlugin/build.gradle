@@ -39,7 +39,7 @@ shadowJar {
     exclude "META-INF/*.RSA"
 }
 
-configurations.all {
+configurations.configureEach {
     resolutionStrategy {
         cacheChangingModulesFor 0, 'seconds'
     }
@@ -56,9 +56,9 @@ dependencies {
 
     implementation project(":LwjglPlatform")
 
-    compileOnly('com.github.deltacv.EOCV-Sim:EOCV-Sim:3.8.2') { transitive = false } // jitpack
-    compileOnly('com.github.deltacv.EOCV-Sim:Common:3.8.2') { transitive = false } // jitpack
-    compileOnly('com.github.deltacv.EOCV-Sim:Vision:3.8.2') // jitpack
+    compileOnly('com.github.deltacv.EOCV-Sim:EOCV-Sim:v3.8.2') { transitive = false } // jitpack
+    compileOnly('com.github.deltacv.EOCV-Sim:Common:v3.8.2') { transitive = false } // jitpack
+    compileOnly('com.github.deltacv.EOCV-Sim:Vision:v3.8.2') // jitpack
 
     // compileOnly('com.github.deltacv.EOCV-Sim:EOCV-Sim:15e7f07bea') { changing = true; transitive = false} // jitpack dev
     // compileOnly('com.github.deltacv.EOCV-Sim:Common:15e7f07bea') { changing = true; transitive = false} // jitpack dev
