@@ -178,3 +178,5 @@ mis_cancel,Cancel,Cancelar
 mis_changelanguage,Change Language,Cambiar Lenguaje
 mis_saveproject,Save Project,Guardar Proyecto
 mis_projectsaved,Project Saved Successfully !,Proyecto Guardado Correctamente !
+mis_codecopied,Code Copied to Clipboard !,Codigo Copiado al Portapapeles !
+mis_filesave_success,File saved successfully !,Archivo guardado correctamente !

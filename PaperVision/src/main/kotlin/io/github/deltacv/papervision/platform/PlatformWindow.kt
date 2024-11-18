@@ -20,6 +20,16 @@ package io.github.deltacv.papervision.platform
 
 import imgui.ImVec2
 
+data class PlatformFileFilter(
+    val name: String,
+    val extensions: List<String>
+)
+
+enum class PlatformFileChooserResult {
+    CANCELLED,
+    OK
+}
+
 interface PlatformWindow {
 
     var title: String
@@ -32,5 +42,7 @@ interface PlatformWindow {
     var maximized: Boolean
 
     var focus: Boolean
+
+    fun saveFileDialog(content: ByteArray, defaultName: String = "", vararg platformFileFilter: PlatformFileFilter): PlatformFileChooserResult
 
 }

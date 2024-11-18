@@ -36,6 +36,8 @@ open class LanguageBase(
         JavaTypes.String
     )
 
+    override val sourceFileExtension = "java"
+
     override val excludedImports = mutableExcludedImports as List<Type>
 
     override fun nullVal(type: Type) = ConValue(type, "null")

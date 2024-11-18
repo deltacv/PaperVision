@@ -616,16 +616,18 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
 
         private fun openSourceCodeWindow(language: Language) {
-            fun openWindow(code: String?) {
+            fun openWindow(code: String?, name: String, language: Language) {
                 if (code == null) {
                     logger.warn("Code generation failed, cancelled opening source code window")
                     return
                 }
 
                 CodeDisplayWindow(
-                    code,
+                    code, name, language,
                     TextEditorLanguageDefinition.CPlusPlus(),
-                    paperVision.codeFont
+                    paperVision.window,
+                    paperVision.codeFont,
+                    paperVision.defaultFontBig
                 ).apply {
                     enable()
                     size = ImVec2(nodeEditorSizeSupplier().x * 0.8f, nodeEditorSizeSupplier().y * 0.8f)
@@ -635,12 +637,12 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             if (paperVision.engineClient.bridge.isConnected) {
                 paperVision.engineClient.sendMessage(AskProjectGenClassNameMessage().onResponseWith<StringResponse> { response ->
                     paperVision.onUpdate.doOnce {
-                        openWindow(paperVision.codeGenManager.build(response.value, language))
+                        openWindow(paperVision.codeGenManager.build(response.value, language), response.value, language)
                     }
                 })
             } else {
                 paperVision.onUpdate.doOnce {
-                    openWindow(paperVision.codeGenManager.build("Mack", language))
+                    openWindow(paperVision.codeGenManager.build("Mack", language), "Mack", language)
                 }
             }
         }

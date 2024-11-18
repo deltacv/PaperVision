@@ -28,6 +28,8 @@ interface Language : ValueBuilder {
 
     val excludedImports: List<Type>
 
+    val sourceFileExtension: String
+
     override val language get() = this
 
     val BooleanType get() = StandardTypes.cboolean

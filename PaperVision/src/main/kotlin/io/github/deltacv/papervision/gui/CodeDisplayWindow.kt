@@ -23,15 +23,25 @@ import imgui.ImVec2
 import imgui.extension.texteditor.TextEditor
 import imgui.extension.texteditor.TextEditorLanguageDefinition
 import imgui.flag.ImGuiWindowFlags
+import io.github.deltacv.mai18n.tr
+import io.github.deltacv.papervision.codegen.language.Language
+import io.github.deltacv.papervision.gui.util.TooltipPopup
 import io.github.deltacv.papervision.gui.util.Window
+import io.github.deltacv.papervision.platform.PlatformFileChooserResult
+import io.github.deltacv.papervision.platform.PlatformFileFilter
+import io.github.deltacv.papervision.platform.PlatformWindow
 import io.github.deltacv.papervision.util.flags
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 
 class CodeDisplayWindow(
     val code: String,
-    val language: TextEditorLanguageDefinition,
-    val codeFont: Font? = null
+    val name: String,
+    val codeGenLanguage: Language,
+    val editorLanguage: TextEditorLanguageDefinition,
+    val platformWindow: PlatformWindow,
+    val codeFont: Font? = null,
+    val buttonsFont: Font? = null
 ) : Window() {
     override var title = "Code"
 
@@ -52,7 +62,7 @@ class CodeDisplayWindow(
 
         EDITOR.isReadOnly
 
-        EDITOR.languageDefinition = language
+        EDITOR.languageDefinition = editorLanguage
         EDITOR.textLines = code.lines().toTypedArray()
 
         size = ImVec2(500f, 400f)
@@ -76,15 +86,34 @@ class CodeDisplayWindow(
             ImGui.popFont()
         }
 
+        buttonsFont?.let {
+            ImGui.pushFont(it.imfont)
+        }
+
         if(ImGui.button("Copy Code")) {
             Toolkit.getDefaultToolkit().systemClipboard.setContents(
                 StringSelection(EDITOR.text), null
             )
+
+            TooltipPopup(
+                "mis_codecopied",
+                ImGui.getMousePos(),
+                3.0,
+            ).open()
         }
 
         ImGui.sameLine()
 
         if(ImGui.button("Export to File")) {
+            platformWindow.saveFileDialog(
+                code.toByteArray(),
+                "${name}.${codeGenLanguage.sourceFileExtension}",
+                PlatformFileFilter("Source File", listOf(codeGenLanguage.sourceFileExtension))
+            )
+        }
+
+        buttonsFont?.let {
+            ImGui.popFont()
         }
     }
 }

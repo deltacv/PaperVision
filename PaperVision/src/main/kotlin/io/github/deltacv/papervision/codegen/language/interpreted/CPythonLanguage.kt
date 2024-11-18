@@ -36,6 +36,8 @@ object CPythonLanguage : LanguageBase(
 
     override val Parameter.string get() = name
 
+    override val sourceFileExtension = "py"
+
     val NoType = object: CPythonType("None", "None") {
         override val shouldImport = false
     }
