@@ -25,9 +25,12 @@ jobs:
       if: ${{ startsWith(github.ref, 'refs/tags/v') }}
 
     - name: Build dev shadow jar with Gradle
+      env:
+        DELTACV_PLUGINSIGNING_PRIVATE: ${{ secrets.DELTACV_PLUGINSIGNING_PRIVATE }}
       run: |
         SHA_SHORT="$(git rev-parse --short HEAD)"
         ./gradlew -Phash=$SHA_SHORT shadowJar -x test
+        for i in *.jar; do java -classpath "tools/Common.jar" io.github.deltacv.eocvsim.plugin.security.PluginSigningTool --plugin=$i --authority=deltacv --key=DELTACV_PLUGINSIGNING_PRIVATE; done
       if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
 
     - uses: pyTooling/Actions/releaser@r0
