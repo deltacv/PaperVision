@@ -34,7 +34,7 @@ jobs:
       env:
         DELTACV_PLUGINSIGNING_PRIVATE: ${{ secrets.DELTACV_PLUGINSIGNING_PRIVATE }}
       run: |
-        for i in EOCVSimPlugin/build/libs/*.jar; do java -classpath "tools/Common.jar" io.github.deltacv.eocvsim.plugin.security.PluginSigningTool --plugin=$i --authority=deltacv --key=DELTACV_PLUGINSIGNING_PRIVATE; done
+        for i in EOCVSimPlugin/build/libs/*.jar; do java -classpath "tools/Common.jar" io.github.deltacv.eocvsim.plugin.security.PluginSigningTool --plugin=$i --authority=deltacv --key=$DELTACV_PLUGINSIGNING_PRIVATE; done
 
     - uses: pyTooling/Actions/releaser@r0
       with:
