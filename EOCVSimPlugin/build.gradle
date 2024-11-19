@@ -1,6 +1,6 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'com.gradleup.shadow' version '8.3.5'
     id 'maven-publish'
 }
 
@@ -30,8 +30,6 @@ publishing {
 }
 
 shadowJar {
-    baseName "PaperVisionPlugin"
-
     configurations = [project.configurations.runtimeClasspath]
 
     exclude "META-INF/*.SF"
@@ -56,9 +54,9 @@ dependencies {
 
     implementation project(":LwjglPlatform")
 
-    compileOnly('com.github.deltacv.EOCV-Sim:EOCV-Sim:v3.8.2') { transitive = false } // jitpack
-    compileOnly('com.github.deltacv.EOCV-Sim:Common:v3.8.2') { transitive = false } // jitpack
-    compileOnly('com.github.deltacv.EOCV-Sim:Vision:v3.8.2') // jitpack
+    compileOnly('org.deltacv.EOCV-Sim:EOCV-Sim:3.8.4') { transitive = false } // jitpack
+    compileOnly('org.deltacv.EOCV-Sim:Common:3.8.4') { transitive = false } // jitpack
+    compileOnly('org.deltacv.EOCV-Sim:Vision:3.8.4') // jitpack
 
     // compileOnly('com.github.deltacv.EOCV-Sim:EOCV-Sim:15e7f07bea') { changing = true; transitive = false} // jitpack dev
     // compileOnly('com.github.deltacv.EOCV-Sim:Common:15e7f07bea') { changing = true; transitive = false} // jitpack dev
@@ -77,11 +75,11 @@ dependencies {
 
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 
-    implementation('com.github.deltacv.visionloop:visionloop:1.2.1') {
+    implementation('org.deltacv.visionloop:visionloop:1.2.2') {
         exclude group: 'com.github.deltacv.EOCVSim'
     }
 
-    implementation('com.github.deltacv.visionloop:streaming:1.2.1') {
+    implementation('org.deltacv.visionloop:streaming:1.2.2') {
         exclude group: 'com.github.deltacv.EOCVSim'
     }
 
