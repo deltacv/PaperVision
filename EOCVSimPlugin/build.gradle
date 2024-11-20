@@ -79,6 +79,13 @@ tasks.withType(Jar).configureEach {
     }
 }
 
+shadowJar {
+    exclude "nu/pattern/*"
+    exclude "*.so"
+    exclude "*.dylib"
+    exclude "*.dll"
+}
+
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
@@ -106,11 +113,19 @@ dependencies {
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 
     implementation('org.deltacv.visionloop:visionloop:1.2.2') {
-        exclude group: 'com.github.deltacv.EOCVSim'
+        exclude group: 'org.jetbrains.skiko'
+        exclude group: 'org.deltacv'
+        exclude group: 'org.deltacv.EOCVSim'
+        exclude group: 'org.deltacv.steve'
+        exclude group: 'org.openpnp'
     }
 
     implementation('org.deltacv.visionloop:streaming:1.2.2') {
-        exclude group: 'com.github.deltacv.EOCVSim'
+        exclude group: 'org.jetbrains.skiko'
+        exclude group: 'org.deltacv'
+        exclude group: 'org.deltacv.EOCVSim'
+        exclude group: 'org.deltacv.steve'
+        exclude group: 'org.openpnp'
     }
 
     implementation("io.javalin:javalin:6.3.0")
