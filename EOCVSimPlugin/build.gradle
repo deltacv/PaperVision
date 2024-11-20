@@ -7,9 +7,6 @@ plugins {
 
 apply from: '../build.common.gradle'
 
-// Check if the shadowJar task exists and is enabled, and use its JAR if applicable
-def shadowJarTask = tasks.findByName("shadowJar")
-
 tasks.register('signPlugin') {
     // Get the key from an environment variable
     def signingKey = System.getenv('PLUGINSIGNING_PRIVATE')
@@ -22,8 +19,8 @@ tasks.register('signPlugin') {
     // Determine which JAR file to sign based on whether the shadowJar or jar task is being used
     def jarFile = tasks.named("jar").get().archiveFile.get().asFile
 
-    if (shadowJarTask && shadowJarTask.enabled) {
-        jarFile = shadowJarTask.archiveFile.get().asFile
+    if (tasks.shadowJar.enabled) {
+        jarFile = tasks.shadowJar.archiveFile.get().asFile
     }
 
     def commonJarPath = rootDir.absolutePath + File.separator + "tools" + File.separator + "Common.jar"
