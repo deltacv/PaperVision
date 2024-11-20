@@ -10,7 +10,7 @@ apply from: '../build.common.gradle'
 tasks.register('signPlugin') {
     doLast {
         // Get the key from an environment variable
-        def signingKey = System.getenv('DELTACV_PLUGINSIGNING_PRIVATE')
+        def signingKey = System.getenv('PLUGINSIGNING_PRIVATE')
         if (!signingKey) {
             println("Environment variable 'PLUGINSIGNING_PRIVATE' is not set.")
             return
