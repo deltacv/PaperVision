@@ -14,7 +14,7 @@ tasks.register('sourcesJar', Jar) {
 tasks.matching { it.name in ['jar', 'shadowJar'] }.configureEach {
     doLast {
         def script = System.getProperty('os.name').toLowerCase().contains('win') ? 'sign_output.bat' : 'sign_output.sh'
-        def scriptPath = new File(rootDir, script).absolutePath
+        def scriptPath = rootDir.absolutePath + File.separator + "tools" + File.separator + script
         println "Running signing script: $scriptPath"
 
         // Get the key from an environment variable
