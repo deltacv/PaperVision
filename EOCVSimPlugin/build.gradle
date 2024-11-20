@@ -7,16 +7,17 @@ plugins {
 
 apply from: '../build.common.gradle'
 
-tasks.matching { it.name == "jar" || it.name == "shadowJar"}.configureEach {
+tasks.register('signPlugin') {
     doLast {
         // Get the key from an environment variable
         def signingKey = System.getenv('DELTACV_PLUGINSIGNING_PRIVATE')
         if (!signingKey) {
-            println("Environment variable 'DELTACV_PLUGINSIGNING_PRIVATE' is not set.")
+            println("Environment variable 'PLUGINSIGNING_PRIVATE' is not set.")
             return
         }
 
-        def jarFile = archiveFile.get().asFile.absolutePath
+        // Get the jar file path (assuming the task is executed after the jar task)
+        def jarFile = tasks.named("jar").get().archiveFile.get().asFile.absolutePath
         def commonJarPath = rootDir.absolutePath + File.separator + "tools" + File.separator + "Common.jar"
 
         println("Signing plugin. Using common jar: ${commonJarPath}")
@@ -34,6 +35,20 @@ tasks.matching { it.name == "jar" || it.name == "shadowJar"}.configureEach {
         if (exitValue != 0) {
             throw new GradleException("Failed to sign plugin jar. If you wish to disable this, get rid of the environment variable 'DELTACV_PLUGINSIGNING_PRIVATE'.")
         }
+    }
+}
+
+tasks.named("jar").configure {
+    finalizedBy signPlugin
+}
+
+tasks.named("shadowJar").configure {
+    finalizedBy signPlugin
+}
+
+tasks.configureEach {
+    if (name == "generateMetadataFileForMavenPublication") {
+        dependsOn signPlugin
     }
 }
 
