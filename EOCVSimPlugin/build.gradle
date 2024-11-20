@@ -13,14 +13,20 @@ tasks.register('signPlugin') {
         def signingKey = System.getenv('PLUGINSIGNING_PRIVATE')
         if (!signingKey) {
             println("Environment variable 'PLUGINSIGNING_PRIVATE' is not set.")
+            // up to date, nothing to do
             return
         }
 
         // Determine the correct JAR file to sign
-        def jarFile = tasks.named("jar").get().archiveFile.get().asFile
+        def jarFile = null
+
+        def jarTask = tasks.named("jar")
+        if (jarTask && jarTask.enabled) {
+            jarFile = jarTask.get().archiveFile.get().asFile
+        }
 
         // Use the shadowJAR file if it's enabled and available
-        def shadowJarTask = tasks.findByName("shadowJar")
+        def shadowJarTask = tasks.named("shadowJar")
         if (shadowJarTask && shadowJarTask.enabled) {
             jarFile = shadowJarTask.archiveFile.get().asFile
         }
@@ -51,7 +57,11 @@ tasks.named("shadowJar").configure {
 
 // Ensure signPlugin runs after the JAR tasks are complete
 tasks.named("signPlugin").configure {
-    dependsOn tasks.named("jar"), tasks.named("shadowJar")
+    if(tasks.named("shadowJar").get().enabled) {
+        dependsOn shadowJar
+    } else {
+        dependsOn jar
+    }
 }
 
 // Maven metadata task should depend on signPlugin if it exists
