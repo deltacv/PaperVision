@@ -11,12 +11,8 @@ tasks.register('sourcesJar', Jar) {
     archiveClassifier = "sources"
 }
 
-tasks.matching { it.name in ['jar', 'shadowJar'] }.configureEach {
+tasks.matching { it.name == "jar" || it.name == "shadowJar"}.configureEach {
     doLast {
-        def script = System.getProperty('os.name').toLowerCase().contains('win') ? 'sign_output.bat' : 'sign_output.sh'
-        def scriptPath = rootDir.absolutePath + File.separator + "tools" + File.separator + script
-        println "Running signing script: $scriptPath"
-
         // Get the key from an environment variable
         def signingKey = System.getenv('DELTACV_PLUGINSIGNING_PRIVATE')
         if (!signingKey) {
@@ -24,9 +20,13 @@ tasks.matching { it.name in ['jar', 'shadowJar'] }.configureEach {
             return
         }
 
+        def script = """
+            java -classpath "${rootDir.absolutePath}/tools/Common.jar" io.github.deltacv.eocvsim.plugin.security.PluginSigningTool --plugin=${it.archiveFile.get().asFile.absolutePath} --authority=deltacv --key=${signingKey}
+        """
+
         // Execute the script with the key
         project.exec {
-            commandLine scriptPath, rootDir.absolutePath, signingKey
+            commandLine script
         }.assertNormalExitValue()
     }
 }
