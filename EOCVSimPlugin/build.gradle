@@ -20,14 +20,22 @@ tasks.matching { it.name == "jar" || it.name == "shadowJar"}.configureEach {
             return
         }
 
-        def script = """
-            java -classpath "${rootDir.absolutePath}/tools/Common.jar" io.github.deltacv.eocvsim.plugin.security.PluginSigningTool --plugin=${it.archiveFile.get().asFile.absolutePath} --authority=deltacv --key=${signingKey}
-        """
+        def jarFile = archiveFile.get().asFile.absolutePath
+        def commonJarPath = new File(rootDir, "tools/Common.jar").absolutePath
 
-        // Execute the script with the key
-        project.exec {
-            commandLine script
-        }.assertNormalExitValue()
+        // Execute the signing tool
+        def exitValue = project.exec {
+            commandLine 'java',
+                    '-classpath', "\"$commonJarPath\"",
+                    'io.github.deltacv.eocvsim.plugin.security.PluginSigningTool',
+                    "--plugin=${jarFile}",
+                    '--authority=deltacv',
+                    "--key=${signingKey}"
+        }.getExitValue()
+
+        if (exitValue != 0) {
+            throw new GradleException("Failed to sign plugin jar. If you wish to disable this, get rid of the environment variable 'DELTACV_PLUGINSIGNING_PRIVATE'.")
+        }
     }
 }
 
