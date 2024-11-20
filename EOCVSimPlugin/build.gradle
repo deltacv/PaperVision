@@ -19,9 +19,10 @@ tasks.register('signPlugin') {
     // Determine which JAR file to sign based on whether the shadowJar or jar task is being used
     def jarFile = tasks.named("jar").get().archiveFile.get().asFile
 
-    if (tasks.named("shadowJar").enabled) {
-        // If shadowJar task exists and is enabled, use shadowJar
-        jarFile = tasks.named("shadowJar").get().archiveFile.get().asFile
+    // Check if the shadowJar task exists and is enabled, and use its JAR if applicable
+    def shadowJarTask = tasks.findByName("shadowJar")
+    if (shadowJarTask && shadowJarTask.enabled) {
+        jarFile = shadowJarTask.archiveFile.get().asFile
     }
 
     def commonJarPath = rootDir.absolutePath + File.separator + "tools" + File.separator + "Common.jar"
