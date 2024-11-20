@@ -3,7 +3,7 @@ on:
   push:
     # Pattern matched against refs/tags
     tags:
-      - '*'           # Push events to every tag not containing /
+      - 'v*'
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -24,4 +24,4 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.JRELEASER_GPG_SECRET_KEY }}
           PLUGINSIGNING_PRIVATE: ${{ secrets.PLUGINSIGNING_PRIVATE }}
         run: |
-          ./gradlew -Penv=release :Shared:publishToMavenCentral :PaperVision:publishToMavenCentral :LwjglPlatform:publishToMavenCentral :EOCVSimPlugin:publishToMavenCentral --no-configuration-cache -x test -x :EOCVSimPlugin:shadowJar
+          ./gradlew -Penv=release -PpluginSigningPrivate=$PLUGINSIGNING_PRIVATE :Shared:publishToMavenCentral :PaperVision:publishToMavenCentral :LwjglPlatform:publishToMavenCentral :EOCVSimPlugin:publishToMavenCentral --no-configuration-cache -x test -x :EOCVSimPlugin:shadowJar

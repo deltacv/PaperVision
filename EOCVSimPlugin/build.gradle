@@ -23,9 +23,12 @@ tasks.register('signPlugin') {
         // Get the key from an environment variable
         def signingKey = System.getenv('PLUGINSIGNING_PRIVATE')
         if (!signingKey) {
-            println("Environment variable 'PLUGINSIGNING_PRIVATE' is not set.")
-            // up to date, nothing to do
-            return
+            signingKey = findProperty('pluginSigningPrivate')
+            if(!signingKey) {
+                println("Environment variable 'PLUGINSIGNING_PRIVATE' is not set.")
+                // up to date, nothing to do
+                return)
+            }
         }
 
         // Determine the correct JAR file to sign
