@@ -14,14 +14,16 @@ tasks.register('sourcesJar', Jar) {
 tasks.matching { it.name == "jar" || it.name == "shadowJar"}.configureEach {
     doLast {
         // Get the key from an environment variable
-        def signingKey = System.getenv('DELTACV_PLUGINSIGNING_PRIVATE')
+        def signingKey = "pepopepe" // System.getenv('DELTACV_PLUGINSIGNING_PRIVATE')
         if (!signingKey) {
             println("Environment variable 'DELTACV_PLUGINSIGNING_PRIVATE' is not set.")
             return
         }
 
         def jarFile = archiveFile.get().asFile.absolutePath
-        def commonJarPath = new File(rootDir, "tools/Common.jar").absolutePath
+        def commonJarPath = rootDir.absolutePath + File.separator + "tools" + File.separator + "Common.jar"
+
+        println("Signing plugin. Using commons jar: ${commonJarPath}")
 
         // Execute the signing tool
         def exitValue = project.exec {
