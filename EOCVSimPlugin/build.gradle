@@ -8,6 +8,12 @@ plugins {
 apply from: '../build.common.gradle'
 
 tasks.register('signPlugin') {
+    if(tasks.shadowJar.enabled) {
+        dependsOn 'shadowJar'
+    } else {
+        dependsOn 'jar'
+    }
+
     // Get the key from an environment variable
     def signingKey = System.getenv('PLUGINSIGNING_PRIVATE')
     if (!signingKey) {
