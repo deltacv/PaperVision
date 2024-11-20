@@ -8,34 +8,35 @@ plugins {
 apply from: '../build.common.gradle'
 
 tasks.register('signPlugin') {
-    doLast {
-        // Get the key from an environment variable
-        def signingKey = System.getenv('PLUGINSIGNING_PRIVATE')
-        if (!signingKey) {
-            println("Environment variable 'PLUGINSIGNING_PRIVATE' is not set.")
-            return
-        }
-
-        // Get the jar file path (assuming the task is executed after the jar task)
-        def jarFile = tasks.named("jar").get().archiveFile.get().asFile.absolutePath
-        def commonJarPath = rootDir.absolutePath + File.separator + "tools" + File.separator + "Common.jar"
-
-        println("Signing plugin. Using common jar: ${commonJarPath}")
-
-        // Execute the signing tool
-        def exitValue = project.exec {
-            commandLine 'java',
-                    '-classpath', commonJarPath,
-                    'io.github.deltacv.eocvsim.plugin.security.PluginSigningTool',
-                    "--plugin=${jarFile}",
-                    '--authority=deltacv',
-                    "--key=$signingKey"
-        }.getExitValue()
-
-        if (exitValue != 0) {
-            throw new GradleException("Failed to sign plugin jar. If you wish to disable this, get rid of the environment variable 'DELTACV_PLUGINSIGNING_PRIVATE'.")
-        }
+    // Get the key from an environment variable
+    def signingKey = System.getenv('PLUGINSIGNING_PRIVATE')
+    if (!signingKey) {
+        println("Environment variable 'PLUGINSIGNING_PRIVATE' is not set.")
+        return
     }
+
+    // Get the jar file path (assuming the task is executed after the jar task)
+    // Determine which JAR file to sign based on whether the shadowJar or jar task is being used
+    def jarFile = tasks.named("jar").get().archiveFile.get().asFile
+
+    if (tasks.named("shadowJar").enabled) {
+        // If shadowJar task exists and is enabled, use shadowJar
+        jarFile = tasks.named("shadowJar").get().archiveFile.get().asFile
+    }
+
+    def commonJarPath = rootDir.absolutePath + File.separator + "tools" + File.separator + "Common.jar"
+
+    println("Signing plugin. Using common jar: ${commonJarPath}")
+
+    // Execute the signing tool
+    def exitValue = project.exec {
+        commandLine 'java',
+                '-classpath', commonJarPath,
+                'io.github.deltacv.eocvsim.plugin.security.PluginSigningTool',
+                "--plugin=${jarFile}",
+                '--authority=deltacv',
+                "--key=$signingKey"
+    }.assertNormalExitValue()
 }
 
 tasks.named("jar").configure {
