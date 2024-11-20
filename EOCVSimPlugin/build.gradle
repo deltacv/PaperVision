@@ -11,6 +11,26 @@ tasks.register('sourcesJar', Jar) {
     archiveClassifier = "sources"
 }
 
+tasks.matching { it.name in ['jar', 'shadowJar'] }.configureEach {
+    doLast {
+        def script = System.getProperty('os.name').toLowerCase().contains('win') ? 'sign_output.bat' : 'sign_output.sh'
+        def scriptPath = new File(rootDir, script).absolutePath
+        println "Running signing script: $scriptPath"
+
+        // Get the key from an environment variable
+        def signingKey = System.getenv('DELTACV_PLUGINSIGNING_PRIVATE')
+        if (!signingKey) {
+            println("Environment variable 'DELTACV_PLUGINSIGNING_PRIVATE' is not set.")
+            return
+        }
+
+        // Execute the script with the key
+        project.exec {
+            commandLine scriptPath, rootDir.absolutePath, signingKey
+        }.assertNormalExitValue()
+    }
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
