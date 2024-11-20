@@ -14,7 +14,7 @@ tasks.register('sourcesJar', Jar) {
 tasks.matching { it.name == "jar" || it.name == "shadowJar"}.configureEach {
     doLast {
         // Get the key from an environment variable
-        def signingKey = "pepopepe" // System.getenv('DELTACV_PLUGINSIGNING_PRIVATE')
+        def signingKey = "eeppepe" // System.getenv('DELTACV_PLUGINSIGNING_PRIVATE')
         if (!signingKey) {
             println("Environment variable 'DELTACV_PLUGINSIGNING_PRIVATE' is not set.")
             return
@@ -23,12 +23,12 @@ tasks.matching { it.name == "jar" || it.name == "shadowJar"}.configureEach {
         def jarFile = archiveFile.get().asFile.absolutePath
         def commonJarPath = rootDir.absolutePath + File.separator + "tools" + File.separator + "Common.jar"
 
-        println("Signing plugin. Using commons jar: ${commonJarPath}")
+        println("Signing plugin. Using common jar: ${commonJarPath}")
 
         // Execute the signing tool
         def exitValue = project.exec {
             commandLine 'java',
-                    '-classpath', "\"$commonJarPath\"",
+                    '-classpath', commonJarPath,
                     'io.github.deltacv.eocvsim.plugin.security.PluginSigningTool',
                     "--plugin=${jarFile}",
                     '--authority=deltacv',
