@@ -1,15 +1,11 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'com.gradleup.shadow' version '8.3.5'
-    id 'maven-publish'
+    id 'signing'
+    id "com.vanniktech.maven.publish" version "0.30.0"
 }
 
 apply from: '../build.common.gradle'
-
-tasks.register('sourcesJar', Jar) {
-    from sourceSets.main.allJava
-    archiveClassifier = "sources"
-}
 
 tasks.matching { it.name == "jar" || it.name == "shadowJar"}.configureEach {
     doLast {
@@ -37,24 +33,6 @@ tasks.matching { it.name == "jar" || it.name == "shadowJar"}.configureEach {
 
         if (exitValue != 0) {
             throw new GradleException("Failed to sign plugin jar. If you wish to disable this, get rid of the environment variable 'DELTACV_PLUGINSIGNING_PRIVATE'.")
-        }
-    }
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-
-            pom.withXml {
-                Node pomNode = asNode()
-                pomNode.dependencies.'*'.findAll() {
-                    it.artifactId.text() == 'EOCV-Sim'
-                }.each() {
-                    it.parent().remove(it)
-                }
-            }
         }
     }
 }

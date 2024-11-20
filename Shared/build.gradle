@@ -1,24 +1,10 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
-    id 'maven-publish'
+    id 'signing'
+    id "com.vanniktech.maven.publish" version "0.30.0"
 }
 
 apply from: '../build.common.gradle'
-
-
-task sourcesJar(type: Jar) {
-    from sourceSets.main.allJava
-    archiveClassifier = "sources"
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-        }
-    }
-}
 
 dependencies {
     compileOnly "io.github.spair:imgui-java-binding:$imgui_version" // platforms should add the "implementation" they need

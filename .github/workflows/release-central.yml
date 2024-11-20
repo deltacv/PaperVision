@@ -1,0 +1,27 @@
+name: Publish package to the Maven Central Repository
+on:
+  push:
+    # Pattern matched against refs/tags
+    tags:
+      - '*'           # Push events to every tag not containing /
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+      - name: Run chmod to make gradlew executable
+        run: chmod +x ./gradlew
+      - name: Publish package to maven central
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.JRELEASER_MAVENCENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.JRELEASER_MAVENCENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.JRELEASER_GPG_PASSPHRASE }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.JRELEASER_GPG_SECRET_KEY }}
+          DELTACV_PLUGINSIGNING_PRIVATE: ${{ secrets.DELTACV_PLUGINSIGNING_PRIVATE }}
+        run: |
+          ./gradlew :Shared:publishToMavenCentral :PaperVision:publishToMavenCentral :LwjglPlatform:publishToMavenCentral :EOCVSimPlugin:publishToMavenCentral --no-configuration-cache -x test
