@@ -8,42 +8,39 @@ plugins {
 apply from: '../build.common.gradle'
 
 tasks.register('signPlugin') {
-    if(tasks.shadowJar.enabled) {
-        dependsOn 'shadowJar'
-    } else {
-        dependsOn 'jar'
+    doLast {
+        // Get the key from an environment variable
+        def signingKey = System.getenv('PLUGINSIGNING_PRIVATE')
+        if (!signingKey) {
+            println("Environment variable 'PLUGINSIGNING_PRIVATE' is not set.")
+            return
+        }
+
+        // Determine the correct JAR file to sign
+        def jarFile = tasks.named("jar").get().archiveFile.get().asFile
+
+        // Use the shadowJAR file if it's enabled and available
+        def shadowJarTask = tasks.findByName("shadowJar")
+        if (shadowJarTask && shadowJarTask.enabled) {
+            jarFile = shadowJarTask.archiveFile.get().asFile
+        }
+
+        def commonJarPath = rootDir.absolutePath + File.separator + "tools" + File.separator + "Common.jar"
+
+        println("Signing plugin. Using common jar: ${commonJarPath} and plugin jar: ${jarFile}")
+
+        def exitValue = project.exec {
+            commandLine 'java',
+                    '-classpath', commonJarPath,
+                    'io.github.deltacv.eocvsim.plugin.security.PluginSigningTool',
+                    "--plugin=${jarFile}",
+                    '--authority=deltacv',
+                    "--key=$signingKey"
+        }.assertNormalExitValue()
     }
-
-    // Get the key from an environment variable
-    def signingKey = System.getenv('PLUGINSIGNING_PRIVATE')
-    if (!signingKey) {
-        println("Environment variable 'PLUGINSIGNING_PRIVATE' is not set.")
-        return
-    }
-
-    // Get the jar file path (assuming the task is executed after the jar task)
-    // Determine which JAR file to sign based on whether the shadowJar or jar task is being used
-    def jarFile = tasks.named("jar").get().archiveFile.get().asFile
-
-    if (tasks.shadowJar.enabled) {
-        jarFile = tasks.shadowJar.archiveFile.get().asFile
-    }
-
-    def commonJarPath = rootDir.absolutePath + File.separator + "tools" + File.separator + "Common.jar"
-
-    println("Signing plugin. Using common jar: ${commonJarPath}")
-
-    // Execute the signing tool
-    def exitValue = project.exec {
-        commandLine 'java',
-                '-classpath', commonJarPath,
-                'io.github.deltacv.eocvsim.plugin.security.PluginSigningTool',
-                "--plugin=${jarFile}",
-                '--authority=deltacv',
-                "--key=$signingKey"
-    }.assertNormalExitValue()
 }
 
+// Ensure signPlugin runs after jar or shadowJar tasks
 tasks.named("jar").configure {
     finalizedBy signPlugin
 }
@@ -52,6 +49,12 @@ tasks.named("shadowJar").configure {
     finalizedBy signPlugin
 }
 
+// Ensure signPlugin runs after the JAR tasks are complete
+tasks.named("signPlugin").configure {
+    dependsOn tasks.named("jar"), tasks.named("shadowJar")
+}
+
+// Maven metadata task should depend on signPlugin if it exists
 tasks.configureEach {
     if (name == "generateMetadataFileForMavenPublication") {
         dependsOn signPlugin
@@ -87,30 +90,15 @@ shadowJar {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
-
     implementation project(":LwjglPlatform")
-
     compileOnly('org.deltacv.EOCV-Sim:EOCV-Sim:3.8.4') { transitive = false }
     compileOnly('org.deltacv.EOCV-Sim:Common:3.8.4') { transitive = false }
     compileOnly('org.deltacv.EOCV-Sim:Vision:3.8.4')
-
-    // compileOnly('com.github.deltacv.EOCV-Sim:EOCV-Sim:15e7f07bea') { changing = true; transitive = false} // jitpack dev
-    // compileOnly('com.github.deltacv.EOCV-Sim:Common:15e7f07bea') { changing = true; transitive = false} // jitpack dev
-    // compileOnly('com.github.deltacv.EOCV-Sim:Vision:15e7f07bea') { changing = true; } // jitpack dev
-
-    // compileOnly('com.github.deltacv:EOCV-Sim:3.7.1-dev-240925-2310') { transitive = false } // Maven local
-    // compileOnly('com.github.deltacv:Common:3.7.1-dev-240925-2310') { transitive = false } // Maven local
-    // compileOnly('com.github.deltacv:Vision:3.7.1-dev-240925-2310') // Maven local
-
     implementation 'org.codehaus.janino:janino:3.1.12'
-
     implementation "com.google.code.gson:gson:$gson_version"
-
     implementation 'org.java-websocket:Java-WebSocket:1.5.7'
     implementation 'info.picocli:picocli:4.7.6'
-
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
-
     implementation('org.deltacv.visionloop:visionloop:1.2.2') {
         exclude group: 'org.jetbrains.skiko'
         exclude group: 'org.deltacv'
@@ -118,7 +106,6 @@ dependencies {
         exclude group: 'org.deltacv.steve'
         exclude group: 'org.openpnp'
     }
-
     implementation('org.deltacv.visionloop:streaming:1.2.2') {
         exclude group: 'org.jetbrains.skiko'
         exclude group: 'org.deltacv'
@@ -126,8 +113,6 @@ dependencies {
         exclude group: 'org.deltacv.steve'
         exclude group: 'org.openpnp'
     }
-
     implementation("io.javalin:javalin:6.3.0")
-
     implementation 'commons-io:commons-io:2.17.0'
 }
