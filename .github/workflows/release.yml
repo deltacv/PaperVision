@@ -3,7 +3,7 @@ name: Create GitHub release(s)
 on:
   push:
     branches: [ master ]
-    tags: 'v*'
+    tags: '*'
 
 jobs:
   build-and-release:
