@@ -18,12 +18,7 @@ tasks.register('signPlugin') {
         }
 
         // Determine the correct JAR file to sign
-        def jarFile = null
-
-        def jarTask = tasks.named("jar")
-        if (jarTask && jarTask.enabled) {
-            jarFile = jarTask.get().archiveFile.get().asFile
-        }
+        def jarFile = tasks.named("jar").get().archiveFile.get().asFile
 
         // Use the shadowJAR file if it's enabled and available
         def shadowJarTask = tasks.named("shadowJar")
