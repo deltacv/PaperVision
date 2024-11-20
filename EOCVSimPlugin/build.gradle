@@ -2,7 +2,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'com.gradleup.shadow' version '8.3.5'
     id 'signing'
-    id "com.vanniktech.maven.publish" version "0.30.0"
+    id "com.vanniktech.maven.publish"
 }
 
 apply from: '../build.common.gradle'

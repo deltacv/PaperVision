@@ -32,11 +32,12 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.30.0'
     }
 }
 
 allprojects {
-    group 'org.deltacv'
+    group 'org.deltacv.PaperVision'
     version '1.0.0'
 
     repositories {
