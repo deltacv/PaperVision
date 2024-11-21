@@ -93,17 +93,24 @@ att_label,Label,Etiqueta
 des_exporttargets,Export detected targets to hand to another program.,Exporta objetivos detectados para pasarlos a otro programa.
 des_exporttarget,Export detected target to hand to another program.,Exporta el objetivo detectado para pasarlo a otro programa.
 des_groupcontours_byshape,Finds contours that match a specific shape.,Encuentra los contornos que encajan<br>en una figura especificada.
-des_groupcontours_byarea,Finds contours that have an area within a specified range.,Encuentra los contornos que tienen un área<br>dentro de un rango especificado.
+des_groupcontours_byarea,Finds contours that have an area within a specified range.,Encuentra los contornos que tienen un<br>área dentro de un rango especificado.
 des_grouprects_insidearea,Selects rectangles that are inside a specified area.,Selecciona los rectángulos que están<br>dentro de un área especificada.
+des_groupcontours_byratio,Finds contours that have a<br>specific aspect ratio.,Encuentra los contornos que tienen una<br>relación de aspecto específica.
+des_grouprects_byratio,Finds rectangles that have a specific aspect ratio.,Encuentra los rectángulos que tienen una<br>relación de aspecto específica.
 des_filterbiggest_rect,Finds the biggest rectangle from a list of rectangles.,Encuentra el rectángulo más grande<br>de una lista de rectángulos.
+des_filterbiggest_contour,Finds the biggest contour from a list of contours.,Encuentra el contorno más grande<br>de una lista de contornos.
+des_crosshair,Filters out the contours that are<br>not inside an adjustable crosshair.,Filtra los contornos que no<br>están dentro de un crosshair ajustable.
+des_boundingrotated_rect,Calculates the bounding rotated rectangles<br>of a given list of points.,Calcula los rectángulos delimitadores rotados<br>de una lista de puntos dada.
 des_boundingrect,Calculates the bounding rectangles<br>of a given list of points.,Calcula los rectángulos delimitadores<br>de una lista de puntos dada.
 des_findcontours,Finds all the contours (list of points)<br>of a given binary image.,Encuentra todos los contornos (lista de puntos)<br>de una imagen binaria dada.
 des_blur,Blurs the input image using the specified algorithm.,Difumina la imagen de entrada con el algoritmo especificado.
-des_cvtcolor,"Converts a Mat from its current color space<br>to the specified color space. If the mat is already<br>in the specified color space, no conversion is made.","Convierte un Mat de su espacio de color actual<br>al espacio de color especificado. Si el Mat ya está<br>en el espacio de color especificado, no se realiza ninguna conversión."
+des_cvtcolor,"Converts a Mat from its current color space<br>to the specified color space. If the mat is already<br>in the specified color space, no conversion is made.","Convierte un Mat de su espacio de color actual<br>al espacio de color especificado. Si el Mat ya está<br>en el espacio de color especificado,<br>no se realiza ninguna conversión."
 des_erodedilate,Erodes and dilates the areas of a given binary image.,Erosiona y dilata las áreas de una imagen binaria dada.
 des_binarymask,"Takes a normal image and performs a mask<br>based on a binary image, discards or includes areas<br>from the normal image based on the binary image.","Toma una imagen normal y aplica una máscara<br>basada en una imagen binaria, descartando o incluyendo áreas<br>de la imagen normal según la imagen binaria."
 des_colorthresh,"Performs a threshold in the input image<br>and returns a binary image, discarding<br>the pixels that were outside the range.","Realiza un umbral en la imagen de entrada<br>y devuelve una imagen binaria, descartando<br>los píxeles que estaban fuera del rango."
 des_drawrects,Draws the rectangles on a copy of the<br>given image and outputs the result.,Dibuja los rectangulos en una copia de la<br>imagen dada y devuelve el resultado.
+des_drawrotated_rects,Draws the rotated rectangles on a copy of the<br>given image and outputs the result.,Dibuja los rectangulos rotados en una copia de la<br>imagen dada y devuelve el resultado.
+des_lineparameters,Specify the visual properties for<br>a node that will draw lines.,Especifica las propiedades visuales<br>para un nodo que dibujará líneas.
 des_drawrects_onimage,Draws the rectangles in the passed image.,Dibuja los rectangulos en la imagen de entrada
 des_drawcontours,Draws the contours on a copy of the<br>given image and outputs the result.,Dibuja los contornos en una copia de la<br>imagen dada y devuelve el resultado.
 des_drawcontours_onimage,Draws the contours on the input image,Dibuja los contornos en la imagen de entrada.
