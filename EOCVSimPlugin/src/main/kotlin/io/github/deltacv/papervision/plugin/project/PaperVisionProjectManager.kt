@@ -22,6 +22,7 @@ import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.extension.plus
+import com.github.serivesmejia.eocvsim.util.extension.removeFromEnd
 import com.github.serivesmejia.eocvsim.util.io.EOCVSimFolder
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.google.gson.JsonElement
@@ -31,6 +32,7 @@ import io.github.deltacv.eocvsim.sandbox.nio.SandboxFileSystem
 import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
 import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
+import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngine
 import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMessage
 import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
@@ -41,12 +43,19 @@ import io.github.deltacv.papervision.plugin.project.recovery.RecoveryDaemonProce
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.hexString
+import java.awt.Component
 import java.io.File
 import java.io.FileNotFoundException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.time.Instant
+import javax.swing.JComponent
+import javax.swing.JFileChooser
+import javax.swing.JFrame
+import javax.swing.JOptionPane
+import javax.swing.JPanel
 import javax.swing.SwingUtilities
+import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.io.path.exists
 import kotlin.io.path.pathString
 
@@ -59,7 +68,8 @@ class PaperVisionProjectManager(
 ) {
 
     companion object {
-        val recoveryFolder = (PluginManager.PLUGIN_CACHING_FOLDER + File.separator + "papervision_recovery").apply { mkdir() }
+        val recoveryFolder =
+            (PluginManager.PLUGIN_CACHING_FOLDER + File.separator + "papervision_recovery").apply { mkdir() }
     }
 
     val root = fileSystem.getPath("")
@@ -94,43 +104,49 @@ class PaperVisionProjectManager(
 
     val logger by loggerForThis()
 
-    val recoveredProjects get() = mutableListOf<RecoveredProject>().apply {
-        if(recoveryFolder.exists()) {
-            for(file in recoveryFolder.listFiles() ?: arrayOf()) {
-                if(file.extension == "recoverypaperproj") {
-                    val recoveredProject = try {
-                        RecoveredProject.fromJson(file.readText())
-                    } catch(e: Exception) {
-                        logger.warn("Failed to read recovery file, deleting", e)
-                        file.delete()
-                        continue
-                    }
-
-                    val projectPath = fileSystem.getPath(recoveredProject.originalProjectPath)
-
-                    if(projectPath.exists()){
-                        val project = try {
-                            PaperVisionProject.fromJson(String(fileSystem.readAllBytes(projectPath), StandardCharsets.UTF_8))
-                        } catch(e: Exception) {
-                            logger.warn("Failed to read project file for phased recovery, deleting", e)
+    val recoveredProjects
+        get() = mutableListOf<RecoveredProject>().apply {
+            if (recoveryFolder.exists()) {
+                for (file in recoveryFolder.listFiles() ?: arrayOf()) {
+                    if (file.extension == "recoverypaperproj") {
+                        val recoveredProject = try {
+                            RecoveredProject.fromJson(file.readText())
+                        } catch (e: Exception) {
+                            logger.warn("Failed to read recovery file, deleting", e)
                             file.delete()
                             continue
                         }
 
-                        logger.info("Found recovered project ${recoveredProject.originalProjectPath} from ${recoveredProject.date} compared to ${project.timestamp}")
+                        val projectPath = fileSystem.getPath(recoveredProject.originalProjectPath)
 
-                        if(recoveredProject.date > project.timestamp) {
-                            add(recoveredProject)
-                            logger.info("Asking for recovered project ${recoveredProject.originalProjectPath} from ${recoveredProject.date}")
+                        if (projectPath.exists()) {
+                            val project = try {
+                                PaperVisionProject.fromJson(
+                                    String(
+                                        fileSystem.readAllBytes(projectPath),
+                                        StandardCharsets.UTF_8
+                                    )
+                                )
+                            } catch (e: Exception) {
+                                logger.warn("Failed to read project file for phased recovery, deleting", e)
+                                file.delete()
+                                continue
+                            }
+
+                            logger.info("Found recovered project ${recoveredProject.originalProjectPath} from ${recoveredProject.date} compared to ${project.timestamp}")
+
+                            if (recoveredProject.date > project.timestamp) {
+                                add(recoveredProject)
+                                logger.info("Asking for recovered project ${recoveredProject.originalProjectPath} from ${recoveredProject.date}")
+                            }
+                        } else {
+                            file.delete()
+                            logger.info("Discarded phased recovery file for ${recoveredProject.originalProjectPath}")
                         }
-                    } else {
-                        file.delete()
-                        logger.info("Discarded phased recovery file for ${recoveredProject.originalProjectPath}")
                     }
                 }
             }
-        }
-    }.toList()
+        }.toList()
 
     val onRefresh = PaperVisionEventHandler("PaperVisionProjectManager-onRefresh")
 
@@ -150,7 +166,7 @@ class PaperVisionProjectManager(
         }
 
         engine.setMessageHandlerOf<EditorChangeMessage> {
-            if(currentProject != null) {
+            if (currentProject != null) {
                 sendRecoveryProject(currentProject!!, message.json)
             }
         }
@@ -166,11 +182,12 @@ class PaperVisionProjectManager(
     private fun recursiveSearchProjects(root: PaperVisionProjectTree.ProjectTreeNode.Folder): List<PaperVisionProjectTree.ProjectTreeNode.Project> {
         val list = mutableListOf<PaperVisionProjectTree.ProjectTreeNode.Project>()
 
-        for(node in root.nodes) {
-            when(node) {
+        for (node in root.nodes) {
+            when (node) {
                 is PaperVisionProjectTree.ProjectTreeNode.Folder -> {
                     list.addAll(recursiveSearchProjects(node))
                 }
+
                 is PaperVisionProjectTree.ProjectTreeNode.Project -> {
                     list.add(node)
                 }
@@ -180,21 +197,85 @@ class PaperVisionProjectManager(
         return list
     }
 
+    fun importProjectAsk(ancestor: JFrame) {
+        SwingUtilities.invokeLater {
+            JFileChooser().apply {
+                fileFilter = FileNameExtensionFilter("PaperVision Project (.paperproj)", "paperproj")
+
+                if (showSaveDialog(ancestor) == JFileChooser.APPROVE_OPTION) {
+                    PaperVisionDialogFactory.displayNewProjectDialog(
+                        ancestor,
+                        projectTree.projects,
+                        projectTree.folders,
+                        selectedFile.name.removeFromEnd(".paperproj")
+                    ) { projectGroup, projectName ->
+                        try {
+                            importProject(projectGroup ?: "", projectName, selectedFile)
+                        } catch (e: java.nio.file.FileAlreadyExistsException) {
+                            throw e // new project dialog will handle this
+                        } catch (e: Exception) {
+                            JOptionPane.showMessageDialog(
+                                ancestor,
+                                "Project file failed to load: ${e.javaClass.simpleName} ${e.message}"
+                            )
+                            logger.warn("Project file ${selectedFile.absolutePath} failed to load", e)
+                            return@displayNewProjectDialog
+                        }
+
+                        JOptionPane.showConfirmDialog(
+                            ancestor,
+                            "Do you wish to open the project that was just imported?",
+                            "Project Imported",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.WARNING_MESSAGE
+                        ).takeIf { it == JOptionPane.YES_OPTION }?.run {
+                            requestOpenProject(findProject(projectGroup ?: "", "$projectName.paperproj")!!)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     fun importProject(path: String, name: String, file: File) {
         newProject(path, name, jsonElement = PaperVisionProject.fromJson(SysUtil.loadFileStr(file)).json)
+    }
+
+    fun newProjectAsk(ancestor: JFrame) {
+        SwingUtilities.invokeLater {
+            PaperVisionDialogFactory.displayNewProjectDialog(
+                ancestor,
+                projectTree.projects,
+                projectTree.folders,
+            ) { projectGroup, projectName ->
+                newProject(projectGroup ?: "", projectName)
+
+                JOptionPane.showConfirmDialog(
+                    ancestor,
+                    "Do you wish to open the project that was just created?",
+                    "Project Created",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+                ).takeIf { it == JOptionPane.YES_OPTION }?.run {
+                    requestOpenProject(findProject(projectGroup ?: "", "$projectName.paperproj")!!)
+                }
+            }
+        }
     }
 
     fun newProject(path: String, name: String, jsonElement: JsonElement? = null, appendExtension: Boolean = true) {
         val projectPath = fileSystem.getPath("/").resolve(path)
         fileSystem.createDirectories(projectPath)
 
-        val projectFile = projectPath.resolve(if(appendExtension) "$name.paperproj" else name)
+        val projectFile = projectPath.resolve(if (appendExtension) "$name.paperproj" else name)
         fileSystem.createFile(projectFile)
-        fileSystem.write(projectFile, PaperVisionProject(
-            Instant.now().toEpochMilli(),
-            path, name,
-            jsonElement ?: JsonObject()
-        ).toJson().toByteArray(StandardCharsets.UTF_8))
+        fileSystem.write(
+            projectFile, PaperVisionProject(
+                Instant.now().toEpochMilli(),
+                path, name,
+                jsonElement ?: JsonObject()
+            ).toJson().toByteArray(StandardCharsets.UTF_8)
+        )
 
         refresh()
     }
@@ -204,7 +285,7 @@ class PaperVisionProjectManager(
     }
 
     fun bulkDeleteProjects(vararg projects: PaperVisionProjectTree.ProjectTreeNode.Project) {
-        for(project in projects) {
+        for (project in projects) {
             val path = findProjectPath(project) ?: throw FileNotFoundException("Project $project not found in tree")
             fileSystem.delete(path)
         }
@@ -252,7 +333,10 @@ class PaperVisionProjectManager(
 
         logger.info("Saving ${path.pathString}")
 
-        fileSystem.write(path, paperVisionProjectFrom(currentProject!!, json).toJson().toByteArray(StandardCharsets.UTF_8))
+        fileSystem.write(
+            path,
+            paperVisionProjectFrom(currentProject!!, json).toJson().toByteArray(StandardCharsets.UTF_8)
+        )
     }
 
     fun findProject(path: String, name: String): PaperVisionProjectTree.ProjectTreeNode.Project? {
@@ -261,7 +345,7 @@ class PaperVisionProjectManager(
         // Start at the root of the project tree
         var currentNode: PaperVisionProjectTree.ProjectTreeNode = projectTree.rootTree
 
-        if(path.isNotBlank() || path != "/") {
+        if (path.isNotBlank() || path != "/") {
             // Traverse the path segments
             for (segment in paths) {
                 if (currentNode is PaperVisionProjectTree.ProjectTreeNode.Folder) {
@@ -294,7 +378,8 @@ class PaperVisionProjectManager(
     fun findProjectFolderPath(project: PaperVisionProjectTree.ProjectTreeNode.Project) =
         findProjectPath(project)?.toAbsolutePath()?.parent
 
-    fun findProjectPath(project: PaperVisionProjectTree.ProjectTreeNode.Project) = findProjectPath(project, projectTree.rootTree, root)
+    fun findProjectPath(project: PaperVisionProjectTree.ProjectTreeNode.Project) =
+        findProjectPath(project, projectTree.rootTree, root)
 
     private fun findProjectPath(
         targetProject: PaperVisionProjectTree.ProjectTreeNode.Project,
@@ -311,6 +396,7 @@ class PaperVisionProjectManager(
                 }
                 null
             }
+
             is PaperVisionProjectTree.ProjectTreeNode.Project -> {
                 if (currentNode == targetProject) {
                     return currentPath.resolve(currentNode.name)
@@ -333,13 +419,18 @@ class PaperVisionProjectManager(
             RecoveryData(
                 recoveryFolder.path,
                 "${hex}.recoverypaperproj",
-                RecoveredProject(projectPath, System.currentTimeMillis(), hex, paperVisionProjectFrom(projectNode, tree))
+                RecoveredProject(
+                    projectPath,
+                    System.currentTimeMillis(),
+                    hex,
+                    paperVisionProjectFrom(projectNode, tree)
+                )
             )
         )
     }
 
     fun discardCurrentRecovery() {
-        if(currentProject == null) return
+        if (currentProject == null) return
         val path = findProjectPath(currentProject!!)?.pathString ?: return
 
         logger.info("Discarding recovery for $path")
@@ -351,7 +442,7 @@ class PaperVisionProjectManager(
     fun recoverProject(recoveredProject: RecoveredProject) {
         val projectPath = fileSystem.getPath(recoveredProject.originalProjectPath)
 
-        if(projectPath.exists()) {
+        if (projectPath.exists()) {
             fileSystem.delete(projectPath)
         }
 
@@ -372,8 +463,8 @@ class PaperVisionProjectManager(
     }
 
     fun deleteAllRecoveredProjects() {
-        for(file in recoveryFolder.listFiles() ?: arrayOf()) {
-            if(file.extension == "recoverypaperproj") {
+        for (file in recoveryFolder.listFiles() ?: arrayOf()) {
+            if (file.extension == "recoverypaperproj") {
                 file.delete()
             }
         }

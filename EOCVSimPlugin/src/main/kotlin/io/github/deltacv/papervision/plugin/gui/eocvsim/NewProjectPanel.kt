@@ -31,23 +31,7 @@ class NewProjectPanel(
         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
 
         newProjectBtt.addActionListener {
-            PaperVisionDialogFactory.displayNewProjectDialog(
-                ancestor as JFrame,
-                projectManager.projectTree.projects,
-                projectManager.projectTree.folders,
-            ) { projectGroup, projectName ->
-                projectManager.newProject(projectGroup ?: "", projectName)
-
-                JOptionPane.showConfirmDialog(
-                    ancestor,
-                    "Do you wish to open the project that was just created?",
-                    "Project Created",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE
-                ).takeIf { it == JOptionPane.YES_OPTION }?.run {
-                    projectManager.requestOpenProject(projectManager.findProject(projectGroup ?: "", "$projectName.paperproj")!!)
-                }
-            }
+            projectManager.newProjectAsk(SwingUtilities.getWindowAncestor(this) as JFrame)
         }
 
         add(newProjectBtt)
@@ -55,38 +39,7 @@ class NewProjectPanel(
         add(Box.createRigidArea(Dimension(10, 1)))
 
         importProjectBtt.addActionListener {
-            JFileChooser().apply {
-                fileFilter = FileNameExtensionFilter("PaperVision Project (.paperproj)", "paperproj")
-
-                if(showSaveDialog(ancestor) == JFileChooser.APPROVE_OPTION) {
-                    PaperVisionDialogFactory.displayNewProjectDialog(
-                        ancestor as JFrame,
-                        projectManager.projectTree.projects,
-                        projectManager.projectTree.folders,
-                        selectedFile.name.removeFromEnd(".paperproj")
-                    ) { projectGroup, projectName ->
-                        try {
-                            projectManager.importProject(projectGroup ?: "", projectName, selectedFile)
-                        } catch (e: java.nio.file.FileAlreadyExistsException) {
-                            throw e // new project dialog will handle this
-                        } catch(e: Exception) {
-                            JOptionPane.showMessageDialog(ancestor, "Project file failed to load: ${e.javaClass.simpleName} ${e.message}")
-                            logger.warn("Project file ${selectedFile.absolutePath} failed to load", e)
-                            return@displayNewProjectDialog
-                        }
-
-                        JOptionPane.showConfirmDialog(
-                            ancestor,
-                            "Do you wish to open the project that was just imported?",
-                            "Project Imported",
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.WARNING_MESSAGE
-                        ).takeIf { it == JOptionPane.YES_OPTION }?.run {
-                            projectManager.requestOpenProject(projectManager.findProject(projectGroup ?: "", "$projectName.paperproj")!!)
-                        }
-                    }
-                }
-            }
+            projectManager.importProjectAsk(SwingUtilities.getWindowAncestor(this) as JFrame)
         }
 
         add(importProjectBtt)

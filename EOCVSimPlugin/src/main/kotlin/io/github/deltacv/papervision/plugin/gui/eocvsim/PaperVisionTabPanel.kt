@@ -18,21 +18,27 @@
 
 package io.github.deltacv.papervision.plugin.gui.eocvsim
 
+import com.formdev.flatlaf.demo.HintManager
+import com.github.serivesmejia.eocvsim.EOCVSim
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectTree
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.event.FocusAdapter
+import java.awt.event.FocusEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTree
+import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 
 class PaperVisionTabPanel(
-    val projectManager: PaperVisionProjectManager
+    val projectManager: PaperVisionProjectManager,
+    val eocvSim: EOCVSim
 ) : JPanel() {
 
     val root = DefaultMutableTreeNode("Projects")
@@ -43,14 +49,14 @@ class PaperVisionTabPanel(
         layout = GridBagLayout()
 
         projectList.apply {
-            addMouseListener(object: MouseAdapter() {
+            addMouseListener(object : MouseAdapter() {
                 override fun mousePressed(e: MouseEvent) {
-                    if(e.clickCount >= 2) {
+                    if (e.clickCount >= 2) {
                         val node = projectList.lastSelectedPathComponent ?: return
-                        if(node !is DefaultMutableTreeNode) return
+                        if (node !is DefaultMutableTreeNode) return
 
                         val nodeObject = node.userObject
-                        if(nodeObject !is PaperVisionProjectTree.ProjectTreeNode.Project) return
+                        if (nodeObject !is PaperVisionProjectTree.ProjectTreeNode.Project) return
 
                         projectManager.requestOpenProject(nodeObject)
                     }
@@ -79,9 +85,33 @@ class PaperVisionTabPanel(
             ipady = 20
         })
 
-        add(PaperVisionTabButtonsPanel(projectList, projectManager), GridBagConstraints().apply {
+        val buttonsPanel = PaperVisionTabButtonsPanel(projectList, projectManager)
+
+        add(buttonsPanel, GridBagConstraints().apply {
             gridy = 1
             ipady = 20
+        })
+
+        // on focus listener
+        addFocusListener(object : FocusAdapter() {
+            override fun focusGained(e: FocusEvent?) {
+                val shouldShowHint = !eocvSim.config.flags.getOrElse("hasShownPaperVisionHint") { false }
+
+                if (shouldShowHint) {
+                    val hint = HintManager.Hint(
+                        "Create or import a PaperVision project",
+                        buttonsPanel.newProjectBtt,
+                        SwingConstants.BOTTOM, null
+                    )
+
+                    HintManager.showHint(hint)
+                    eocvSim.config.flags["hasShownPaperVisionHint"] = true
+                }
+            }
+
+            override fun focusLost(e: FocusEvent?) {
+                HintManager.hideAllHints()
+            }
         })
 
         refreshProjectTree()
@@ -93,7 +123,7 @@ class PaperVisionTabPanel(
         SwingUtilities.invokeLater {
             root.removeAllChildren()
 
-            if(rootTree.isNotEmpty()) {
+            if (rootTree.isNotEmpty()) {
                 fun buildTree(folder: PaperVisionProjectTree.ProjectTreeNode.Folder): DefaultMutableTreeNode {
                     val folderNode = DefaultMutableTreeNode(folder)
 

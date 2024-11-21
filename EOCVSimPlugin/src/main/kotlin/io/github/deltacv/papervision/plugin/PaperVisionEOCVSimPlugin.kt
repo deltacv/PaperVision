@@ -56,6 +56,8 @@ import java.io.File
 import java.util.WeakHashMap
 import java.util.concurrent.Executors
 import javax.swing.JLabel
+import javax.swing.JMenu
+import javax.swing.JMenuItem
 import javax.swing.JOptionPane
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
@@ -106,32 +108,36 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         eocvSim.visualizer.onPluginGuiAttachment.doOnce {
             val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
 
-            switchablePanel.addTab("PaperVision", PaperVisionTabPanel(paperVisionProjectManager))
+            switchablePanel.addTab("PaperVision", PaperVisionTabPanel(paperVisionProjectManager, eocvSim))
             switchablePanel.setTabComponentAt(
                 switchablePanel.indexOfTab("PaperVision"),
                 JLabel("PaperVision", JLabel.CENTER)
             )
 
-            val shouldShowHint = !eocvSim.config.flags.getOrElse("hasShownPaperVisionHint") { false }
-
-            if (shouldShowHint) {
-                eocvSim.onMainUpdate.doOnce {
-                    SwingUtilities.invokeLater {
-                        val hint = HintManager.Hint(
-                            "Try out the new way to develop your vision pipelines!",
-                            switchablePanel.getTabComponentAt(switchablePanel.indexOfTab("PaperVision")),
-                            SwingConstants.BOTTOM, null
-                        )
-
-                        HintManager.showHint(hint)
-                        eocvSim.config.flags["hasShownPaperVisionHint"] = true
-                    }
-                }
-            }
-
             switchablePanel.addChangeListener {
                 changeToPaperVisionPipelineIfNecessary()
             }
+
+            val fileNewMenu = eocvSim.visualizer.menuBar.mFileMenu.getMenuComponent(0) as JMenu
+            fileNewMenu.addSeparator()
+
+            val fileNewPaperVisionMenu = JMenu("PaperVision")
+
+            val fileNewPaperVisionProject = JMenuItem("New Project")
+            fileNewPaperVisionProject.addActionListener {
+                paperVisionProjectManager.newProjectAsk(eocvSim.visualizer.frame)
+            }
+
+            fileNewPaperVisionMenu.add(fileNewPaperVisionProject)
+
+            val filePaperVisionImport = JMenuItem("Import...")
+            filePaperVisionImport.addActionListener {
+                paperVisionProjectManager.importProjectAsk(eocvSim.visualizer.frame)
+            }
+
+            fileNewPaperVisionMenu.add(filePaperVisionImport)
+
+            fileNewMenu.add(fileNewPaperVisionMenu)
         }
 
         val recoveredProjectsListener = Runnable {
