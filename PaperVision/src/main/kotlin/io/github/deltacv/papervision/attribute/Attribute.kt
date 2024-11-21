@@ -102,6 +102,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     val onDelete = PaperVisionEventHandler("OnDelete-${this::class.simpleName}")
 
     val position = ImVec2()
+    val editorPosition = ImVec2()
 
     internal val changeQueue = ArrayBlockingQueue<Boolean>(50)
 

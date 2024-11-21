@@ -30,7 +30,7 @@ import io.github.deltacv.papervision.util.flags
 
 class TooltipPopup(
     val text: String,
-    override val position: ImVec2,
+    val positionProvider: () -> ImVec2,
     val timeoutSeconds: Double,
     label: String = "mack"
 ) : Popup(label) {
@@ -48,6 +48,10 @@ class TooltipPopup(
         }
     }
 
+
+    override val position: ImVec2
+        get() = positionProvider()
+
     override val title = "Tooltip"
     override val flags = flags(
         ImGuiWindowFlags.NoTitleBar,
@@ -58,6 +62,13 @@ class TooltipPopup(
 
     private val elapsedTime = ElapsedTime()
 
+    constructor(
+        text: String,
+        position: ImVec2,
+        timeoutSeconds: Double,
+        label: String = "mack"
+    ) : this(text, { position }, timeoutSeconds, label)
+
     override fun onEnable() {
         elapsedTime.reset()
     }
@@ -66,7 +77,6 @@ class TooltipPopup(
         if(elapsedTime.seconds >= timeoutSeconds) {
             delete()
         }
-
         ImGui.text(tr(text))
     }
 

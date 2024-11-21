@@ -18,7 +18,9 @@
 
 package io.github.deltacv.papervision.codegen
 
+import imgui.ImGui
 import imgui.ImVec2
+import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -65,10 +67,15 @@ class CodeGenManager(val paperVision: PaperVision) {
 
             TooltipPopup(
                 attrEx.message,
-                ImVec2(attrEx.attribute.position.x + 5, attrEx.attribute.position.y + 20),
+                { ImVec2(attrEx.attribute.position.x + 5, attrEx.attribute.position.y + 20) },
                 8.0,
                 label = "Gen-Error"
             ).open()
+
+            val node = attrEx.attribute.parentNode
+
+            paperVision.nodeEditor.editorPanning.x = (-node.position.x) - (node.size.x / 2) + ImGui.getMainViewport().size.x / 2
+            paperVision.nodeEditor.editorPanning.y = (-node.position.y) - (node.size.y / 2) + ImGui.getMainViewport().size.y / 2
 
             logger.warn("Code gen stopped due to attribute exception", attrEx)
             return null
@@ -77,10 +84,15 @@ class CodeGenManager(val paperVision: PaperVision) {
 
             TooltipPopup(
                 nodeEx.message,
-                ImVec2(nodeEx.node.screenPosition.x, nodeEx.node.screenPosition.y - 20),
+                { ImVec2(nodeEx.node.screenPosition.x, nodeEx.node.screenPosition.y - 20) },
                 8.0,
                 label = "Gen-Error"
             ).open()
+
+            val node = nodeEx.node
+
+            paperVision.nodeEditor.editorPanning.x = (-node.position.x) + (node.size.x / 2) + ImGui.getMainViewport().size.x / 2
+            paperVision.nodeEditor.editorPanning.y = (-node.position.y) + (node.size.y / 2) + ImGui.getMainViewport().size.y / 2
 
             logger.warn("Code gen stopped due to node exception", nodeEx)
             return null
