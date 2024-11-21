@@ -18,6 +18,7 @@
 
 package io.github.deltacv.papervision.plugin.gui.eocvsim
 
+import com.formdev.flatlaf.demo.HintManager
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
 import com.github.serivesmejia.eocvsim.gui.component.PopupX.Companion.popUpXOnThis
 import com.github.serivesmejia.eocvsim.gui.util.Corner
@@ -55,6 +56,8 @@ class PaperVisionTabButtonsPanel(
 
         newProjectBtt.addActionListener {
             val location = newProjectBtt.locationOnScreen
+
+            HintManager.hideAllHints()
 
             val window = SwingUtilities.getWindowAncestor(this)
             val popup = PopupX(window, NewProjectPanel(projectManager, SwingUtilities.getWindowAncestor(this)), location.x, location.y)

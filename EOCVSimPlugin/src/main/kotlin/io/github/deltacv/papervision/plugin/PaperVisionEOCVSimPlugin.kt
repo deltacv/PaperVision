@@ -108,7 +108,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         eocvSim.visualizer.onPluginGuiAttachment.doOnce {
             val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
 
-            switchablePanel.addTab("PaperVision", PaperVisionTabPanel(paperVisionProjectManager, eocvSim))
+            switchablePanel.addTab("PaperVision", PaperVisionTabPanel(paperVisionProjectManager, eocvSim, switchablePanel))
             switchablePanel.setTabComponentAt(
                 switchablePanel.indexOfTab("PaperVision"),
                 JLabel("PaperVision", JLabel.CENTER)

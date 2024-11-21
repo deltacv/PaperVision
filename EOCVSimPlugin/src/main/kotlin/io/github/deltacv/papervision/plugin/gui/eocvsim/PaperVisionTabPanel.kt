@@ -22,23 +22,28 @@ import com.formdev.flatlaf.demo.HintManager
 import com.github.serivesmejia.eocvsim.EOCVSim
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectTree
+import java.awt.Graphics
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.event.FocusAdapter
 import java.awt.event.FocusEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JScrollPane
+import javax.swing.JTabbedPane
 import javax.swing.JTree
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
+import javax.swing.event.ChangeListener
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 
 class PaperVisionTabPanel(
     val projectManager: PaperVisionProjectManager,
-    val eocvSim: EOCVSim
+    val eocvSim: EOCVSim,
+    val switchablePanel: JTabbedPane
 ) : JPanel() {
 
     val root = DefaultMutableTreeNode("Projects")
@@ -92,27 +97,29 @@ class PaperVisionTabPanel(
             ipady = 20
         })
 
-        // on focus listener
-        addFocusListener(object : FocusAdapter() {
-            override fun focusGained(e: FocusEvent?) {
-                val shouldShowHint = !eocvSim.config.flags.getOrElse("hasShownPaperVisionHint") { false }
+        switchablePanel.addChangeListener {
+            eocvSim.onMainUpdate.doOnce {
+                SwingUtilities.invokeLater {
+                    if (switchablePanel.selectedComponent == this) {
+                        val hasShownPaperVisionHint = eocvSim.config.flags.getOrElse("hasShownPaperVisionHint") { false }
 
-                if (shouldShowHint) {
-                    val hint = HintManager.Hint(
-                        "Create or import a PaperVision project",
-                        buttonsPanel.newProjectBtt,
-                        SwingConstants.BOTTOM, null
-                    )
+                        if(!hasShownPaperVisionHint) {
+                            val hint = HintManager.Hint(
+                                "Create a new PaperVision project here",
+                                buttonsPanel.newProjectBtt,
+                                SwingConstants.TOP, null
+                            )
 
-                    HintManager.showHint(hint)
-                    eocvSim.config.flags["hasShownPaperVisionHint"] = true
+                            HintManager.showHint(hint)
+
+                            eocvSim.config.flags["hasShownPaperVisionHint"] = true
+                        }
+                    } else {
+                        HintManager.hideAllHints()
+                    }
                 }
             }
-
-            override fun focusLost(e: FocusEvent?) {
-                HintManager.hideAllHints()
-            }
-        })
+        }
 
         refreshProjectTree()
     }
