@@ -335,4 +335,12 @@ class PaperVision(
             }
         })
     }
+
+    fun clearToasts() {
+        for(window in windows.inmutable) {
+            if(window is ToastWindow) {
+                window.delete()
+            }
+        }
+    }
 }

@@ -49,6 +49,7 @@ class CodeGenManager(val paperVision: PaperVision) {
                 popup.delete()
             }
         }
+        paperVision.clearToasts()
 
         val codeGen = CodeGen(name, language, isForPreviz)
 
