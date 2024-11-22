@@ -73,6 +73,7 @@ abstract class Node<S: CodeGenSession>(
 
     // it is the responsibility of the inheriting class to set this value in draw()
     val screenPosition = ImVec2()
+    val gridPosition = ImVec2()
     val position = ImVec2()
     val size = ImVec2()
 

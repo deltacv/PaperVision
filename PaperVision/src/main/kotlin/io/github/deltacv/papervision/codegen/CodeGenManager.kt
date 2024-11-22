@@ -21,14 +21,18 @@ package io.github.deltacv.papervision.codegen
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
+import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.exception.AttributeGenException
 import io.github.deltacv.papervision.exception.NodeGenException
+import io.github.deltacv.papervision.gui.ToastWindow
 import io.github.deltacv.papervision.gui.util.Popup
 import io.github.deltacv.papervision.gui.util.TooltipPopup
 import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.node.DrawNode
+import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.util.loggerForThis
 
 class CodeGenManager(val paperVision: PaperVision) {
@@ -73,9 +77,7 @@ class CodeGenManager(val paperVision: PaperVision) {
             ).open()
 
             val node = attrEx.attribute.parentNode
-
-            paperVision.nodeEditor.editorPanning.x = (-node.position.x) - (node.size.x / 2) + ImGui.getMainViewport().size.x / 2
-            paperVision.nodeEditor.editorPanning.y = (-node.position.y) - (node.size.y / 2) + ImGui.getMainViewport().size.y / 2
+            showError(codeGen, node, attrEx.message)
 
             logger.warn("Code gen stopped due to attribute exception", attrEx)
             return null
@@ -89,10 +91,7 @@ class CodeGenManager(val paperVision: PaperVision) {
                 label = "Gen-Error"
             ).open()
 
-            val node = nodeEx.node
-
-            paperVision.nodeEditor.editorPanning.x = (-node.position.x) + (node.size.x / 2) + ImGui.getMainViewport().size.x / 2
-            paperVision.nodeEditor.editorPanning.y = (-node.position.y) + (node.size.y / 2) + ImGui.getMainViewport().size.y / 2
+            showError(codeGen, nodeEx.node, nodeEx.message)
 
             logger.warn("Code gen stopped due to node exception", nodeEx)
             return null
@@ -103,6 +102,21 @@ class CodeGenManager(val paperVision: PaperVision) {
         codeGen.stage = CodeGen.Stage.ENDED_SUCCESS
 
         return result.trim()
+    }
+
+    private fun showError(codeGen: CodeGen, node: Node<*>, message: String) {
+        if(!codeGen.isForPreviz) {
+            paperVision.nodeEditor.editorPanning.x = (-node.gridPosition.x) - (node.size.x / 2) + ImGui.getMainViewport().size.x / 2
+            paperVision.nodeEditor.editorPanning.y = (-node.gridPosition.y) - (node.size.y / 2) + ImGui.getMainViewport().size.y / 2
+        }
+
+        val toast = if(node is DrawNode<*>) {
+            tr("mis_codegen_erroron_toast", tr(node.annotationData.name))
+        } else {
+            tr("mis_codegen_errortoast")
+        }
+
+        ToastWindow(toast, 5.0, font = paperVision.defaultFontBig).enable()
     }
 
 }

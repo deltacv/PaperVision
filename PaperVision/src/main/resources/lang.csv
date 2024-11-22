@@ -187,3 +187,5 @@ mis_saveproject,Save Project,Guardar Proyecto
 mis_projectsaved,Project Saved Successfully !,Proyecto Guardado Correctamente !
 mis_codecopied,Code Copied to Clipboard !,Codigo Copiado al Portapapeles !
 mis_filesave_success,File saved successfully !,Archivo guardado correctamente !
+mis_codegen_erroron_toast,Generation error in node '$[0]',Error de generación en el nodo '$[0]'
+mis_codegen_errortoast,Generation Error,Error de Generación
