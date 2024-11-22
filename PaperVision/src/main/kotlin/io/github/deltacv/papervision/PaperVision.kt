@@ -236,6 +236,8 @@ class PaperVision(
                     }
                 }
             }
+
+            window.requestFocus()
         }
     }
 

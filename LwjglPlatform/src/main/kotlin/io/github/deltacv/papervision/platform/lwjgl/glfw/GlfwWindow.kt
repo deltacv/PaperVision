@@ -131,6 +131,10 @@ class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
             }
         }
 
+    override fun requestFocus() {
+        glfwFocusWindow(ptrSupplier())
+    }
+
     private val handleType by lazy {
         when(Platform.get()) {
             Platform.LINUX -> NFD_WINDOW_HANDLE_TYPE_X11

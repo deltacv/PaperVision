@@ -15,4 +15,7 @@ class FlagsNode : InvisibleNode() {
     @SerializeData
     val flags = mutableMapOf<String, Boolean>()
 
+    @SerializeData
+    val numFlags = mutableMapOf<String, Double>()
+
 }

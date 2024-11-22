@@ -84,6 +84,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     val flags get() = flagsNode.flags
 
+    val numFlags get() = flagsNode.numFlags
+
     var inputNode = InputMatNode(winSizeSupplier)
         set(value) {
             value.windowSizeSupplier = winSizeSupplier
@@ -123,6 +125,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     val onEditorChange = PaperVisionEventHandler("NodeEditor-OnChange")
     val onEditorPan = PaperVisionEventHandler("NodeEditor-OnPan")
+
+    val logger by loggerForThis()
 
     override var title = "editor"
     override val windowFlags = flags(
@@ -206,6 +210,13 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             paperVision.previzManager.onPrevizStop.doOnce {
                 streamWindow.delete()
             }
+        }
+
+        if(numFlags.containsKey("editorPanningX") && numFlags.containsKey("editorPanningY")) {
+            editorPanning.x = numFlags["editorPanningX"]!!.toFloat()
+            editorPanning.y = numFlags["editorPanningY"]!!.toFloat()
+
+            logger.info("Restored editor panning from flags to $editorPanning")
         }
     }
 
@@ -317,6 +328,10 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         } else {
             ImNodes.editorContextGetPanning(editorPanning)
         }
+
+        // store panning values in flags for serialization
+        numFlags["editorPanningX"] = editorPanning.x.toDouble()
+        numFlags["editorPanningY"] = editorPanning.y.toDouble()
 
         editorPanningDelta.x = editorPanning.x - prevEditorPanning.x
         editorPanningDelta.y = editorPanning.y - prevEditorPanning.y

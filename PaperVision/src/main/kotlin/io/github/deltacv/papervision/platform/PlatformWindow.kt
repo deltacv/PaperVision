@@ -43,6 +43,8 @@ interface PlatformWindow {
 
     var focus: Boolean
 
+    fun requestFocus()
+
     fun saveFileDialog(content: ByteArray, defaultName: String = "", vararg platformFileFilter: PlatformFileFilter): PlatformFileChooserResult
 
 }
