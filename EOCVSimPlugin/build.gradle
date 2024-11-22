@@ -22,6 +22,7 @@ tasks.register('generatePluginToml') {
     // Use layout.buildDirectory for the output directory
     def outputFile = layout.buildDirectory.file("resources/main/plugin.toml")
 
+    outputFile.get().asFile.delete()
     outputs.file(outputFile) // Mark this file as an output of the task
 
     doLast {
