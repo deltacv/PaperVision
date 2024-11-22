@@ -202,7 +202,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         paperVision.previzManager.onStreamChange {
             outputImageDisplay.pipelineStream = paperVision.previzManager.stream
         }
-
         paperVision.previzManager.onPrevizStart {
             val streamWindow = ImageDisplayWindow(outputImageDisplay)
             streamWindow.enable()

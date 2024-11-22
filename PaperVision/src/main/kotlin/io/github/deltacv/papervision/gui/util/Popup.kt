@@ -48,7 +48,6 @@ class TooltipPopup(
         }
     }
 
-
     override val position: ImVec2
         get() = positionProvider()
 
@@ -57,7 +56,7 @@ class TooltipPopup(
         ImGuiWindowFlags.NoTitleBar,
         ImGuiWindowFlags.NoResize,
         ImGuiWindowFlags.NoMove,
-        ImGuiWindowFlags.NoScrollbar,
+        ImGuiWindowFlags.NoScrollbar
     )
 
     private val elapsedTime = ElapsedTime()

@@ -18,6 +18,27 @@ components.java {
     }
 }
 
+tasks.register('generatePluginToml') {
+    // Use layout.buildDirectory for the output directory
+    def outputFile = layout.buildDirectory.file("resources/main/plugin.toml")
+
+    outputs.file(outputFile) // Mark this file as an output of the task
+
+    doLast {
+        def templateFile = new File(project.projectDir, "src/plugin.toml")
+
+        // Read the template file
+        def template = templateFile.text
+
+        // Replace the placeholder with the project version
+        def replaced = template.replace("{{version}}", project.version.toString())
+
+        // Write to the output file
+        outputFile.get().asFile.parentFile.mkdirs() // Ensure the directory exists
+        outputFile.get().asFile.text = replaced
+    }
+}
+
 tasks.register('signPlugin') {
     doLast {
         // Get the key from an environment variable
@@ -71,6 +92,10 @@ tasks.named("signPlugin").configure {
     } else {
         dependsOn jar
     }
+}
+
+tasks.named("processResources").configure {
+    dependsOn generatePluginToml
 }
 
 // Maven metadata task should depend on signPlugin if it exists
