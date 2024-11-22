@@ -19,6 +19,8 @@
 package io.github.deltacv.papervision.plugin.gui.eocvsim.dialog
 
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveredProject
+import java.awt.Dialog
+import java.awt.Window
 import javax.swing.JDialog
 import javax.swing.JFrame
 import javax.swing.JPanel
@@ -26,19 +28,19 @@ import javax.swing.SwingUtilities
 
 object PaperVisionDialogFactory {
 
-    fun displayNewProjectDialog(parent: JFrame, projects: List<String>, groups: List<String>, name: String? = null, callback: (String?, String) -> Unit) {
+    fun displayNewProjectDialog(parent: Window, projects: List<String>, groups: List<String>, name: String? = null, callback: (String?, String) -> Unit) {
         val panel = CreateNewProjectPanel(projects, groups, name, callback)
         displayDialog("${if(name == null) "New" else "Import"} Project", panel, parent)
     }
 
-    fun displayProjectRecoveryDialog(parent: JFrame, recoveredProjects: List<RecoveredProject>, callback: (List<RecoveredProject>) -> Unit) {
+    fun displayProjectRecoveryDialog(parent: Window, recoveredProjects: List<RecoveredProject>, callback: (List<RecoveredProject>) -> Unit) {
         val panel = ProjectRecoveryPanel(recoveredProjects, callback)
         displayDialog("Recover PaperVision Projects", panel, parent)
     }
 
-    private fun displayDialog(title: String, panel: JPanel, parent: JFrame) {
+    private fun displayDialog(title: String, panel: JPanel, parent: Window) {
         SwingUtilities.invokeLater {
-            val dialog = JDialog(parent, title, true)
+            val dialog = JDialog(parent, title, Dialog.ModalityType.APPLICATION_MODAL)
 
             dialog.add(panel)
             dialog.pack()

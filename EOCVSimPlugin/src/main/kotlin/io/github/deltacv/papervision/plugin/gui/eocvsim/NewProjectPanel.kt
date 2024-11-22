@@ -31,7 +31,7 @@ class NewProjectPanel(
         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
 
         newProjectBtt.addActionListener {
-            projectManager.newProjectAsk(SwingUtilities.getWindowAncestor(this) as JFrame)
+            projectManager.newProjectAsk(ancestor)
         }
 
         add(newProjectBtt)
@@ -39,7 +39,7 @@ class NewProjectPanel(
         add(Box.createRigidArea(Dimension(10, 1)))
 
         importProjectBtt.addActionListener {
-            projectManager.importProjectAsk(SwingUtilities.getWindowAncestor(this) as JFrame)
+            projectManager.importProjectAsk(ancestor)
         }
 
         add(importProjectBtt)

@@ -44,6 +44,7 @@ import io.github.deltacv.papervision.plugin.project.recovery.RecoveryData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.hexString
 import java.awt.Component
+import java.awt.Window
 import java.io.File
 import java.io.FileNotFoundException
 import java.nio.charset.StandardCharsets
@@ -197,7 +198,7 @@ class PaperVisionProjectManager(
         return list
     }
 
-    fun importProjectAsk(ancestor: JFrame) {
+    fun importProjectAsk(ancestor: Window) {
         SwingUtilities.invokeLater {
             JFileChooser().apply {
                 fileFilter = FileNameExtensionFilter("PaperVision Project (.paperproj)", "paperproj")
@@ -241,7 +242,7 @@ class PaperVisionProjectManager(
         newProject(path, name, jsonElement = PaperVisionProject.fromJson(SysUtil.loadFileStr(file)).json)
     }
 
-    fun newProjectAsk(ancestor: JFrame) {
+    fun newProjectAsk(ancestor: Window) {
         SwingUtilities.invokeLater {
             PaperVisionDialogFactory.displayNewProjectDialog(
                 ancestor,
