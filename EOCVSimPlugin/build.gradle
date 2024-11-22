@@ -25,7 +25,7 @@ tasks.register('generatePluginToml') {
     outputs.file(outputFile) // Mark this file as an output of the task
 
     doLast {
-        def templateFile = new File(project.projectDir, "src/plugin.toml")
+        def templateFile = new File(project.projectDir, "src/main/plugin.toml")
 
         // Read the template file
         def template = templateFile.text
