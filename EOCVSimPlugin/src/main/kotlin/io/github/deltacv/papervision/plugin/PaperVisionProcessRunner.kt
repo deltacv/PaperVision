@@ -69,7 +69,7 @@ object PaperVisionProcessRunner {
                     EOCVSimIpcPaperVisionMain::class.java,
                     SLF4JIOReceiver(logger),
                     classpath,
-                    listOf("-XstartOnFirstThread", "-Djava.awt.headless=true"),
+                    listOf("-XstartOnFirstThread", "-Djava.awt.headless=true", "-Xmx2048m"),
                     programParams
                 )
             } else {
@@ -77,7 +77,7 @@ object PaperVisionProcessRunner {
                     EOCVSimIpcPaperVisionMain::class.java,
                     SLF4JIOReceiver(logger),
                     classpath,
-                    null,
+                    listOf("-Xmx2048m"),
                     programParams,
                 )
             }

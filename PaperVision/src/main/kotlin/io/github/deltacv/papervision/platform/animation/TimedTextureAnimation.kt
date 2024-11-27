@@ -20,6 +20,7 @@ package io.github.deltacv.papervision.platform.animation
 
 import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.util.ElapsedTime
+import java.nio.ByteBuffer
 
 class TimedTextureAnimation(
     val fps: Double,

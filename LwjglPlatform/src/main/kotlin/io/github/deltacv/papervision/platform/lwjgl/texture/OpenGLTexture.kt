@@ -23,6 +23,7 @@ import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.lwjgl.texture.OpenGLTextureFactory.create
 import org.lwjgl.opengl.GL12.*
 import org.lwjgl.stb.STBImage.stbi_failure_reason
+import org.lwjgl.stb.STBImage.stbi_image_free
 import org.lwjgl.stb.STBImage.stbi_load_from_memory
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
@@ -42,13 +43,13 @@ data class OpenGLTexture(
         }
 
         val buffer = MemoryUtil.memAlloc(bytes.size)
-        buffer.put(bytes)
-        buffer.flip()
 
         try {
+            buffer.put(bytes)
+            buffer.flip()
             set(buffer, colorSpace)
         } finally {
-            MemoryUtil.memFree(buffer)
+            MemoryUtil.memFree(buffer) // Free the memory even if an exception occurs
         }
     }
 
@@ -82,9 +83,41 @@ data class OpenGLTexture(
             val h = it.mallocInt(1)
 
             val img = stbi_load_from_memory(buffer, w, h, comp, 3)
-                ?: throw RuntimeException("Failed to load image due to ${stbi_failure_reason()}")
 
-            return set(img, ColorSpace.RGB)
+            try {
+                if(img == null) {
+                    throw RuntimeException("Failed to load image due to ${stbi_failure_reason()}")
+                }
+                set(img, ColorSpace.RGB)
+            } finally {
+                if(img != null) {
+                    stbi_image_free(img) // Ensure memory is freed
+                }
+            }
+        }
+    }
+
+    override fun setJpeg(bytes: ByteBuffer) {
+        MemoryStack.stackPush().use {
+            bytes.flip()
+
+            val comp = it.mallocInt(1)
+            val w = it.mallocInt(1)
+            val h = it.mallocInt(1)
+
+            val img = stbi_load_from_memory(bytes, w, h, comp, 3)
+
+            try {
+                if(img == null) {
+                    throw RuntimeException("Failed to load image due to ${stbi_failure_reason()}")
+                }
+
+                set(img, ColorSpace.RGB)
+            } finally {
+                if(img != null) {
+                    stbi_image_free(img) // Ensure memory is freed
+                }
+            }
         }
     }
 

@@ -15,14 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package io.github.deltacv.papervision.io
 
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.PlatformTextureFactory
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
-import java.lang.ref.WeakReference
+import io.github.deltacv.papervision.util.loggerForThis
 import java.nio.ByteBuffer
 import java.util.concurrent.ArrayBlockingQueue
 
@@ -30,11 +29,19 @@ class TextureProcessorQueue(
     val textureFactory: PlatformTextureFactory
 ) {
 
-    companion object {
-        const val REUSABLE_ARRAY_QUEUE_SIZE = 4
+    enum class MemoryBehavior {
+        ALLOCATE_WHEN_EXHAUSTED,
+        DISCARD_WHEN_EXHAUSTED,
+        EXCEPTION_WHEN_EXHAUSTED
     }
 
-    private val reusableArrays = mutableMapOf<Int, ArrayBlockingQueue<WeakReference<ByteArray>>>()
+    companion object {
+        const val REUSABLE_BUFFER_QUEUE_SIZE = 60
+    }
+
+    val logger by loggerForThis()
+
+    private val reusableBuffers = mutableMapOf<Int, ArrayBlockingQueue<ByteArray>>()
 
     private val queuedTextures = ArrayBlockingQueue<FutureTexture>(5)
     private val textures = mutableMapOf<Int, PlatformTexture>()
@@ -43,80 +50,103 @@ class TextureProcessorQueue(
 
     fun subscribeTo(handler: PaperVisionEventHandler) {
         handler {
-            if(currentHandler != handler) { // can only subscribe to one event loop at a time
+            if (currentHandler != handler) { // can only subscribe to one event loop at a time
                 it.removeThis()
                 return@handler
             }
 
-            while(queuedTextures.isNotEmpty()) {
+            while (queuedTextures.isNotEmpty()) {
                 val futureTex = queuedTextures.poll()
 
-                if(textures.contains(futureTex.id)) {
-                    val existingTex = textures[futureTex.id]!!
-                    if(existingTex.width == futureTex.width && existingTex.height == futureTex.height) {
-                        if(futureTex.jpeg) {
-                            existingTex.setJpeg(futureTex.data)
+                try {
+                    var shouldContinue = false
+
+                    textures[futureTex.id]?.let { existingTex ->
+                        if (existingTex.width == futureTex.width && existingTex.height == futureTex.height) {
+                            if (futureTex.jpeg) {
+                                existingTex.setJpeg(futureTex.data)
+                            } else {
+                                existingTex.set(futureTex.data, futureTex.colorSpace)
+                            }
+                            shouldContinue = true
+                        } else {
+                            existingTex.delete()
                         }
-                        returnReusableArray(futureTex.data)
-
-                        continue
-                    } else {
-                        existingTex.delete()
                     }
-                }
 
-                if(futureTex.jpeg) {
-                    textures[futureTex.id] = textureFactory.createFromJpegBytes(ByteBuffer.wrap(futureTex.data))
-                } else {
-                    textures[futureTex.id] = textureFactory.create(
-                        futureTex.width, futureTex.height, futureTex.data, futureTex.colorSpace
-                    )
+                    if (shouldContinue) continue
+
+                    textures[futureTex.id] = if (futureTex.jpeg) {
+                        textureFactory.createFromJpegBytes(ByteBuffer.wrap(futureTex.data))
+                    } else {
+                        textureFactory.create(
+                            futureTex.width, futureTex.height, futureTex.data, futureTex.colorSpace
+                        )
+                    }
+                } catch (e: Exception) {
+                    logger.error("Error processing texture: ${e.message}", e)
+                } finally {
+                    returnReusableBuffer(futureTex.data)
                 }
-                returnReusableArray(futureTex.data)
             }
         }
 
         currentHandler = handler
     }
 
-    private fun returnReusableArray(array: ByteArray) {
-        synchronized(reusableArrays) {
-            reusableArrays[array.size]?.offer(WeakReference(array))
+    fun offerJpeg(id: Int, width: Int, height: Int, data: ByteArray,
+                  memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED) =
+        offer(id, width, height, data, jpeg = true)
+
+    fun offer(
+        id: Int,
+        width: Int,
+        height: Int,
+        data: ByteArray,
+        colorSpace: ColorSpace = ColorSpace.RGB,
+        jpeg: Boolean = false,
+        memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
+    ) {
+        val size = data.size
+        val buffer = getOrCreateReusableBuffer(size, memoryBehavior) ?: return
+
+        System.arraycopy(data, 0, buffer, 0, size)
+
+        synchronized(queuedTextures) {
+            if (queuedTextures.remainingCapacity() == 0) {
+                queuedTextures.poll()
+            }
+            queuedTextures.offer(FutureTexture(id, width, height, buffer, colorSpace, jpeg))
         }
     }
 
-    fun offerJpeg(id: Int, width: Int, height: Int, data: ByteArray) =
-        offer(id, width, height, data, jpeg = true)
+    private fun returnReusableBuffer(buffer: ByteArray) {
+        synchronized(reusableBuffers) {
+            reusableBuffers[buffer.size]?.offer(buffer)
+                ?: logger.warn("Buffer pool for size ${buffer.size} is null")
+        }
+    }
 
-    fun offer(id: Int, width: Int, height: Int, data: ByteArray, colorSpace: ColorSpace = ColorSpace.RGB, jpeg: Boolean = false) {
-        val size = data.size
-        val array: ByteArray
+    private fun getOrCreateReusableBuffer(size: Int, memoryBehavior: MemoryBehavior): ByteArray? {
+        synchronized(reusableBuffers) {
+            if (reusableBuffers[size] == null) {
+                val queue = ArrayBlockingQueue<ByteArray>(REUSABLE_BUFFER_QUEUE_SIZE)
 
-        synchronized(reusableArrays) {
-            if(!reusableArrays.contains(size)) {
-                array = ByteArray(size)
-                reusableArrays[size] = ArrayBlockingQueue(REUSABLE_ARRAY_QUEUE_SIZE)
-            } else {
-                val queue = reusableArrays[size]!!
+                repeat(REUSABLE_BUFFER_QUEUE_SIZE) {
+                    queue.offer(ByteArray(size))
+                }
 
-                array = if(queue.isEmpty()) {
-                    ByteArray(size)
-                } else {
-                    queue.poll().get() ?: ByteArray(size)
+                reusableBuffers[size] = queue
+            }
+
+            val queue = reusableBuffers[size]!!
+            return queue.poll() ?: run {
+                when (memoryBehavior) {
+                    MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED -> ByteArray(size)
+                    MemoryBehavior.DISCARD_WHEN_EXHAUSTED -> null
+                    MemoryBehavior.EXCEPTION_WHEN_EXHAUSTED -> throw IllegalStateException("Buffer pool for size $size is empty")
                 }
             }
-
-            reusableArrays.remove(size)
-        }
-
-        System.arraycopy(data, 0, array, 0, size)
-
-        synchronized(queuedTextures) {
-            if(queuedTextures.remainingCapacity() == 0) {
-                queuedTextures.poll()
-            }
-
-            queuedTextures.offer(FutureTexture(id, width, height, array, colorSpace, jpeg))
         }
     }
 
@@ -124,12 +154,20 @@ class TextureProcessorQueue(
 
     fun clear() {
         queuedTextures.clear()
-        for((_, texture) in textures) {
-            texture.delete()
-        }
+        textures.values.forEach { it.delete() }
         textures.clear()
+
+        synchronized(reusableBuffers) {
+            reusableBuffers.values.forEach { it.clear() }
+        }
     }
 
-    data class FutureTexture(val id: Int, val width: Int, val height: Int, val data: ByteArray, val colorSpace: ColorSpace, val jpeg: Boolean)
-
+    data class FutureTexture(
+        val id: Int,
+        val width: Int,
+        val height: Int,
+        val data: ByteArray,
+        val colorSpace: ColorSpace,
+        val jpeg: Boolean
+    )
 }

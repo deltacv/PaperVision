@@ -19,7 +19,6 @@
 package io.github.deltacv.papervision.plugin.ipc.stream
 
 import io.github.deltacv.papervision.engine.client.ByteMessageReceiver
-import io.github.deltacv.visionloop.io.MjpegHttpReader
 import org.apache.commons.io.IOUtils
 import org.slf4j.LoggerFactory
 import java.net.URL
@@ -34,17 +33,18 @@ class ThreadedMjpegByteReceiver(
     private var previousTag = ""
 
     private val availableChecker = Runnable {
+        val availableUrl = URL("${url.trimEnd('/')}/available")
+
         while(!Thread.interrupted()) {
             val tag = tagProvider()
 
             if(previousTag != tag) {
-                logger.info("Tag $previousTag is different from current tag ${tag}")
+                logger.info("Tag $previousTag is different from current tag {}", tag)
             }
 
             previousTag = tag
 
-            val available = IOUtils.toString(URL("${url.trimEnd('/')}/available"), Charsets.UTF_8)
-
+            val available = availableUrl.readText()
             if(available.isBlank()) {
                 continue
             }

@@ -104,7 +104,7 @@ class PipelineStream(
 
     private val defaultHandler: Handler = { id, tag, bytes ->
         if(tag == sessionName) {
-            queue.offerJpeg(id, width, height, bytes)
+            queue.offerJpeg(id, width, height, bytes, TextureProcessorQueue.MemoryBehavior.DISCARD_WHEN_EXHAUSTED)
         }
     }
 

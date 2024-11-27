@@ -37,6 +37,7 @@ abstract class PlatformTexture : DrawableIdElementBase<PlatformTexture>() {
     abstract fun set(bytes: ByteBuffer, colorSpace: ColorSpace = ColorSpace.RGB)
 
     abstract fun setJpeg(bytes: ByteArray)
+    abstract fun setJpeg(bytes: ByteBuffer)
 
     override fun draw() {
         ImGui.image(textureId, width.toFloat(), height.toFloat())
