@@ -43,7 +43,7 @@ class TextureProcessorQueue(
 
     private val reusableBuffers = mutableMapOf<Int, ArrayBlockingQueue<ByteArray>>()
 
-    private val queuedTextures = ArrayBlockingQueue<FutureTexture>(5)
+    private val queuedTextures = ArrayBlockingQueue<FutureTexture>(REUSABLE_BUFFER_QUEUE_SIZE)
     private val textures = mutableMapOf<Int, PlatformTexture>()
 
     private var currentHandler: PaperVisionEventHandler? = null
