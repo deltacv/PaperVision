@@ -50,6 +50,8 @@ import io.github.deltacv.papervision.platform.*
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
+import java.awt.Taskbar
+import java.awt.Toolkit
 
 class PaperVision(
     private val setupCall: PlatformSetupCallback
@@ -206,6 +208,12 @@ class PaperVision(
         RootAction().enable()
 
         onInit.run()
+
+        if(Taskbar.isTaskbarSupported() && Taskbar.getTaskbar().isSupported(Taskbar.Feature.ICON_IMAGE)) {
+            Taskbar.getTaskbar().iconImage = Toolkit.getDefaultToolkit().getImage(javaClass.getResource("/ico/ico_ezv.png"))
+        } else {
+            logger.warn("Taskbar icon not supported")
+        }
 
         IdElementContainerStack.threadStack.pop<Node<*>>()
         IdElementContainerStack.threadStack.pop<Attribute>()
