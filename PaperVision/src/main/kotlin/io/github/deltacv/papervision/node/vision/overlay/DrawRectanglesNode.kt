@@ -106,10 +106,12 @@ open class DrawRectanglesNode
                                     lineParams.thicknessValue
                                 )
                             } else if (rectangle is GenValue.GRect.RuntimeRect) {
-                                Imgproc(
-                                    "rectangle", drawMat, rectangle.value,
-                                    lineParams.colorScalarValue, lineParams.thicknessValue
-                                )
+                                ifCondition(rectangle.value notEqualsTo language.nullValue) {
+                                    Imgproc(
+                                        "rectangle", drawMat, rectangle.value,
+                                        lineParams.colorScalarValue, lineParams.thicknessValue
+                                    )
+                                }
                             }
                         }
                     } else {
@@ -162,24 +164,26 @@ open class DrawRectanglesNode
                     val colorScalar = CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
 
                     fun ScopeContext.runtimeRect(rectValue: Value) {
-                        val rectangle = CPythonLanguage.tupleVariables(
-                            rectValue,
-                            "x", "y", "w", "h"
-                        )
-                        local(rectangle)
+                        ifCondition(rectValue notEqualsTo language.nullValue) {
+                            val rectangle = CPythonLanguage.tupleVariables(
+                                rectValue,
+                                "x", "y", "w", "h"
+                            )
+                            local(rectangle)
 
-                        // cv2.rectangle(mat, (x, y), (x + w, y + h), color, thickness)
-                        // color is a (r, g, b, a) tuple
-                        cv2(
-                            "rectangle", target,
-                            CPythonLanguage.tuple(rectangle.get("x"), rectangle.get("y")),
-                            CPythonLanguage.tuple(
-                                rectangle.get("x") + rectangle.get("w"),
-                                rectangle.get("y") + rectangle.get("h")
-                            ),
-                            colorScalar,
-                            thickness.v
-                        )
+                            // cv2.rectangle(mat, (x, y), (x + w, y + h), color, thickness)
+                            // color is a (r, g, b, a) tuple
+                            cv2(
+                                "rectangle", target,
+                                CPythonLanguage.tuple(rectangle.get("x"), rectangle.get("y")),
+                                CPythonLanguage.tuple(
+                                    rectangle.get("x") + rectangle.get("w"),
+                                    rectangle.get("y") + rectangle.get("h")
+                                ),
+                                colorScalar,
+                                thickness.v
+                            )
+                        }
                     }
 
                     if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {

@@ -117,7 +117,7 @@ open class DrawRotatedRectanglesNode
 
                     if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
                         for (rectangle in (rectanglesList as GenValue.GList.ListOf<*>).elements) {
-                            if (rectangle is GenValue.GRect.Rect) {
+                            if (rectangle is GenValue.GRect.Rotated.RotatedRect) {
                                 TODO("")
                             } else if (rectangle is GenValue.GRect.Rotated.RuntimeRotatedRect) {
                                 drawRuntimeRect(rectangle.value)

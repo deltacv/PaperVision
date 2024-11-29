@@ -27,7 +27,10 @@ import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
+import io.github.deltacv.papervision.codegen.build.type.JavaTypes
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
@@ -78,10 +81,6 @@ open class DrawContoursNode
 
                 val output = uniqueVariable("${input.value.value!!}Contours", Mat.new())
 
-                if(contoursList !is GenValue.GList.RuntimeListOf<*>) {
-                    contours.raise("Given list is not a runtime type (TODO)") // TODO: Handle non-runtime lists
-                }
-
                 var drawMat = input.value
 
                 group {
@@ -96,10 +95,28 @@ open class DrawContoursNode
                         input.value("copyTo", drawMat)
                     }
 
-                    Imgproc("drawContours", drawMat, contoursList.value, (-1).v,
-                        lineParams.colorScalarValue,
-                        lineParams.thicknessValue
-                    )
+                    if(contoursList is GenValue.GList.RuntimeListOf<*>) {
+                        Imgproc("drawContours", drawMat, contoursList.value, (-1).v,
+                            lineParams.colorScalarValue,
+                            lineParams.thicknessValue
+                        )
+                    } else {
+                        val list = Variable("contoursList", JavaTypes.List(JvmOpenCvTypes.MatOfPoint).new())
+                        local(list)
+
+                        for (contour in (contoursList as GenValue.GList.ListOf<*>).elements) {
+                            if (contour is GenValue.GPoints.RuntimePoints) {
+                                list("add", contour.value)
+                            } else {
+                                raise("Invalid contour type")
+                            }
+                        }
+
+                        Imgproc("drawContours", drawMat, list, (-1).v,
+                            lineParams.colorScalarValue,
+                            lineParams.thicknessValue
+                        )
+                    }
 
                     if(!isDrawOnInput) {
                         outputMat.streamIfEnabled(drawMat, input.color)
@@ -125,10 +142,6 @@ open class DrawContoursNode
                 }
 
                 current.scope {
-                    if(contoursList !is GenValue.GList.RuntimeListOf<*>) {
-                        contours.raise("Given list is not a runtime type (TODO)") // TODO: Handle non-runtime lists
-                    }
-
                     val color = lineParams.color
                     val thickness = lineParams.thickness.value
 
@@ -145,7 +158,22 @@ open class DrawContoursNode
                         output
                     }
 
-                    cv2("drawContours", target, contoursList.value, (-1).v, colorScalar, thickness.v)
+                    if(contoursList is GenValue.GList.RuntimeListOf<*>) {
+                        cv2("drawContours", target, contoursList.value, (-1).v, colorScalar, thickness.v)
+                    } else {
+                        val list = uniqueVariable("contoursList", CPythonLanguage.NoType.newArray())
+                        local(list)
+
+                        for(contour in (contoursList as GenValue.GList.ListOf<*>).elements) {
+                            if(contour is GenValue.GPoints.RuntimePoints) {
+                                list("append", contour.value)
+                            } else {
+                                raise("Invalid contour type")
+                            }
+                        }
+
+                        cv2("drawContours", target, list, (-1).v, colorScalar, thickness.v)
+                    }
 
                     session.outputMat = GenValue.Mat(target, input.color, input.isBinary)
                 }
