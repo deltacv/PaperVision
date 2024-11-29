@@ -163,7 +163,7 @@ open class ListAttribute(
                 it.enabledLinkedAttribute() == linkedAttribute
             }
             if(alreadyLinkedAttribute == null) {
-                createElement(linkTo = linkedAttribute)
+                createElement(linkTo = linkedAttribute, relatedLink = linkedAttribute.links.last())
             }
 
             // delete the original link
@@ -302,7 +302,7 @@ open class ListAttribute(
         return list.toTypedArray()
     }
 
-    private fun createElement(enable: Boolean = true, linkTo: Attribute? = null): TypedAttribute {
+    private fun createElement(enable: Boolean = true, linkTo: Attribute? = null, relatedLink: Link? = null): TypedAttribute {
         val count = listAttributes.size.toString()
         val elementName = count + if (count.length == 1) " " else ""
 
@@ -316,8 +316,23 @@ open class ListAttribute(
         listAttributes.add(element)
 
         if (linkTo != null) {
+            // if the element is being created because of a link, create the link action
+            // to link the new element to the linked attribute
             parentNode.editor.onDraw.doOnce {
-                CreateLinkAction(Link(linkTo.id, element.id)).enable()
+                val action = CreateLinkAction(Link(linkTo.id, element.id))
+
+                if(relatedLink != null) {
+                    val associatedAction = relatedLink.associatedAction
+                    if(associatedAction != null) {
+                        // sneakily insert ourselves into the action stack by killing and impersonating the original action
+                        // that created the original link (hopefully he got the chance to say goodbye to his family)
+                        // this avoids glitches when the user tries to undo/redo the creation of this new link
+                        // otherwise, the stack would try to address the original link, which doesn't exist anymore
+                        associatedAction.idElementContainer[associatedAction.id] = action
+                    }
+                }
+
+                action.enable()
             }
         }
 

@@ -64,7 +64,10 @@ class EmptyInputAttribute(
 abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<AttributeSerializationData> {
 
     override val idElementContainer get() = IdElementContainerStack.threadStack.peekNonNull<Attribute>()
-    override val requestedId get() = serializedId
+
+    override val requestedId get() = if(forgetSerializedId || (hasParentNode && parentNode.forgetSerializedId))
+        null
+    else serializedId
 
     @Transient private var getThisSupplier: (() -> Any)? = null
 
@@ -74,6 +77,8 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
     lateinit var parentNode: Node<*>
         internal set
+
+    val hasParentNode get() = ::parentNode.isInitialized
 
     val links = mutableListOf<Link>()
     val enabledLinks get() = links.filter { it.isEnabled }
@@ -87,6 +92,9 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     val editor get() = parentNode.editor
 
     var showAttributesCircles = true
+
+    var forgetSerializedId = false
+        private set
 
     private var isFirstDraw = true
     private var cancelNextDraw = false
@@ -278,6 +286,10 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         data.id = id
 
         return data
+    }
+
+    fun forgetSerializedId() {
+        forgetSerializedId = true
     }
 
     override fun pollChange() = changeQueue.poll() ?: false

@@ -18,12 +18,14 @@
 
 package io.github.deltacv.papervision.gui
 
+import com.google.gson.JsonElement
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.flag.ImNodesMiniMapLocation
 import imgui.extension.texteditor.TextEditorLanguageDefinition
 import imgui.flag.ImGuiCol
+import imgui.flag.ImGuiKey
 import imgui.flag.ImGuiMouseButton
 import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImInt
@@ -40,22 +42,23 @@ import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguag
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.engine.client.message.AskProjectGenClassNameMessage
 import io.github.deltacv.papervision.engine.client.response.StringResponse
-import io.github.deltacv.papervision.gui.NodeEditor.SourceCodeExportSelectLanguageWindow.Companion.separationMultiplier
+import io.github.deltacv.papervision.gui.NodeEditor.SourceCodeExportSelectLanguageWindow.Companion.SEPARATION_MULTIPLIER
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayWindow
-import io.github.deltacv.papervision.gui.util.FrameWidthWindow
 import io.github.deltacv.papervision.gui.util.Popup
 import io.github.deltacv.papervision.gui.util.TooltipPopup
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.id.DrawableIdElement
 import io.github.deltacv.papervision.io.KeyManager
+import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.FlagsNode
 import io.github.deltacv.papervision.node.InvisibleNode
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.node.vision.InputMatNode
 import io.github.deltacv.papervision.node.vision.OutputMatNode
+import io.github.deltacv.papervision.serialization.PaperVisionSerializer
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
@@ -123,6 +126,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     private val scrollTimer = ElapsedTime()
 
+    var clipboard: String? = null
+
     val onEditorChange = PaperVisionEventHandler("NodeEditor-OnChange")
     val onEditorPan = PaperVisionEventHandler("NodeEditor-OnPan")
 
@@ -139,7 +144,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     private var currentRightClickMenuPopup: RightClickMenuPopup? = null
     val rightClickMenuPopup: RightClickMenuPopup get() {
-        val popup = RightClickMenuPopup(paperVision.nodeList, paperVision::undo, paperVision::redo, popupSelection)
+        val popup = RightClickMenuPopup(paperVision.nodeList, ::undo, ::redo, popupSelection)
         currentRightClickMenuPopup = popup
         return popup
     }
@@ -350,6 +355,123 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         handleDeleteLink()
         handleCreateLink()
         handleDeleteSelection()
+
+        if (keyManager.pressing(keyManager.keys.NativeLeftSuper) || keyManager.pressing(keyManager.keys.NativeRightSuper)) {
+            val pressingShift = keyManager.pressing(keyManager.keys.LeftShift)
+
+            val pressedZ = ImGui.isKeyPressed(ImGuiKey.Z)
+            val pressedY = ImGui.isKeyPressed(ImGuiKey.Y)
+            val pressedS = ImGui.isKeyPressed(ImGuiKey.S)
+            val pressedC = ImGui.isKeyPressed(ImGuiKey.C)
+            val pressedV = ImGui.isKeyPressed(ImGuiKey.V)
+
+            if (pressingShift && pressedZ) {
+                redo() // Ctrl + Shift + Z
+            } else if (pressedZ) {
+                undo() // Ctrl + Z
+            } else if (pressedY) {
+                redo() // Ctrl + Y
+            } else if (pressedS) {
+                logger.info(PaperVisionSerializer.serialize(nodes.inmutable, links.inmutable))
+            } else if(pressedC) {
+                copy()
+            } else if(pressedV) {
+                paste()
+            }
+        }
+    }
+
+    fun undo() {
+        logger.info("undo | stack; size: ${paperVision.actions.size}, pointer: ${paperVision.actions.stackPointer}, peek: ${paperVision.actions.peek()}")
+        paperVision.actions.peekAndPushback()?.undo()
+    }
+
+    fun redo() {
+        logger.info("redo | stack; size: ${paperVision.actions.size}, pointer: ${paperVision.actions.stackPointer}, peek: ${paperVision.actions.peek()}")
+
+        paperVision.actions.pushforwardIfNonNull()
+        paperVision.actions.peek()?.execute()
+    }
+
+    fun copy() {
+        val selectedNodes = IntArray(ImNodes.numSelectedNodes())
+        ImNodes.getSelectedNodes(selectedNodes)
+
+        if(selectedNodes.isEmpty()) return
+
+        val selectedNodesList = selectedNodes.map { nodes[it]!! }.filter { it.allowDelete }
+
+        clipboard = PaperVisionSerializer.serialize(selectedNodesList, listOf())
+        logger.info("Clipboard content: $clipboard")
+    }
+
+    fun paste() {
+        if(clipboard == null) return
+
+        val (nodes, links) = PaperVisionSerializer.deserialize(clipboard!!)
+
+        var totalX = 0f
+        var totalY = 0f
+        var count = 0
+        for (node in nodes) {
+            // do not use the original ids of this stuff
+            node.forgetSerializedId()
+
+            // calculate the center point of the nodes
+            if (node is DrawNode<*>) {
+                node.nextNodePosition?.let {
+                    totalX += it.x
+                    totalY += it.y
+                    count++
+                }
+            }
+        }
+
+        if(nodes.size == 1) {
+            // if we only have one node, no problemo, just pin it to the mouse
+            val node = nodes.first()
+
+            if(node is DrawNode<*>) {
+                node.nextNodePosition = ImGui.getMousePos()
+            }
+        } else if (count > 0) {
+            // if we have more than one, we better center them nicely based on the mouse position
+            // the nodes will maintain their relative positions between each other
+            val centerX = totalX / count
+            val centerY = totalY / count
+
+            val mousePos = ImGui.getMousePos()
+
+            for(node in nodes) {
+                if(node is DrawNode<*>) {
+                    // create an offset based on the original position of the node
+                    // and the avg center of all the nodes
+                    val offsetX = node.nextNodePosition?.let {
+                        centerX - it.x
+                    } ?: 0f
+                    val offsetY = node.nextNodePosition?.let {
+                        centerY - it.y
+                    } ?: 0f
+
+                    // translate using the mouse position as an offset
+                    node.nextNodePosition = ImVec2(
+                        offsetX + mousePos.x,
+                        offsetY + mousePos.y
+                    )
+                }
+            }
+        }
+
+        // ok, we're done adjusting positions, we'll create the nodes now
+        for(node in nodes) {
+            val action = CreateNodeAction(node)
+
+            if (node.joinActionStack) {
+                action.enable()
+            } else {
+                action.execute()
+            }
+        }
     }
 
     fun addNode(nodeClazz: Class<out Node<*>>): Node<*> {
@@ -467,7 +589,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
             if (Node.checkRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
                 TooltipPopup.warning("err_couldntlink_recursion")
-                // remove the link if a recursion case was detected (e.g both nodes were attached to each other already)
+                // remove the link if a recursion case was detected (e.g. both nodes were attached to each other already)
                 link.delete()
             } else {
                 paperVision.onUpdate.doOnce {
@@ -594,7 +716,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     ) : Window() {
 
         companion object {
-            val separationMultiplier = 1.5f
+            const val SEPARATION_MULTIPLIER = 1.5f
         }
 
         override var title = "$[win_selectlanguage]"
@@ -618,7 +740,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             }
 
             ImGui.sameLine()
-            ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+            ImGui.indent(ImGui.getItemRectSizeX() * SEPARATION_MULTIPLIER)
 
             if (ImGui.button(FontAwesomeIcons.Brands.Python)) {
                 openSourceCodeWindow(CPythonLanguage)
@@ -838,7 +960,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                 }
 
                 ImGui.sameLine()
-                ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+                ImGui.indent(ImGui.getItemRectSizeX() * SEPARATION_MULTIPLIER)
             }
 
             ImGui.popStyleColor()

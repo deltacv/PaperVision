@@ -29,6 +29,7 @@ class CreateLinkAction(
     }
 
     override fun execute() {
+        link.associatedAction = this
         if(link.isEnabled) return
 
         if(link.hasEnabled) {
@@ -45,8 +46,6 @@ class DeleteLinksAction(
     override fun undo() {
         links.forEach {
             if(it.isEnabled) return
-
-
             it.enable()
         }
     }

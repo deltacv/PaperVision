@@ -274,16 +274,6 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(actions)
         IdElementContainerStack.threadStack.push(popups)
 
-        if(keyManager.pressing(keyManager.keys.LeftControl)) {
-            if(ImGui.isKeyPressed(ImGuiKey.Z)) {
-                undo()
-            } else if(ImGui.isKeyPressed(ImGuiKey.Y)) {
-                redo()
-            } else if(ImGui.isKeyPressed(ImGuiKey.S)) {
-                logger.info(PaperVisionSerializer.serialize(nodes.inmutable, links.inmutable))
-            }
-        }
-
         onUpdate.run()
 
         engineClient.process()
@@ -316,18 +306,6 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<ImageDisplay>()
         IdElementContainerStack.threadStack.pop<Action>()
         IdElementContainerStack.threadStack.pop<Popup>()
-    }
-
-    fun undo() {
-        logger.info("undo | stack; size: ${actions.size}, pointer: ${actions.stackPointer}, peek: ${actions.peek()}")
-        actions.peekAndPushback()?.undo()
-    }
-
-    fun redo() {
-        logger.info("redo | stack; size: ${actions.size}, pointer: ${actions.stackPointer}, peek: ${actions.peek()}")
-
-        actions.pushforwardIfNonNull()
-        actions.peek()?.execute()
     }
 
     fun destroy() {

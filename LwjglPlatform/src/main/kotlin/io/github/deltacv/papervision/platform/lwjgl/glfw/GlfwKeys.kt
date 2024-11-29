@@ -23,6 +23,8 @@ import org.lwjgl.glfw.GLFW.*
 
 object GlfwKeys : PlatformKeys {
 
+    val isMac = System.getProperty("os.name").contains("Mac")
+
     override val ArrowUp = glfwGetKeyScancode(GLFW_KEY_UP) //111
     override val ArrowDown = glfwGetKeyScancode(GLFW_KEY_DOWN)// 116
     override val ArrowLeft = glfwGetKeyScancode(GLFW_KEY_LEFT) // 113
@@ -40,5 +42,12 @@ object GlfwKeys : PlatformKeys {
 
     override val LeftSuper = glfwGetKeyScancode(GLFW_KEY_LEFT_SUPER) //133
     override val RightSuper = glfwGetKeyScancode(GLFW_KEY_RIGHT_SUPER) //134
+
+    override val NativeLeftSuper by lazy {
+        if(isMac) glfwGetKeyScancode(GLFW_KEY_LEFT_SUPER) else glfwGetKeyScancode(GLFW_KEY_LEFT_CONTROL)
+    }
+    override val NativeRightSuper by lazy {
+        if(isMac) glfwGetKeyScancode(GLFW_KEY_RIGHT_SUPER) else glfwGetKeyScancode(GLFW_KEY_RIGHT_CONTROL)
+    }
 
 }

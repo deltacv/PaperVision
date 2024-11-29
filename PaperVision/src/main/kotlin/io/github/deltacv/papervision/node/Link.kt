@@ -20,6 +20,7 @@ package io.github.deltacv.papervision.node
 
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.flag.ImNodesCol
+import io.github.deltacv.papervision.action.Action
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.id.DrawableIdElementBase
@@ -39,6 +40,8 @@ class Link(
 
     val aAttrib get() = attribIdElementContainer[a]
     val bAttrib get() = attribIdElementContainer[b]
+
+    var associatedAction: Action? = null
 
     constructor(data: LinkSerializationData) : this(data.from, data.to)
 

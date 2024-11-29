@@ -45,21 +45,27 @@ interface Type {
 }
 
 abstract class Node<S: CodeGenSession>(
-    private var allowDelete: Boolean = true,
+    allowDelete: Boolean = true,
     val joinActionStack: Boolean = true
 ) : DrawableIdElementBase<Node<*>>(), GeneratorsGenNode<S>, DataSerializable<NodeSerializationData> {
 
     override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Node<*>>()
-    override val requestedId get() = serializedId
+    override val requestedId get() = if(forgetSerializedId) null else serializedId
 
     private var beforeDeletingPosition = ImVec2()
 
     val description by lazy { this::class.java.getAnnotation(PaperNode::class.java)?.description }
 
+    var allowDelete = allowDelete
+        private set
+
     var serializedId: Int? = null
         private set
 
     var showAttributesCircles = true
+
+    var forgetSerializedId = false
+        private set
 
     // will be set on NodeEditor#draw
     lateinit var editor: NodeEditor
@@ -293,6 +299,10 @@ abstract class Node<S: CodeGenSession>(
 
             return false
         }
+    }
+
+    fun forgetSerializedId() {
+        forgetSerializedId = true
     }
 
 }
