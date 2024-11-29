@@ -718,18 +718,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         override fun drawContents() {
             ImGui.pushStyleColor(ImGuiCol.Button, 0)
 
-            if (ImGui.button("Undo")) {
-                undo()
-                ImGui.closeCurrentPopup()
-            }
-
-            if (ImGui.button("Redo")) {
-                redo()
-                ImGui.closeCurrentPopup()
-            }
-
-            ImGui.separator()
-
             if(ImGui.button("Cut")) {
                 cut(selection.filter { it is Node<*> }.map { it as Node<*> })
                 ImGui.closeCurrentPopup()
@@ -742,6 +730,18 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
             if(ImGui.button("Paste")) {
                 paste()
+                ImGui.closeCurrentPopup()
+            }
+
+            ImGui.separator()
+
+            if (ImGui.button("Undo")) {
+                undo()
+                ImGui.closeCurrentPopup()
+            }
+
+            if (ImGui.button("Redo")) {
+                redo()
                 ImGui.closeCurrentPopup()
             }
 
