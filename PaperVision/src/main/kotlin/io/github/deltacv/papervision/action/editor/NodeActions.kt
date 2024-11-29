@@ -21,21 +21,29 @@ package io.github.deltacv.papervision.action.editor
 import io.github.deltacv.papervision.action.Action
 import io.github.deltacv.papervision.node.Node
 
-class CreateNodeAction(
-    val node: Node<*>
+class CreateNodesAction(
+    val nodes: List<Node<*>>
 ) : Action() {
+
+    constructor(node: Node<*>) : this(listOf(node))
+
     override fun undo() {
-        if(node.isEnabled)
-            node.delete()
+        for(node in nodes) {
+            if(node.isEnabled) {
+                node.delete()
+            }
+        }
     }
 
     override fun execute() {
-        if(node.isEnabled) return
+        for(node in nodes) {
+            if(node.isEnabled) continue
 
-        if(node.hasEnabled) {
-            node.restore()
-        } else {
-            node.enable()
+            if(node.hasEnabled) {
+                node.restore()
+            } else {
+                node.enable()
+            }
         }
     }
 }

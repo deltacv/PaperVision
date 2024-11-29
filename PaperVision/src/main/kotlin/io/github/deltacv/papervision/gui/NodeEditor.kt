@@ -18,7 +18,6 @@
 
 package io.github.deltacv.papervision.gui
 
-import com.google.gson.JsonElement
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
@@ -32,7 +31,7 @@ import imgui.type.ImInt
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.action.editor.CreateLinkAction
-import io.github.deltacv.papervision.action.editor.CreateNodeAction
+import io.github.deltacv.papervision.action.editor.CreateNodesAction
 import io.github.deltacv.papervision.action.editor.DeleteLinksAction
 import io.github.deltacv.papervision.action.editor.DeleteNodesAction
 import io.github.deltacv.papervision.attribute.Attribute
@@ -73,6 +72,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     companion object {
         const val KEY_PAN_CONSTANT = 5f
         const val PAN_CONSTANT = 25f
+        const val PASTE_COUNT_OFFSET = 50f
     }
 
     var context = ImNodes.editorContextCreate()
@@ -126,6 +126,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     private val scrollTimer = ElapsedTime()
 
+    private var pasteCount = 0
     var clipboard: String? = null
 
     val onEditorChange = PaperVisionEventHandler("NodeEditor-OnChange")
@@ -362,8 +363,10 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             val pressedZ = ImGui.isKeyPressed(ImGuiKey.Z)
             val pressedY = ImGui.isKeyPressed(ImGuiKey.Y)
             val pressedS = ImGui.isKeyPressed(ImGuiKey.S)
+
             val pressedC = ImGui.isKeyPressed(ImGuiKey.C)
             val pressedV = ImGui.isKeyPressed(ImGuiKey.V)
+            val pressedX = ImGui.isKeyPressed(ImGuiKey.X)
 
             if (pressingShift && pressedZ) {
                 redo() // Ctrl + Shift + Z
@@ -377,6 +380,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                 copy()
             } else if(pressedV) {
                 paste()
+            } else if(pressedX) {
+                cut()
             }
         }
     }
@@ -384,6 +389,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     fun undo() {
         logger.info("undo | stack; size: ${paperVision.actions.size}, pointer: ${paperVision.actions.stackPointer}, peek: ${paperVision.actions.peek()}")
         paperVision.actions.peekAndPushback()?.undo()
+        pasteCount = 0
     }
 
     fun redo() {
@@ -391,6 +397,18 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         paperVision.actions.pushforwardIfNonNull()
         paperVision.actions.peek()?.execute()
+    }
+
+    fun cut() {
+        val selectedNodes = IntArray(ImNodes.numSelectedNodes())
+        ImNodes.getSelectedNodes(selectedNodes)
+
+        if(selectedNodes.isEmpty()) return
+
+        val selectedNodesList = selectedNodes.map { nodes[it]!! }.filter { it.allowDelete }
+
+        copy()
+        DeleteNodesAction(selectedNodesList).enable()
     }
 
     fun copy() {
@@ -401,18 +419,21 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         val selectedNodesList = selectedNodes.map { nodes[it]!! }.filter { it.allowDelete }
 
+        pasteCount = 0
         clipboard = PaperVisionSerializer.serialize(selectedNodesList, listOf())
+
         logger.info("Clipboard content: $clipboard")
     }
 
     fun paste() {
         if(clipboard == null) return
 
-        val (nodes, links) = PaperVisionSerializer.deserialize(clipboard!!)
+        val (nodes, _) = PaperVisionSerializer.deserialize(clipboard!!)
 
         var totalX = 0f
         var totalY = 0f
         var count = 0
+
         for (node in nodes) {
             // do not use the original ids of this stuff
             node.forgetSerializedId()
@@ -432,7 +453,10 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             val node = nodes.first()
 
             if(node is DrawNode<*>) {
-                node.nextNodePosition = ImGui.getMousePos()
+                node.nextNodePosition = ImVec2(
+                    ImGui.getMousePosX() + pasteCount * PASTE_COUNT_OFFSET,
+                    ImGui.getMousePosY() + pasteCount * PASTE_COUNT_OFFSET
+                )
             }
         } else if (count > 0) {
             // if we have more than one, we better center them nicely based on the mouse position
@@ -455,28 +479,21 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
                     // translate using the mouse position as an offset
                     node.nextNodePosition = ImVec2(
-                        offsetX + mousePos.x,
-                        offsetY + mousePos.y
+                        offsetX + mousePos.x + pasteCount * PASTE_COUNT_OFFSET,
+                        offsetY + mousePos.y + pasteCount * PASTE_COUNT_OFFSET
                     )
                 }
             }
         }
 
         // ok, we're done adjusting positions, we'll create the nodes now
-        for(node in nodes) {
-            val action = CreateNodeAction(node)
-
-            if (node.joinActionStack) {
-                action.enable()
-            } else {
-                action.execute()
-            }
-        }
+        CreateNodesAction(nodes).enable()
+        pasteCount++
     }
 
     fun addNode(nodeClazz: Class<out Node<*>>): Node<*> {
         val instance = instantiateNode(nodeClazz)
-        val action = CreateNodeAction(instance)
+        val action = CreateNodesAction(instance)
 
         if (instance.joinActionStack) {
             action.enable()
