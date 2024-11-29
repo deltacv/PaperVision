@@ -65,6 +65,7 @@ class CodeGen(
     fun flags() = flags.toTypedArray()
 
     val context = CodeGenContext(this)
+
     operator fun <T> invoke(block: CodeGenContext.() -> T) = block(context)
 
     data class Current(val codeGen: CodeGen, val scope: Scope, val isForPreviz: Boolean) {
@@ -84,11 +85,8 @@ class CodeGen(
 }
 
 class CodeGenOptions {
-
     var genAtTheEnd = false
-
     inline operator fun invoke(block: CodeGenOptions.() -> Unit) = block()
-
 }
 
 interface CodeGenSession

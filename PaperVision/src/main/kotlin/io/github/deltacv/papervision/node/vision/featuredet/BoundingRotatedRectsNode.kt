@@ -26,10 +26,14 @@ import io.github.deltacv.papervision.attribute.vision.structs.RotatedRectAttribu
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.Value
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -57,12 +61,12 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
             current {
                 val input = contours.value(current)
 
-                if(input !is GenValue.GList.RuntimeListOf<*>) {
-                    raise("") // TODO: Handle non-runtime lists
-                }
+                val name = if(input is GenValue.GList.RuntimeListOf<*>) {
+                    input.value.value
+                } else null
 
-                val points2f = uniqueVariable("${input.value.value}2f", JvmOpenCvTypes.MatOfPoint2f.new())
-                val rectsList = uniqueVariable("${input.value.value}RotRects", JavaTypes.ArrayList(JvmOpenCvTypes.RotatedRect).new())
+                val points2f = uniqueVariable("${name ?: "points"}2f", JvmOpenCvTypes.MatOfPoint2f.new())
+                val rectsList = uniqueVariable("${name?.run { this + "R"} ?: "r"}otRects", JavaTypes.ArrayList(JvmOpenCvTypes.RotatedRect).new())
 
                 group {
                     private(points2f)
@@ -72,13 +76,67 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                 current.scope {
                     rectsList("clear")
 
-                    foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value) {
+                    fun ScopeContext.withPoints(points: Value) {
                         points2f("release")
-                        it("convertTo", points2f, cvTypeValue("CV_32F"))
+                        points("convertTo", points2f, cvTypeValue("CV_32F"))
 
                         separate()
 
                         rectsList("add", Imgproc.callValue("minAreaRect", JvmOpenCvTypes.RotatedRect, points2f))
+                    }
+
+                    if(input is GenValue.GList.RuntimeListOf<*>) {
+                        foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value) {
+                            withPoints(it)
+                        }
+                    } else {
+                        for(element in (input as GenValue.GList.ListOf<*>).elements) {
+                            if(element is GenValue.GPoints.RuntimePoints) {
+                                withPoints(element.value)
+                            } else {
+                                raise("Invalid input type for contours")
+                            }
+                        }
+                    }
+                }
+
+                session.rects = GenValue.GList.RuntimeListOf(rectsList, GenValue.GRect.Rotated.RuntimeRotatedRect::class)
+            }
+
+            session
+        }
+
+        generatorFor(CPythonLanguage) {
+            val session = Session()
+
+            current {
+                val input = contours.value(current)
+
+                val name = if(input is GenValue.GList.RuntimeListOf<*>) {
+                    input.value.value + "_r"
+                } else null
+
+                val rectsList = uniqueVariable("${name ?: "r"}ot_rects", CPythonLanguage.NoType.newArray())
+
+                current.scope {
+                    local(rectsList)
+
+                    fun ScopeContext.withPoints(points: Value) {
+                        rectsList("append", cv2.callValue("minAreaRect", CPythonLanguage.NoType, points))
+                    }
+
+                    if(input is GenValue.GList.RuntimeListOf<*>) {
+                        foreach(variable(CPythonLanguage.NoType, "points"), input.value) {
+                            withPoints(it)
+                        }
+                    } else {
+                        for(element in (input as GenValue.GList.ListOf<*>).elements) {
+                            if(element is GenValue.GPoints.RuntimePoints) {
+                                withPoints(element.value)
+                            } else {
+                                raise("Invalid input type for contours")
+                            }
+                        }
                     }
                 }
 

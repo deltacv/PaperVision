@@ -99,7 +99,7 @@ open class ListAttribute(
                     repeat(fixedLength!!) {
                         createElement()
                     }
-                } else if (previousLength != null || previousLength != 0) {
+                } else if (previousLength != null) {
                     val delta = (fixedLength ?: 0) - (previousLength ?: 0)
 
                     if (delta < 0) {
@@ -132,6 +132,20 @@ open class ListAttribute(
         }
 
         previousLength = fixedLength
+    }
+
+    override fun delete() {
+        super.delete()
+        for(attribute in listAttributes) {
+            attribute.delete()
+        }
+    }
+
+    override fun restore() {
+        super.restore()
+        for(attribute in listAttributes) {
+            attribute.restore()
+        }
     }
 
     override fun draw() {

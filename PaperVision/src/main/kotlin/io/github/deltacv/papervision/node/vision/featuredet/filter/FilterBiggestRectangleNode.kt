@@ -25,7 +25,10 @@ import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.Value
+import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -55,10 +58,6 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
 
                 val rectsList = input.value(current)
 
-                if(rectsList !is GenValue.GList.RuntimeListOf<*>) {
-                    raise("") // TODO: Handle non-runtime lists
-                }
-
                 val biggestRect = uniqueVariable("biggestRect", JvmOpenCvTypes.Rect.nullVal)
 
                 group {
@@ -68,12 +67,46 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                 current.scope {
                     biggestRect instanceSet biggestRect.nullVal
 
-                    foreach(variable(JvmOpenCvTypes.Rect, "rect"), rectsList.value) { rect ->
-                        ifCondition(
-                            biggestRect equalsTo biggestRect.nullVal or
-                                    (rect.callValue("area", DoubleType) greaterThan biggestRect.callValue("area", DoubleType))
-                        ) {
-                            biggestRect instanceSet rect
+                    fun ScopeContext.withRuntimeRect(rect: Value) {
+                        ifCondition(rect notEqualsTo language.nullValue) {
+                            ifCondition(
+                                biggestRect equalsTo biggestRect.nullVal or
+                                        (rect.callValue("area", DoubleType) greaterThan biggestRect.callValue("area", DoubleType))
+                            ) {
+                                biggestRect instanceSet rect
+                            }
+                        }
+                    }
+
+                    if(rectsList is GenValue.GList.RuntimeListOf<*>) {
+                        foreach(variable(JvmOpenCvTypes.Rect, "rect"), rectsList.value) { rect ->
+                            withRuntimeRect(rect)
+                        }
+                    } else {
+                        for (element in (rectsList as GenValue.GList.ListOf<*>).elements) {
+                            if(element is GenValue.GRect.Rect) {
+                                separate()
+                                val rect = Variable(
+                                    "rect",
+                                    JvmOpenCvTypes.Rect.new(
+                                        element.x.value.toInt().v,
+                                        element.y.value.toInt().v,
+                                        element.w.value.toInt().v,
+                                        element.h.value.toInt().v
+                                    )
+                                )
+
+                                local(rect)
+
+                                ifCondition(
+                                    biggestRect equalsTo biggestRect.nullVal or (rect.callValue("area", DoubleType) greaterThan biggestRect.callValue("area", DoubleType))
+                                ) {
+                                    biggestRect instanceSet rect
+                                }
+                            } else if(element is GenValue.GRect.RuntimeRect) {
+                                separate()
+                                withRuntimeRect(element.value)
+                            }
                         }
                     }
                 }
@@ -90,24 +123,57 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
 
                 val rectsList = input.value(current)
 
-                if(rectsList !is GenValue.GList.RuntimeListOf<*>) {
-                    raise("") // TODO: Handle non-runtime lists
-                }
-
                 val biggestRect = uniqueVariable("biggest_rect", CPythonLanguage.nullValue)
 
                 current.scope {
                     local(biggestRect)
 
-                    foreach(variable(CPythonLanguage.NoType, "rect"), rectsList.value) { rect ->
-                        // 2 - width, 3 - height, of tuple (x, y, w, h)
-                        val rectArea = rect[2.v, CPythonLanguage.NoType] * rect[3.v, CPythonLanguage.NoType]
-                        val biggestRectArea = biggestRect[2.v, CPythonLanguage.NoType] * biggestRect[3.v, CPythonLanguage.NoType]
+                    fun ScopeContext.withRuntimeRect(rect: Value) {
+                        ifCondition(rect notEqualsTo language.nullValue) {
+                            // 2 - width, 3 - height, of tuple (x, y, w, h)
+                            val rectArea = rect[2.v, CPythonLanguage.NoType] * rect[3.v, CPythonLanguage.NoType]
+                            val biggestRectArea = biggestRect[2.v, CPythonLanguage.NoType] * biggestRect[3.v, CPythonLanguage.NoType]
 
-                        ifCondition(
-                            biggestRect equalsTo CPythonLanguage.nullValue or (rectArea greaterThan biggestRectArea)
-                        ) {
-                            biggestRect instanceSet rect
+                            ifCondition(
+                                biggestRect equalsTo CPythonLanguage.nullValue or (rectArea greaterThan biggestRectArea)
+                            ) {
+                                biggestRect instanceSet rect
+                            }
+                        }
+                    }
+
+                    if(rectsList is GenValue.GList.RuntimeListOf<*>) {
+                        foreach(variable(CPythonLanguage.NoType, "rect"), rectsList.value) { rect ->
+                            withRuntimeRect(rect)
+                        }
+                    } else {
+                        for (element in (rectsList as GenValue.GList.ListOf<*>).elements) {
+                            if(element is GenValue.GRect.Rect) {
+                                separate()
+
+                                val rect = uniqueVariable(
+                                    "rect",
+                                    CPythonLanguage.tuple(
+                                        element.x.value.toInt().v,
+                                        element.y.value.toInt().v,
+                                        element.w.value.toInt().v,
+                                        element.h.value.toInt().v
+                                    )
+                                )
+                                local(rect)
+
+                                val rectArea = rect[2.v, CPythonLanguage.NoType] * rect[3.v, CPythonLanguage.NoType]
+                                val biggestRectArea = biggestRect[2.v, CPythonLanguage.NoType] * biggestRect[3.v, CPythonLanguage.NoType]
+
+                                ifCondition(
+                                    biggestRect equalsTo CPythonLanguage.nullValue or (rectArea greaterThan biggestRectArea)
+                                ) {
+                                    biggestRect instanceSet rect
+                                }
+                            } else if(element is GenValue.GRect.RuntimeRect) {
+                                separate()
+                                withRuntimeRect(element.value)
+                            }
                         }
                     }
                 }

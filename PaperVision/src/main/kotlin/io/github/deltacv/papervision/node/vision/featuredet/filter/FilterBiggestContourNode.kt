@@ -57,10 +57,6 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
 
                 val contoursList = input.value(current)
 
-                if(contoursList !is GenValue.GList.RuntimeListOf<*>) {
-                    raise("") // TODO: Handle non-runtime lists
-                }
-
                 val biggestContour = uniqueVariable("biggestContour", JvmOpenCvTypes.MatOfPoint.nullVal) // TODO: huh???
 
                 group {
@@ -70,14 +66,37 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                 current.scope {
                     biggestContour instanceSet biggestContour.nullVal
 
-                    foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), contoursList.value) { contour ->
-                        val contourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, contour)
-                        val biggestContourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, biggestContour)
+                    if(contoursList is GenValue.GList.RuntimeListOf<*>) {
+                        foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), contoursList.value) { contour ->
+                            val contourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, contour)
+                            val biggestContourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, biggestContour)
 
-                        ifCondition(
-                            biggestContour equalsTo biggestContour.nullVal or (contourArea greaterThan biggestContourArea)
-                        ) {
-                            biggestContour instanceSet contour
+                            ifCondition(
+                                biggestContour equalsTo biggestContour.nullVal or (contourArea greaterThan biggestContourArea)
+                            ) {
+                                biggestContour instanceSet contour
+                            }
+                        }
+                    } else {
+                        for(element in (contoursList as GenValue.GList.ListOf<*>).elements) {
+                            separate()
+
+                            val contour = if(element is GenValue.GPoints.RuntimePoints) {
+                                element.value
+                            } else {
+                                raise("Invalid element in contours list")
+                            }
+
+                            ifCondition(contour notEqualsTo language.nullValue) {
+                                val contourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, contour)
+                                val biggestContourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, biggestContour)
+
+                                ifCondition(
+                                    biggestContour equalsTo biggestContour.nullVal or (contourArea greaterThan biggestContourArea)
+                                ) {
+                                    biggestContour instanceSet contour
+                                }
+                            }
                         }
                     }
                 }
@@ -92,19 +111,35 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
             current {
                 val session = Session()
 
-
-                val contoursList = input.value(current)
-
-                if(contoursList !is GenValue.GList.RuntimeListOf<*>) {
-                    raise("") // TODO: Handle non-runtime lists
-                }
+                val inputValue = input.value(current)
 
                 current.scope {
+                    val contoursList = if(inputValue is GenValue.GList.RuntimeListOf<*>) {
+                        inputValue.value
+                    } else {
+                        val list = uniqueVariable("contours_list", CPythonLanguage.NoType.newArray())
+                        local(list)
+
+                        for(element in (inputValue as GenValue.GList.ListOf<*>).elements) {
+                            if(element is GenValue.GPoints.RuntimePoints) {
+                                ifCondition(element.value notEqualsTo language.nullValue) {
+                                    list("append", element.value)
+                                }
+                            } else {
+                                raise("Invalid element in contours list")
+                            }
+                        }
+
+                        separate()
+
+                        list
+                    }
+
                     val biggestContour = uniqueVariable(
                         "biggest_contour",
                         "max".callValue(
                             CPythonLanguage.NoType,
-                            contoursList.value,
+                            contoursList,
                             CPythonLanguage.namedArgument("key", cv2.contourArea)
                         )
                     )
