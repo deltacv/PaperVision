@@ -59,6 +59,7 @@ import io.github.deltacv.papervision.node.vision.InputMatNode
 import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer
 import io.github.deltacv.papervision.util.ElapsedTime
+import io.github.deltacv.papervision.util.clip
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
 import io.github.deltacv.papervision.util.loggerForThis
@@ -127,6 +128,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     private val scrollTimer = ElapsedTime()
 
     private var pasteCount = 0
+    private var cutting = false
     var clipboard: String? = null
 
     val onEditorChange = PaperVisionEventHandler("NodeEditor-OnChange")
@@ -145,7 +147,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     private var currentRightClickMenuPopup: RightClickMenuPopup? = null
     val rightClickMenuPopup: RightClickMenuPopup get() {
-        val popup = RightClickMenuPopup(paperVision.nodeList, ::undo, ::redo, popupSelection)
+        val popup = RightClickMenuPopup(paperVision.nodeList, ::undo, ::redo, ::cut, ::copy, ::paste, popupSelection)
         currentRightClickMenuPopup = popup
         return popup
     }
@@ -399,25 +401,41 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         paperVision.actions.peek()?.execute()
     }
 
-    fun cut() {
+    fun cut(overrideSelection: List<Node<*>>? = null) {
         val selectedNodes = IntArray(ImNodes.numSelectedNodes())
         ImNodes.getSelectedNodes(selectedNodes)
 
-        if(selectedNodes.isEmpty()) return
+        if((overrideSelection == null && selectedNodes.isEmpty()) || overrideSelection?.isEmpty() == true) {
+            clipboard = null
+            return
+        }
 
-        val selectedNodesList = selectedNodes.map { nodes[it]!! }.filter { it.allowDelete }
+        val selectedNodesList = try {
+            overrideSelection ?: selectedNodes.map { nodes[it]!! }.filter { it.allowDelete }
+        } catch(e: IndexOutOfBoundsException) {
+            return
+        }
 
-        copy()
+        cutting = true
+        copy(overrideSelection)
+
         DeleteNodesAction(selectedNodesList).enable()
     }
 
-    fun copy() {
+    fun copy(overrideSelection: List<Node<*>>? = null) {
         val selectedNodes = IntArray(ImNodes.numSelectedNodes())
         ImNodes.getSelectedNodes(selectedNodes)
 
-        if(selectedNodes.isEmpty()) return
+        if((overrideSelection == null && selectedNodes.isEmpty()) || overrideSelection?.isEmpty() == true) {
+            clipboard = null
+            return
+        }
 
-        val selectedNodesList = selectedNodes.map { nodes[it]!! }.filter { it.allowDelete }
+        val selectedNodesList = try {
+            overrideSelection ?: selectedNodes.map { nodes[it]!! }.filter { it.allowDelete }
+        } catch(e: IndexOutOfBoundsException) {
+            return
+        }
 
         pasteCount = 0
         clipboard = PaperVisionSerializer.serialize(selectedNodesList, listOf())
@@ -488,7 +506,14 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         // ok, we're done adjusting positions, we'll create the nodes now
         CreateNodesAction(nodes).enable()
-        pasteCount++
+
+        if(cutting) {
+            clipboard = null
+            cutting = false
+            pasteCount = 0
+        } else {
+            pasteCount++
+        }
     }
 
     fun addNode(nodeClazz: Class<out Node<*>>): Node<*> {
@@ -676,6 +701,9 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         val nodeList: NodeList,
         val undo: () -> Unit,
         val redo: () -> Unit,
+        val cut: (List<Node<*>>) -> Unit,
+        val copy: (List<Node<*>>) -> Unit,
+        val paste: () -> Unit,
         val selection: List<DrawableIdElement>
     ) : Popup() {
 
@@ -699,6 +727,25 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                 redo()
                 ImGui.closeCurrentPopup()
             }
+
+            ImGui.separator()
+
+            if(ImGui.button("Cut")) {
+                cut(selection.filter { it is Node<*> }.map { it as Node<*> })
+                ImGui.closeCurrentPopup()
+            }
+
+            if(ImGui.button("Copy")) {
+                copy(selection.filter { it is Node<*> }.map { it as Node<*> })
+                ImGui.closeCurrentPopup()
+            }
+
+            if(ImGui.button("Paste")) {
+                paste()
+                ImGui.closeCurrentPopup()
+            }
+
+            ImGui.separator()
 
             if (selection.isNotEmpty()) {
                 if (ImGui.button("Delete")) {
