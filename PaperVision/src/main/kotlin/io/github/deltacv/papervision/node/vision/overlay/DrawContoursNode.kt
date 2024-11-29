@@ -101,16 +101,22 @@ open class DrawContoursNode
                             lineParams.thicknessValue
                         )
                     } else {
-                        val list = Variable("contoursList", JavaTypes.List(JvmOpenCvTypes.MatOfPoint).new())
+                        separate()
+
+                        val list = Variable("contoursList", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
                         local(list)
 
                         for (contour in (contoursList as GenValue.GList.ListOf<*>).elements) {
                             if (contour is GenValue.GPoints.RuntimePoints) {
-                                list("add", contour.value)
+                                ifCondition(contour.value notEqualsTo language.nullValue) {
+                                    list("add", contour.value)
+                                }
                             } else {
-                                raise("Invalid contour type")
+                                raise("Points are not supported")
                             }
                         }
+
+                        separate()
 
                         Imgproc("drawContours", drawMat, list, (-1).v,
                             lineParams.colorScalarValue,
@@ -161,16 +167,22 @@ open class DrawContoursNode
                     if(contoursList is GenValue.GList.RuntimeListOf<*>) {
                         cv2("drawContours", target, contoursList.value, (-1).v, colorScalar, thickness.v)
                     } else {
+                        separate()
+
                         val list = uniqueVariable("contoursList", CPythonLanguage.NoType.newArray())
                         local(list)
 
                         for(contour in (contoursList as GenValue.GList.ListOf<*>).elements) {
                             if(contour is GenValue.GPoints.RuntimePoints) {
-                                list("append", contour.value)
+                                ifCondition(contour.value notEqualsTo CPythonLanguage.nullValue) {
+                                    list("append", contour.value)
+                                }
                             } else {
                                 raise("Invalid contour type")
                             }
                         }
+
+                        separate()
 
                         cv2("drawContours", target, list, (-1).v, colorScalar, thickness.v)
                     }

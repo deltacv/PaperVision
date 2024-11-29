@@ -29,6 +29,7 @@ import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.np
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
@@ -96,23 +97,29 @@ open class DrawRotatedRectanglesNode
                     }
 
                     fun ScopeContext.drawRuntimeRect(rectValue: Value) {
-                        val rectPoints = uniqueVariable("rectPoints", JvmOpenCvTypes.Point.newArray(4.v))
-                        local(rectPoints)
-                        rectValue("points", rectPoints)
+                        ifCondition(rectValue notEqualsTo language.nullValue) {
+                            val rectPoints = uniqueVariable("rectPoints", JvmOpenCvTypes.Point.newArray(4.v))
+                            local(rectPoints)
+                            rectValue("points", rectPoints)
 
-                        val matOfPoint = uniqueVariable("matOfPoint", JvmOpenCvTypes.MatOfPoint.new(rectPoints))
-                        local(matOfPoint)
+                            val matOfPoint = uniqueVariable("matOfPoint", JvmOpenCvTypes.MatOfPoint.new(rectPoints))
+                            local(matOfPoint)
 
-                        separate()
+                            separate()
 
-                        // Draw the rectangle using the points
-                        Imgproc(
-                            "polylines", drawMat,
-                            JavaTypes.Collections.callValue("singletonList", JavaTypes.List(JvmOpenCvTypes.MatOfPoint), matOfPoint), // list of points forming the rotated rectangle
-                            trueValue, // closed polygon
-                            lineParams.colorScalarValue,
-                            lineParams.thicknessValue
-                        )
+                            // Draw the rectangle using the points
+                            Imgproc(
+                                "polylines", drawMat,
+                                JavaTypes.Collections.callValue(
+                                    "singletonList",
+                                    JavaTypes.List(JvmOpenCvTypes.MatOfPoint),
+                                    matOfPoint
+                                ), // list of points forming the rotated rectangle
+                                trueValue, // closed polygon
+                                lineParams.colorScalarValue,
+                                lineParams.thicknessValue
+                            )
+                        }
                     }
 
                     if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
@@ -158,7 +165,7 @@ open class DrawRotatedRectanglesNode
                         input.value
                     } else {
                         val output = uniqueVariable(
-                            "${input.value.value}_rects",
+                            "${input.value.value}_rot_rects",
                             input.value.callValue("copy", CPythonLanguage.NoType)
                         )
                         local(output)
@@ -173,39 +180,18 @@ open class DrawRotatedRectanglesNode
                     // TODO: Implement rotated rect drawing in python
 
                     fun ScopeContext.runtimeRect(rectValue: Value) {
-                        val rectangle = CPythonLanguage.tupleVariables(
-                            rectValue,
-                            "x", "y", "w", "h"
-                        )
-                        local(rectangle)
-
-                        // cv2.rectangle(mat, (x, y), (x + w, y + h), color, thickness)
-                        // color is a (r, g, b, a) tuple
-                        cv2(
-                            "rectangle", target,
-                            CPythonLanguage.tuple(rectangle.get("x"), rectangle.get("y")),
-                            CPythonLanguage.tuple(
-                                rectangle.get("x") + rectangle.get("w"),
-                                rectangle.get("y") + rectangle.get("h")
-                            ),
-                            colorScalar,
-                            thickness.v
-                        )
+                        ifCondition(rectValue notEqualsTo language.nullValue) {
+                            val box = uniqueVariable("box", cv2.callValue("boxPoints", CPythonLanguage.NoType, rectValue))
+                            local(box)
+                            box set np.callValue("int0", CPythonLanguage.NoType, box)
+                            cv2("drawContours", target, box, (0).v, colorScalar, thickness.v)
+                        }
                     }
 
                     if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
                         for (rectangle in (rectanglesList as GenValue.GList.ListOf<*>).elements) {
-                            if (rectangle is GenValue.GRect.Rect) {
-                                cv2(
-                                    "rectangle", target,
-                                    CPythonLanguage.tuple(rectangle.x.value.v, rectangle.y.value.v),
-                                    CPythonLanguage.tuple(
-                                        rectangle.x.value.v + rectangle.w.value.v,
-                                        rectangle.y.value.v + rectangle.h.value.v
-                                    ),
-                                    colorScalar,
-                                    thickness.v
-                                )
+                            if (rectangle is GenValue.GRect.Rotated.RotatedRect) {
+                                raise("RotatedRects are not supported")
                             } else if (rectangle is GenValue.GRect.RuntimeRect) {
                                 runtimeRect(rectangle.value)
                             }

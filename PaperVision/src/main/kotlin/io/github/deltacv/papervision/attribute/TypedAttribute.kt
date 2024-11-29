@@ -27,6 +27,7 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.util.hexString
 import io.github.deltacv.mai18n.tr
+import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValueMessage
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValuesMessage
 
@@ -192,7 +193,10 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
         }
     }
 
-    override fun acceptLink(other: Attribute) = this::class == other::class
+    // acceptLink is overridden to allow for ListAttribute to accept TypedAttribute
+    override fun acceptLink(other: Attribute) =
+        (other is TypedAttribute && other.attributeType == attributeType) ||
+            this::class == other::class || (other is ListAttribute && other.elementAttributeType == attributeType)
 
     protected fun changed() {
         if(!isFirstDraw && !isSecondDraw) onChange.run()

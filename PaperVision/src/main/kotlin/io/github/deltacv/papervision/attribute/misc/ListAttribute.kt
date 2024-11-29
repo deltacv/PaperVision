@@ -21,6 +21,7 @@ package io.github.deltacv.papervision.attribute.misc
 import com.google.gson.JsonObject
 import imgui.ImGui
 import imgui.flag.ImGuiCol
+import io.github.deltacv.papervision.action.editor.CreateLinkAction
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
@@ -29,6 +30,7 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.rgbaColor
+import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.data.adapter.dataSerializableToJsonObject
 import io.github.deltacv.papervision.serialization.data.adapter.jsonObjectToDataSerializable
@@ -135,8 +137,31 @@ open class ListAttribute(
     override fun draw() {
         super.draw()
 
+        var ignoreNewLink = false
+
+        // accepts links of elementAttributeType to redirect them into a list element
+        if (mode == AttributeMode.INPUT && beforeHasLink != hasLink && hasLink && enabledLinkedAttribute() !is ListAttribute) {
+            val linkedAttribute = enabledLinkedAttribute()!!
+
+            // the user might be crazy and try to link an attribute that is already linked to one of our elements
+            // this caused a funny bug during testing, so, please don't do that (not that you can do it anymore)
+            val alreadyLinkedAttribute = listAttributes.find {
+                it.enabledLinkedAttribute() == linkedAttribute
+            }
+            if(alreadyLinkedAttribute == null) {
+                createElement(linkTo = linkedAttribute)
+            }
+
+            // delete the original link
+            // this also handles the case in which the user was indeed crazy
+            // and linked an attribute that was already linked to one of our elements
+            links.last().delete()
+
+            ignoreNewLink = true
+        }
+
         for ((i, attrib) in listAttributes.withIndex()) {
-            if (beforeHasLink != hasLink) {
+            if (beforeHasLink != hasLink && !ignoreNewLink) {
                 if (hasLink) {
                     // delete attributes if a link has been created
                     attrib.delete()
@@ -165,6 +190,9 @@ open class ListAttribute(
     }
 
     private var isDrawAttributeTextOverriden = false
+
+    // accept either another ListAttribute with the same element type or a TypedAttribute with the same type as the element type
+    override fun acceptLink(other: Attribute) = (other is ListAttribute && other.elementAttributeType == elementAttributeType) || (other is TypedAttribute && other.attributeType == elementAttributeType)
 
     open fun drawAttributeText(index: Int, attrib: Attribute) {
         isDrawAttributeTextOverriden = false
@@ -250,8 +278,6 @@ open class ListAttribute(
         }
     }
 
-    override fun acceptLink(other: Attribute) = other is ListAttribute && other.elementAttributeType == elementAttributeType
-
     override fun thisGet(): Array<Any?> {
         val list = mutableListOf<Any?>()
 
@@ -262,7 +288,7 @@ open class ListAttribute(
         return list.toTypedArray()
     }
 
-    private fun createElement(enable: Boolean = true): TypedAttribute {
+    private fun createElement(enable: Boolean = true, linkTo: Attribute? = null): TypedAttribute {
         val count = listAttributes.size.toString()
         val elementName = count + if (count.length == 1) " " else ""
 
@@ -274,6 +300,12 @@ open class ListAttribute(
         element.onChange.doPersistent(onChange::run)
 
         listAttributes.add(element)
+
+        if (linkTo != null) {
+            parentNode.editor.onDraw.doOnce {
+                CreateLinkAction(Link(linkTo.id, element.id)).enable()
+            }
+        }
 
         onElementCreation(element)
         return element

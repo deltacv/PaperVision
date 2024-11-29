@@ -45,11 +45,11 @@ import io.github.deltacv.papervision.node.PaperNode
 class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
     val inputContours = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
-    val outputRects   = ListAttribute(OUTPUT, RectAttribute, "$[att_boundingrects]")
+    val outputRects = ListAttribute(OUTPUT, RectAttribute, "$[att_boundingrects]")
 
     override fun onEnable() {
-        + inputContours.rebuildOnChange()
-        + outputRects.rebuildOnChange()
+        +inputContours.rebuildOnChange()
+        +outputRects.rebuildOnChange()
     }
 
     override val generators = generatorsBuilder {
@@ -59,11 +59,11 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
                 val input = inputContours.value(current)
 
-                if(input !is GenValue.GList.RuntimeListOf<*>) {
-                    raise("") // TODO: Handle non-runtime lists
-                }
+                val listName = if (input is GenValue.GList.RuntimeListOf<*>) {
+                    "${input.value}Rects"
+                } else "rects"
 
-                val rectsList = uniqueVariable("${input.value.value}Rects", JavaTypes.ArrayList(JvmOpenCvTypes.Rect).new())
+                val rectsList = uniqueVariable(listName, JavaTypes.ArrayList(JvmOpenCvTypes.Rect).new())
 
                 group {
                     private(rectsList)
@@ -72,8 +72,23 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                 current.scope {
                     rectsList("clear")
 
-                    foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value) {
-                        rectsList("add", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, it))
+                    if (input is GenValue.GList.RuntimeListOf<*>) {
+                        foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value) {
+                            rectsList("add", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, it))
+                        }
+                    } else {
+                        for (points in (input as GenValue.GList.ListOf<*>).elements) {
+                            if (points is GenValue.GPoints.RuntimePoints) {
+                                ifCondition(points.value notEqualsTo language.nullValue) {
+                                    rectsList(
+                                        "add",
+                                        Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, points.value)
+                                    )
+                                }
+                            } else {
+                                raise("Invalid input type for contours")
+                            }
+                        }
                     }
                 }
 
@@ -89,17 +104,31 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
                 val input = inputContours.value(current)
 
-                if(input !is GenValue.GList.RuntimeListOf<*>) {
-                    raise("") // TODO: Handle non-runtime lists
-                }
+                val listName = if (input is GenValue.GList.RuntimeListOf<*>) {
+                    "${input.value}_rects"
+                } else "rects"
 
-                val rectsList = uniqueVariable("${input.value.value}_rects", CPythonLanguage.NoType.newArray(0.v))
+                val rectsList = uniqueVariable(listName, CPythonLanguage.NoType.newArray(0.v))
 
                 current.scope {
                     local(rectsList)
-
-                    foreach(variable(CPythonLanguage.NoType, "points"), input.value) { points ->
-                        rectsList("append", cv2.callValue("boundingRect", CPythonLanguage.NoType, points))
+                    if (input is GenValue.GList.RuntimeListOf<*>) {
+                        foreach(variable(CPythonLanguage.NoType, "points"), input.value) { points ->
+                            rectsList("append", cv2.callValue("boundingRect", CPythonLanguage.NoType, points))
+                        }
+                    } else {
+                        for (points in (input as GenValue.GList.ListOf<*>).elements) {
+                            if (points is GenValue.GPoints.RuntimePoints) {
+                                ifCondition(points.value notEqualsTo language.nullValue) {
+                                    rectsList(
+                                        "append",
+                                        cv2.callValue("boundingRect", CPythonLanguage.NoType, points.value)
+                                    )
+                                }
+                            } else {
+                                raise("Invalid input type for contours")
+                            }
+                        }
                     }
                 }
 
@@ -113,7 +142,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         genCodeIfNecessary(current)
 
-        if(attrib == outputRects) {
+        if (attrib == outputRects) {
             return current.sessionOf(this)!!.outputRects
         }
 

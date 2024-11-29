@@ -118,8 +118,8 @@ err_musthave_attachedattrib,Must have an attribute attached,Debe tener un atribu
 err_attachedattrib_isnot,Attribute attached is not $[0],El atributo conectado no es $[0]
 err_valreturned_isnot,Value returned from the node is not $[0],El valor retornado del nodo no es $[0]
 err_attrib_nothandledby_this,Attribute $[0] is not an output of this node or not handled by this,El atributo $[0] no es una salida de este nodo o no es manejado por este
-err_couldntlink_didntmatch,Couldn’t link nodes: Types didn’t match,No se completo la conexion: Los tipos son diferentes
-err_couldntlink_recursion,Couldn’t link nodes: Recursion problem detected,No se completo la conexion: Problema de recursion detectado
+err_couldntlink_didntmatch,Couldn't link nodes: Types didn't match,No se completo la conexion: Los tipos son diferentes
+err_couldntlink_recursion,Couldn't link nodes: Recursion problem detected,No se completo la conexion: Problema de recursion detectado
 mis_input,Input,Entrada
 mis_output,Output,Salida
 mis_nodeslist_open,Press SPACE to open the nodes list,Presiona ESPACIO para abrir la lista de nodos
