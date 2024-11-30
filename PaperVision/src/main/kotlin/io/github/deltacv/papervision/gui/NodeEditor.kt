@@ -733,20 +733,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                 ImGui.closeCurrentPopup()
             }
 
-            ImGui.separator()
-
-            if (ImGui.button("Undo")) {
-                undo()
-                ImGui.closeCurrentPopup()
-            }
-
-            if (ImGui.button("Redo")) {
-                redo()
-                ImGui.closeCurrentPopup()
-            }
-
-            ImGui.separator()
-
             if (selection.isNotEmpty()) {
                 if (ImGui.button("Delete")) {
                     selection.find { it is Node<*> }?.let {
@@ -761,6 +747,18 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
                     ImGui.closeCurrentPopup()
                 }
+            }
+
+            ImGui.separator()
+
+            if (ImGui.button("Undo")) {
+                undo()
+                ImGui.closeCurrentPopup()
+            }
+
+            if (ImGui.button("Redo")) {
+                redo()
+                ImGui.closeCurrentPopup()
             }
 
             ImGui.separator()

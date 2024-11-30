@@ -4,6 +4,26 @@ Create your custom OpenCV algorithms using a user-friendly node editor interface
 
 https://github.com/user-attachments/assets/e2cfc9b6-d390-4b8c-b165-b36dcb664b62
 
+# Running 
+
+## Run with EOCV-Sim
+
+PaperVision comes bundled with EOCV-Sim, starting from v4.0.0. [You can download the latest version of EOCV-Sim from the docs](https://docs.deltacv.org/eocv-sim/downloading-eocv-sim).<br><br>
+Make sure to refer to the "PaperVision" tab in the simulator to create a new project and open it right away ! The integration with EOCV-Sim will allow you to live preview your pipeline as you build it in the node editor.
+
+## Run with Gradle
+
+Use the following commands to run the project with gradle, this will allow you to test the latest features and changes, building from source.
+<br>
+
+```shell
+git clone https://github.com/deltacv/PaperVision.git
+cd PaperVision
+./gradlew runEv
+```
+
+<br>This option won't allow for live previewing, since the backend runs in NO-OP mode, but it will let you to test the node editor.
+
 # Beta Testing the EOCV-Sim plugin
 
 Thank you for your interesting in beta-testing PaperVision. I'm really happy to finally have functional preview builds after stalling on this project numerous times through the last three years,
@@ -32,19 +52,6 @@ PaperVision = "com.github.deltacv.PaperVision:EOCVSimPlugin:master-SNAPSHOT"
    - As a beta-tester, it is recommended to run EOCV-Sim on a terminal with `java -jar /path/to/EOCV-Sim-<version>-all.jar` to catch any issues and report them to GitHub issues or the discord server<br><br>
 6. Locate the PaperVision tab in the simulator's top-right, create a new project using the provided interface, and open it right away.<br><br>
 7. Happy testing!<br><br>
-
-# Run with Gradle
-
-Use the following commands to run the project with gradle, this will allow you to test the latest features and changes, building from source.
-<br>
-
-```shell
-git clone https://github.com/deltacv/PaperVision.git
-cd PaperVision
-./gradlew runEv
-```
-
-<br>This option won't allow for live previewing, since the backend runs in NO-OP mode, but it will let you to test the node editor.
 
 # Community
 
