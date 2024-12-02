@@ -39,4 +39,10 @@ interface PlatformKeys {
 
     val NativeLeftSuper: Int
     val NativeRightSuper: Int
+
+    val Z: Int
+    val Y: Int
+    val X: Int
+    val C: Int
+    val V: Int
 }

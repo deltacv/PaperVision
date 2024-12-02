@@ -306,3 +306,14 @@ abstract class Node<S: CodeGenSession>(
     }
 
 }
+
+fun instantiateNode(nodeClazz: Class<out Node<*>>) = try {
+    nodeClazz.getConstructor().newInstance()
+} catch (e: NoSuchMethodException) {
+    throw UnsupportedOperationException(
+        "Node ${nodeClazz.typeName} does not implement a constructor with no parameters",
+        e
+    )
+} catch (e: Exception) {
+    throw RuntimeException("Error while instantiating node ${nodeClazz.typeName}", e)
+}

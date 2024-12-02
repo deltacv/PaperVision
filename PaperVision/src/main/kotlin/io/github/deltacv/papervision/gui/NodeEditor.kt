@@ -24,7 +24,6 @@ import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.flag.ImNodesMiniMapLocation
 import imgui.extension.texteditor.TextEditorLanguageDefinition
 import imgui.flag.ImGuiCol
-import imgui.flag.ImGuiKey
 import imgui.flag.ImGuiMouseButton
 import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImInt
@@ -55,11 +54,11 @@ import io.github.deltacv.papervision.node.FlagsNode
 import io.github.deltacv.papervision.node.InvisibleNode
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
+import io.github.deltacv.papervision.node.instantiateNode
 import io.github.deltacv.papervision.node.vision.InputMatNode
 import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer
 import io.github.deltacv.papervision.util.ElapsedTime
-import io.github.deltacv.papervision.util.clip
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
 import io.github.deltacv.papervision.util.loggerForThis
@@ -128,6 +127,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     private val scrollTimer = ElapsedTime()
 
     private var pasteCount = 0
+    private var pasteInitialMousePos = ImVec2()
     private var cutting = false
     var clipboard: String? = null
 
@@ -225,6 +225,25 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
             logger.info("Restored editor panning from flags to $editorPanning")
         }
+
+        registerShortcuts()
+    }
+
+    private fun registerShortcuts() {
+        keyManager.addShortcut(keyManager.keys.NativeLeftSuper, keyManager.keys.Z, ::undo)
+        keyManager.addShortcut(keyManager.keys.NativeRightSuper, keyManager.keys.Z, ::undo)
+
+        keyManager.addShortcut(keyManager.keys.NativeLeftSuper, keyManager.keys.Y, ::redo)
+        keyManager.addShortcut(keyManager.keys.NativeRightSuper, keyManager.keys.Y, ::redo)
+
+        keyManager.addShortcut(keyManager.keys.NativeLeftSuper, keyManager.keys.X, ::cut)
+        keyManager.addShortcut(keyManager.keys.NativeRightSuper, keyManager.keys.X, ::cut)
+
+        keyManager.addShortcut(keyManager.keys.NativeLeftSuper, keyManager.keys.C, ::copy)
+        keyManager.addShortcut(keyManager.keys.NativeRightSuper, keyManager.keys.C, ::copy)
+
+        keyManager.addShortcut(keyManager.keys.NativeLeftSuper, keyManager.keys.V, ::paste)
+        keyManager.addShortcut(keyManager.keys.NativeRightSuper, keyManager.keys.V, ::paste)
     }
 
     override fun drawContents() {
@@ -285,8 +304,9 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             ImNodes.clearNodeSelection()
         } else if (
             ImGui.isMouseDown(ImGuiMouseButton.Middle) ||
-            (ImGui.isMouseDown(ImGuiMouseButton.Right)
-                    && rightClickMenuPopupTimer.millis >= 100 && (!rightClickedWhileHoveringNode || keyManager.pressing(Keys.LeftControl)))
+            (ImGui.isMouseDown(ImGuiMouseButton.Right) && rightClickMenuPopupTimer.millis >= 100 &&
+                    (!rightClickedWhileHoveringNode || keyManager.pressing(Keys.LeftControl))
+            )
         ) {
             editorPanning.x += (ImGui.getMousePosX() - prevMouseX)
             editorPanning.y += (ImGui.getMousePosY() - prevMouseY)
@@ -358,34 +378,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         handleDeleteLink()
         handleCreateLink()
         handleDeleteSelection()
-
-        if (keyManager.pressing(keyManager.keys.NativeLeftSuper) || keyManager.pressing(keyManager.keys.NativeRightSuper)) {
-            val pressingShift = keyManager.pressing(keyManager.keys.LeftShift)
-
-            val pressedZ = ImGui.isKeyPressed(ImGuiKey.Z)
-            val pressedY = ImGui.isKeyPressed(ImGuiKey.Y)
-            val pressedS = ImGui.isKeyPressed(ImGuiKey.S)
-
-            val pressedC = ImGui.isKeyPressed(ImGuiKey.C)
-            val pressedV = ImGui.isKeyPressed(ImGuiKey.V)
-            val pressedX = ImGui.isKeyPressed(ImGuiKey.X)
-
-            if (pressingShift && pressedZ) {
-                redo() // Ctrl + Shift + Z
-            } else if (pressedZ) {
-                undo() // Ctrl + Z
-            } else if (pressedY) {
-                redo() // Ctrl + Y
-            } else if (pressedS) {
-                logger.info(PaperVisionSerializer.serialize(nodes.inmutable, links.inmutable))
-            } else if(pressedC) {
-                copy()
-            } else if(pressedV) {
-                paste()
-            } else if(pressedX) {
-                cut()
-            }
-        }
     }
 
     fun undo() {
@@ -447,6 +439,16 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         if(clipboard == null) return
 
         val (nodes, _) = PaperVisionSerializer.deserialize(clipboard!!)
+
+        if(pasteCount == 0) {
+            pasteInitialMousePos = ImGui.getMousePos()
+        }
+
+        // reset on mouse movement
+        if(pasteInitialMousePos.x != ImGui.getMousePos().x || pasteInitialMousePos.y != ImGui.getMousePos().y) {
+            pasteCount = 0
+            pasteInitialMousePos = ImGui.getMousePos()
+        }
 
         var totalX = 0f
         var totalY = 0f
@@ -769,7 +771,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
             ImGui.popStyleColor()
         }
-
     }
 
     class SourceCodeExportSelectLanguageWindow(
@@ -1030,15 +1031,4 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             ImGui.popFont()
         }
     }
-}
-
-fun instantiateNode(nodeClazz: Class<out Node<*>>) = try {
-    nodeClazz.getConstructor().newInstance()
-} catch (e: NoSuchMethodException) {
-    throw UnsupportedOperationException(
-        "Node ${nodeClazz.typeName} does not implement a constructor with no parameters",
-        e
-    )
-} catch (e: Exception) {
-    throw RuntimeException("Error while instantiating node ${nodeClazz.typeName}", e)
 }

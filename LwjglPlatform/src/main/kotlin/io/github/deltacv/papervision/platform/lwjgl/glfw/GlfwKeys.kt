@@ -50,4 +50,9 @@ object GlfwKeys : PlatformKeys {
         if(isMac) glfwGetKeyScancode(GLFW_KEY_RIGHT_SUPER) else glfwGetKeyScancode(GLFW_KEY_RIGHT_CONTROL)
     }
 
+    override val Z = glfwGetKeyScancode(GLFW_KEY_Z) //44
+    override val Y = glfwGetKeyScancode(GLFW_KEY_Y) //52
+    override val X = glfwGetKeyScancode(GLFW_KEY_X) //45
+    override val C = glfwGetKeyScancode(GLFW_KEY_C) //46
+    override val V = glfwGetKeyScancode(GLFW_KEY_V) //47
 }

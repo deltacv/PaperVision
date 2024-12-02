@@ -19,12 +19,33 @@
 package io.github.deltacv.papervision.io
 
 import io.github.deltacv.papervision.platform.PlatformKeys
+import io.github.deltacv.papervision.util.ElapsedTime
+
+data class KeyShortcut(
+    val modifiers: List<Int>,
+    val key: Int,
+    val oneshot: Boolean = false,
+    val action: () -> Unit
+)
+
+private data class ShortcutTriggerData(
+    val timer: ElapsedTime,
+    var count: Int
+)
 
 class KeyManager(val keys: PlatformKeys) {
+
+    companion object {
+        const val SHORTCUT_INITIAL_TRIGGER_RATE_SECS = 0.5
+        const val SHORTCUT_TRIGGER_RATE_SECS = 0.06
+    }
 
     private val pressedKeys = mutableMapOf<Int, Boolean>()
     private val pressingKeys = mutableMapOf<Int, Boolean>()
     private val releasedKeys = mutableMapOf<Int, Boolean>()
+
+    private val shortcuts = mutableListOf<KeyShortcut>()
+    private val shortcutTriggerData = mutableMapOf<KeyShortcut, ShortcutTriggerData>()
 
     fun update() {
         if(pressedKeys.isNotEmpty()) {
@@ -36,6 +57,32 @@ class KeyManager(val keys: PlatformKeys) {
         if(releasedKeys.isNotEmpty()) {
             for (key in releasedKeys.keys.toTypedArray()) {
                 releasedKeys[key] = false
+            }
+        }
+
+        for(shortcut in shortcuts) {
+            if(shortcut.modifiers.all { pressing(it) } && pressing(shortcut.key)) {
+                val data = shortcutTriggerData.getOrPut(shortcut) {
+                    ShortcutTriggerData(ElapsedTime(), 0)
+                }
+
+                val timer = data.timer.seconds
+
+                if(shortcut.oneshot && data.count == 0) {
+                    shortcut.action() // trigger once
+                    data.count++
+                } else {
+                    if (data.count == 0 ||
+                        (data.count == 1 && timer > SHORTCUT_INITIAL_TRIGGER_RATE_SECS) ||
+                        (data.count > 1 && timer > SHORTCUT_TRIGGER_RATE_SECS)
+                    ) {
+                        shortcut.action()
+                        data.timer.reset()
+                        data.count++
+                    }
+                }
+            } else {
+                shortcutTriggerData.remove(shortcut)
             }
         }
     }
@@ -65,9 +112,25 @@ class KeyManager(val keys: PlatformKeys) {
         }
     }
 
-    fun pressed(scancode: Int)  = pressedKeys[scancode]  ?: false
-    fun pressing(scancode: Int) = pressingKeys[scancode] ?: false
-    fun released(scancode: Int) = releasedKeys[scancode] ?: false
+    fun addShortcut(modifiers: List<Int>, key: Int, oneshot: Boolean, action: () -> Unit) {
+        shortcuts.add(KeyShortcut(modifiers, key, oneshot, action))
+    }
+
+    fun addShortcut(modifier: Int, key: Int, oneshot: Boolean, action: () -> Unit) {
+        addShortcut(listOf(modifier), key, oneshot, action)
+    }
+
+    // we have to manually do overloads...
+    fun addShortcut(modifiers: List<Int>, key: Int, action: () -> Unit) {
+        addShortcut(modifiers, key, false, action)
+    }
+    fun addShortcut(modifier: Int, key: Int, action: () -> Unit) {
+        addShortcut(listOf(modifier), key, false, action)
+    }
+
+    fun pressed(scancode: Int)  = pressedKeys[scancode] == true
+    fun pressing(scancode: Int) = pressingKeys[scancode] == true
+    fun released(scancode: Int) = releasedKeys[scancode] == true
 
 }
 

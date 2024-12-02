@@ -99,8 +99,8 @@ class NodeList(
         paperVision.onUpdate {
             if (isCompletelyDeleted) {
                 it.removeThis()
-            } else if (!paperVision.nodeEditor.isNodeFocused && keyManager.released(Keys.Spacebar)) {
-                showList()
+            } else if (!paperVision.nodeEditor.isNodeFocused && keyManager.released(Keys.Spacebar) && !paperVision.isModalWindowOpen) {
+                showList() // open the list when the spacebar is pressed
             }
         }
 
