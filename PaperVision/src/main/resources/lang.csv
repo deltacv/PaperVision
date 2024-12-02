@@ -189,3 +189,10 @@ mis_codecopied,Code Copied to Clipboard !,Codigo Copiado al Portapapeles !
 mis_filesave_success,File saved successfully !,Archivo guardado correctamente !
 mis_codegen_erroron_toast,Generation error in node '$[0]',Error de generación en el nodo '$[0]'
 mis_codegen_errortoast,Generation Error,Error de Generación
+mis_cut,Cut,Cortar
+mis_copy,Copy,Copiar
+mis_paste,Paste,Pegar
+mis_delete,Delete,Eliminar
+mis_undo,Undo,Deshacer
+mis_redo,Redo,Rehacer
+mis_addnode,Add Node,Agregar Nodo

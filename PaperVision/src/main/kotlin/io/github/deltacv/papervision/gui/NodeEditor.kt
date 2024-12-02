@@ -720,23 +720,23 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         override fun drawContents() {
             ImGui.pushStyleColor(ImGuiCol.Button, 0)
 
-            if(ImGui.button("Cut")) {
+            if(ImGui.button(tr("mis_cut"))) {
                 cut(selection.filter { it is Node<*> }.map { it as Node<*> })
                 ImGui.closeCurrentPopup()
             }
 
-            if(ImGui.button("Copy")) {
+            if(ImGui.button(tr("mis_copy"))) {
                 copy(selection.filter { it is Node<*> }.map { it as Node<*> })
                 ImGui.closeCurrentPopup()
             }
 
-            if(ImGui.button("Paste")) {
+            if(ImGui.button(tr("mis_paste"))) {
                 paste()
                 ImGui.closeCurrentPopup()
             }
 
             if (selection.isNotEmpty()) {
-                if (ImGui.button("Delete")) {
+                if (ImGui.button(tr("mis_delete"))) {
                     selection.find { it is Node<*> }?.let {
                         val nodesToDelete = selection.filterIsInstance<Node<*>>()
                         DeleteNodesAction(nodesToDelete).enable()
@@ -753,19 +753,19 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
             ImGui.separator()
 
-            if (ImGui.button("Undo")) {
+            if (ImGui.button(tr("mis_undo"))) {
                 undo()
                 ImGui.closeCurrentPopup()
             }
 
-            if (ImGui.button("Redo")) {
+            if (ImGui.button(tr("mis_redo"))) {
                 redo()
                 ImGui.closeCurrentPopup()
             }
 
             ImGui.separator()
 
-            if (ImGui.button("Add Node")) {
+            if (ImGui.button(tr("mis_addnode"))) {
                 nodeList.showList()
             }
 
