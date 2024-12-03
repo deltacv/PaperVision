@@ -6,7 +6,7 @@ https://github.com/user-attachments/assets/e2cfc9b6-d390-4b8c-b165-b36dcb664b62
 
 # Running 
 
-## Run with EOCV-Sim
+## Run with EOCV-Sim (recommended)
 
 PaperVision comes bundled with EOCV-Sim, starting from v4.0.0. [You can download the latest version of EOCV-Sim from the docs](https://docs.deltacv.org/eocv-sim/downloading-eocv-sim).<br><br>
 Make sure to refer to the "PaperVision" tab in the simulator to create a new project and open it right away ! The integration with EOCV-Sim will allow you to live preview your pipeline as you build it in the node editor.

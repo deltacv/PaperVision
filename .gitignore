@@ -102,7 +102,9 @@ fabric.properties
 *.log
 
 **/build/*
+PaperVision/src/main/kotlin/io/github/deltacv/papervision/Build.kt
 !PaperVision/src/main/kotlin/io/github/deltacv/papervision/codegen/build/*
+
 
 *.DS_Store
 

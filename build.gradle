@@ -40,12 +40,15 @@ allprojects {
     group 'org.deltacv.PaperVision'
     version '1.0.3'
 
+    ext {
+        standardVersion = version
+    }
+
     repositories {
         mavenCentral()
         google()
-
-        maven { url "https://jitpack.io" }
         maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
+        maven { url 'https://jitpack.io' }
     }
 
     if(env == 'dev') {
