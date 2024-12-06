@@ -97,6 +97,7 @@ abstract class DrawNode<S: CodeGenSession>(
 
         ImNodes.getNodeDimensions(size, id)
         ImNodes.getNodeEditorSpacePos(position, id)
+        ImNodes.getNodeScreenSpacePos(screenPosition, id)
         ImNodes.getNodeGridSpacePos(gridPosition, id)
 
         if(isFirstDraw) {

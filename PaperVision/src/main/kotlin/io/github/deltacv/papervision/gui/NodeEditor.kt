@@ -29,6 +29,7 @@ import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImInt
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.PaperVision
+import io.github.deltacv.papervision.PaperVision.Companion.defaultImGuiFontSmall
 import io.github.deltacv.papervision.action.editor.CreateLinkAction
 import io.github.deltacv.papervision.action.editor.CreateNodesAction
 import io.github.deltacv.papervision.action.editor.DeleteLinksAction
@@ -146,6 +147,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     private val popupSelection = mutableListOf<DrawableIdElement>()
 
     private var currentRightClickMenuPopup: RightClickMenuPopup? = null
+
     val rightClickMenuPopup: RightClickMenuPopup get() {
         val popup = RightClickMenuPopup(paperVision.nodeList, ::undo, ::redo, ::cut, ::copy, ::paste, popupSelection)
         currentRightClickMenuPopup = popup
@@ -194,9 +196,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         playButton.enable()
 
-        options[FontAwesomeIcons.EarthAmericas] = Option("mis_changelanguage") {
-            paperVision.showWelcome(askLanguage = true)
-        }
+        registerOptions()
 
         optionsButton = OptionsButtonWindow(
             playButton,
@@ -227,6 +227,19 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
 
         registerShortcuts()
+    }
+
+    private fun registerOptions() {
+        options[FontAwesomeIcons.InfoCircle] = Option("mis_about") {
+            AboutModalWindow(
+                PaperVision.defaultImGuiFontSmall,
+                paperVision.codeFont,
+            ).enable()
+        }
+
+        options[FontAwesomeIcons.EarthAmericas] = Option("mis_changelanguage") {
+            paperVision.showWelcome(askLanguage = true)
+        }
     }
 
     private fun registerShortcuts() {

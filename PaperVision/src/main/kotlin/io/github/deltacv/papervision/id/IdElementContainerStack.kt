@@ -58,4 +58,14 @@ class IdElementContainerStack {
 
     inline fun <reified T: IdElement> pop() = pop(T::class.java)
 
+    fun all(): List<IdElementContainer<*>> {
+        val all = mutableListOf<IdElementContainer<*>>()
+
+        stacks.forEach { (_, stack) ->
+            all.addAll(stack)
+        }
+
+        return all
+    }
+
 }
