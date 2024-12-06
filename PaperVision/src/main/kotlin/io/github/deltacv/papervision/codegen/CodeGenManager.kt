@@ -28,6 +28,7 @@ import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.exception.AttributeGenException
 import io.github.deltacv.papervision.exception.NodeGenException
 import io.github.deltacv.papervision.gui.ToastWindow
+import io.github.deltacv.papervision.gui.util.DialogMessageWindow
 import io.github.deltacv.papervision.gui.util.Popup
 import io.github.deltacv.papervision.gui.util.TooltipPopup
 import io.github.deltacv.papervision.id.IdElementContainerStack
@@ -67,6 +68,8 @@ class CodeGenManager(val paperVision: PaperVision) {
             for(node in codeGen.endingNodes) {
                 node.genCodeIfNecessary(current)
             }
+
+            throw Exception("Test exception")
         } catch (attrEx: AttributeGenException) {
             codeGen.stage = CodeGen.Stage.ENDED_ERROR
 
@@ -95,6 +98,18 @@ class CodeGenManager(val paperVision: PaperVision) {
             showError(codeGen, nodeEx.node, nodeEx.message)
 
             logger.warn("Code gen stopped due to node exception", nodeEx)
+            return null
+        } catch(ex: Exception) {
+            codeGen.stage = CodeGen.Stage.ENDED_ERROR
+
+            DialogMessageWindow(
+                tr("win_codegen_error"),
+                tr("mis_codegen_error"),
+                ex.stackTraceToString(),
+                font = paperVision.defaultFontBig
+            ).enable()
+
+            logger.error("Code gen stopped due to unknown exception", ex)
             return null
         }
 

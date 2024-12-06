@@ -39,6 +39,7 @@ import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.engine.bridge.NoOpPaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.message.AskProjectGenClassNameMessage
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.gui.NodeEditor.SourceCodeExportSelectLanguageWindow.Companion.SEPARATION_MULTIPLIER
@@ -942,10 +943,15 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             isPressed = ImGui.button(text, floatingButton.frameWidth, floatingButton.frameWidth)
 
             if (lastButton != isPressed && isPressed) {
-                if (!paperVision.previzManager.previzRunning) {
-                    paperVision.startPrevizAsk()
+
+                if(paperVision.engineClient.bridge is NoOpPaperVisionEngineBridge) {
+                    ToastWindow("err_noop_engine", font = paperVision.defaultFontBig).enable()
                 } else {
-                    paperVision.previzManager.stopPreviz()
+                    if (!paperVision.previzManager.previzRunning) {
+                        paperVision.startPrevizAsk()
+                    } else {
+                        paperVision.previzManager.stopPreviz()
+                    }
                 }
             }
 

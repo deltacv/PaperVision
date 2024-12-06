@@ -5,6 +5,8 @@ import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.gui.util.Window
+import io.github.deltacv.papervision.gui.util.alignForWidth
+import io.github.deltacv.papervision.gui.util.centeredText
 import io.github.deltacv.papervision.io.resourceToString
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
@@ -140,22 +142,5 @@ class IntroModalWindow(
 
             isFirstDraw = false
         }
-    }
-
-    private fun centeredText(text: String) {
-        val textSize = ImGui.calcTextSize(tr(text))
-        val windowSize = ImGui.getWindowSize()
-        val pos = windowSize.x / 2 - textSize.x / 2
-        ImGui.sameLine(pos)
-        ImGui.text(tr(text))
-        ImGui.newLine()
-    }
-
-    private fun alignForWidth(width: Float, alignment: Float): Float {
-        val windowSize = ImGui.getWindowSize()
-        val pos = windowSize.x / 2 - width / 2
-        ImGui.sameLine(pos + alignment)
-
-        return pos + alignment
     }
 }
