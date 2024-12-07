@@ -5,7 +5,7 @@ author-email = "dev@deltacv.org"
 version = "{{version}}"
 description = "Create your custom OpenCV algorithms using a user-friendly node editor interface, inspired by Blender and Unreal Engine blueprints! Quickly prototype your vision using live previews as you edit. "
 
-min-api-version = "3.8.1"
+min-api-version = "4.0.0"
 
 super-access = true
 super-access-reason = "PaperVision requires your permision to fully support all features related to rendering user interaction and filesystem access."
