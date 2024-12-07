@@ -68,8 +68,6 @@ class CodeGenManager(val paperVision: PaperVision) {
             for(node in codeGen.endingNodes) {
                 node.genCodeIfNecessary(current)
             }
-
-            throw Exception("Test exception")
         } catch (attrEx: AttributeGenException) {
             codeGen.stage = CodeGen.Stage.ENDED_ERROR
 
