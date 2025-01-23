@@ -43,6 +43,7 @@ nod_drawrects_onimage,Draw Rectangles on Image,Dibujar Rectangulos en Imagen
 nod_drawrotated_rects,Draw Rotated Rectangles,Dibujar Rectangulos Rotados
 nod_crosshair,Crosshair,Crosshair
 nod_lineparameters,Line Parameters,Parametros de Linea
+nod_vector2,Vector in 2D,Vector en 2D
 nod_sumintegers,Sum Integers,Sumar Enteros
 nod_codesnippet,Code Snippet,Trozo de Codigo
 att_input,Input,Entrada
@@ -52,6 +53,7 @@ att_scale,Scale,Escala
 att_crosshair,Crosshair,Crosshair
 att_crosshairimage,Overlay Output,Salida del Overlay
 att_crosshairline_params,Crosshair Line,Linea del Crosshair
+att_crosshairposition,Crosshair Offset,Offset del Crosshair
 att_exporteddata,Export Data,Datos Exportados
 att_value,Value,Valor
 att_params,Parameters,Parametros
@@ -115,6 +117,7 @@ des_lineparameters,Specify the visual properties for<br>a node that will draw li
 des_drawrects_onimage,Draws the rectangles in the passed image.,Dibuja los rectangulos en la imagen de entrada
 des_drawcontours,Draws the contours on a copy of the<br>given image and outputs the result.,Dibuja los contornos en una copia de la<br>imagen dada y devuelve el resultado.
 des_drawcontours_onimage,Draws the contours on the input image,Dibuja los contornos en la imagen de entrada.
+des_vector2,Composes a Vector in two dimensions,Compone un Vector en dos dimensiones
 err_musthave_attachedattrib,Must have an attribute attached,Debe tener un atributo conectado
 err_attachedattrib_isnot,Attribute attached is not $[0],El atributo conectado no es $[0]
 err_valreturned_isnot,Value returned from the node is not $[0],El valor retornado del nodo no es $[0]

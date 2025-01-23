@@ -26,6 +26,7 @@ import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.LineParametersAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
@@ -48,14 +49,10 @@ import jdk.nashorn.internal.codegen.types.BooleanType
 )
 class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
-    enum class CrosshairPosition {
-        Center, Offset, Custom
-    }
-
     val drawCrosshairOn = MatAttribute(INPUT, "$[att_drawon_image]")
     val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
 
-    val crosshairPosition = EnumAttribute(INPUT, CrosshairPosition.values(), "$[att_position]")
+    val crosshairPosition = Vector2Attribute(INPUT, "$[att_crosshairposition]")
 
     val crosshairScale = IntAttribute(INPUT, "$[att_scale]")
 
@@ -65,30 +62,17 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
     val outputCrosshairImage = MatAttribute(OUTPUT, "$[att_crosshairimage]")
 
     override fun onEnable() {
-        +drawCrosshairOn.rebuildOnChange()
-        +input.rebuildOnChange()
-        +crosshairScale
+        + drawCrosshairOn.rebuildOnChange()
+        + input.rebuildOnChange()
+        + crosshairScale
 
         crosshairScale.value.set(5)
 
-        +crosshairPosition
-        +crosshairLineParams
+        + crosshairPosition
+        + crosshairLineParams
 
-        crosshairPosition.onChange {
-            when (crosshairPosition.get()) {
-                CrosshairPosition.Center -> {
-                }
-
-                CrosshairPosition.Offset -> {
-                }
-
-                CrosshairPosition.Custom -> {
-                }
-            }
-        }
-
-        +outputCrosshairImage.enablePrevizButton().rebuildOnChange()
-        +outputCrosshair.rebuildOnChange()
+        + outputCrosshairImage.enablePrevizButton().rebuildOnChange()
+        + outputCrosshair.rebuildOnChange()
     }
 
     override val generators = generatorsBuilder {
@@ -103,8 +87,6 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
             val drawOn = drawCrosshairOn.value(current)
             val drawOnValue = drawOn.value
-
-            val crosshairPosValue = crosshairPosition.value(current).value
 
             val crosshairLineParams = (crosshairLineParams.value(current) as GenValue.LineParameters).ensureRuntimeLineJava(current)
 
@@ -127,17 +109,15 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
+                    val crosshairPositionVector = crosshairPosition.value(current).ensureRuntimeVector2Java(current)
+
                     val crosshairPoint = uniqueVariable(
-                        "crosshairPoint", if (crosshairPosValue == CrosshairPosition.Center) {
-                            // draw crosshair at center
+                        "crosshairPoint", run {
+                            // draw crosshair at center with vector offset
                             val rows = drawOnValue.callValue("rows", IntType)
                             val cols = drawOnValue.callValue("cols", IntType)
 
-                            JvmOpenCvTypes.Point.new(double(cols) / 2.v, double(rows) / 2.v)
-                        } else if (crosshairPosValue == CrosshairPosition.Offset) {
-                            TODO()
-                        } else {
-                            TODO()
+                            JvmOpenCvTypes.Point.new((double(cols) / 2.v) + crosshairPositionVector.xValue, (double(rows) / 2.v) + crosshairPositionVector.yValue)
                         }
                     )
 
@@ -240,10 +220,15 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                 raise("Line parameters must not be runtime")
             }
 
+
+            val crosshairPositionVector = crosshairPosition.value(current)
+            if(crosshairPositionVector !is GenValue.Vec2.Vector2) {
+                raise("Crosshair position must not be runtime")
+            }
+
             val drawOn = drawCrosshairOn.value(current)
             val drawOnValue = drawOn.value
 
-            val crosshairPosValue = crosshairPosition.value(current).value
             val crosshairLineParams = (crosshairLineParams.value(current) as GenValue.LineParameters.Line)
             val crosshairSizeValue = crosshairScale.value(current).value
 
@@ -269,14 +254,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
-                    val (crosshairPointX, crosshairPointY) = if (crosshairPosValue == CrosshairPosition.Center) {
-                        // draw crosshair at center
-                        Pair(cols / 2.v, rows / 2.v)
-                    } else if (crosshairPosValue == CrosshairPosition.Offset) {
-                        TODO()
-                    } else {
-                        TODO()
-                    }
+                    val (crosshairPointX, crosshairPointY) = Pair((cols / 2.v) + crosshairPositionVector.x.v, (rows / 2.v) + crosshairPositionVector.y.v)
 
                     val pointX = uniqueVariable("crosshair_point_x", crosshairPointX)
                     val pointY = uniqueVariable("crosshair_point_y", crosshairPointY)

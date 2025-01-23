@@ -19,6 +19,8 @@
 package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.attribute.Attribute
+import io.github.deltacv.papervision.codegen.GenValue.LineParameters.Line
+import io.github.deltacv.papervision.codegen.GenValue.LineParameters.RuntimeLine
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.node.vision.ColorSpace
@@ -76,9 +78,7 @@ sealed class GenValue {
 
         fun ensureRuntimeLineJava(current: CodeGen.Current): RuntimeLine {
             return current {
-                val lineParams = this@LineParameters
-
-                when(lineParams) {
+                when(val lineParams = this@LineParameters) {
                     is Line -> {
                         val color = uniqueVariable("lineColor", JvmOpenCvTypes.Scalar.new(
                             lineParams.color.a.v, lineParams.color.b.v, lineParams.color.c.v, lineParams.color.d.v
@@ -107,6 +107,30 @@ sealed class GenValue {
     ) : GList.ListOf<GenValue.Double>(arrayOf(Double(a), Double(b), Double(c), Double(d), )) {
         companion object {
             val ZERO = Scalar(0.0, 0.0, 0.0, 0.0)
+        }
+    }
+
+    sealed class Vec2 : GenValue() {
+        data class Vector2(val x: kotlin.Double, val y: kotlin.Double) : Vec2()
+        data class RuntimeVector2(val xValue: Value, val yValue: Value) : Vec2()
+
+        fun ensureRuntimeVector2Java(current: CodeGen.Current): RuntimeVector2 {
+            return current {
+                when(val vec = this@Vec2) {
+                    is Vector2 -> {
+                        val x = uniqueVariable("vectorX", vec.x.v)
+                        val y = uniqueVariable("vectorY", vec.y.v)
+
+                        group {
+                            public(x)
+                            public(y)
+                        }
+
+                        RuntimeVector2(x, y)
+                    }
+                    is RuntimeVector2 -> vec
+                }
+            }
         }
     }
 
