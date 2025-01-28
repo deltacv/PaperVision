@@ -137,9 +137,9 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation project(":LwjglPlatform")
 
-    compileOnly('org.deltacv.EOCV-Sim:EOCV-Sim:4.0.0') { transitive = false }
-    compileOnly('org.deltacv.EOCV-Sim:Common:4.0.0') { transitive = false }
-    compileOnly('org.deltacv.EOCV-Sim:Vision:4.0.0')
+    compileOnly('org.deltacv.EOCV-Sim:EOCV-Sim:4.0.1') { transitive = false }
+    compileOnly('org.deltacv.EOCV-Sim:Common:4.0.1') { transitive = false }
+    compileOnly('org.deltacv.EOCV-Sim:Vision:4.0.1')
 
     implementation 'org.codehaus.janino:janino:3.1.12'
     implementation "com.google.code.gson:gson:$gson_version"
@@ -147,14 +147,14 @@ dependencies {
     implementation 'info.picocli:picocli:4.7.6'
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 
-    implementation('org.deltacv.visionloop:visionloop:1.2.3') {
+    implementation('org.deltacv.visionloop:visionloop:1.2.4') {
         exclude group: 'org.jetbrains.skiko'
         exclude group: 'org.deltacv'
         exclude group: 'org.deltacv.EOCVSim'
         exclude group: 'org.deltacv.steve'
         exclude group: 'org.openpnp'
     }
-    implementation('org.deltacv.visionloop:streaming:1.2.3') {
+    implementation('org.deltacv.visionloop:streaming:1.2.4') {
         exclude group: 'org.jetbrains.skiko'
         exclude group: 'org.deltacv'
         exclude group: 'org.deltacv.EOCVSim'

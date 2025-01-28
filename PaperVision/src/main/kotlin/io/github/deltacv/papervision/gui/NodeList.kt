@@ -327,7 +327,7 @@ class NodeList(
 
     private fun handleClick(closeOnClick: Boolean) {
         if (ImGui.isMouseClicked(ImGuiMouseButton.Left)) {
-            if (hoveredNode >= 0) {
+            if (hoveredNode >= 0 && !headers.isHeaderHovered) {
                 val instance = paperVision.nodeEditor.addNode(
                     listNodes[hoveredNode]!!::class.java
                 ) // add node with the class by using reflection

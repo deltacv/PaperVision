@@ -88,7 +88,7 @@ class InputSourceWindow(
                 val type = when(inputSource.type) {
                     InputSourceType.IMAGE -> FontAwesomeIcons.Image
                     InputSourceType.CAMERA -> FontAwesomeIcons.Camera
-                    InputSourceType.VIDEO -> FontAwesomeIcons.Video
+                    InputSourceType.VIDEO -> FontAwesomeIcons.Film
                 }
 
                 ImGui.text(type)
@@ -137,14 +137,6 @@ class CreateInputSourceWindow(
 
         ImGui.pushFont(fontAwesome.imfont)
 
-        if(ImGui.button(FontAwesomeIcons.Image)){
-            client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.IMAGE))
-            delete()
-        }
-
-        ImGui.sameLine()
-        ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
-
         if(ImGui.button(FontAwesomeIcons.Camera)){
             client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.CAMERA))
             delete()
@@ -153,7 +145,15 @@ class CreateInputSourceWindow(
         ImGui.sameLine()
         ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
 
-        if(ImGui.button(FontAwesomeIcons.Video)){
+        if(ImGui.button(FontAwesomeIcons.Image)){
+            client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.IMAGE))
+            delete()
+        }
+
+        ImGui.sameLine()
+        ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+
+        if(ImGui.button(FontAwesomeIcons.Film)){
             client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.VIDEO))
             delete()
         }

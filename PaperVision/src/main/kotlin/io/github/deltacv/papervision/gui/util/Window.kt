@@ -187,7 +187,7 @@ class DialogMessageWindow(
             val textSize = ImGui.calcTextSize(tr(textArea))
             ImGui.inputTextMultiline("##$textAreaId", ImString(textArea), ImGui.calcTextSize(tr(textArea)).x, textSize.y + 10)
 
-            height += textSize.y
+            height += textSize.y.coerceAtMost(ImGui.getMainViewport().sizeY * 0.6f)
             maxWidth = maxOf(maxWidth, textSize.x)
         }
 
