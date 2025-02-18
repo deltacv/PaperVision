@@ -943,7 +943,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             isPressed = ImGui.button(text, floatingButton.frameWidth, floatingButton.frameWidth)
 
             if (lastButton != isPressed && isPressed) {
-
                 if(paperVision.engineClient.bridge is NoOpPaperVisionEngineBridge) {
                     ToastWindow("err_noop_engine", font = paperVision.defaultFontBig).enable()
                 } else {

@@ -85,6 +85,14 @@ abstract class Window(
     private var firstDraw = true
 
     override fun enable() {
+        if(isModal) {
+            for(window in idElementContainer.inmutable) {
+                if(window.isModal) {
+                    window.delete()
+                }
+            }
+        }
+
         super.enable()
         firstDraw = true
     }

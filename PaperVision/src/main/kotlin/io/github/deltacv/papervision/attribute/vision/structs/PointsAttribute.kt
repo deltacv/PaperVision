@@ -24,6 +24,7 @@ import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.style.hexColor
 import io.github.deltacv.papervision.gui.style.rgbaColor
 
 class PointsAttribute (
@@ -34,11 +35,11 @@ class PointsAttribute (
     companion object : AttributeType {
         override val icon = FontAwesomeIcons.BezierCurve
 
-        override val styleColor = rgbaColor(149, 117, 205, 180)
-        override val styleHoveredColor = rgbaColor(149, 117, 205, 255)
+        override val styleColor = rgbaColor(253, 216, 53, 180)
+        override val styleHoveredColor = rgbaColor(253, 216, 53, 255)
 
-        override val listStyleColor = rgbaColor(179, 157, 219, 180)
-        override val listStyleHoveredColor = rgbaColor(179, 157, 219, 255)
+        override val listStyleColor = rgbaColor(253, 216, 53, 140)
+        override val listStyleHoveredColor = rgbaColor(253, 216, 53, 255)
 
         override fun new(mode: AttributeMode, variableName: String) = PointsAttribute(mode, variableName)
     }

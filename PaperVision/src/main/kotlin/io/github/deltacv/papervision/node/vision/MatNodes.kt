@@ -51,6 +51,8 @@ class InputMatNode @JvmOverloads constructor(
     var windowSizeSupplier: (() -> ImVec2)? = null
 ) : DrawNode<NoSession>(allowDelete = false) {
 
+    private var lastWindowSize: ImVec2? = null
+
     override fun init() {
         editor.onDraw { remover ->
             if(serializedId != null) {
@@ -71,7 +73,12 @@ class InputMatNode @JvmOverloads constructor(
                 ImNodes.getNodeDimensions(nodeSize, id)
 
                 val windowSize = it()
-                ImNodes.setNodeScreenSpacePos(id, nodeSize.x * 0.5f, windowSize.y / 2f - nodeSize.y / 2)
+
+                if(lastWindowSize == null || (lastWindowSize!!.x != windowSize.x || lastWindowSize!!.y != windowSize.y)) {
+                    ImNodes.setNodeScreenSpacePos(id, nodeSize.x * 0.5f, windowSize.y / 2f - nodeSize.y / 2)
+                }
+
+                lastWindowSize = ImVec2(windowSize.x, windowSize.y)
 
                 // by default, the node editor starts with 4 nodes
                 // InputMatNode, OutputMatNode, originNode, flagsNode
@@ -124,6 +131,8 @@ class OutputMatNode @JvmOverloads constructor(
 
     var streamId: Int? = null
 
+    private var lastWindowSize: ImVec2? = null
+
     init {
         genOptions {
             genAtTheEnd = true
@@ -150,7 +159,12 @@ class OutputMatNode @JvmOverloads constructor(
                 ImNodes.getNodeDimensions(nodeSize, id)
 
                 val windowSize = it()
-                ImNodes.setNodeScreenSpacePos(id, windowSize.x - nodeSize.x * 1.5f, windowSize.y / 2f - nodeSize.y / 2f)
+
+                if(lastWindowSize == null || (lastWindowSize!!.x != windowSize.x || lastWindowSize!!.y != windowSize.y)) {
+                    ImNodes.setNodeScreenSpacePos(id, windowSize.x - nodeSize.x * 1.5f, windowSize.y / 2f - nodeSize.y / 2f)
+                }
+
+                lastWindowSize = ImVec2(windowSize.x, windowSize.y)
 
                 // by default, the node editor starts with 4 nodes
                 // InputMatNode, OutputMatNode, originNode, flagsNode

@@ -40,10 +40,9 @@ enum class Category(val properName: String,
         hexColor("#3949ab"), // material indigo
         hexColor("#5c6bc0")),
 
-
     CLASSIFICATION("cat_class",
-        hexColor("#3949ab"), // material indigo
-        hexColor("#5c6bc0")),
+        hexColor("#F9A825"), // material yellow 800
+        hexColor("#FDD835")),
 
     OVERLAY("cat_overlay",
         hexColor("#00897b"), // material teal

@@ -310,6 +310,7 @@ open class ListAttribute(
         element.parentNode = parentNode
         if(enable) element.enable() //enables the new element
 
+        element.ownedByList = true
         element.drawType = false // hides the variable type
         element.onChange.doPersistent(onChange::run)
 

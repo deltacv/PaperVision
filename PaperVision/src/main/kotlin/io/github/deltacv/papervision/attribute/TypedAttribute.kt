@@ -73,6 +73,9 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
     private var isFirstDraw = true
     private var isSecondDraw = false
 
+    var ownedByList = false
+        internal set
+
     private val finalVarName by lazy {
         variableName ?: if (mode == AttributeMode.INPUT) "$[mis_input]" else "$[mis_output]"
     }
@@ -196,7 +199,10 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
     // acceptLink is overridden to allow for ListAttribute to accept TypedAttribute
     override fun acceptLink(other: Attribute) =
         (other is TypedAttribute && other.attributeType == attributeType) ||
-            this::class == other::class || (other is ListAttribute && other.elementAttributeType == attributeType)
+            this::class == other::class ||
+                // allow linking to ListAttribute if the types are the same so it becomes an element of the list
+                // ONLY IF THIS ELEMENT IS OUTPUT otherwise it allows to link a list output to an individual input
+                (other is ListAttribute && other.elementAttributeType == attributeType && mode == AttributeMode.OUTPUT)
 
     protected fun changed() {
         if(!isFirstDraw && !isSecondDraw) onChange.run()

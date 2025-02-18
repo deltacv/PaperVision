@@ -40,8 +40,8 @@ class MatAttribute(
     companion object: AttributeType {
         override val icon = FontAwesomeIcons.Image
 
-        override val styleColor = rgbaColor(255, 213, 79, 180)
-        override val styleHoveredColor = rgbaColor(255, 213, 79, 255)
+        override val styleColor = rgbaColor(0, 151, 167, 180)
+        override val styleHoveredColor = rgbaColor(0, 151, 167, 255)
 
         override fun new(mode: AttributeMode, variableName: String) = MatAttribute(mode, variableName)
     }
