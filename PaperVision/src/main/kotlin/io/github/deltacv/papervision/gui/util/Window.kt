@@ -193,7 +193,7 @@ class DialogMessageWindow(
 
         if(textArea != null) {
             val textSize = ImGui.calcTextSize(tr(textArea))
-            ImGui.inputTextMultiline("##$textAreaId", ImString(textArea), ImGui.calcTextSize(tr(textArea)).x, textSize.y + 10)
+            ImGui.inputTextMultiline("##$textAreaId", ImString(textArea), ImGui.calcTextSize(tr(textArea)).x, textSize.y + 20)
 
             height += textSize.y.coerceAtMost(ImGui.getMainViewport().sizeY * 0.6f)
             maxWidth = maxOf(maxWidth, textSize.x)
@@ -223,12 +223,6 @@ class DialogMessageWindow(
                 Toolkit.getDefaultToolkit().systemClipboard.setContents(
                     StringSelection(textArea), null
                 )
-
-                TooltipPopup(
-                    tr("mis_codecopied"),
-                    { ImVec2(ImGui.getMousePos().x, ImGui.getMousePos().y) },
-                    3.0,
-                ).open()
             }
         }
 

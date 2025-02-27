@@ -54,10 +54,10 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
         + inputMat.rebuildOnChange()
 
         + erodeValue
-        erodeValue.sliderMode(Range2i(0, 10))
+        erodeValue.sliderMode(Range2i(0, 20))
 
         + dilateValue
-        dilateValue.sliderMode(Range2i(0, 10))
+        dilateValue.sliderMode(Range2i(0, 20))
 
         + outputMat.enablePrevizButton().rebuildOnChange()
     }
@@ -146,29 +146,31 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                     input.value.callValue("copy", CPythonLanguage.NoType)
                 )
 
+                val elementErode = uniqueVariable("element_erode", cv2.callValue(
+                    "getStructuringElement",
+                    CPythonLanguage.NoType,
+                    cv2.MORPH_RECT,
+                    CPythonLanguage.tuple(erodeVal.value.v, erodeVal.value.v)
+                ))
+                public(elementErode)
+
+                val elementDilate = uniqueVariable("element_dilate", cv2.callValue(
+                    "getStructuringElement",
+                    CPythonLanguage.NoType,
+                    cv2.MORPH_RECT,
+                    CPythonLanguage.tuple(dilateVal.value.v, dilateVal.value.v)
+                ))
+                public(elementDilate)
+
                 current.scope {
                     local(output)
 
                     if (erodeVal.value > 0) {
-                        val element = uniqueVariable("element", cv2.callValue(
-                            "getStructuringElement",
-                            CPythonLanguage.NoType,
-                            cv2.MORPH_RECT,
-                            CPythonLanguage.tuple(erodeVal.value.v, erodeVal.value.v)
-                        ))
-
-                        cv2("erode", output, output, element)
+                        cv2("erode", output, output, elementErode)
                     }
 
                     if (dilateVal.value > 0) {
-                        val element = uniqueVariable("element", cv2.callValue(
-                            "getStructuringElement",
-                            CPythonLanguage.NoType,
-                            cv2.MORPH_RECT,
-                            CPythonLanguage.tuple(dilateVal.value.v, dilateVal.value.v)
-                        ))
-
-                        cv2("dilate", output, output, element)
+                        cv2("dilate", output, output, elementDilate)
                     }
                 }
 

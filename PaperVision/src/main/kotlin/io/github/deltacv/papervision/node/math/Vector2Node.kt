@@ -91,7 +91,7 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == result) {
-            return current.sessionOf(this)!!.vector2
+            return current.nonNullSessionOf(this).vector2
         }
 
         noValue(attrib)

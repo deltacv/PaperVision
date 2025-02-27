@@ -37,6 +37,7 @@ import io.github.deltacv.papervision.serialization.BasicNodeData
 import io.github.deltacv.papervision.serialization.NodeSerializationData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.event.EventListener
+import io.github.deltacv.papervision.util.loggerForThis
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -192,6 +193,8 @@ abstract class Node<S: CodeGenSession>(
     }
 
     override fun propagate(current: CodeGen.Current) {
+        val logger = loggerForThis().value
+
         val linkedNodes = mutableListOf<Node<*>>()
 
         for(attribute in attribs) {
@@ -210,7 +213,9 @@ abstract class Node<S: CodeGenSession>(
         for(linkedNode in linkedNodes) {
             if(linkedNode.hasDeadEnd()) {
                 deadEndNodes.add(linkedNode)
+                logger.info("Dead end node: $linkedNode")
             } else {
+                logger.info("Complete path node: $linkedNode")
                 completePathNodes.add(linkedNode)
             }
         }

@@ -19,6 +19,8 @@
 package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.attribute.Attribute
+import io.github.deltacv.papervision.util.loggerForThis
+import java.util.logging.Logger
 
 interface GenNode<S: CodeGenSession> : Generator<S> {
 
@@ -38,10 +40,13 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
      */
     @Suppress("UNCHECKED_CAST")
     fun genCodeIfNecessary(current: CodeGen.Current) {
+        val logger = loggerForThis().value
+
         val codeGen = current.codeGen
 
         if(genOptions.genAtTheEnd && codeGen.stage != CodeGen.Stage.END_GEN) {
             if(!codeGen.endingNodes.contains(this)) {
+                logger.info("Marked node $this as an ending node")
                 codeGen.endingNodes.add(this)
             }
 
@@ -56,10 +61,14 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
             if(!codeGen.busyNodes.contains(this)) {
                 codeGen.busyNodes.add(this)
 
+                logger.info("Generating code for node $this")
+
                 lastGenSession = genCode(current)
                 codeGen.sessions[this] = lastGenSession!!
 
                 codeGen.busyNodes.remove(this)
+
+                logger.info("DONE generating code for node $this")
 
                 propagate(current)
             }

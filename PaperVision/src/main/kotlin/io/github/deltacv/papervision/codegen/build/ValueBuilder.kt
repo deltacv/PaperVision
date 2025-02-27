@@ -117,16 +117,23 @@ interface ValueBuilder {
     fun enumValue(type: Type, constantName: String) = ConValue(type, "$type.$constantName")
 
     fun cvtColorValue(a: ColorSpace, b: ColorSpace): Value {
-        var newA = a
-        var newB = b
+        var newA = a.name
+        var newB = b.name
 
         if(a == ColorSpace.RGBA && b != ColorSpace.RGB) {
-            newA = ColorSpace.RGB
+            newA = "RGB"
         } else if(a != ColorSpace.RGB && b == ColorSpace.RGBA) {
-            newB = ColorSpace.RGB
+            newB = "RGB"
         }
 
-        return ConValue(language.IntType, "Imgproc.COLOR_${newA.name}2${newB.name}").apply {
+        if(a == ColorSpace.LAB) {
+            newA = "Lab"
+        }
+        if(b == ColorSpace.LAB) {
+            newB = "Lab"
+        }
+
+        return ConValue(language.IntType, "Imgproc.COLOR_${newA}2${newB}").apply {
             additionalImports(JvmOpenCvTypes.Imgproc)
         }
     }

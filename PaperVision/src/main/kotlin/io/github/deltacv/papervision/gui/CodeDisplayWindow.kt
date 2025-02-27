@@ -95,11 +95,10 @@ class CodeDisplayWindow(
                 StringSelection(EDITOR.text), null
             )
 
-            TooltipPopup(
-                "mis_codecopied",
-                ImGui.getMousePos(),
-                3.0,
-            ).open()
+            ToastWindow(
+                tr("mis_codecopied"),
+                3.0
+            ).enable()
         }
 
         ImGui.sameLine()

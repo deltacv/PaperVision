@@ -149,7 +149,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when(attrib) {
-            outputRects -> current.sessionOf(this)!!.rects
+            outputRects -> current.nonNullSessionOf(this).rects
             else -> noValue(attrib)
         }
     }

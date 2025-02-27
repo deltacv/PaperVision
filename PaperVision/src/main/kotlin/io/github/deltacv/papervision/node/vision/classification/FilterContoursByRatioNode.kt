@@ -143,7 +143,7 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         when(attrib) {
-            output -> return current.sessionOf(this)!!.output
+            output -> return current.nonNullSessionOf(this).output
         }
 
         noValue(attrib)

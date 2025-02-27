@@ -202,6 +202,8 @@ object CPythonLanguage : LanguageBase(
         mainScope.get()
     }
 
+    fun conditionOfValue(value: Value) = Condition(BooleanType, value.value!!)
+
     class TupleVariable(value: Value, vararg names: String) : Variable(names.csv(), value) {
         val names = names.toSet()
 

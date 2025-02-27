@@ -176,7 +176,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return current.sessionOf(this)!!.output
+            return current.nonNullSessionOf(this).output
         }
 
         noValue(attrib)

@@ -25,6 +25,8 @@ import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.Condition
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
@@ -136,15 +138,18 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                     }
 
                     val biggestContour = uniqueVariable(
-                        "biggest_contour",
-                        "max".callValue(
+                        "biggest_contour", CPythonOpenCvTypes.np.callValue("array", CPythonLanguage.NoType, CPythonLanguage.newArrayOf(CPythonLanguage.NoType, 0.v))
+                    )
+
+                    local(biggestContour)
+
+                    ifCondition(CPythonLanguage.conditionOfValue(contoursList)) {
+                        biggestContour set "max".callValue(
                             CPythonLanguage.NoType,
                             contoursList,
                             CPythonLanguage.namedArgument("key", cv2.contourArea)
                         )
-                    )
-
-                    local(biggestContour)
+                    }
 
                     session.biggestContour = GenValue.GPoints.RuntimePoints(biggestContour)
                 }
@@ -158,7 +163,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return current.sessionOf(this)!!.biggestContour
+            return current.nonNullSessionOf(this).biggestContour
         }
 
         noValue(attrib)

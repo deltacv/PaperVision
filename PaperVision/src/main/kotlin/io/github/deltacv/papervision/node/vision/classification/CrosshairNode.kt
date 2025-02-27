@@ -313,7 +313,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                     foreach(variable(CPythonLanguage.NoType, "contour"), inputPoints.value) {
                         // Get the bounding rectangle of the current contour
                         val boundingRect = CPythonLanguage.tupleVariables(
-                            CPythonOpenCvTypes.cv2.callValue("bounding_rect", CPythonLanguage.NoType, it),
+                            CPythonOpenCvTypes.cv2.callValue("boundingRect", CPythonLanguage.NoType, it),
                             "x", "y", "w", "h"
                         )
                         local(boundingRect)
@@ -350,8 +350,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when (attrib) {
-            outputCrosshair -> current.sessionOf(this)!!.outputCrosshair
-            outputCrosshairImage -> current.sessionOf(this)!!.outputCrosshairImage
+            outputCrosshair -> current.nonNullSessionOf(this).outputCrosshair
+            outputCrosshairImage -> current.nonNullSessionOf(this).outputCrosshairImage
             else -> noValue(attrib)
         }
     }

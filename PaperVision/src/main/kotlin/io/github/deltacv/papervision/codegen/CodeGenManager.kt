@@ -45,6 +45,10 @@ class CodeGenManager(val paperVision: PaperVision) {
         language: Language = JavaLanguage,
         isForPreviz: Boolean = false
     ): String? {
+        val timestamp = System.currentTimeMillis()
+
+        logger.info("Starting code gen at $timestamp")
+
         for(popup in IdElementContainerStack.threadStack.peekNonNull<Popup>().inmutable) {
             if(popup.label == "Gen-Error") {
                 popup.delete()
@@ -114,6 +118,8 @@ class CodeGenManager(val paperVision: PaperVision) {
         val result = codeGen.gen()
 
         codeGen.stage = CodeGen.Stage.ENDED_SUCCESS
+
+        logger.info("Code gen $timestamp OK")
 
         return result.trim()
     }
