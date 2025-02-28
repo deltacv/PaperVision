@@ -24,6 +24,10 @@ nod_binarymask,Binary Mask,Mascara Binaria
 nod_colorthresh,Color Threshold,Umbral de Color
 nod_cvtcolor,Convert Color,Convertir Color
 nod_blur,Blur,Difuminado
+nod_bitwiseor,Bitwise OR,OR Bitwise
+nod_bitwiseand,Bitwise AND,AND Bitwise
+nod_bitwisexor,Bitwise XOR,XOR Bitwise
+nod_bitwisenot,Bitwise NOT,NOT Bitwise
 nod_erodedilate,Erode and Dilate,Erosionar y Dilatar
 nod_boundingrect,Bounding Rectangles,Rectangulos Delimitantes
 nod_boundingrotated_rect,Bounding Rotated Rectangles,Rectangulos Delimitantes Rotados
@@ -80,6 +84,8 @@ att_maxarea,Max Area,Area Maxima
 att_minratio,Min Ratio,Ratio Minimo
 att_maxratio,Max Ratio,Ratio Maximo
 att_result,Result,Resultado
+att_first,First,Primero
+att_second,Second,Segundo
 att_shape,Shape,Figura
 att_sides,Sides,Lados
 att_accuracy,Accuracy,Precision
@@ -107,6 +113,10 @@ des_boundingrotated_rect,Calculates the bounding rotated rectangles<br>of a give
 des_boundingrect,Calculates the bounding rectangles<br>of a given list of points.,Calcula los rectángulos delimitadores<br>de una lista de puntos dada.
 des_findcontours,Finds all the contours (list of points)<br>of a given binary image.,Encuentra todos los contornos (lista de puntos)<br>de una imagen binaria dada.
 des_blur,Blurs the input image using the specified algorithm.,Difumina la imagen de entrada con el algoritmo especificado.
+des_bitwiseor,Performs a bitwise OR operation on two binary images.,Realiza una operación OR a nivel de bits en dos imágenes binarias.
+des_bitwiseand,Performs a bitwise AND operation on two binary images.,Realiza una operación AND a nivel de bits en dos imágenes binarias.
+des_bitwisexor,Performs a bitwise XOR operation on two binary images.,Realiza una operación XOR a nivel de bits en dos imágenes binarias.
+des_bitwisenot,Performs a bitwise NOT operation on a binary image.,Realiza una operación NOT a nivel de bits en una imagen binaria.
 des_cvtcolor,"Converts a Mat from its current color space<br>to the specified color space. If the mat is already<br>in the specified color space, no conversion is made.","Convierte un Mat de su espacio de color actual<br>al espacio de color especificado. Si el Mat ya está<br>en el espacio de color especificado,<br>no se realiza ninguna conversión."
 des_erodedilate,Erodes and dilates the areas of a given binary image.,Erosiona y dilata las áreas de una imagen binaria dada.
 des_binarymask,"Takes a normal image and performs a mask<br>based on a binary image, discards or includes areas<br>from the normal image based on the binary image.","Toma una imagen normal y aplica una máscara<br>basada en una imagen binaria, descartando o incluyendo áreas<br>de la imagen normal según la imagen binaria."
