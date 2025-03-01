@@ -59,7 +59,7 @@ class BlurNode : DrawNode<BlurNode.Session>() {
         + input.rebuildOnChange()
         + blurAlgo
         + blurValue
-        + output.enablePrevizButton()
+        + output.enablePrevizButton().rebuildOnChange()
     }
 
     override val generators = generatorsBuilder {

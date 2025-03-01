@@ -47,7 +47,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
     override fun onEnable() {
         + input.rebuildOnChange()
 
-        + output.enablePrevizButton()
+        + output.enablePrevizButton().rebuildOnChange()
     }
 
     override val generators = generatorsBuilder {
@@ -69,7 +69,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
                     output.streamIfEnabled(outputMat, firstValue.color)
                 }
 
-                session.outputMatValue = GenValue.Mat(outputMat, firstValue.color)
+                session.outputMatValue = GenValue.Mat(outputMat, firstValue.color, firstValue.isBinary)
             }
 
             session
@@ -88,7 +88,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
                     local(variable)
                 }
 
-                session.outputMatValue = GenValue.Mat(variable, firstValue.color)
+                session.outputMatValue = GenValue.Mat(variable, firstValue.color, firstValue.isBinary)
             }
 
             session

@@ -50,7 +50,7 @@ class BitwiseORNode : DrawNode<BitwiseORNode.Session>() {
         + first.rebuildOnChange()
         + second.rebuildOnChange()
 
-        + output.enablePrevizButton()
+        + output.enablePrevizButton().rebuildOnChange()
     }
 
     override val generators = generatorsBuilder {
@@ -59,6 +59,10 @@ class BitwiseORNode : DrawNode<BitwiseORNode.Session>() {
 
             val firstValue = first.value(current)
             val secondValue = second.value(current)
+
+            if(firstValue.isBinary != secondValue.isBinary) {
+                raise("err_bitwiseor_binary")
+            }
 
             current {
                 val outputMat = uniqueVariable("bitwiseORMat", Mat.new())
@@ -70,10 +74,11 @@ class BitwiseORNode : DrawNode<BitwiseORNode.Session>() {
                 current.scope {
                     outputMat("release")
                     JvmOpenCvTypes.Core("bitwise_or", firstValue.value, secondValue.value, outputMat)
+
                     output.streamIfEnabled(outputMat, secondValue.color)
                 }
 
-                session.outputMatValue = GenValue.Mat(outputMat, secondValue.color)
+                session.outputMatValue = GenValue.Mat(outputMat, secondValue.color, firstValue.isBinary && secondValue.isBinary)
             }
 
             session
@@ -85,6 +90,10 @@ class BitwiseORNode : DrawNode<BitwiseORNode.Session>() {
             val firstValue = first.value(current)
             val secondValue = second.value(current)
 
+            if(firstValue.isBinary != secondValue.isBinary) {
+                raise("err_bitwiseor_binary")
+            }
+
             current {
                 val value = CPythonOpenCvTypes.cv2.callValue("bitwise_or", CPythonLanguage.NoType, firstValue.value, secondValue.value)
                 val variable = uniqueVariable("bitwiseORMat", value)
@@ -93,7 +102,7 @@ class BitwiseORNode : DrawNode<BitwiseORNode.Session>() {
                     local(variable)
                 }
 
-                session.outputMatValue = GenValue.Mat(variable, secondValue.color)
+                session.outputMatValue = GenValue.Mat(variable, secondValue.color, firstValue.isBinary && secondValue.isBinary)
             }
 
             session
