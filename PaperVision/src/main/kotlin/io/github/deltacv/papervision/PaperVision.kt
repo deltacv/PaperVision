@@ -41,6 +41,7 @@ import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.id.NoneIdElement
+import io.github.deltacv.papervision.id.SingleIdElementContainer
 import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.node.Link
@@ -108,6 +109,7 @@ class PaperVision(
     val links = IdElementContainer<Link>()
     val windows = IdElementContainer<Window>()
     val textures = IdElementContainer<PlatformTexture>()
+    val textureProcessorQueues = SingleIdElementContainer<TextureProcessorQueue>()
     val streamDisplays = IdElementContainer<ImageDisplay>()
     val actions = IdElementContainer<Action>()
 
@@ -147,6 +149,7 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(links)
         IdElementContainerStack.threadStack.push(windows)
         IdElementContainerStack.threadStack.push(textures)
+        IdElementContainerStack.threadStack.push(textureProcessorQueues)
         IdElementContainerStack.threadStack.push(streamDisplays)
         IdElementContainerStack.threadStack.push(actions)
         IdElementContainerStack.threadStack.push(popups)
@@ -170,10 +173,10 @@ class PaperVision(
         }
 
         textureProcessorQueue = TextureProcessorQueue(textureFactory)
-        textureProcessorQueue.subscribeTo(onUpdate)
+        textureProcessorQueue.enable()
 
         engineClient = PaperVisionEngineClient(setup.engineBridge ?: NoOpPaperVisionEngineBridge)
-        previzManager = ClientPrevizManager(160, 120, codeGenManager, textureProcessorQueue, engineClient, setup.previzByteMessageReceiverProvider)
+        previzManager = ClientPrevizManager(160, 120, codeGenManager, engineClient, setup.previzByteMessageReceiverProvider)
 
         engineClient.connect()
 
@@ -220,6 +223,7 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<Link>()
         IdElementContainerStack.threadStack.pop<Window>()
         IdElementContainerStack.threadStack.pop<PlatformTexture>()
+        IdElementContainerStack.threadStack.pop<TextureProcessorQueue>()
         IdElementContainerStack.threadStack.pop<ImageDisplay>()
         IdElementContainerStack.threadStack.pop<Action>()
         IdElementContainerStack.threadStack.pop<Popup>()
@@ -270,6 +274,7 @@ class PaperVision(
         IdElementContainerStack.threadStack.push(links)
         IdElementContainerStack.threadStack.push(windows)
         IdElementContainerStack.threadStack.push(textures)
+        IdElementContainerStack.threadStack.push(textureProcessorQueues)
         IdElementContainerStack.threadStack.push(streamDisplays)
         IdElementContainerStack.threadStack.push(actions)
         IdElementContainerStack.threadStack.push(popups)
@@ -291,6 +296,9 @@ class PaperVision(
         for(popup in popups.inmutable) {
             popup.draw()
         }
+        for(textureQueue in textureProcessorQueues.inmutable) {
+            textureQueue.draw() // silly silly
+        }
 
         ImGui.popFont()
 
@@ -303,6 +311,7 @@ class PaperVision(
         IdElementContainerStack.threadStack.pop<Link>()
         IdElementContainerStack.threadStack.pop<Window>()
         IdElementContainerStack.threadStack.pop<PlatformTexture>()
+        IdElementContainerStack.threadStack.pop<TextureProcessorQueue>()
         IdElementContainerStack.threadStack.pop<ImageDisplay>()
         IdElementContainerStack.threadStack.pop<Action>()
         IdElementContainerStack.threadStack.pop<Popup>()

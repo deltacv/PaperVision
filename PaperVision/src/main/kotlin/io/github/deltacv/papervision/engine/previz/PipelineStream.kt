@@ -21,6 +21,7 @@ package io.github.deltacv.papervision.engine.previz
 import io.github.deltacv.papervision.engine.client.ByteMessageReceiver
 import io.github.deltacv.papervision.engine.client.Handler
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
+import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bytes
 import io.github.deltacv.papervision.io.scaleToFit
@@ -33,7 +34,6 @@ import java.awt.image.BufferedImage
 class PipelineStream(
     val sessionName: String,
     val byteReceiver: ByteMessageReceiver,
-    val queue: TextureProcessorQueue,
     val width: Int = 160,
     val height: Int = 120,
     val status: Status = Status.MINIMIZED,
@@ -51,8 +51,14 @@ class PipelineStream(
         private set
 
     private var requestedMaximize = false
-
     private var requestedMinimize = false
+
+    private val pendingTextureQIds = mutableListOf<Int>()
+    private val texturesQIdMap = mutableMapOf<Int, PlatformTexture>()
+
+    // get the texture container of the current thread
+    val textures = IdElementContainerStack.threadStack.peekNonNull<PlatformTexture>()
+    val textureQueue = IdElementContainerStack.threadStack.peekSingleNonNull<TextureProcessorQueue>()
 
     var offlineTexture: PlatformTexture? = null
         private set
@@ -60,13 +66,12 @@ class PipelineStream(
     constructor(
         sessionName: String,
         engineClient: PaperVisionEngineClient,
-        queue: TextureProcessorQueue,
         width: Int = 160,
         height: Int = 120,
         status: Status = Status.MINIMIZED,
         offlineImages: Array<BufferedImage>? = null,
         offlineImagesFps: Double = 1.0
-    ) : this(sessionName, engineClient.byteReceiver, queue, width, height, status, offlineImages, offlineImagesFps)
+    ) : this(sessionName, engineClient.byteReceiver, width, height, status, offlineImages, offlineImagesFps)
 
     init {
         initOfflineImages()
@@ -81,7 +86,7 @@ class PipelineStream(
                     img = img.scaleToFit(width, height)
                 }
 
-                offlineTexture = queue.textureFactory.create(width, height, img.bytes(), ColorSpace.BGR)
+                offlineTexture = textureQueue.textureFactory.create(width, height, img.bytes(), ColorSpace.BGR)
             } else {
                 val textures = mutableListOf<PlatformTexture>()
 
@@ -92,7 +97,7 @@ class PipelineStream(
                         img = img.scaleToFit(width, height)
                     }
 
-                    textures.add(queue.textureFactory.create(width, height, img.bytes(), ColorSpace.RGB))
+                    textures.add(textureQueue.textureFactory.create(width, height, img.bytes(), ColorSpace.RGB))
                 }
 
                 offlineTexture = TimedTextureAnimation(offlineImagesFps, textures.toTypedArray()).apply {
@@ -104,7 +109,28 @@ class PipelineStream(
 
     private val defaultHandler: Handler = { id, tag, bytes ->
         if(tag == sessionName) {
-            queue.offerJpeg(id, width, height, bytes, TextureProcessorQueue.MemoryBehavior.DISCARD_WHEN_EXHAUSTED)
+            if(!texturesQIdMap.contains(id)) {
+                if(textureQueue[id] == null) {
+                    // we are waiting for this texture to be created
+                    // if we have already queued it, we don't need to do it again
+                    if(!pendingTextureQIds.contains(id)) {
+                        // create a new texture if this is nowhere to be found
+                        textureQueue.offerJpeg(id, width, height, bytes)
+                        pendingTextureQIds.add(id)
+
+                        logger.info("Creating new texture for qId $id")
+                    }
+                } else {
+                    // save the texture in our own id map so that we can
+                    // use setJpegAsync instead of going though the queue
+                    texturesQIdMap[id] = textureQueue[id]!!
+                    pendingTextureQIds.remove(id)
+                    logger.info("Acknowledged texture for qId $id")
+                }
+            } else {
+                // yay, we can process async now
+                texturesQIdMap[id]!!.setJpegAsync(bytes)
+            }
         }
     }
 
@@ -121,17 +147,13 @@ class PipelineStream(
 
         byteReceiver.removeHandler(defaultHandler)
         byteReceiver.stop()
-
-        clear()
     }
 
-    fun isAtOfflineTexture(id: Int) = !isStarted || queue[id] == null
+    fun isAtOfflineTexture(id: Int) = !isStarted
 
     fun textureOf(id: Int) = if(isStarted)
-        queue[id] ?: offlineTexture
+        texturesQIdMap[id] ?: offlineTexture
     else offlineTexture
-
-    fun clear() = queue.clear()
 
     fun maximize() {
         requestedMaximize = true

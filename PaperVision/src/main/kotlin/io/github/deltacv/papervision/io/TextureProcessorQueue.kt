@@ -17,6 +17,10 @@
  */
 package io.github.deltacv.papervision.io
 
+import io.github.deltacv.papervision.id.DrawableIdElementBase
+import io.github.deltacv.papervision.id.IdElement
+import io.github.deltacv.papervision.id.IdElementContainer
+import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.PlatformTextureFactory
@@ -27,7 +31,7 @@ import java.util.concurrent.ArrayBlockingQueue
 
 class TextureProcessorQueue(
     val textureFactory: PlatformTextureFactory
-) {
+) : DrawableIdElementBase<TextureProcessorQueue>() {
 
     enum class MemoryBehavior {
         ALLOCATE_WHEN_EXHAUSTED,
@@ -48,55 +52,99 @@ class TextureProcessorQueue(
 
     private var currentHandler: PaperVisionEventHandler? = null
 
-    fun subscribeTo(handler: PaperVisionEventHandler) {
-        handler {
-            if (currentHandler != handler) { // can only subscribe to one event loop at a time
-                it.removeThis()
-                return@handler
-            }
+    @Synchronized
+    override fun draw() {
+        while (queuedTextures.isNotEmpty()) {
+            val futureTex = queuedTextures.poll()
 
-            while (queuedTextures.isNotEmpty()) {
-                val futureTex = queuedTextures.poll()
+            try {
+                var shouldContinue = false
 
-                try {
-                    var shouldContinue = false
-
-                    textures[futureTex.id]?.let { existingTex ->
-                        if (existingTex.width == futureTex.width && existingTex.height == futureTex.height) {
-                            if (futureTex.jpeg) {
-                                existingTex.setJpeg(futureTex.data)
-                            } else {
-                                existingTex.set(futureTex.data, futureTex.colorSpace)
-                            }
-                            shouldContinue = true
+                textures[futureTex.id]?.let { existingTex ->
+                    if (existingTex.width == futureTex.width && existingTex.height == futureTex.height) {
+                        if (futureTex.jpeg) {
+                            existingTex.setJpeg(futureTex.data)
                         } else {
-                            existingTex.delete()
+                            existingTex.set(futureTex.data, futureTex.colorSpace)
+                            println("Setting texture ${futureTex.id} ${futureTex.data.size}")
                         }
-                    }
-
-                    if (shouldContinue) continue
-
-                    textures[futureTex.id] = if (futureTex.jpeg) {
-                        textureFactory.createFromJpegBytes(ByteBuffer.wrap(futureTex.data))
+                        shouldContinue = true
                     } else {
-                        textureFactory.create(
-                            futureTex.width, futureTex.height, futureTex.data, futureTex.colorSpace
-                        )
+                        existingTex.delete()
                     }
-                } catch (e: Exception) {
-                    logger.error("Error processing texture: ${e.message}", e)
-                } finally {
-                    returnReusableBuffer(futureTex.data)
                 }
+
+                if (shouldContinue) continue
+
+                if (futureTex.id < 0) {
+                    throw IllegalArgumentException("ID of new texture must be positive !")
+                }
+
+                textures[futureTex.id] = if (futureTex.jpeg) {
+                    textureFactory.createFromJpegBytes(ByteBuffer.wrap(futureTex.data))
+                } else {
+                    textureFactory.create(
+                        futureTex.width, futureTex.height, futureTex.data, futureTex.colorSpace
+                    )
+                }
+            } catch (e: Exception) {
+                logger.error("Error processing texture: ${e.message}", e)
+            } finally {
+                returnReusableBuffer(futureTex.data)
             }
         }
-
-        currentHandler = handler
     }
 
-    fun offerJpeg(id: Int, width: Int, height: Int, data: ByteArray,
-                  memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED) =
+    fun offerJpeg(
+        id: Int, width: Int, height: Int, data: ByteArray,
+        memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
+    ) =
         offer(id, width, height, data, jpeg = true)
+
+
+    fun offerJpeg(
+        id: Int, width: Int, height: Int, data: ByteBuffer,
+        memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
+    ) =
+        offer(id, width, height, data, jpeg = true)
+
+
+    @Synchronized
+    private fun offerBuffer(id: Int, width: Int, height: Int, buffer: ByteArray, colorSpace: ColorSpace, jpeg: Boolean) {
+        synchronized(queuedTextures) {
+            if (queuedTextures.remainingCapacity() == 0) {
+                queuedTextures.poll()
+            }
+
+            // if it already has a request for the same texture, remove it
+            queuedTextures.removeIf { it.id == id }
+            queuedTextures.offer(FutureTexture(id, width, height, buffer, colorSpace, jpeg))
+        }
+    }
+
+    fun offer(
+        id: Int,
+        width: Int,
+        height: Int,
+        data: ByteBuffer,
+        colorSpace: ColorSpace = ColorSpace.RGB,
+        jpeg: Boolean = false,
+        memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
+    ) {
+        val size = data.remaining()
+        val buffer = getOrCreateReusableBuffer(size, memoryBehavior) ?: return
+
+        data.get(buffer) // memcpy hopefully?
+
+        synchronized(queuedTextures) {
+            if (queuedTextures.remainingCapacity() == 0) {
+                queuedTextures.poll()
+            }
+
+            println("Offering texture $id")
+            offerBuffer(id, width, height, buffer, colorSpace, jpeg)
+        }
+    }
 
     fun offer(
         id: Int,
@@ -111,13 +159,7 @@ class TextureProcessorQueue(
         val buffer = getOrCreateReusableBuffer(size, memoryBehavior) ?: return
 
         System.arraycopy(data, 0, buffer, 0, size)
-
-        synchronized(queuedTextures) {
-            if (queuedTextures.remainingCapacity() == 0) {
-                queuedTextures.poll()
-            }
-            queuedTextures.offer(FutureTexture(id, width, height, buffer, colorSpace, jpeg))
-        }
+        offerBuffer(id, width, height, buffer, colorSpace, jpeg)
     }
 
     private fun returnReusableBuffer(buffer: ByteArray) {
@@ -150,6 +192,27 @@ class TextureProcessorQueue(
         }
     }
 
+    val idCache = mutableMapOf<PlatformTexture, Int>()
+
+    fun getQIdOf(texture: PlatformTexture) = idCache[texture]?.also { return it }
+        ?: textures.entries.firstOrNull { it.value == texture }?.key?.also { idCache[texture] = it }
+
+    /**
+     * Assigns an ID to a texture. This is used to keep track of textures that are not initially part of this queue.
+     * @param texture The texture to assign the ID to
+     * @param id The ID to assign to the texture. Must be negative to avoid conflicts with existing textures.
+     */
+    fun assignQIdTo(texture: PlatformTexture): Int {
+        if (getQIdOf(texture) != null) throw IllegalArgumentException("Texture already has a qID assigned")
+
+        textures[-texture.id] = texture
+        idCache[texture] = -texture.id - 1
+
+        logger.info("Assigned qID ${-texture.id - 1} to texture $texture")
+
+        return -texture.id - 1
+    }
+
     operator fun get(id: Int) = textures[id]
 
     fun clear() {
@@ -161,6 +224,9 @@ class TextureProcessorQueue(
             reusableBuffers.values.forEach { it.clear() }
         }
     }
+
+    override val idElementContainer: IdElementContainer<TextureProcessorQueue>
+        get() = IdElementContainerStack.threadStack.peekNonNull()
 
     data class FutureTexture(
         val id: Int,

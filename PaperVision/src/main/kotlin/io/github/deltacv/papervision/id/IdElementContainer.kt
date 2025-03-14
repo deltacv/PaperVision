@@ -20,9 +20,21 @@ package io.github.deltacv.papervision.id
 
 import kotlin.math.max
 
-class IdElementContainer<T : IdElement> : Iterable<T> {
+class SingleIdElementContainer<T : IdElement> : IdElementContainer<T>() {
+    override fun requestId(element: T, id: Int): Lazy<Int> {
+        if(e.isNotEmpty()) {
+            throw IllegalStateException("This container can only have one element")
+        }
 
-    private val e = ArrayList<T?>()
+        return super.requestId(element, id)
+    }
+
+    fun get() = e.first()
+}
+
+open class IdElementContainer<T : IdElement> : Iterable<T> {
+
+    protected val e = ArrayList<T?>()
 
     /**
      * Note that the element positions in this list won't necessarily match their ids
@@ -60,7 +72,7 @@ class IdElementContainer<T : IdElement> : Iterable<T> {
         }
     }
 
-    fun requestId(element: T, id: Int) = lazy {
+    open fun requestId(element: T, id: Int) = lazy {
         if(id >= e.size) {
             // add null elements until the list has a size of "id"
             // and add "element" to the list in the index "id"

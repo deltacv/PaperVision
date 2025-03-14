@@ -63,8 +63,12 @@ class ThreadedMjpegByteReceiver(
                         val stream = MjpegHttpReader("${url.trimEnd('/')}/$id")
                         stream.start()
 
-                        for(frame in stream) {
-                            callHandlers(id, tagProvider(), frame)
+                        try {
+                            for (frame in stream) {
+                                callHandlers(id, tagProvider(), frame)
+                            }
+                        } catch(e: Exception) {
+                            logger.error("Error reading MJpeg stream for id $id", e)
                         }
 
                         logger.info("MJpegHttpReader thread for id $id ended")

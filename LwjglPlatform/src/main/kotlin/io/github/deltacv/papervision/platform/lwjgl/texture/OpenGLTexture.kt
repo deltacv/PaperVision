@@ -1,26 +1,7 @@
-/*
- * PaperVision
- * Copyright (C) 2024 Sebastian Erives, deltacv
-
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
-
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
-
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 package io.github.deltacv.papervision.platform.lwjgl.texture
 
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
-import io.github.deltacv.papervision.platform.lwjgl.texture.OpenGLTextureFactory.create
 import org.lwjgl.opengl.GL12.*
 import org.lwjgl.stb.STBImage.stbi_failure_reason
 import org.lwjgl.stb.STBImage.stbi_image_free
@@ -28,6 +9,7 @@ import org.lwjgl.stb.STBImage.stbi_load_from_memory
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import java.nio.ByteBuffer
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.use
 
 data class OpenGLTexture(
@@ -36,32 +18,43 @@ data class OpenGLTexture(
     override val height: Int
 ) : PlatformTexture() {
 
+    private val activeAsyncs = AtomicInteger(0)
+    private var queueId: Int? = null
+
+    @Synchronized
+    private fun ensureQueueId(): Int {
+        return queueId ?: run {
+            // Get existing ID or create a new one
+            val id = textureProcessorQueue.getQIdOf(this) ?: textureProcessorQueue.assignQIdTo(this)
+            queueId = id
+            id
+        }
+    }
+
     override fun set(bytes: ByteArray, colorSpace: ColorSpace) {
         val expectedSize = width * height * colorSpace.channels
-        if(expectedSize != bytes.size) {
+        if (expectedSize != bytes.size) {
             throw IllegalArgumentException("Buffer size does not match resolution (expected $expectedSize, got ${bytes.size}, channels: ${colorSpace.channels}, width: $width, height: $height)")
         }
 
         val buffer = MemoryUtil.memAlloc(bytes.size)
-
         try {
-            buffer.put(bytes)
-            buffer.flip()
+            buffer.put(bytes).flip()
             set(buffer, colorSpace)
         } finally {
-            MemoryUtil.memFree(buffer) // Free the memory even if an exception occurs
+            MemoryUtil.memFree(buffer)
         }
     }
 
     override fun set(bytes: ByteBuffer, colorSpace: ColorSpace) {
         val expectedSize = width * height * colorSpace.channels
-        if(expectedSize != bytes.remaining()) {
+        if (expectedSize != bytes.remaining()) {
             throw IllegalArgumentException("Buffer size does not match resolution (expected $expectedSize, got ${bytes.remaining()}, channels: ${colorSpace.channels}, width: $width, height: $height)")
         }
 
         glBindTexture(GL_TEXTURE_2D, textureId.toInt())
 
-        val format = when(colorSpace) {
+        val format = when (colorSpace) {
             ColorSpace.RGB -> GL_RGB
             ColorSpace.RGBA -> GL_RGBA
             ColorSpace.BGR -> GL_BGR
@@ -72,51 +65,97 @@ data class OpenGLTexture(
         glBindTexture(GL_TEXTURE_2D, 0)
     }
 
-    override fun setJpeg(bytes: ByteArray) {
+    private fun loadJpeg(bytes: ByteBuffer, callback: (ByteBuffer) -> Unit) {
         MemoryStack.stackPush().use {
-            val buffer = it.malloc(bytes.size)
-            buffer.put(bytes)
-            buffer.flip()
-
             val comp = it.mallocInt(1)
             val w = it.mallocInt(1)
             val h = it.mallocInt(1)
+            val img = stbi_load_from_memory(bytes, w, h, comp, 3)
 
-            val img = stbi_load_from_memory(buffer, w, h, comp, 3)
+            if (img == null) {
+                throw RuntimeException("Failed to load image due to ${stbi_failure_reason()}")
+            }
 
             try {
-                if(img == null) {
-                    throw RuntimeException("Failed to load image due to ${stbi_failure_reason()}")
-                }
-                set(img, ColorSpace.RGB)
+                callback(img)
             } finally {
-                if(img != null) {
-                    stbi_image_free(img) // Ensure memory is freed
-                }
+                stbi_image_free(img)
             }
         }
     }
 
+    override fun setJpeg(bytes: ByteArray) {
+        val buffer = MemoryUtil.memAlloc(bytes.size).put(bytes).flip()
+        try {
+            loadJpeg(buffer) { set(it, ColorSpace.RGB) }
+        } finally {
+            MemoryUtil.memFree(buffer)
+        }
+    }
+
     override fun setJpeg(bytes: ByteBuffer) {
-        MemoryStack.stackPush().use {
-            bytes.flip()
+        loadJpeg(bytes) { set(it, ColorSpace.RGB) }
+    }
 
-            val comp = it.mallocInt(1)
-            val w = it.mallocInt(1)
-            val h = it.mallocInt(1)
+    override fun setJpegAsync(bytes: ByteArray) {
+        // Check if we're already processing too many async requests
+        if (activeAsyncs.get() >= 4) {
+            return
+        }
 
-            val img = stbi_load_from_memory(bytes, w, h, comp, 3)
+        activeAsyncs.incrementAndGet()
 
+        // Create a safe copy of the bytes that the worker thread can use
+        val safeCopy = ByteArray(bytes.size)
+        System.arraycopy(bytes, 0, safeCopy, 0, bytes.size)
+
+        asyncWorkers.execute {
             try {
-                if(img == null) {
-                    throw RuntimeException("Failed to load image due to ${stbi_failure_reason()}")
+                val buffer = MemoryUtil.memAlloc(safeCopy.size).put(safeCopy).flip()
+                try {
+                    loadJpeg(buffer) { img ->
+                        val qid = ensureQueueId()
+                        textureProcessorQueue.offer(qid, width, height, img, ColorSpace.RGB)
+                    }
+                } finally {
+                    MemoryUtil.memFree(buffer)
                 }
-
-                set(img, ColorSpace.RGB)
+            } catch (e: Exception) {
+                throw RuntimeException("Error in async JPEG processing", e)
             } finally {
-                if(img != null) {
-                    stbi_image_free(img) // Ensure memory is freed
+                activeAsyncs.decrementAndGet()
+            }
+        }
+    }
+
+    override fun setJpegAsync(bytes: ByteBuffer) {
+        if (activeAsyncs.get() >= 4) {
+            return
+        }
+
+        activeAsyncs.incrementAndGet()
+
+        // Create a copy that will be safe for the worker thread
+        val size = bytes.remaining()
+        val safeCopy = ByteArray(size)
+        bytes.get(safeCopy)
+        bytes.position(bytes.position() - size) // Reset position
+
+        asyncWorkers.execute {
+            try {
+                val buffer = MemoryUtil.memAlloc(safeCopy.size).put(safeCopy).flip()
+                try {
+                    loadJpeg(buffer) { img ->
+                        val qid = ensureQueueId()
+                        textureProcessorQueue.offer(qid, width, height, img, ColorSpace.RGB)
+                    }
+                } finally {
+                    MemoryUtil.memFree(buffer)
                 }
+            } catch (e: Exception) {
+                throw RuntimeException("Error in async JPEG processing", e)
+            } finally {
+                activeAsyncs.decrementAndGet()
             }
         }
     }
@@ -124,5 +163,4 @@ data class OpenGLTexture(
     override fun delete() {
         glDeleteTextures(textureId.toInt())
     }
-
 }

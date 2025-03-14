@@ -54,6 +54,21 @@ class IdElementContainerStack {
 
     inline fun <reified T: IdElement> peekNonNull() = peek(T::class.java) ?: throw NullPointerException("No IdElementContainer was found for ${T::class.java.typeName} in the stack")
 
+    inline fun <reified T: IdElement> peekSingle(): T? {
+        val container = peek<T>()
+
+        if(container == null)
+            return null
+
+        if(container is SingleIdElementContainer) {
+            return container.get()
+        } else {
+            throw ClassCastException("The container for ${T::class.java.typeName} is not a SingleIdElementContainer")
+        }
+    }
+
+    inline fun <reified T: IdElement> peekSingleNonNull() = peekSingle<T>() ?: throw NullPointerException("No IdElement was found for ${T::class.java.typeName} in the stack")
+
     fun <T: IdElement> pop(clazz: Class<T>) = stacks[clazz]?.removeLast() != null
 
     inline fun <reified T: IdElement> pop() = pop(T::class.java)

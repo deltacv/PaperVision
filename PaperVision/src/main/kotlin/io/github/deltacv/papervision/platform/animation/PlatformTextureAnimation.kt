@@ -59,6 +59,12 @@ abstract class PlatformTextureAnimation : PlatformTexture() {
     override fun setJpeg(bytes: ByteBuffer) =
         throw UnsupportedOperationException("setJpeg() is not supported on animations")
 
+    override fun setJpegAsync(bytes: ByteArray) =
+        throw UnsupportedOperationException("setJpegAsync() is not supported on animations")
+
+    override fun setJpegAsync(bytes: ByteBuffer) =
+        throw UnsupportedOperationException("setJpegAsync() is not supported on animations")
+
     companion object {
         val animations = IdElementContainer<PlatformTextureAnimation>()
     }

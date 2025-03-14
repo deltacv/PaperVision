@@ -30,6 +30,7 @@ import io.github.deltacv.papervision.engine.client.message.PrevizStopMessage
 import io.github.deltacv.papervision.engine.client.response.OkResponse
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bufferedImageFromResource
+import io.github.deltacv.papervision.platform.PlatformTextureFactory
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.hexString
@@ -39,7 +40,6 @@ class ClientPrevizManager(
     val defaultPrevizStreamWidth: Int,
     val defaultPrevizStreamHeight: Int,
     val codeGenManager: CodeGenManager,
-    val textureProcessorQueue: TextureProcessorQueue,
     val client: PaperVisionEngineClient,
     val byteReceiverProvider: (() -> ByteMessageReceiver)? = null
 ) {
@@ -52,7 +52,7 @@ class ClientPrevizManager(
     var previzName: String? = null
         private set
 
-    var stream = PipelineStream("", client, textureProcessorQueue, offlineImages = offlineImages)
+    var stream = PipelineStream("", client, offlineImages = offlineImages)
         private set(value) {
             field = value
             onStreamChange.run()
@@ -111,7 +111,6 @@ class ClientPrevizManager(
                 stream = if(byteReceiverProvider == null) {
                     PipelineStream(
                         previzName, client,
-                        textureProcessorQueue,
                         width = streamWidth, height = streamHeight,
                         offlineImages = offlineImages,
                         status = streamStatus
@@ -119,7 +118,6 @@ class ClientPrevizManager(
                 } else {
                     PipelineStream(
                         previzName, byteReceiverProvider(),
-                        textureProcessorQueue,
                         width = streamWidth, height = streamHeight,
                         offlineImages = offlineImages,
                         status = streamStatus
