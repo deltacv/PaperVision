@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.plugin.ipc.eocvsim
 
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.stream.ImageStreamer
-import io.github.deltacv.visionloop.receiver.MjpegHttpStreamerReceiver
+import io.github.deltacv.visionloop.sink.MjpegHttpStreamSink
 import io.javalin.http.Handler
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
@@ -30,7 +30,7 @@ class EOCVSimEngineImageStreamer(
 ) : ImageStreamer {
 
     private val handlers = mutableMapOf<Int, Handler>()
-    val receivers = mutableMapOf<Int, MjpegHttpStreamerReceiver>()
+    val receivers = mutableMapOf<Int, MjpegHttpStreamSink>()
 
     val logger by loggerForThis()
 
@@ -46,7 +46,7 @@ class EOCVSimEngineImageStreamer(
         }
 
         if (!receivers.containsKey(id)) {
-            val receiver = MjpegHttpStreamerReceiver(0, resolution)
+            val receiver = MjpegHttpStreamSink(0, resolution, 60)
             handlers[id] = receiver.takeHandler() // save handler for later
 
             logger.info("Creating new Mjpeg stream for id $id")

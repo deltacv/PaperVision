@@ -18,12 +18,15 @@
 
 package io.github.deltacv.papervision.plugin.ipc
 
+import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
+import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.plugin.ipc.serialization.ipcGson
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.vision.external.util.Timestamped
 import org.java_websocket.client.WebSocketClient
 import org.slf4j.LoggerFactory
 import java.net.URI
@@ -33,12 +36,20 @@ import java.util.concurrent.TimeUnit
 
 class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
 
+    companion object {
+        var logHighFrequencyMessages = true
+    }
+
+    private val highFrequencyMessages = mutableMapOf<String, MutableList<Long>>()
+
     private val clients = mutableListOf<PaperVisionEngineClient>()
 
     override val onClientProcess = PaperVisionEventHandler("LocalPaperVisionEngineBridge-OnClientProcess")
     override val processedBinaryMessagesHashes = ArrayBlockingQueue<Int>(100)
 
     private var wsClient = WsClient(port, this)
+
+    val logger by loggerForThis()
 
     override val isConnected: Boolean
         get() = wsClient.isOpen
@@ -80,6 +91,26 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
         val messageJson = ipcGson.toJson(message)
 
         wsClient.send(messageJson)
+
+        if(logHighFrequencyMessages) {
+            val messages = highFrequencyMessages.getOrPut(message::class.java.name) { mutableListOf() }
+            messages.add(System.currentTimeMillis())
+
+            if(messages.size > 20) { // buffer size
+                messages.removeAt(0)
+            }
+
+            // calculate avg time delta
+            val avgDelta = messages.zipWithNext().map {
+                it.second - it.first
+            }.average()
+
+            if(avgDelta < 100) {
+                // get calling class
+                val callingClass = Thread.currentThread().stackTrace[2]
+                logger.warn("Sent too often: ${message::class.java.name} - avg $avgDelta. Last sent at ${callingClass.className} line ${callingClass.lineNumber}")
+            }
+        }
     }
 
     private fun ensureConnected() {

@@ -48,6 +48,7 @@ allprojects {
         mavenCentral()
         google()
         maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
+        maven { url 'https://maven.scijava.org/content/repositories/public/' }
     }
 
     if(env == 'dev') {
