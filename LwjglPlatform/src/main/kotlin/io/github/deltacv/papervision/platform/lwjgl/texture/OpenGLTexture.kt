@@ -18,18 +18,6 @@ data class OpenGLTexture(
     override val height: Int
 ) : PlatformTexture() {
 
-    private val activeAsyncs = AtomicInteger(0)
-    private var queueId: Int? = null
-
-    @Synchronized
-    private fun ensureQueueId(): Int {
-        return queueId ?: run {
-            // Get existing ID or create a new one
-            val id = textureProcessorQueue.getQIdOf(this) ?: textureProcessorQueue.assignQIdTo(this)
-            queueId = id
-            id
-        }
-    }
 
     override fun set(bytes: ByteArray, colorSpace: ColorSpace) {
         val expectedSize = width * height * colorSpace.channels
@@ -95,69 +83,6 @@ data class OpenGLTexture(
 
     override fun setJpeg(bytes: ByteBuffer) {
         loadJpeg(bytes) { set(it, ColorSpace.RGB) }
-    }
-
-    override fun setJpegAsync(bytes: ByteArray) {
-        // Check if we're already processing too many async requests
-        if (activeAsyncs.get() >= 4) {
-            return
-        }
-
-        activeAsyncs.incrementAndGet()
-
-        // Create a safe copy of the bytes that the worker thread can use
-        val safeCopy = ByteArray(bytes.size)
-        System.arraycopy(bytes, 0, safeCopy, 0, bytes.size)
-
-        asyncWorkers.execute {
-            try {
-                val buffer = MemoryUtil.memAlloc(safeCopy.size).put(safeCopy).flip()
-                try {
-                    loadJpeg(buffer) { img ->
-                        val qid = ensureQueueId()
-                        textureProcessorQueue.offer(qid, width, height, img, ColorSpace.RGB)
-                    }
-                } finally {
-                    MemoryUtil.memFree(buffer)
-                }
-            } catch (e: Exception) {
-                throw RuntimeException("Error in async JPEG processing", e)
-            } finally {
-                activeAsyncs.decrementAndGet()
-            }
-        }
-    }
-
-    override fun setJpegAsync(bytes: ByteBuffer) {
-        if (activeAsyncs.get() >= 4) {
-            return
-        }
-
-        activeAsyncs.incrementAndGet()
-
-        // Create a copy that will be safe for the worker thread
-        val size = bytes.remaining()
-        val safeCopy = ByteArray(size)
-        bytes.get(safeCopy)
-        bytes.position(bytes.position() - size) // Reset position
-
-        asyncWorkers.execute {
-            try {
-                val buffer = MemoryUtil.memAlloc(safeCopy.size).put(safeCopy).flip()
-                try {
-                    loadJpeg(buffer) { img ->
-                        val qid = ensureQueueId()
-                        textureProcessorQueue.offer(qid, width, height, img, ColorSpace.RGB)
-                    }
-                } finally {
-                    MemoryUtil.memFree(buffer)
-                }
-            } catch (e: Exception) {
-                throw RuntimeException("Error in async JPEG processing", e)
-            } finally {
-                activeAsyncs.decrementAndGet()
-            }
-        }
     }
 
     override fun delete() {

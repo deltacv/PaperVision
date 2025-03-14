@@ -53,11 +53,7 @@ class PipelineStream(
     private var requestedMaximize = false
     private var requestedMinimize = false
 
-    private val pendingTextureQIds = mutableListOf<Int>()
-    private val texturesQIdMap = mutableMapOf<Int, PlatformTexture>()
-
     // get the texture container of the current thread
-    val textures = IdElementContainerStack.threadStack.peekNonNull<PlatformTexture>()
     val textureQueue = IdElementContainerStack.threadStack.peekSingleNonNull<TextureProcessorQueue>()
 
     var offlineTexture: PlatformTexture? = null
@@ -109,28 +105,7 @@ class PipelineStream(
 
     private val defaultHandler: Handler = { id, tag, bytes ->
         if(tag == sessionName) {
-            if(!texturesQIdMap.contains(id)) {
-                if(textureQueue[id] == null) {
-                    // we are waiting for this texture to be created
-                    // if we have already queued it, we don't need to do it again
-                    if(!pendingTextureQIds.contains(id)) {
-                        // create a new texture if this is nowhere to be found
-                        textureQueue.offerJpeg(id, width, height, bytes)
-                        pendingTextureQIds.add(id)
-
-                        logger.info("Creating new texture for qId $id")
-                    }
-                } else {
-                    // save the texture in our own id map so that we can
-                    // use setJpegAsync instead of going though the queue
-                    texturesQIdMap[id] = textureQueue[id]!!
-                    pendingTextureQIds.remove(id)
-                    logger.info("Acknowledged texture for qId $id")
-                }
-            } else {
-                // yay, we can process async now
-                texturesQIdMap[id]!!.setJpegAsync(bytes)
-            }
+            textureQueue.offerJpegAsync(id, width, height, bytes)
         }
     }
 
@@ -152,7 +127,7 @@ class PipelineStream(
     fun isAtOfflineTexture(id: Int) = !isStarted
 
     fun textureOf(id: Int) = if(isStarted)
-        texturesQIdMap[id] ?: offlineTexture
+        textureQueue[id] ?: offlineTexture
     else offlineTexture
 
     fun maximize() {

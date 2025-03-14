@@ -18,7 +18,6 @@
 package io.github.deltacv.papervision.io
 
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.IdElement
 import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.platform.ColorSpace
@@ -26,8 +25,12 @@ import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.PlatformTextureFactory
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
+import io.github.deltacv.papervision.io.turbojpeg.TJLoader
+import org.libjpegturbo.turbojpeg.TJ
+import org.libjpegturbo.turbojpeg.TJDecompressor
 import java.nio.ByteBuffer
 import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.Executors
 
 class TextureProcessorQueue(
     val textureFactory: PlatformTextureFactory
@@ -40,8 +43,14 @@ class TextureProcessorQueue(
     }
 
     companion object {
-        const val REUSABLE_BUFFER_QUEUE_SIZE = 60
+        const val REUSABLE_BUFFER_QUEUE_SIZE = 20
+
+        init {
+            TJLoader.load()
+        }
     }
+
+    val jpegWorkers = Executors.newFixedThreadPool(5)
 
     val logger by loggerForThis()
 
@@ -66,7 +75,6 @@ class TextureProcessorQueue(
                             existingTex.setJpeg(futureTex.data)
                         } else {
                             existingTex.set(futureTex.data, futureTex.colorSpace)
-                            println("Setting texture ${futureTex.id} ${futureTex.data.size}")
                         }
                         shouldContinue = true
                     } else {
@@ -101,13 +109,30 @@ class TextureProcessorQueue(
     ) =
         offer(id, width, height, data, jpeg = true)
 
-
     fun offerJpeg(
         id: Int, width: Int, height: Int, data: ByteBuffer,
         memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
     ) =
         offer(id, width, height, data, jpeg = true)
 
+    fun offerJpegAsync(
+        id: Int, width: Int, height: Int, data: ByteArray,
+        memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
+    ) {
+        jpegWorkers.submit {
+            val buffer = getOrCreateReusableBuffer(width * height * 3, memoryBehavior) ?: return@submit
+
+            val decompressor = TJDecompressor()
+
+            decompressor.setJPEGImage(data, data.size)
+            decompressor.decompress(buffer, width, 0, height, TJ.PF_RGB, TJ.FLAG_FASTDCT)
+
+            offerBuffer(id, width, height, buffer, ColorSpace.RGB, jpeg = false)
+
+            decompressor.close()
+            returnReusableBuffer(buffer)
+        }
+    }
 
     @Synchronized
     private fun offerBuffer(id: Int, width: Int, height: Int, buffer: ByteArray, colorSpace: ColorSpace, jpeg: Boolean) {

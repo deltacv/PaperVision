@@ -29,15 +29,6 @@ import java.util.concurrent.Executors
 
 abstract class PlatformTexture : DrawableIdElementBase<PlatformTexture>() {
 
-    companion object {
-        /**
-         * Executor for async texture processing.
-         * Any texture processing that is done in the
-         * background should be done with this executor
-         */
-        val asyncWorkers: Executor = Executors.newFixedThreadPool(5)
-    }
-
     override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<PlatformTexture>()
 
     val textureProcessorQueue = IdElementContainerStack.threadStack.peekSingleNonNull<TextureProcessorQueue>()
@@ -52,9 +43,6 @@ abstract class PlatformTexture : DrawableIdElementBase<PlatformTexture>() {
 
     abstract fun setJpeg(bytes: ByteArray)
     abstract fun setJpeg(bytes: ByteBuffer)
-
-    abstract fun setJpegAsync(bytes: ByteArray)
-    abstract fun setJpegAsync(bytes: ByteBuffer)
 
     override fun draw() {
         ImGui.image(textureId, width.toFloat(), height.toFloat())
