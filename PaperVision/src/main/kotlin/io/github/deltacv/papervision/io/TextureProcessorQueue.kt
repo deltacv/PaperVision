@@ -30,6 +30,7 @@ import org.libjpegturbo.turbojpeg.TJ
 import org.libjpegturbo.turbojpeg.TJDecompressor
 import java.nio.ByteBuffer
 import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
 class TextureProcessorQueue(
@@ -43,7 +44,7 @@ class TextureProcessorQueue(
     }
 
     companion object {
-        const val REUSABLE_BUFFER_QUEUE_SIZE = 20
+        const val REUSABLE_BUFFER_QUEUE_SIZE = 15
 
         init {
             TJLoader.load()
@@ -54,16 +55,18 @@ class TextureProcessorQueue(
 
     val logger by loggerForThis()
 
-    private val reusableBuffers = mutableMapOf<Int, ArrayBlockingQueue<ByteArray>>()
+    private val reusableBuffers = ConcurrentHashMap<Int, ArrayBlockingQueue<ByteArray>>()
 
     private val queuedTextures = ArrayBlockingQueue<FutureTexture>(REUSABLE_BUFFER_QUEUE_SIZE)
     private val textures = mutableMapOf<Int, PlatformTexture>()
 
-    private var currentHandler: PaperVisionEventHandler? = null
+    val idCache = mutableMapOf<PlatformTexture, Int>()
 
     @Synchronized
     override fun draw() {
-        while (queuedTextures.isNotEmpty()) {
+        val currentQueueSize = queuedTextures.size
+
+        repeat(currentQueueSize) {
             val futureTex = queuedTextures.poll()
 
             try {
@@ -82,7 +85,7 @@ class TextureProcessorQueue(
                     }
                 }
 
-                if (shouldContinue) continue
+                if (shouldContinue) return@repeat
 
                 if (futureTex.id < 0) {
                     throw IllegalArgumentException("ID of new texture must be positive !")
@@ -122,6 +125,7 @@ class TextureProcessorQueue(
         jpegWorkers.submit {
             val buffer = getOrCreateReusableBuffer(width * height * 3, memoryBehavior) ?: return@submit
 
+            // beautiful turbojpeg
             val decompressor = TJDecompressor()
 
             decompressor.setJPEGImage(data, data.size)
@@ -130,19 +134,15 @@ class TextureProcessorQueue(
             offerBuffer(id, width, height, buffer, ColorSpace.RGB, jpeg = false)
 
             decompressor.close()
-            returnReusableBuffer(buffer)
         }
     }
 
-    @Synchronized
     private fun offerBuffer(id: Int, width: Int, height: Int, buffer: ByteArray, colorSpace: ColorSpace, jpeg: Boolean) {
         synchronized(queuedTextures) {
             if (queuedTextures.remainingCapacity() == 0) {
-                queuedTextures.poll()
+                returnReusableBuffer(queuedTextures.poll().data)
             }
 
-            // if it already has a request for the same texture, remove it
-            queuedTextures.removeIf { it.id == id }
             queuedTextures.offer(FutureTexture(id, width, height, buffer, colorSpace, jpeg))
         }
     }
@@ -160,15 +160,7 @@ class TextureProcessorQueue(
         val buffer = getOrCreateReusableBuffer(size, memoryBehavior) ?: return
 
         data.get(buffer) // memcpy hopefully?
-
-        synchronized(queuedTextures) {
-            if (queuedTextures.remainingCapacity() == 0) {
-                queuedTextures.poll()
-            }
-
-            println("Offering texture $id")
-            offerBuffer(id, width, height, buffer, colorSpace, jpeg)
-        }
+        offerBuffer(id, width, height, buffer, colorSpace, jpeg)
     }
 
     fun offer(
@@ -216,8 +208,6 @@ class TextureProcessorQueue(
             }
         }
     }
-
-    val idCache = mutableMapOf<PlatformTexture, Int>()
 
     fun getQIdOf(texture: PlatformTexture) = idCache[texture]?.also { return it }
         ?: textures.entries.firstOrNull { it.value == texture }?.key?.also { idCache[texture] = it }

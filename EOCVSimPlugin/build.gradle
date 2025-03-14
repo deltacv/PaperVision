@@ -147,14 +147,14 @@ dependencies {
     implementation 'info.picocli:picocli:4.7.6'
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 
-    implementation('org.deltacv.visionloop:visionloop:1.2.5') {
+    implementation('org.deltacv.visionloop:visionloop:1.2.6') {
         exclude group: 'org.jetbrains.skiko'
         exclude group: 'org.deltacv'
         exclude group: 'org.deltacv.EOCVSim'
         exclude group: 'org.deltacv.steve'
         exclude group: 'org.openpnp'
     }
-    implementation('org.deltacv.visionloop:streaming:1.2.5') {
+    implementation('org.deltacv.visionloop:streaming:1.2.6') {
         exclude group: 'org.jetbrains.skiko'
         exclude group: 'org.deltacv'
         exclude group: 'org.deltacv.EOCVSim'
