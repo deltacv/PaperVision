@@ -5,6 +5,9 @@ import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import java.awt.Dimension
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.Insets
 import java.awt.Window
 import javax.swing.Box
 import javax.swing.BoxLayout
@@ -28,21 +31,25 @@ class NewProjectPanel(
     val importProjectBtt = JButton("Import Project")
 
     init {
-        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
+        layout = GridBagLayout()
 
         newProjectBtt.addActionListener {
             projectManager.newProjectAsk(ancestor)
         }
 
-        add(newProjectBtt)
-
-        add(Box.createRigidArea(Dimension(10, 1)))
+        add(newProjectBtt, GridBagConstraints().apply {
+            gridx = 0
+            gridy = 0
+        })
 
         importProjectBtt.addActionListener {
             projectManager.importProjectAsk(ancestor)
         }
 
-        add(importProjectBtt)
+        add(importProjectBtt, GridBagConstraints().apply {
+            gridx = 1
+            gridy = 0
+        })
     }
 
 }

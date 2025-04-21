@@ -49,6 +49,10 @@ import jdk.nashorn.internal.codegen.types.BooleanType
 )
 class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
+    enum class DetectionMode {
+        Inside, Nearest
+    }
+
     val drawCrosshairOn = MatAttribute(INPUT, "$[att_drawon_image]")
     val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
 
@@ -57,6 +61,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
     val crosshairScale = IntAttribute(INPUT, "$[att_scale]")
 
     val crosshairLineParams = LineParametersAttribute(INPUT, "$[att_crosshairline_params]")
+
+    val detectionMode = EnumAttribute(INPUT, DetectionMode.values(), "$[att_detectionmode]")
 
     val outputCrosshair = ListAttribute(OUTPUT, PointsAttribute, "$[att_crosshair]")
     val outputCrosshairImage = MatAttribute(OUTPUT, "$[att_crosshairimage]")
@@ -70,6 +76,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
         + crosshairPosition
         + crosshairLineParams
+
+        + detectionMode.rebuildOnChange()
 
         + outputCrosshairImage.enablePrevizButton().rebuildOnChange()
         + outputCrosshair.rebuildOnChange()
@@ -177,6 +185,26 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
+                    val currDist = if(detectionMode.value(current).value == DetectionMode.Nearest) {
+                        uniqueVariable("currDist", 0.0.v)
+                    } else {
+                        null
+                    }
+
+                    val closestContour = if(detectionMode.value(current).value == DetectionMode.Nearest) {
+                        uniqueVariable("closestContour", JvmOpenCvTypes.MatOfPoint.nullVal)
+                    } else {
+                        null
+                    }
+
+                    if(currDist != null) {
+                        local(currDist)
+                    }
+                    if(closestContour != null) {
+                        local(closestContour)
+                        separate()
+                    }
+
                     foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), inputPoints.value) {
                         // Get the bounding rectangle of the current contour
                         val boundingRect = uniqueVariable(
@@ -186,19 +214,47 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                         separate()
 
-                        // Check if the crosshair rectangle is inside the bounding rectangle
-                        ifCondition(
-                            boundingRect.callValue("contains", BooleanType, crosshairPoint).condition()
-                        ) {
-                            // Add the contour to the crosshair if the bounding rectangle contains the crosshair
-                            crosshair("add", it)
+                        when(detectionMode.value(current).value) {
+                            DetectionMode.Inside -> {
+                                // Check if the crosshair rectangle is inside the bounding rectangle
+                                ifCondition(
+                                    boundingRect.callValue("contains", BooleanType, crosshairPoint).condition()
+                                ) {
+                                    // Add the contour to the crosshair if the bounding rectangle contains the crosshair
+                                    crosshair("add", it)
+                                }
+                            }
+                            DetectionMode.Nearest -> {
+                                // get distance
+                                val distance = uniqueVariable("newDist", JavaTypes.Math.callValue("sqrt", DoubleType,
+                                    JavaTypes.Math.callValue("pow", DoubleType,
+                                        crosshairPoint.propertyValue("x", DoubleType) - (boundingRect.propertyValue("x", IntType) + boundingRect.propertyValue("width", IntType) / 2.v),
+                                        2.v
+                                    ) + JavaTypes.Math.callValue("pow", DoubleType,
+                                        crosshairPoint.propertyValue("y", DoubleType) - (boundingRect.propertyValue("y", IntType) + boundingRect.propertyValue("height", IntType) / 2.v),
+                                        2.v
+                                    )
+                                ))
+
+                                local(distance)
+
+                                ifCondition((closestContour!! equalsTo JvmOpenCvTypes.MatOfPoint.nullVal) or (JavaTypes.Math.callValue("abs", DoubleType, distance) lessOrEqualThan currDist!!)) {
+                                    currDist set JavaTypes.Math.callValue("abs", DoubleType, distance)
+                                    closestContour set it
+                                }
+                            }
+                        }
+                    }
+
+                    if(DetectionMode.Nearest == detectionMode.value(current).value) {
+                        ifCondition(closestContour!! notEqualsTo JvmOpenCvTypes.MatOfPoint.nullVal) {
+                            crosshair("add", closestContour)
                         }
                     }
 
                     outputCrosshairImage.streamIfEnabled(crosshairImage, drawOn.color)
 
-                    session.outputCrosshair =
-                        GenValue.GList.RuntimeListOf(crosshair, GenValue.GPoints.RuntimePoints::class)
+                    session.outputCrosshair = GenValue.GList.RuntimeListOf(crosshair, GenValue.GPoints.RuntimePoints::class)
                     session.outputCrosshairImage = GenValue.Mat(crosshairImage, drawOn.color, drawOn.isBinary)
                 }
             }

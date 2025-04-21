@@ -238,8 +238,46 @@ class PaperVisionProjectManager(
         }
     }
 
+    fun cloneProjectAsk(project: PaperVisionProjectTree.ProjectTreeNode.Project, ancestor: Window) {
+        SwingUtilities.invokeLater {
+            PaperVisionDialogFactory.displayNewProjectDialog(
+                ancestor,
+                projectTree.projects,
+                projectTree.folders,
+                "${project.name.removeFromEnd(".paperproj")} (Copy)"
+            ) { projectGroup, projectName ->
+                try {
+                    cloneProject(projectGroup ?: "", projectName, project)
+                } catch (e: FileAlreadyExistsException) {
+                    throw e // new project dialog will handle this
+                } catch (e: Exception) {
+                    JOptionPane.showMessageDialog(
+                        ancestor,
+                        "Project file failed to load: ${e.javaClass.simpleName} ${e.message}"
+                    )
+                    logger.warn("Project file ${project.name} failed to load", e)
+                    return@displayNewProjectDialog
+                }
+
+                JOptionPane.showConfirmDialog(
+                    ancestor,
+                    "Do you wish to open the project that was just cloned?",
+                    "Project Imported",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+                ).takeIf { it == JOptionPane.YES_OPTION }?.run {
+                    requestOpenProject(findProject(projectGroup ?: "", "$projectName.paperproj")!!)
+                }
+            }
+        }
+    }
+
     fun importProject(path: String, name: String, file: File) {
         newProject(path, name, jsonElement = PaperVisionProject.fromJson(SysUtil.loadFileStr(file)).json)
+    }
+
+    fun cloneProject(path: String, newName: String, project: PaperVisionProjectTree.ProjectTreeNode.Project) {
+        newProject(path, newName, jsonElement = PaperVisionProject.fromJson(readProjectFile(project)).json)
     }
 
     fun newProjectAsk(ancestor: Window) {

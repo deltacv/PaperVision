@@ -40,6 +40,8 @@ interface ValueBuilder {
     fun equals(left: Value, right: Value) = condition("${left.value} == ${right.value}")
     fun notEquals(left: Value, right: Value) = condition("${left.value} != ${right.value}")
 
+    fun objectEquals(left: Value, right: Value) = condition("${left.value}.equals(${right.value})")
+
     fun and(left: Condition, right: Condition) = condition("(${left.value}) && (${right.value})")
     fun or(left: Condition, right: Condition) = condition("(${left.value}) || (${right.value})")
 

@@ -26,6 +26,7 @@ import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.targets
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 
 fun CodeGen.Current.enableTargets() = this {
     if(!codeGen.hasFlag("targetsEnabled")) {
@@ -35,42 +36,14 @@ fun CodeGen.Current.enableTargets() = this {
             }
 
             group {
-                private(targets)
+                private(rectTargets)
+                private(rotRectTargets)
             }
 
             codeGen.classEndScope {
                 val labelParameter = Parameter(JavaTypes.String, "label")
                 val rectTargetParameter = Parameter(JvmOpenCvTypes.Rect, "rect")
-
-                method(
-                    Visibility.PRIVATE,
-                    VoidType,
-                    "addTarget",
-                    labelParameter,
-                    rectTargetParameter,
-                    isSynchronized = true
-                ) {
-                    targets("add", TargetType.new(labelParameter, rectTargetParameter))
-                }
-
-                separate()
-
-                val rectArrayListTargetsParameter = Parameter(JavaTypes.ArrayList(JvmOpenCvTypes.Rect), "rects")
-
-                method(
-                    Visibility.PRIVATE,
-                    VoidType,
-                    "addTargets",
-                    labelParameter,
-                    rectArrayListTargetsParameter,
-                    isSynchronized = true
-                ) {
-                    foreach(Variable(JvmOpenCvTypes.Rect, "rect"), rectArrayListTargetsParameter) {
-                        "addTarget"(labelParameter, it)
-                    }
-                }
-
-                separate()
+                val rotatedRectTargetParameter = Parameter(JvmOpenCvTypes.RotatedRect, "rotRect")
 
                 method(
                     Visibility.PRIVATE,
@@ -78,70 +51,45 @@ fun CodeGen.Current.enableTargets() = this {
                     "clearTargets",
                     isSynchronized = true
                 ) {
-                    targets("clear")
+                    rectTargets("clear")
+                    rotRectTargets("clear")
                 }
 
                 separate()
 
-                method(Visibility.PUBLIC, TargetType.arrayType(), "getTargets", isSynchronized = true) {
-                    val array = Variable("array", TargetType.newArray(targets.callValue("size", IntType)))
-                    local(array)
+                method(
+                    Visibility.PRIVATE,
+                    VoidType,
+                    "addRectTarget",
+                    labelParameter,
+                    rectTargetParameter,
+                    isSynchronized = true
+                ) {
+                    rectTargets("put", labelParameter, rectTargetParameter)
+                }
 
-                    separate()
-
-                    ifCondition(targets.callValue("isEmpty", BooleanType).condition()) {
-                        returnMethod(array)
-                    }
-
-                    separate()
-
-                    forLoop(Variable(IntType, "i"), int(0), targets.callValue("size", IntType) - int(1)) {
-                        array.arraySet(it, targets.callValue("get", TargetType, it).castTo(TargetType))
-                    }
-
-                    separate()
-
-                    returnMethod(array)
+                method(
+                    Visibility.PRIVATE,
+                    VoidType, "addRotRectTarget",
+                    labelParameter,
+                    rotatedRectTargetParameter,
+                    isSynchronized = true
+                ) {
+                    rotRectTargets("put", labelParameter, rotatedRectTargetParameter)
                 }
 
                 separate()
 
-                val targetsWithLabel = Variable("targetsWithLabel", JavaTypes.ArrayList(TargetType).new())
+                method(Visibility.PUBLIC, JvmOpenCvTypes.Rect, "getRectTarget", labelParameter,  isSynchronized = true) {
+                    returnMethod(rectTargets.callValue("get", JvmOpenCvTypes.Rect, labelParameter).castTo(JvmOpenCvTypes.Rect))
+                }
 
-                method(Visibility.PUBLIC, JavaTypes.ArrayList(TargetType), "getTargetsWithLabel", labelParameter, isSynchronized = true) {
-                    local(targetsWithLabel)
 
-                    separate()
-
-                    foreach(Variable(TargetType, "target"), targets) {
-                        val label = it.propertyValue("label", JavaTypes.String)
-
-                        ifCondition(label.callValue("equals", BooleanType, labelParameter).condition()) {
-                            targetsWithLabel("add", it)
-                        }
-                    }
-
-                    separate()
-
-                    returnMethod(targetsWithLabel)
+                method(Visibility.PUBLIC, JvmOpenCvTypes.RotatedRect, "getRotRectTarget", labelParameter, isSynchronized = true) {
+                    returnMethod(rotRectTargets.callValue("get", JvmOpenCvTypes.RotatedRect, labelParameter).castTo(JvmOpenCvTypes.RotatedRect))
                 }
 
                 separate()
-
-                clazz(Visibility.PUBLIC, TargetType.className) {
-                    val labelVariable = Variable("label", ConValue(JavaTypes.String, null))
-                    val rectVariable = Variable("rect", ConValue(JvmOpenCvTypes.Rect, null))
-
-                    instanceVariable(Visibility.PUBLIC, labelVariable, isFinal = true)
-                    instanceVariable(Visibility.PUBLIC, rectVariable, isFinal = true)
-
-                    separate()
-
-                    constructor(Visibility.PROTECTED, TargetType, labelParameter, rectTargetParameter) {
-                        labelVariable instanceSet labelParameter
-                        rectVariable instanceSet rectTargetParameter
-                    }
-                }
             }
         }
 

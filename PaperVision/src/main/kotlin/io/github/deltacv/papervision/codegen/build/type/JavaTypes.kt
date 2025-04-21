@@ -24,10 +24,29 @@ object JavaTypes {
 
     val String = Type("String", "java.lang")
 
+    val Math = object: Type("Math", "java.lang") {
+        override val shouldImport = false
+    }
+
     fun ArrayList(elementType: Type) = Type(
         "ArrayList", "java.util",
         arrayOf(elementType)
     )
+
+    fun HashMap(key: Type, value: Type) = Type(
+        "HashMap", "java.util",
+        arrayOf(key, value)
+    )
+
+    class Map(key: Type, value: Type) : Type(
+        "Map", "java.util",
+        arrayOf(key, value)
+    ) {
+        class Entry(key: Type, value: Type) : Type(
+            "Entry", "java.util",
+            arrayOf(key, value)
+        )
+    }
 
     fun List(elementType: Type) = Type(
         "List", "java.util",

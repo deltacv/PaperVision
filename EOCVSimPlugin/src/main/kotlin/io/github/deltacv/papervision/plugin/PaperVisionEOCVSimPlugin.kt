@@ -463,7 +463,9 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                 eocvSim.pipelineManager.onUpdate.doOnce {
                     eocvSim.pipelineManager.addInstantiator(
                         PaperVisionDefaultPipeline::class.java,
-                        StreamableOpenCvPipelineInstantiator(EOCVSimEngineImageStreamer(Size(320.0, 240.0)))
+                        StreamableOpenCvPipelineInstantiator(EOCVSimEngineImageStreamer(Size(320.0, 240.0)) {
+                            80 - (it * 15)
+                        })
                     )
 
                     eocvSim.pipelineManager.changePipeline(

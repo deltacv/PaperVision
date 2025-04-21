@@ -5,6 +5,9 @@ import com.github.serivesmejia.eocvsim.util.extension.plus
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectTree
 import java.awt.Dimension
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.Insets
 import java.awt.Window
 import java.io.File
 import java.util.concurrent.CancellationException
@@ -27,8 +30,10 @@ class EditSelectionPanel(
 
     val exportProjectBtt = JButton("Export Project${if(targetProjects.size > 1) "s" else ""}")
 
-    init {
-        layout = BoxLayout(this, BoxLayout.LINE_AXIS)
+    val cloneProjectBtt = JButton("Clone Selected Project")
+
+    init {0
+        layout = GridBagLayout()
 
         deleteProjectBtt.addActionListener {
             JOptionPane.showConfirmDialog(
@@ -42,9 +47,10 @@ class EditSelectionPanel(
             }
         }
 
-        add(deleteProjectBtt)
-
-        add(Box.createRigidArea(Dimension(10, 1)))
+        add(deleteProjectBtt, GridBagConstraints().apply {
+            gridx = 0
+            gridy = 0
+        })
 
         exportProjectBtt.addActionListener {
             var nextDir: File? = null
@@ -95,7 +101,27 @@ class EditSelectionPanel(
             }
         }
 
-        add(exportProjectBtt)
+        add(exportProjectBtt, GridBagConstraints().apply {
+            gridx = 1
+            gridy = 0
+        })
+
+        if(targetProjects.size == 1) {
+            cloneProjectBtt.addActionListener { projectManager.cloneProjectAsk(targetProjects[0], ancestor) }
+
+            add(cloneProjectBtt, GridBagConstraints().apply {
+                gridx = 0
+                gridy = 1
+                // fill
+                fill = GridBagConstraints.HORIZONTAL
+                weightx = 1.0
+                gridwidth = 2
+
+                anchor = GridBagConstraints.CENTER
+
+                insets = Insets(3, 0, 0, 0)
+            })
+        }
     }
 
 }

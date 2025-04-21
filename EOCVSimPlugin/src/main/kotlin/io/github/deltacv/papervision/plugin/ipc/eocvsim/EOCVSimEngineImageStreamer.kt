@@ -26,7 +26,8 @@ import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
 
 class EOCVSimEngineImageStreamer(
-    val resolution: Size
+    val resolution: Size,
+    var streamQualityFormula: (Int) -> Int = { 50 }
 ) : ImageStreamer {
 
     private val handlers = mutableMapOf<Int, Handler>()
@@ -46,16 +47,18 @@ class EOCVSimEngineImageStreamer(
         }
 
         if (!receivers.containsKey(id)) {
-            val receiver = MjpegHttpStreamSink(0, resolution, 60)
+            val receiver = MjpegHttpStreamSink(0, resolution, streamQualityFormula(receivers.size).coerceAtLeast(0).coerceAtMost(100))
             handlers[id] = receiver.takeHandler() // save handler for later
 
-            logger.info("Creating new Mjpeg stream for id $id")
+            logger.info("Creating new Mjpeg stream for id $id with quality ${receiver.quality}")
 
             receiver.init(emptyArray())
             receivers[id] = receiver
         }
 
         val receiver = receivers[id]!!
+
+        receiver.quality = streamQualityFormula(receivers.size).coerceAtLeast(0).coerceAtMost(100)
 
         if (cvtCode != null) {
             // convert image to the desired color space

@@ -133,6 +133,8 @@ open class LanguageContext(val language: Language) {
     fun Value.callValue(methodName: String, returnType: Type, vararg parameters: Value) =
         language.callValue(this, methodName, returnType, *parameters)
 
+    fun Value.objectEquals(right: Value) = language.objectEquals(this, right)
+
     fun Value.propertyValue(property: String, type: Type) = language.propertyValue(this, property, type)
     fun Value.propertyVariable(property: String, type: Type) = language.propertyVariable(this, property, type)
 

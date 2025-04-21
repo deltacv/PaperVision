@@ -23,21 +23,31 @@ import io.github.deltacv.papervision.codegen.build.Type
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.vision.enableTargets
 
 class TargetsContext(context: LanguageContext) {
-    val TargetType = Type("Target", "")
-
-    val targets = context.run {
-        Variable("targets", JavaTypes.ArrayList(TargetType).new())
+    val rectTargets = context.run {
+        Variable("rectTargets", JavaTypes.HashMap(JavaTypes.String, JvmOpenCvTypes.Rect).new())
+    }
+    val rotRectTargets = context.run {
+        Variable("rotRectTarget", JavaTypes.HashMap(JavaTypes.String, JvmOpenCvTypes.RotatedRect).new())
     }
 
-    fun ScopeContext.addTarget(label: Value, rect: Value) {
-        "addTarget"(label, rect)
+    fun ScopeContext.addRectTarget(label: Value, rect: Value) {
+        "addRectTarget"(label, rect)
     }
 
-    fun ScopeContext.addTargets(label: Value, rects: Value) {
-        "addTargets"(label, rects)
+    fun ScopeContext.addRectTargets(label: Value, rects: Value) {
+        "addRectTargets"(label, rects)
+    }
+
+    fun ScopeContext.addRotRectTarget(label: Value, rect: Value) {
+        "addRotRectTarget"(label, rect)
+    }
+
+    fun ScopeContext.addRotRectTargets(label: Value, rects: Value) {
+        "addRotRectTargets"(label, rects)
     }
 
     fun ScopeContext.clearTargets() {

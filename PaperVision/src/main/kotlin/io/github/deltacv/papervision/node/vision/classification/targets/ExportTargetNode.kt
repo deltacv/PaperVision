@@ -20,6 +20,7 @@ package io.github.deltacv.papervision.node.vision.classification.targets
 
 import io.github.deltacv.papervision.attribute.misc.StringAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.RotatedRectAttribute
 import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.dsl.targets
@@ -30,9 +31,9 @@ import io.github.deltacv.papervision.node.PaperNode
 
 
 @PaperNode(
-    name = "nod_exporttarget",
+    name = "nod_exportrecttarget",
     category = Category.CLASSIFICATION,
-    description = "des_exporttarget"
+    description = "des_exportrecttarget"
 )
 class ExportTargetNode : DrawNode<NoSession>() {
 
@@ -48,7 +49,37 @@ class ExportTargetNode : DrawNode<NoSession>() {
         generatorFor(JavaLanguage) {
             current.targets {
                 current.scope {
-                    addTarget(string(label.value(current).value), inputTarget.value(current).value)
+                    addRectTarget(string(label.value(current).value), inputTarget.value(current).value)
+                }
+            }
+
+            NoSession
+        }
+    }
+
+}
+
+
+@PaperNode(
+    name = "nod_exportrot_recttarget",
+    category = Category.CLASSIFICATION,
+    description = "des_exportrot_recttarget"
+)
+class ExportRotTarget : DrawNode<NoSession>() {
+
+    val inputTarget = RotatedRectAttribute(INPUT, "$[att_targets]")
+    val label = StringAttribute(INPUT, "$[att_label]")
+
+    override fun onEnable() {
+        + inputTarget
+        + label
+    }
+
+    override val generators = generatorsBuilder {
+        generatorFor(JavaLanguage) {
+            current.targets {
+                current.scope {
+                    addRotRectTarget(string(label.value(current).value), inputTarget.value(current).value)
                 }
             }
 
