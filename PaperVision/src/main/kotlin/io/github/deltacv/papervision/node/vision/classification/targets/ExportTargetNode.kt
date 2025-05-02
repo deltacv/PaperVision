@@ -31,13 +31,13 @@ import io.github.deltacv.papervision.node.PaperNode
 
 
 @PaperNode(
-    name = "nod_exportrecttarget",
+    name = "nod_exportrect_target",
     category = Category.CLASSIFICATION,
-    description = "des_exportrecttarget"
+    description = "des_exportrect_target"
 )
 class ExportTargetNode : DrawNode<NoSession>() {
 
-    val inputTarget = RectAttribute(INPUT, "$[att_targets]")
+    val inputTarget = RectAttribute(INPUT, "$[att_target]")
     val label = StringAttribute(INPUT, "$[att_label]")
 
     override fun onEnable() {
@@ -67,7 +67,7 @@ class ExportTargetNode : DrawNode<NoSession>() {
 )
 class ExportRotTarget : DrawNode<NoSession>() {
 
-    val inputTarget = RotatedRectAttribute(INPUT, "$[att_targets]")
+    val inputTarget = RotatedRectAttribute(INPUT, "$[att_target]")
     val label = StringAttribute(INPUT, "$[att_label]")
 
     override fun onEnable() {

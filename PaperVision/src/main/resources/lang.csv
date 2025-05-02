@@ -14,7 +14,7 @@ cat_high_level_cv,High Level,Alto Nivel
 cat_image_proc,Image Processing,Procesamiento de Imagen
 cat_feature_det,Feature Detection,Deteccion de Caracteristicas
 cat_overlay,Overlay,Overlay
-cat_class,Classification and Filtering,Clasificacion y Filtrado
+cat_class,"Classification, Filtering and Exporting","Clasificación, Filtrado y Exportación"
 cat_math,Math,Matematicas
 cat_misc,Miscellaneous,Miscelaneo
 nod_previewdisplay,Preview,Previsualizacion
@@ -36,8 +36,12 @@ nod_groupcontours_byshape,Filter Contours by Shape, Filtrar Contornos por Figura
 nod_groupcontours_byarea,Filter Contours by Area,Filtrar Contornos por Area
 nod_groupcontours_byratio,Filter Contours by Ratio,Filtrar Contornos por Ratio
 nod_grouprects_byratio,Filter Rectangles by Ratio,Filtrar Rectangulos por Ratio
-nod_exporttarget,Export Target,Exportar Objetivo
-nod_exporttargets,Export Targets,Exportar Objetivos
+nod_cannyedge,Canny Edge,Canny Edge
+nod_exportrect_target,Export Rectangle,Exportar Rectangulo
+nod_exportrot_recttarget,Export Rotated Rectangle,Exportar Rectangulo Rotado
+nod_exportrect_targets,Export Rectangles,Exportar Rectangulos
+nod_exportrot_recttargets,Export Rotated Rectangles,Exportar Rectangulos Rotados
+nod_filterbiggest_rotrect,Find Biggest Rotated Rectangle,Encontrar Rectangulo Rotado Mas Grande
 nod_filterbiggest_rect,Find Biggest Rectangle,Encontrar Rectangulo Mas Grande
 nod_filterbiggest_contour,Find Biggest Contour,Encontrar Contorno Mas Grande
 nod_drawcontours,Draw Contours,Dibujar Contornos
@@ -66,9 +70,14 @@ att_binarymask,Binary Mask,Mascara Binaria
 att_binaryinput,Binary Input,Entrada Binaria
 att_binaryoutput,Binary Output,Salida Binaria
 att_threshold,Threshold,Umbral de Color
+att_lowerthreshold,Lower Threshold,Umbral Inferior
+att_upperthreshold,Upper Threshold,Umbral Superior
 att_bluralgo,Blur Algorithm,Algoritmo de Difuminado
 att_contours,Contours,Contornos
 att_rects,Rectangles,Rectangulos
+att_rotrects,Rotated Rectangles,Rectangulos Rotados
+att_biggestrot_rect,Biggest Rect,Rectangulo Mas Grande
+att_detectionmode,Detection Mode,Modo de Deteccion
 att_boundingrects,Bounding Rects,Rectangulos
 att_biggestrect,Biggest Rect,Rectangulo Mas Grande
 att_biggestcontour,Biggest Contour,Contorno Mas Grande
@@ -98,6 +107,7 @@ att_areastart_positionpercentage,Area Start Position (%),Posicion Inicial de Are
 att_areaend_positionpercentage,Area End Position (%),Posicion Final de Area (%)
 att_groupedrects,Grouped Rects,Rectangulos Agrupados
 att_rectsinside,Rects Inside,Rectangulos Dentro
+att_target,Target,Objetivo
 att_targets,Targets,Objetivos
 att_label,Label,Etiqueta
 des_exporttargets,Export detected targets to hand to another program.,Exporta objetivos detectados para pasarlos a otro programa.
@@ -130,6 +140,7 @@ des_drawcontours,Draws the contours on a copy of the<br>given image and outputs 
 des_drawcontours_onimage,Draws the contours on the input image,Dibuja los contornos en la imagen de entrada.
 des_vector2,Composes a Vector in two dimensions,Compone un Vector en dos dimensiones
 err_bitwiseor_binary,"Both inputs must be of the same type, binary or not","Ambas entradas deben ser del mismo tipo, binario o no"
+err_grayscale_required,"Grayscale image required","Se requiere una imagen en escala de grises"
 err_musthave_attachedattrib,Must have an attribute attached,Debe tener un atributo conectado
 err_attachedattrib_isnot,Attribute attached is not $[0],El atributo conectado no es $[0]
 err_valreturned_isnot,Value returned from the node is not $[0],El valor retornado del nodo no es $[0]

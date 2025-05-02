@@ -111,7 +111,7 @@ open class LanguageBase(
     override fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value?) =
         if(cvtColor != null)
             methodCallDeclaration("streamFrame", id, mat, cvtColor)
-        else methodCallDeclaration("streamFrame", id, mat)
+        else methodCallDeclaration("streamFrame", id, mat, nullValue)
 
     override fun constructorDeclaration(vis: Visibility, className: String, vararg parameters: Parameter) =
         "${vis.name.lowercase()} $className(${parameters.csv()})"
@@ -150,11 +150,11 @@ open class LanguageBase(
             "++"
         } else " += ${step.value}"
 
-        return "for(${variable.type.className} ${variable.value} = ${start.value} ; ${variable.value} < ${max.value} ; ${variable.value}$stepStr)"
+        return "for(${variable.type.shortNameWithGenerics} ${variable.value} = ${start.value} ; ${variable.value} < ${max.value} ; ${variable.value}$stepStr)"
     }
 
     override fun foreachLoopDeclaration(variable: Value, iterable: Value) =
-        "for(${variable.type.className} ${variable.value} : ${iterable.value})"
+        "for(${variable.type.shortNameWithGenerics} ${variable.value} : ${iterable.value})"
     override fun whileLoopDeclaration(condition: Condition) = "while(${condition.value})"
 
     override fun classDeclaration(

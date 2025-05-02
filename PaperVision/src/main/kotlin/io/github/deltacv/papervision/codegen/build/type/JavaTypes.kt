@@ -28,6 +28,11 @@ object JavaTypes {
         override val shouldImport = false
     }
 
+    fun Set(elementType: Type) = Type(
+        "Set", "java.util",
+        arrayOf(elementType)
+    )
+
     fun ArrayList(elementType: Type) = Type(
         "ArrayList", "java.util",
         arrayOf(elementType)
@@ -43,7 +48,7 @@ object JavaTypes {
         arrayOf(key, value)
     ) {
         class Entry(key: Type, value: Type) : Type(
-            "Entry", "java.util",
+            "Map.Entry", "java.util",
             arrayOf(key, value)
         )
     }

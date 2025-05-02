@@ -76,7 +76,7 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
 
                     current.scope { // add a cvtColor step in processFrame
                         Imgproc("cvtColor", inputMat.value, mat, cvtColorValue(matColor, targetColor))
-                        output.streamIfEnabled(mat)
+                        output.streamIfEnabled(mat, targetColor)
                     }
 
                     session.outputMatValue = GenValue.Mat(mat, targetColor) // store data in the current session

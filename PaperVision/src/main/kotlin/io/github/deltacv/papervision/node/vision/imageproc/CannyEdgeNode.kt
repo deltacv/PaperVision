@@ -19,12 +19,15 @@
 package io.github.deltacv.papervision.node.vision.imageproc
 
 import io.github.deltacv.papervision.attribute.Attribute
+import io.github.deltacv.papervision.attribute.math.DoubleAttribute
+import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Core
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
@@ -33,24 +36,29 @@ import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.node.vision.ColorSpace
 
 @PaperNode(
-    name = "nod_binarymask",
+    name = "nod_cannyedge",
     category = Category.IMAGE_PROC,
-    description = "des_binarymask"
+    description = "des_cannyedge"
 )
 class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")
-    val maskMat  = MatAttribute(INPUT, "$[att_binarymask]")
 
-    val outputMat = MatAttribute(OUTPUT, "$[att_output]").enablePrevizButton()
+    val firstThreshold = IntAttribute(INPUT, "$[att_lowerthreshold]")
+    val secondThreshold = IntAttribute(INPUT, "$[att_upperthreshold]")
+
+    val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
         + inputMat.rebuildOnChange()
-        + maskMat.rebuildOnChange()
 
-        + outputMat.rebuildOnChange()
+        + firstThreshold
+        + secondThreshold
+
+        + outputMat.rebuildOnChange().enablePrevizButton()
     }
 
     override val generators = generatorsBuilder {
@@ -61,18 +69,27 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 val input = inputMat.value(current)
                 input.requireNonBinary(inputMat)
 
-                val mask = maskMat.value(current)
-                mask.requireBinary(maskMat)
+                if(input.color != ColorSpace.GRAY) {
+                    raise("err_grayscale_required")
+                }
 
-                val output = uniqueVariable("${input.value.value!!}Mask", Mat.new())
+                val output = uniqueVariable("${input.value.value!!}Canny", Mat.new())
+
+                val firstThresholdValue = firstThreshold.value(current).value.v
+                val firstThresholdVariable = uniqueVariable("cannyFirstThreshold", int(firstThresholdValue))
+
+                val secondThresholdValue = secondThreshold.value(current).value.v
+                val secondThresholdVariable = uniqueVariable("cannySecondThreshold", int(firstThresholdValue))
 
                 group {
                     private(output)
+
+                    public(firstThresholdVariable, firstThreshold.label())
+                    public(secondThresholdVariable, secondThreshold.label())
                 }
 
                 current.scope {
-                    output("release")
-                    Core("bitwise_and", input.value, input.value, output, mask.value)
+                    JvmOpenCvTypes.Imgproc("Canny", input.value, output, firstThresholdVariable, secondThresholdVariable)
                     outputMat.streamIfEnabled(output, input.color)
                 }
 
@@ -89,14 +106,14 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 val input = inputMat.value(current)
                 input.requireNonBinary(inputMat)
 
-                val mask = maskMat.value(current)
-                mask.requireBinary(maskMat)
+                if(input.color != ColorSpace.GRAY) {
+                    raise("err_grayscale_required")
+                }
 
                 current.scope {
-                    val output = uniqueVariable("${input.value.value!!}_mask",
-                        cv2.callValue("bitwise_and", CPythonLanguage.NoType, input.value, input.value, CPythonLanguage.namedArgument("mask", mask.value))
+                    val output = uniqueVariable("${input.value.value!!}_canny",
+                        cv2.callValue("Canny", CPythonLanguage.NoType, input.value, firstThreshold.value(current).value.v, secondThreshold.value(current).value.v)
                     )
-                    local(output)
 
                     session.outputMat = GenValue.Mat(output, input.color)
                 }

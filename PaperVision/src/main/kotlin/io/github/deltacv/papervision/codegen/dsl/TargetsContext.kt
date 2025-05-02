@@ -38,16 +38,8 @@ class TargetsContext(context: LanguageContext) {
         "addRectTarget"(label, rect)
     }
 
-    fun ScopeContext.addRectTargets(label: Value, rects: Value) {
-        "addRectTargets"(label, rects)
-    }
-
     fun ScopeContext.addRotRectTarget(label: Value, rect: Value) {
         "addRotRectTarget"(label, rect)
-    }
-
-    fun ScopeContext.addRotRectTargets(label: Value, rects: Value) {
-        "addRotRectTargets"(label, rects)
     }
 
     fun ScopeContext.clearTargets() {
