@@ -86,22 +86,22 @@ fun CodeGen.Current.enableTargets() = this {
 
                 separate()
 
-                method(Visibility.PUBLIC, JvmOpenCvTypes.Rect.arrayType(), "getRectTargets", labelParameter,  isSynchronized = true) {
+                method(Visibility.PUBLIC, JavaTypes.List(JvmOpenCvTypes.Rect), "getRectTargets", labelParameter,  isSynchronized = true) {
                     // get all the rect targets that start with label
                     val targets = Variable("targets", JavaTypes.ArrayList(JvmOpenCvTypes.Rect).new())
                     local(targets)
 
                     separate()
 
-                    foreach(Variable(JavaTypes.Map.Entry(JvmOpenCvTypes.Rect, JavaTypes.String), "namedTarget"), rectTargets.callValue("entrySet", JavaTypes.Set(JavaTypes.Map.Entry(JvmOpenCvTypes.Rect, JavaTypes.String)))) {
-                        ifCondition (it.callValue("getKey", JavaTypes.String).callValue("startsWith", BooleanType, labelParameter).condition()) {
+                    foreach(Variable(JavaTypes.Map.Entry(JavaTypes.String, JvmOpenCvTypes.Rect), "namedTarget"), rectTargets.callValue("entrySet", JavaTypes.Set(JavaTypes.Map.Entry(JvmOpenCvTypes.Rect, JavaTypes.String)))) {
+                        ifCondition (it.callValue("getKey", JavaTypes.String).castTo(JavaTypes.String).callValue("startsWith", BooleanType, labelParameter).condition()) {
                             targets("add", it.callValue("getValue", JvmOpenCvTypes.Rect))
                         }
                     }
 
                     separate()
 
-                    returnMethod(targets.callValue("toArray", JvmOpenCvTypes.Rect.arrayType(), JvmOpenCvTypes.Rect.newArray(0.v)))
+                    returnMethod(targets)
                 }
 
                 separate()
@@ -112,22 +112,22 @@ fun CodeGen.Current.enableTargets() = this {
 
                 separate()
 
-                method(Visibility.PUBLIC, JvmOpenCvTypes.RotatedRect.arrayType(), "getRotRectTargets", labelParameter, isSynchronized = true) {
+                method(Visibility.PUBLIC, JavaTypes.List(JvmOpenCvTypes.RotatedRect), "getRotRectTargets", labelParameter, isSynchronized = true) {
                     // get all the rect targets that start with label
                     val targets = Variable("targets", JavaTypes.ArrayList(JvmOpenCvTypes.RotatedRect).new())
                     local(targets)
 
                     separate()
 
-                    foreach(Variable(JavaTypes.Map.Entry(JvmOpenCvTypes.RotatedRect, JavaTypes.String), "namedTarget"), rotRectTargets.callValue("entrySet", JavaTypes.Set(JavaTypes.Map.Entry(JvmOpenCvTypes.RotatedRect, JavaTypes.String)))) {
-                        ifCondition (it.callValue("getKey", JavaTypes.String).callValue("startsWith", BooleanType, labelParameter).condition()) {
+                    foreach(Variable(JavaTypes.Map.Entry(JavaTypes.String, JvmOpenCvTypes.RotatedRect), "namedTarget"), rotRectTargets.callValue("entrySet", JavaTypes.Set(JavaTypes.Map.Entry(JvmOpenCvTypes.RotatedRect, JavaTypes.String)))) {
+                        ifCondition (it.callValue("getKey", JavaTypes.String).castTo(JavaTypes.String).callValue("startsWith", BooleanType, labelParameter).condition()) {
                             targets("add", it.callValue("getValue", JvmOpenCvTypes.RotatedRect))
                         }
                     }
 
                     separate()
 
-                    returnMethod(targets.callValue("toArray", JvmOpenCvTypes.RotatedRect.arrayType(), JvmOpenCvTypes.RotatedRect.newArray(0.v)))
+                    returnMethod(targets)
                 }
 
                 separate()
