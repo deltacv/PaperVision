@@ -28,6 +28,7 @@ import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.dsl.targets
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -74,6 +75,11 @@ class ExportTargetsNode : DrawNode<NoSession>() {
                 NoSession
             }
         }
+
+        generatorFor(CPythonLanguage) {
+            warn("err_targetsnot_supported")
+            NoSession
+        }
     }
 
 }
@@ -119,6 +125,11 @@ class ExportRotTargetsNode : DrawNode<NoSession>() {
 
                 NoSession
             }
+        }
+
+        generatorFor(CPythonLanguage) {
+            warn("err_targetsnot_supported")
+            NoSession
         }
     }
 

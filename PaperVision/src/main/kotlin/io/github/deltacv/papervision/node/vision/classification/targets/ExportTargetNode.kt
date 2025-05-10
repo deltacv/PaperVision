@@ -24,6 +24,7 @@ import io.github.deltacv.papervision.attribute.vision.structs.RotatedRectAttribu
 import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.dsl.targets
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -55,6 +56,11 @@ class ExportTargetNode : DrawNode<NoSession>() {
 
             NoSession
         }
+
+        generatorFor(CPythonLanguage) {
+            warn("err_targetsnot_supported")
+            NoSession
+        }
     }
 
 }
@@ -83,6 +89,11 @@ class ExportRotTarget : DrawNode<NoSession>() {
                 }
             }
 
+            NoSession
+        }
+
+        generatorFor(CPythonLanguage) {
+            warn("err_targetsnot_supported")
             NoSession
         }
     }
