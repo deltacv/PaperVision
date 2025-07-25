@@ -81,6 +81,9 @@ class NodeList(
     var hoveredNode = -1
         private set
 
+    var hoveredNodePos = ImVec2()
+        private set
+
     var isHoverManuallyDetected = false
         private set
     var isHoveringScrollBar = false
@@ -172,9 +175,9 @@ class NodeList(
 
         for (category in Category.values()) {
             if (nodes.containsKey(category)) {
-                val table = headers.tablesCategories[category] ?: continue
+                val table = headers.categoryTables[category] ?: continue
 
-                if (headers.categoriesState[category] == true) {
+                if (headers.categoryStates[category] == true) {
                     for (node in nodes[category]!!) {
                         var imNodesPushColorCount = 0
                         var imGuiPushColorCount = 0
@@ -273,6 +276,12 @@ class NodeList(
         isHoveringScrollBar = mousePos.x >= (size.x - 15f)
 
         hoveredNode = ImNodes.getHoveredNode()
+        if(hoveredNode >= 0) {
+            hoveredNodePos = ImNodes.getNodeScreenSpacePos(hoveredNode)
+        } else {
+            hoveredNodePos = ImVec2(0f, 0f)
+        }
+
         isHoverManuallyDetected = false
 
         if (highlightedNodeClass != null) {
@@ -281,7 +290,7 @@ class NodeList(
                     if(node.id != highlightedNode) {
                         highlightedNode = node.id
 
-                        val nodePos = ImNodes.getNodeScreenSpacePos(highlightedNode!!).y - ImNodes.getNodeDimensionsY(highlightedNode!!) * 1.3f
+                        val nodePos = hoveredNodePos.y - ImNodes.getNodeDimensionsY(highlightedNode!!) * 1.3f
 
                         val scrollPos = if(nodePos >= size.y * 0.9) {
                             99999f // trigger max scroll
@@ -296,13 +305,18 @@ class NodeList(
         }
 
         if (hoveredNode < 0) {
-            tableLoop@ for ((_, table) in headers.tablesCategories) {
+            tableLoop@ for ((category, table) in headers.categoryTables) {
+                if (headers.categoryStates[category] != true) {
+                    continue@tableLoop // skip closed categories
+                }
+
                 for ((id, rect) in table.currentRects) {
                     // AABB collision check with any node
                     if (mousePos.x > rect.min.x && mousePos.x < rect.max.x + 6 &&
                         mousePos.y > rect.min.y && mousePos.y < rect.max.y
                     ) {
                         hoveredNode = id
+                        hoveredNodePos = ImNodes.getNodeScreenSpacePos(id)
 
                         isHoverManuallyDetected = true
 
@@ -332,13 +346,11 @@ class NodeList(
                     listNodes[hoveredNode]!!::class.java
                 ) // add node with the class by using reflection
 
-                if (instance is DrawNode<*>) {
-                    val nodePos = ImNodes.getNodeScreenSpacePos(hoveredNode)
-
+                if (instance is DrawNode<*> && hoveredNodePos != null) {
                     val mousePos = ImGui.getMousePos()
 
-                    val newPosX = mousePos.x - nodePos.x
-                    val newPosY = mousePos.y - nodePos.y
+                    val newPosX = mousePos.x - hoveredNodePos!!.x
+                    val newPosY = mousePos.y - hoveredNodePos!!.y
 
                     instance.nextNodePosition = ImVec2(newPosX, newPosY)
                     instance.pinToMouse = true
@@ -508,8 +520,8 @@ class NodeList(
             ImGuiWindowFlags.NoDecoration, ImGuiWindowFlags.AlwaysVerticalScrollbar
         )
 
-        val tablesCategories = mutableMapOf<Category, Table>()
-        val categoriesState = mutableMapOf<Category, Boolean>()
+        val categoryTables = mutableMapOf<Category, Table>()
+        val categoryStates = mutableMapOf<Category, Boolean>()
 
         var currentScroll = 0f
         var nextScroll: Float? = null
@@ -547,8 +559,8 @@ class NodeList(
 
             for (category in Category.values()) {
                 if (nodesSupplier().containsKey(category)) {
-                    if (!tablesCategories.containsKey(category)) {
-                        tablesCategories[category] = Table()
+                    if (!categoryTables.containsKey(category)) {
+                        categoryTables[category] = Table()
                     }
 
                     ImGui.pushStyleColor(ImGuiCol.Header, category.color)
@@ -563,7 +575,7 @@ class NodeList(
 
                     ImGui.popFont()
 
-                    categoriesState[category] = isOpen
+                    categoryStates[category] = isOpen
 
                     ImGui.popStyleColor()
                     ImGui.popStyleColor()
@@ -574,7 +586,7 @@ class NodeList(
                     }
 
                     if (isOpen) {
-                        val table = tablesCategories[category]!!
+                        val table = categoryTables[category]!!
                         ImGui.newLine()
                         ImGui.indent(10f)
 

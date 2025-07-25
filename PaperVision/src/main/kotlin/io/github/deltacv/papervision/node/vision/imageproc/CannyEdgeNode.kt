@@ -70,7 +70,7 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 input.requireNonBinary(inputMat)
 
                 if(input.color != ColorSpace.GRAY) {
-                    raise("err_grayscale_required")
+                    inputMat.raise("err_grayscale_required")
                 }
 
                 val output = uniqueVariable("${input.value.value!!}Canny", Mat.new())

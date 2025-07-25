@@ -110,8 +110,10 @@ att_rectsinside,Rects Inside,Rectangulos Dentro
 att_target,Target,Objetivo
 att_targets,Targets,Objetivos
 att_label,Label,Etiqueta
-des_exporttargets,Export detected targets to hand to another program.,Exporta objetivos detectados para pasarlos a otro programa.
-des_exporttarget,Export detected target to hand to another program.,Exporta el objetivo detectado para pasarlo a otro programa.
+des_exportrect_target,Export specified rectangle<br>to hand to another program.,Exporta el rectangulo especificado<br>para pasarlo a otro programa.
+des_exportrect_targets,Export specified rectangles<br>to hand to another program.,Exporta los rectangulos especificados<br>para pasarlos a otro programa.
+des_exportrot_recttarget,Export specified rotated rectangle<br>to hand to another program.,Exporta el rectangulo rotado especificado<br>para pasarlo a otro programa.
+des_exportrot_recttargets,Export specified rotated rectangles<br>to hand to another program.,Exporta los rectangulos rotados especificados<br>para pasarlos a otro programa.
 des_groupcontours_byshape,Finds contours that match a specific shape.,Encuentra los contornos que encajan<br>en una figura especificada.
 des_groupcontours_byarea,Finds contours that have an area within a specified range.,Encuentra los contornos que tienen un<br>área dentro de un rango especificado.
 des_grouprects_insidearea,Selects rectangles that are inside a specified area.,Selecciona los rectángulos que están<br>dentro de un área especificada.
@@ -138,6 +140,7 @@ des_lineparameters,Specify the visual properties for<br>a node that will draw li
 des_drawrects_onimage,Draws the rectangles in the passed image.,Dibuja los rectangulos en la imagen de entrada
 des_drawcontours,Draws the contours on a copy of the<br>given image and outputs the result.,Dibuja los contornos en una copia de la<br>imagen dada y devuelve el resultado.
 des_drawcontours_onimage,Draws the contours on the input image,Dibuja los contornos en la imagen de entrada.
+des_cannyedge,Filters edges in the input image using the Canny algorithm.,Filters bordes en la imagen de entrada usando el algoritmo Canny.
 des_vector2,Composes a Vector in two dimensions,Compone un Vector en dos dimensiones
 err_bitwiseor_binary,"Both inputs must be of the same type, binary or not","Ambas entradas deben ser del mismo tipo, binario o no"
 err_grayscale_required,"Grayscale image required","Se requiere una imagen en escala de grises"
@@ -146,7 +149,7 @@ err_attachedattrib_isnot,Attribute attached is not $[0],El atributo conectado no
 err_valreturned_isnot,Value returned from the node is not $[0],El valor retornado del nodo no es $[0]
 err_attrib_nothandledby_this,Attribute $[0] is not an output of this node or not handled by this,El atributo $[0] no es una salida de este nodo o no es manejado por este
 err_couldntlink_didntmatch,Couldn't link nodes: Types didn't match,No se completo la conexion: Los tipos son diferentes
-err_couldntlink_recursion,Couldn't link nodes: Recursion problem detected,No se completo la conexion: Problema de recursion detectado
+err_couldntlink_recursion,Couldn't link nodes: Unable to create a recursive link,No se completo la conexion: No se puede crear una conexion recursiva
 err_noop_engine,"PaperVision engine is running in no-op mode, this feature is not available","El motor de PaperVision esta corriendo en modo no-op, esta caracteristica no esta disponible"
 mis_input,Input,Entrada
 mis_output,Output,Salida

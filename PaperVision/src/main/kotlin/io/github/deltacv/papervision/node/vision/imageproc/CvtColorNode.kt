@@ -103,7 +103,7 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
 
                 current.scope {
                     if (matColor != targetColor) {
-                        val mat = uniqueVariable("${inputMat.value}_${targetColor.name.lowercase()}", cv2.callValue("cvtColor",
+                        val mat = uniqueVariable("${inputMat.value.value}_${targetColor.name.lowercase()}", cv2.callValue("cvtColor",
                             CPythonLanguage.NoType, inputMat.value, cvtColorValue(matColor, targetColor))
                         )
 
