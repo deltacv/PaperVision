@@ -24,6 +24,10 @@ import io.github.deltacv.papervision.util.hasSuperclass
 @Suppress("UNCHECKED_CAST")
 object NodeRegistry {
 
+    /**
+     * Openly mutable map of categorized nodes used to register nodes.
+     * Registered nodes will automatically be available in the editor list.
+     */
     val nodes: CategorizedNodes = mutableMapOf()
 
     init {

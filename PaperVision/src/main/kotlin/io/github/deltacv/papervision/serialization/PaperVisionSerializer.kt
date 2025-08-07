@@ -56,13 +56,13 @@ object PaperVisionSerializer {
         val nodes = mutableListOf<Node<*>>()
         val links = mutableListOf<Link>()
 
-        paperVision?.let {
-            for(node in it.nodes.inmutable) {
-                if(node != it.nodeEditor.originNode) // everything freaking breaks if we delete this thing
+        if(paperVision != null) {
+            for(node in paperVision.nodes.inmutable) {
+                if(node != paperVision.nodeEditor.originNode) // everything freaking breaks if we delete this thing
                     node.forceDelete()
             }
 
-            for(link in it.links.inmutable) {
+            for(link in paperVision.links.inmutable) {
                 link.delete()
             }
         }

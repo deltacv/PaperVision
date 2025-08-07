@@ -47,7 +47,7 @@ object TJLoader {
         try {
             TJLoader::class.java.getResourceAsStream(resource).use { res ->
                 if (res == null) {
-                    throw RuntimeException("Native lib not found: " + resource)
+                    throw RuntimeException("Native lib not found: $resource")
                 }
                 // Crear archivo temporal
                 val tempFile = File.createTempFile("libturbojpeg", getFileExtension(resource))

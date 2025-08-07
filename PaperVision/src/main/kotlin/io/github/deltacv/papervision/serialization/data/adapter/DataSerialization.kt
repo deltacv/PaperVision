@@ -44,7 +44,7 @@ fun DataSerializable<*>.toJsonObject(): JsonObject {
 
             obj.add(field.name, dataSerializableToJsonObject(value))
         } else if(field.isAnnotationPresent(SerializeData::class.java)) {
-            obj.add(field.name, gson.toJsonTree(value))
+            obj.add(field.name, dataSerializableGson.toJsonTree(value))
         }
     }
 
@@ -58,7 +58,7 @@ fun dataSerializableToJsonObject(value: DataSerializable<*>, context: JsonSerial
     dataObject.addProperty("dataClass", data::class.java.name)
 
     try {
-        val jsonData = if(context != null) context.serialize(data) else gson.toJsonTree(data)
+        val jsonData = if(context != null) context.serialize(data) else dataSerializableGson.toJsonTree(data)
         if(jsonData.isJsonObject) {
             if((jsonData as JsonObject).size() > 0) {
                 dataObject.add("data", jsonData)

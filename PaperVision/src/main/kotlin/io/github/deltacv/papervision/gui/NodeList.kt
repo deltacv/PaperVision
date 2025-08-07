@@ -419,14 +419,16 @@ class NodeList(
                     continue
                 }
 
-                val instance = try {
-                    instantiateNode(nodeClass)
-                } catch (e: UnsupportedOperationException) {
-                    logger.warn("Skipping node", e)
+                val instance = Node.instantiateNode(nodeClass)
+
+                if(instance == null) {
+                    logger.warn("Skipping node ${nodeClass.typeName}")
                     continue
                 }
 
+                // this looks ugly
                 //instance.drawAttributesCircles = false
+
                 instance.enable()
 
                 list.add(instance)

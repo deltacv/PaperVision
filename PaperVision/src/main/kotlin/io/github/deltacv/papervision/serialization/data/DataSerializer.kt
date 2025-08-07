@@ -22,30 +22,26 @@ import com.google.gson.*
 import com.google.gson.reflect.TypeToken
 import io.github.deltacv.papervision.serialization.data.adapter.DataSerializableAdapter
 import io.github.deltacv.papervision.serialization.data.adapter.SerializeIgnoreExclusionStrategy
+import io.github.deltacv.papervision.serialization.data.adapter.dataSerializableGson
 
 object DataSerializer {
-
-    val gson = GsonBuilder()
-        .registerTypeHierarchyAdapter(DataSerializable::class.java, DataSerializableAdapter)
-        .addSerializationExclusionStrategy(SerializeIgnoreExclusionStrategy)
-        .create()
 
     val type = object : TypeToken<Map<String, List<DataSerializable<*>>>>() {}.type
 
     fun serialize(serializables: Map<String, List<DataSerializable<*>>>): String {
-        return gson.toJson(serializables)
+        return dataSerializableGson.toJson(serializables)
     }
 
     fun serializeToTree(serializables: Map<String, List<DataSerializable<*>>>): JsonElement {
-        return gson.toJsonTree(serializables)
+        return dataSerializableGson.toJsonTree(serializables)
     }
 
     fun deserialize(data: String): Map<String, List<DataSerializable<*>>> {
-        return gson.fromJson(data, type)
+        return dataSerializableGson.fromJson(data, type)
     }
 
     fun deserialize(obj: JsonElement): Map<String, List<DataSerializable<*>>> {
-        return gson.fromJson(obj, type)
+        return dataSerializableGson.fromJson(obj, type)
     }
 
 }

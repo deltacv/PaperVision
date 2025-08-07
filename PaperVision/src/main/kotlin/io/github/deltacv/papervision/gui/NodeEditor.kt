@@ -56,7 +56,6 @@ import io.github.deltacv.papervision.node.FlagsNode
 import io.github.deltacv.papervision.node.InvisibleNode
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
-import io.github.deltacv.papervision.node.instantiateNode
 import io.github.deltacv.papervision.node.vision.InputMatNode
 import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer
@@ -533,7 +532,10 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     }
 
     fun addNode(nodeClazz: Class<out Node<*>>): Node<*> {
-        val instance = instantiateNode(nodeClazz)
+        val instance = Node.instantiateNode(nodeClazz) ?: throw IllegalArgumentException(
+            "Node class $nodeClazz could not be instantiated, is it a valid Node subclass?"
+        )
+
         val action = CreateNodesAction(instance)
 
         if (instance.joinActionStack) {
