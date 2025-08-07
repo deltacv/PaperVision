@@ -27,7 +27,7 @@ dependencies {
     implementation "com.google.code.gson:gson:$gson_version"
     implementation "io.github.classgraph:classgraph:$classgraph_version"
 
-    implementation 'ome:turbojpeg:8.0.0'
+    implementation 'ome:turbojpeg:8.3.0'
 
     api project(":Shared")
     ksp project(":PaperVision:NodeAnnotationProcessor")

@@ -37,6 +37,7 @@ import io.github.deltacv.papervision.serialization.BasicNodeData
 import io.github.deltacv.papervision.serialization.NodeSerializationData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.event.EventListener
+import io.github.deltacv.papervision.util.loggerFor
 import io.github.deltacv.papervision.util.loggerForThis
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -275,7 +276,7 @@ abstract class Node<S: CodeGenSession>(
     override fun toString() = "Node(${this::class.java.typeName}, id=$id)"
 
     companion object {
-        val logger by loggerForThis()
+        val logger by loggerFor<Node<*>>()
 
         @JvmStatic protected val INPUT = AttributeMode.INPUT
         @JvmStatic protected val OUTPUT = AttributeMode.OUTPUT
