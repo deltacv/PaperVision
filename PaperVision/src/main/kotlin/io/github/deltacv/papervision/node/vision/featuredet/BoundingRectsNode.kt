@@ -70,6 +70,8 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     rectsList("clear")
 
                     if (input is GenValue.GList.RuntimeListOf<*>) {
@@ -111,7 +113,10 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                 val rectsList = uniqueVariable(listName, CPythonLanguage.NoType.newArray(0.v))
 
                 current.scope {
+                    writeNameComment()
+
                     local(rectsList)
+
                     if (input is GenValue.GList.RuntimeListOf<*>) {
                         foreach(variable(CPythonLanguage.NoType, "points"), input.value) { points ->
                             rectsList("append", cv2.callValue("boundingRect", CPythonLanguage.NoType, points))

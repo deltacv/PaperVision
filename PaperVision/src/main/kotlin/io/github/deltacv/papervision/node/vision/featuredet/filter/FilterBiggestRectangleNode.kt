@@ -65,6 +65,8 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     biggestRect instanceSet biggestRect.nullVal
 
                     fun ScopeContext.withRuntimeRect(rect: Value) {
@@ -126,6 +128,8 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                 val biggestRect = uniqueVariable("biggest_rect", CPythonLanguage.nullValue)
 
                 current.scope {
+                    writeNameComment()
+
                     local(biggestRect)
 
                     fun ScopeContext.withRuntimeRect(rect: Value) {

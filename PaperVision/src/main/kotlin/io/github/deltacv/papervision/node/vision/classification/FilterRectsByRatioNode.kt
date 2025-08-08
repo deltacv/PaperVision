@@ -73,6 +73,8 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     rectsVar("clear")
 
                     foreach(Variable(JvmOpenCvTypes.Rect, "rect"), rects.value) { rect ->
@@ -107,6 +109,8 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
                 val rectsVar = uniqueVariable("${rects.value.value}_by_ratio", CPythonLanguage.newArrayOf(CPythonLanguage.NoType))
 
                 current.scope {
+                    writeNameComment()
+
                     local(rectsVar)
 
                     separate()

@@ -141,6 +141,8 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     list("clear")
 
                     foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), inputContours.value) {

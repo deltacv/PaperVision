@@ -26,7 +26,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.node.vision.ColorSpace
 import kotlin.reflect.KClass
 
-sealed class GenValue {
+    sealed class GenValue {
 
     data class Mat(val value: Value, val color: ColorSpace, val isBinary: kotlin.Boolean = false) : GenValue() {
         fun requireBinary(attribute: Attribute) {

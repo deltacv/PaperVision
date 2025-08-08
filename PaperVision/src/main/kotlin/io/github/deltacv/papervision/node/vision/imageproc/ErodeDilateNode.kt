@@ -88,6 +88,8 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     input.value("copyTo", output)
 
                     ifCondition(erodeValVariable greaterThan int(0)) {
@@ -163,6 +165,8 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                 public(elementDilate)
 
                 current.scope {
+                    writeNameComment()
+
                     local(output)
 
                     if (erodeVal.value > 0) {

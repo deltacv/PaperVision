@@ -71,6 +71,8 @@ class MaskNode : DrawNode<MaskNode.Session>(){
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     output("release")
                     Core("bitwise_and", input.value, input.value, output, mask.value)
                     outputMat.streamIfEnabled(output, input.color)
@@ -93,6 +95,8 @@ class MaskNode : DrawNode<MaskNode.Session>(){
                 mask.requireBinary(maskMat)
 
                 current.scope {
+                    writeNameComment()
+
                     val output = uniqueVariable("${input.value.value!!}_mask",
                         cv2.callValue("bitwise_and", CPythonLanguage.NoType, input.value, input.value, CPythonLanguage.namedArgument("mask", mask.value))
                     )

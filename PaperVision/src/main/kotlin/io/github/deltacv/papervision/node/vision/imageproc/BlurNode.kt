@@ -80,6 +80,8 @@ class BlurNode : DrawNode<BlurNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     when(algo) {
                         Gaussian -> {
                             val kernelSize = 6.v * blurValVariable + 1.v
@@ -121,6 +123,8 @@ class BlurNode : DrawNode<BlurNode.Session>() {
                 val blurVal = blurValue.value(current)
 
                 current.scope {
+                    writeNameComment()
+
                     val value = when (algo) {
                         Gaussian -> {
                             val kernelSize = uniqueVariable("kernel", 6.v * int(blurVal.value.v) + 1.v)

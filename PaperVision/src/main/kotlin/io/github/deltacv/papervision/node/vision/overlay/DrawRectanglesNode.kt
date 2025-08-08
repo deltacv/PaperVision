@@ -88,6 +88,8 @@ open class DrawRectanglesNode
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     if (!isDrawOnInput) {
                         drawMat = output
                         input.value("copyTo", drawMat)
@@ -147,6 +149,8 @@ open class DrawRectanglesNode
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     val target = if (isDrawOnInput) {
                         input.value
                     } else {

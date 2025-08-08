@@ -346,7 +346,7 @@ class NodeList(
                     listNodes[hoveredNode]!!::class.java
                 ) // add node with the class by using reflection
 
-                if (instance is DrawNode<*> && hoveredNodePos != null) {
+                if (instance is DrawNode<*>) {
                     val mousePos = ImGui.getMousePos()
 
                     val newPosX = mousePos.x - hoveredNodePos!!.x

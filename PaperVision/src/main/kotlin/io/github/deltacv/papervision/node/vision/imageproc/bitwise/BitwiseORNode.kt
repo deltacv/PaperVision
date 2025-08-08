@@ -72,6 +72,7 @@ class BitwiseORNode : DrawNode<BitwiseORNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
                     outputMat("release")
                     JvmOpenCvTypes.Core("bitwise_or", firstValue.value, secondValue.value, outputMat)
 
@@ -99,6 +100,7 @@ class BitwiseORNode : DrawNode<BitwiseORNode.Session>() {
                 val variable = uniqueVariable("bitwiseORMat", value)
 
                 current.scope {
+                    writeNameComment()
                     local(variable)
                 }
 

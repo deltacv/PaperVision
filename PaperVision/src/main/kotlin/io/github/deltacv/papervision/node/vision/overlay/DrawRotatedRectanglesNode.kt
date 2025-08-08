@@ -91,6 +91,8 @@ open class DrawRotatedRectanglesNode
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     if (!isDrawOnInput) {
                         drawMat = output
                         input.value("copyTo", drawMat)
@@ -161,6 +163,8 @@ open class DrawRotatedRectanglesNode
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     val target = if (isDrawOnInput) {
                         input.value
                     } else {

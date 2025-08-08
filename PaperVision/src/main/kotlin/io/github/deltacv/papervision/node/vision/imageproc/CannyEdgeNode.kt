@@ -89,6 +89,8 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     JvmOpenCvTypes.Imgproc("Canny", input.value, output, firstThresholdVariable, secondThresholdVariable)
                     outputMat.streamIfEnabled(output, input.color)
                 }
@@ -111,6 +113,8 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     val output = uniqueVariable("${input.value.value!!}_canny",
                         cv2.callValue("Canny", CPythonLanguage.NoType, input.value, firstThreshold.value(current).value.v, secondThreshold.value(current).value.v)
                     )

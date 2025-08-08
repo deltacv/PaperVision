@@ -70,6 +70,8 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     list("clear")
                     hierarchyMat("release")
 
@@ -90,6 +92,8 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
                 input.requireBinary(inputMat)
 
                 current.scope {
+                    writeNameComment()
+
                     val contours = tryName("contours")
                     val hierarchy = tryName("hierarchy")
 

@@ -75,6 +75,8 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
                     }
 
                     current.scope { // add a cvtColor step in processFrame
+                        writeNameComment()
+
                         Imgproc("cvtColor", inputMat.value, mat, cvtColorValue(matColor, targetColor))
                         output.streamIfEnabled(mat, targetColor)
                     }
@@ -102,6 +104,8 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
 
 
                 current.scope {
+                    writeNameComment()
+
                     if (matColor != targetColor) {
                         val mat = uniqueVariable("${inputMat.value.value}_${targetColor.name.lowercase()}", cv2.callValue("cvtColor",
                             CPythonLanguage.NoType, inputMat.value, cvtColorValue(matColor, targetColor))

@@ -66,6 +66,8 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     biggestContour instanceSet biggestContour.nullVal
 
                     if(contoursList is GenValue.GList.RuntimeListOf<*>) {
@@ -116,6 +118,8 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                 val inputValue = input.value(current)
 
                 current.scope {
+                    writeNameComment()
+
                     val contoursList = if(inputValue is GenValue.GList.RuntimeListOf<*>) {
                         inputValue.value
                     } else {

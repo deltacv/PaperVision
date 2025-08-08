@@ -113,6 +113,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     drawOnValue("copyTo", crosshairImage)
 
                     separate()
@@ -293,6 +295,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                 val crosshairImage = uniqueVariable("crosshair_image", drawOnValue.callValue("copy", CPythonLanguage.NoType))
 
                 current.scope {
+                    writeNameComment()
+
                     local(crosshair)
                     local(crosshairImage)
 

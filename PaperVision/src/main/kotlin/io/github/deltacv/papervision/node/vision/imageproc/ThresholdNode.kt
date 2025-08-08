@@ -146,6 +146,8 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     if(needsCvt) {
                         Imgproc("cvtColor", inputMat.value, cvtMat, cvtColorValue(matColor, targetColor))
                         inputMat = GenValue.Mat(cvtMat, targetColor)
@@ -192,6 +194,8 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
                 )
 
                 current.scope {
+                    writeNameComment()
+
                     if(needsCvt) {
                         local(cvtMat)
                     }

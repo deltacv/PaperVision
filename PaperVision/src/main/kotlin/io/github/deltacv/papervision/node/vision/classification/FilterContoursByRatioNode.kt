@@ -89,6 +89,8 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     contoursVar("clear")
 
                     foreach(Variable(JvmOpenCvTypes.MatOfPoint, "contour"), contours.value) { contour ->
