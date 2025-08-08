@@ -21,6 +21,7 @@ package io.github.deltacv.papervision.node
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
+import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.codegen.GeneratorsGenNode
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode

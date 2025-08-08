@@ -104,6 +104,8 @@ interface Language : ValueBuilder {
 
     fun enumClassDeclaration(name: String, vararg values: String): String
 
+    fun comment(text: String): String
+
     fun block(start: String, body: Scope, tabs: String): String
 
     fun gen(codeGen: CodeGen): String

@@ -155,4 +155,8 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         scope.clazz(vis, name, clazzScope, extends, *implements, isStatic = isStatic, isFinal = isFinal)
     }
 
+    fun comment(text: String) {
+        scope.comment(text)
+    }
+
 }

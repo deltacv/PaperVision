@@ -27,6 +27,12 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
     val genOptions: CodeGenOptions
     var lastGenSession: S?
 
+    val genNodeName: String?
+        get() = null
+
+    val writeNameComment: Boolean
+        get() = true
+
     fun propagate(current: CodeGen.Current)
 
     fun receivePropagation(current: CodeGen.Current) {
@@ -61,14 +67,21 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
             if(!codeGen.busyNodes.contains(this)) {
                 codeGen.busyNodes.add(this)
 
-                logger.info("Generating code for node $this")
+                val name = genNodeName
+
+                logger.info("Generating code for ${name ?: this}")
 
                 lastGenSession = genCode(current)
+
+                if(name != null && writeNameComment) {
+                    current.scope.comment("-- End of $name code")
+                }
+
                 codeGen.sessions[this] = lastGenSession!!
 
                 codeGen.busyNodes.remove(this)
 
-                logger.info("DONE generating code for node $this")
+                logger.info("DONE generating code for ${name ?: this}")
 
                 propagate(current)
             }

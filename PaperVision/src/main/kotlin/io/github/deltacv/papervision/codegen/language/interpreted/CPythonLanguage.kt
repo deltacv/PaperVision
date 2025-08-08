@@ -216,6 +216,15 @@ object CPythonLanguage : LanguageBase(
         }
     }
 
+    override fun comment(text: String): String {
+        // handle single line and multi line
+        return if(text.contains("\n")) {
+            text.lines().joinToString("\n") { "# $it" }
+        } else {
+            "# $text"
+        }
+    }
+
     override fun int(value: Value) = callValue("int", language.IntType, value)
     override fun int(value: Int) = int(value.toString().v)
 

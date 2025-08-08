@@ -129,8 +129,9 @@ class OutputMatNode @JvmOverloads constructor(
     var windowSizeSupplier: (() -> ImVec2)? = null
 ) : DrawNode<NoSession>(allowDelete = false) {
 
-    var streamId: Int? = null
+    override val writeNameComment = false
 
+    var streamId: Int? = null
     private var lastWindowSize: ImVec2? = null
 
     init {

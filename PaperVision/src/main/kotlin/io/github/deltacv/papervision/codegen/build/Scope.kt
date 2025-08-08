@@ -274,6 +274,18 @@ class Scope(
         )
     }
 
+    fun comment(text: String) {
+        newStatement()
+        // handle if text is multiline, add $tabs to each line
+        val lines = if(text.contains("\n")) {
+            language.comment(text).split("\n").joinToString("\n$tabs") { it.trim() }
+        } else {
+            language.comment(text)
+        }
+
+        builder.append("$tabs$lines")
+    }
+
     fun newStatement() {
         if(builder.isNotEmpty()) {
             builder.appendLine()

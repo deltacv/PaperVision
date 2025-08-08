@@ -221,6 +221,14 @@ open class LanguageBase(
     override fun arraySize(array: Value) = ConValue(IntType, "${array.value}.length")
     override fun castValue(value: Value, castTo: Type) = ConValue(castTo, "((${castTo.shortNameWithGenerics}) (${value.value}))")
 
+    override fun comment(text: String): String {
+        if(text.contains('\n')) {
+            return text.lines().joinToString("\n") { "// $it" }
+        } else {
+            return "// $text"
+        }
+    }
+
     override fun gen(codeGen: CodeGen): String = codeGen.run {
         val mainScope = Scope(0, language, importScope)
         val classBodyScope = Scope(1, language, importScope)
