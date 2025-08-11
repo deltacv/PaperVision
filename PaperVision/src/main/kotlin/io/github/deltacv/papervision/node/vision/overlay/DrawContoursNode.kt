@@ -77,6 +77,8 @@ open class DrawContoursNode
                 val lineParams = (lineParams.value(current) as GenValue.LineParameters).ensureRuntimeLineJava(current)
 
                 val input = inputMat.value(current)
+                input.requireNonBinary(inputMat)
+
                 val contoursList = contours.value(current)
 
                 val output = uniqueVariable("${input.value.value!!}Contours", Mat.new())
@@ -142,6 +144,8 @@ open class DrawContoursNode
 
             current {
                 val input = inputMat.value(current)
+                input.requireNonBinary(inputMat)
+
                 val contoursList = contours.value(current)
 
                 val lineParams = lineParams.value(current)
@@ -203,7 +207,14 @@ open class DrawContoursNode
         genCodeIfNecessary(current)
 
         if(attrib == outputMat) {
-            return current.sessionOf(this)!!.outputMat
+            return current.getGenValueOrMakePlaceholder(
+                this,
+                Session::outputMat,
+                GenValue.Mat::value
+            ) {
+                val session = current.nonNullSessionOf(this)
+                GenValue.Mat(it, GenValue.ColorSpace(current.makePlaceholder { session.outputMat.color.value }))
+            }
         }
 
         noValue(attrib)

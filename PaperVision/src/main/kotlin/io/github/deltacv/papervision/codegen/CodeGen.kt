@@ -18,9 +18,15 @@
 
 package io.github.deltacv.papervision.codegen
 
+import io.github.deltacv.papervision.codegen.build.PlaceholderGenValueResolver
+import io.github.deltacv.papervision.codegen.build.PlaceholderResolver
+import io.github.deltacv.papervision.codegen.build.GenPlaceholderValue
+import io.github.deltacv.papervision.codegen.build.PlaceholderValue
 import io.github.deltacv.papervision.codegen.build.Scope
+import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.dsl.CodeGenContext
 import io.github.deltacv.papervision.codegen.language.Language
+import io.github.deltacv.papervision.util.hexString
 
 enum class Visibility {
     PUBLIC, PRIVATE, PROTECTED
@@ -31,6 +37,11 @@ class CodeGen(
     val language: Language,
     val isForPreviz: Boolean = false
 ) {
+
+    companion object {
+        // %s is the hexcode of the placeholder
+        val RESOLVER_TEMPLATE = "<mack!%s>"
+    }
 
     val importScope     = Scope(0, language)
     val classStartScope = Scope(1, language, importScope, isForPreviz)
@@ -50,6 +61,8 @@ class CodeGen(
 
     val endingNodes = mutableListOf<GenNode<*>>()
 
+    var registeredPlaceholderResolvers = mutableListOf<PlaceholderResolver>()
+
     private val flags = mutableListOf<String>()
 
     enum class Stage {
@@ -58,7 +71,21 @@ class CodeGen(
 
     var stage = Stage.CREATION
 
-    fun gen() = language.gen(this)
+    fun gen() = resolveAllPlaceholders(language.gen(this))
+
+    private fun resolveAllPlaceholders(preprocessed: String): String {
+        var resolved = preprocessed
+
+        registeredPlaceholderResolvers.forEach { resolver ->
+            val placeholder = RESOLVER_TEMPLATE.format(resolver.hexString)
+            val value = resolver()
+
+            resolved = resolved.replace(placeholder, value.value ?: "")
+            importScope.importType(value.type)
+        }
+
+        return resolved
+    }
 
     fun addFlag(flag: String) = if(!flags.contains(flag)) flags.add(flag) else false
     fun hasFlag(flag: String) = flags.contains(flag)
@@ -78,6 +105,39 @@ class CodeGen(
             node.genCodeIfNecessary(this)
             sessionOf(node) ?: throw IllegalStateException("Node ${node::class.simpleName} did not generate a session")
         }()
+
+        fun <G: GenValue> makeGenPlaceholder(genValueResolver: () -> G, valueResolver: (G) -> Value): GenPlaceholderValue<G> {
+            val resolver = PlaceholderGenValueResolver(genValueResolver, valueResolver)
+            codeGen.registeredPlaceholderResolvers.add(resolver)
+
+            return GenPlaceholderValue(resolver)
+        }
+
+        fun makePlaceholder(valueResolver: (PlaceholderResolver) -> Value): PlaceholderValue {
+            val resolver = PlaceholderResolver(valueResolver)
+            codeGen.registeredPlaceholderResolvers.add(resolver)
+
+            return PlaceholderValue(resolver)
+        }
+
+        fun <G: GenValue, S: CodeGenSession> getGenValueOrMakePlaceholder(
+            node: GenNode<S>,
+            sessionGenValueResolver: (S) -> G,
+            placeholderValueResolver: (G) -> Value,
+            placeholderGenValueResolver: (GenPlaceholderValue<G>) -> G
+        ): G {
+            val session = sessionOf(node)
+            return if(session != null) {
+                sessionGenValueResolver(session)
+            } else {
+                placeholderGenValueResolver(
+                    makeGenPlaceholder({
+                        val session = nonNullSessionOf(node)
+                        sessionGenValueResolver(session)
+                    }, placeholderValueResolver)
+                )
+            }
+        }
 
         operator fun <T> invoke(scopeBlock: CodeGenContext.() -> T) = codeGen.invoke(scopeBlock)
     }

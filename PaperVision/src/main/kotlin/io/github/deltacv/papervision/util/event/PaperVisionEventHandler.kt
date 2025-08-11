@@ -132,6 +132,8 @@ class PaperVisionEventHandler(val name: String) : Runnable {
 
     operator fun invoke(listener: EventListener) = doPersistent(listener)
 
+    operator fun invoke() = run()
+
     private fun runListener(listener: EventListener, isOnce: Boolean) =
         listener.run(EventListenerRemover(this, listener, isOnce))
 
