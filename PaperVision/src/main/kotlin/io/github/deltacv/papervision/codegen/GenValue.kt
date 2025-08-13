@@ -19,115 +19,73 @@
 package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.attribute.Attribute
-import io.github.deltacv.papervision.codegen.build.ConValue
-import io.github.deltacv.papervision.codegen.build.GenPlaceholderValue
-import io.github.deltacv.papervision.codegen.build.Type
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.node.vision.ColorSpace
 import kotlin.reflect.KClass
 
 sealed class GenValue {
 
-    abstract class SingleValGenValue : GenValue() {
-        abstract val value: Value
-    }
-    abstract class DoubleValGenValue : GenValue() {
-        abstract val value: Value
-    }
-
-    open class Mat(override val value: Value, val color: ColorSpace, val isBinary: kotlin.Boolean = false) : SingleValGenValue() {
+    open class Mat(val value: Resolvable<Value>, val color: Resolvable<ColorSpace>, val isBinary: Boolean = Boolean.TRUE) : GenValue() {
         open fun requireBinary(attribute: Attribute) {
-            if(value is GenPlaceholderValue<*>) {
-                val placeholderValue = value as GenPlaceholderValue<*>
-                placeholderValue.resolver.onResolve {
-                    val genValue = placeholderValue.resolver.genValueResolver()
-
-                    if (genValue is Mat) {
-                        attribute.raiseAssert(
-                            genValue.isBinary,
-                            "Mat is not binary as required, this causes runtime issues."
-                        )
-                    } else {
-                        attribute.raiseAssert(
-                            false,
-                            "Placeholder value does not resolve to a Mat."
-                        )
-                    }
-                }
-            } else {
-                attribute.raiseAssert(
-                    isBinary,
-                    "Mat is not binary as required, this causes runtime issues."
-                )
+            isBinary.value.letOrDefer {
+                attribute.raiseAssert(it, "Mat is not binary as required, this causes runtime issues.")
             }
         }
 
         open fun requireNonBinary(attribute: Attribute) {
-            if(value is GenPlaceholderValue<*>) {
-                val placeholderValue = value as GenPlaceholderValue<*>
-
-                placeholderValue.resolver.onResolve {
-                    val genValue = placeholderValue.resolver.genValueResolver()
-
-                    if (genValue is Mat) {
-                        attribute.raiseAssert(
-                            !genValue.isBinary,
-                            "Mat is binary, but non-binary was required."
-                        )
-                    } else {
-                        attribute.raiseAssert(
-                            false,
-                            "Placeholder value does not resolve to a Mat."
-                        )
-                    }
-                }
-            } else {
-                attribute.raiseAssert(
-                    !isBinary,
-                    "Mat is binary, but non-binary was required."
-                )
+            isBinary.value.letOrDefer {
+                attribute.raiseAssert(!it, "Mat is binary where it shouldn't be, this causes runtime issues.")
             }
         }
     }
 
-    data class Point(val x: Double, val y: Double) : GenValue()
+    data class Point(val x: Resolvable<Double>, val y: Resolvable<Double>) : GenValue()
 
     sealed class GPoints : GenValue() {
-        class Points(val points: Array<Point>) : GPoints()
-        data class RuntimePoints(val value: Value) : GPoints()
+        class Points(val points: Resolvable<Array<Point>>) : GPoints()
+        data class RuntimePoints(val value: Resolvable<Value>) : GPoints()
     }
 
     sealed class GRect : GenValue() {
-        data class Rect(val x: Double, val y: Double, val w: Double, val h: Double) : GRect()
+        data class Rect(val x: Resolvable<Double>, val y: Resolvable<Double>, val w: Resolvable<Double>, val h: Resolvable<Double>) : GRect()
 
-        data class RuntimeRect(val value: Value) : GRect()
+        data class RuntimeRect(val value: Resolvable<Value>) : GRect()
 
         sealed class Rotated : GRect() {
             data class RotatedRect(
-                val x: Double, val y: Double,
-                val w: Double, val h: Double,
-                val angle: Double
+                val x: Resolvable<Double>, val y: Resolvable<Double>,
+                val w: Resolvable<Double>, val h: Resolvable<Double>,
+                val angle: Resolvable<Double>
             ) : Rotated()
 
-            data class RuntimeRotatedRect(val value: Value) : Rotated()
+            data class RuntimeRotatedRect(val value: Resolvable<Value>) : Rotated()
         }
     }
 
     data class Enum<E : kotlin.Enum<E>>(val value: E, val clazz: Class<*>) : GenValue()
 
-    data class Int(val value: kotlin.Int) : GenValue()
-    data class Float(val value: kotlin.Float) : GenValue()
-    data class Double(val value: kotlin.Double) : GenValue()
-
-    data class String(val value: kotlin.String) : GenValue()
-
-    data class ColorSpace(override val value: Value) : SingleValGenValue() {
-        constructor(colorSpace: io.github.deltacv.papervision.node.vision.ColorSpace) : this(ConValue(Type.NONE, colorSpace.name))
+    data class Int(val value: Resolvable<kotlin.Int>) : GenValue(){
+        companion object {
+            val ZERO = Int(Resolvable.Now(0))
+        }
     }
+    data class Float(val value: Resolvable<kotlin.Float>) : GenValue() {
+        companion object {
+            val ZERO = Float(Resolvable.Now(0.0f))
+        }
+    }
+    data class Double(val value: Resolvable<kotlin.Double>) : GenValue() {
+        companion object {
+            val ZERO = Double(Resolvable.Now(0.0))
+        }
+    }
+
+    data class String(val value: Resolvable<kotlin.String>) : GenValue()
 
     sealed class LineParameters : GenValue() {
         data class Line(val color: Scalar, val thickness: Int) : LineParameters()
-        data class RuntimeLine(val colorScalarValue: Value, val thicknessValue: Value) : LineParameters()
+        data class RuntimeLine(val colorScalarValue: Resolvable<Value>, val thicknessValue: Resolvable<Value>) : LineParameters()
 
         fun ensureRuntimeLineJava(current: CodeGen.Current): RuntimeLine {
             return current {
@@ -135,7 +93,10 @@ sealed class GenValue {
                     is Line -> {
                         val color = uniqueVariable(
                             "lineColor", JvmOpenCvTypes.Scalar.new(
-                                lineParams.color.a.v, lineParams.color.b.v, lineParams.color.c.v, lineParams.color.d.v
+                                lineParams.color.a.value.v,
+                                lineParams.color.b.value.v,
+                                lineParams.color.c.value.v,
+                                lineParams.color.d.value.v
                             )
                         )
 
@@ -146,7 +107,7 @@ sealed class GenValue {
                             public(thickness)
                         }
 
-                        RuntimeLine(color, thickness)
+                        RuntimeLine(Resolvable.Now(color), Resolvable.Now(thickness))
                     }
 
                     is RuntimeLine -> lineParams
@@ -156,33 +117,33 @@ sealed class GenValue {
     }
 
     data class Scalar(
-        val a: kotlin.Double,
-        val b: kotlin.Double,
-        val c: kotlin.Double,
-        val d: kotlin.Double
-    ) : GList.ListOf<GenValue.Double>(arrayOf(Double(a), Double(b), Double(c), Double(d))) {
+        val a: Double,
+        val b: Double,
+        val c: Double,
+        val d: Double
+    ) : GList.ListOf<GenValue.Double>(arrayOf(a, b, c, d)) {
         companion object {
-            val ZERO = Scalar(0.0, 0.0, 0.0, 0.0)
+            val ZERO = Scalar(Double.ZERO, Double.ZERO, Double.ZERO, Double.ZERO)
         }
     }
 
     sealed class Vec2 : GenValue() {
-        data class Vector2(val x: kotlin.Double, val y: kotlin.Double) : Vec2()
-        data class RuntimeVector2(val xValue: Value, val yValue: Value) : Vec2()
+        data class Vector2(val x: Double, val y: Double) : Vec2()
+        data class RuntimeVector2(val xValue: Resolvable<Value>, val yValue: Resolvable<Value>) : Vec2()
 
         fun ensureRuntimeVector2Java(current: CodeGen.Current): RuntimeVector2 {
             return current {
                 when (val vec = this@Vec2) {
                     is Vector2 -> {
-                        val x = uniqueVariable("vectorX", vec.x.v)
-                        val y = uniqueVariable("vectorY", vec.y.v)
+                        val x = uniqueVariable("vectorX", vec.x.value.v)
+                        val y = uniqueVariable("vectorY", vec.y.value.v)
 
                         group {
                             public(x)
                             public(y)
                         }
 
-                        RuntimeVector2(x, y)
+                        RuntimeVector2(Resolvable.Now(x), Resolvable.Now(y))
                     }
 
                     is RuntimeVector2 -> vec
@@ -191,9 +152,9 @@ sealed class GenValue {
         }
     }
 
-    data class Range(val min: kotlin.Double, val max: kotlin.Double) : GenValue() {
+    data class Range(val min: Double, val max: Double) : GenValue() {
         companion object {
-            val ZERO = Range(0.0, 0.0)
+            val ZERO = Range(Double(Resolvable.Now(0.0)), Double(Resolvable.Now(0.0)))
         }
     }
 
@@ -204,16 +165,16 @@ sealed class GenValue {
         }
     }
 
-    sealed class Boolean(val value: kotlin.Boolean) : GenValue() {
-        object True : Boolean(true)
-        object False : Boolean(false)
+    open class Boolean(val value: Resolvable<kotlin.Boolean>) : GenValue() {
+        object TRUE : Boolean(Resolvable.Now(true))
+        object FALSE : Boolean(Resolvable.Now(false))
     }
 
     sealed class GList : GenValue() {
         open class ListOf<T : GenValue>(val elements: Array<T>) : GList()
         class List(elements: Array<GenValue>) : ListOf<GenValue>(elements)
 
-        data class RuntimeListOf<T : GenValue>(val value: Value, val typeClass: KClass<T>) : GList()
+        data class RuntimeListOf<T : GenValue>(val value: Resolvable<Value>, val typeClass: KClass<T>) : GList()
     }
 
     object None : GenValue()

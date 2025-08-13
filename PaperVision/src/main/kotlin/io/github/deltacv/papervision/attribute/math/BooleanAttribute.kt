@@ -69,8 +69,8 @@ class BooleanAttribute(
                 return value as GenValue.Boolean
             } else {
                 return if (value.get()) {
-                    GenValue.Boolean.True
-                } else GenValue.Boolean.False
+                    GenValue.Boolean.TRUE
+                } else GenValue.Boolean.FALSE
             }
         } else {
             val value = getOutputValue(current)

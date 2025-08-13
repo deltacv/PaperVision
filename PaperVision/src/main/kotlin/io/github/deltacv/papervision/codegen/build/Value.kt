@@ -28,6 +28,10 @@ val Number.v get() = toString().v
 
 abstract class Value {
 
+    companion object {
+        val NONE = ConValue(Type.NONE, null)
+    }
+
     abstract val type: Type
     abstract val value: String?
 
@@ -65,29 +69,6 @@ open class ConValue(override val type: Type, override val value: String?): Value
         processImports()
     }
 }
-
-open class PlaceholderResolver(private val resolver: (PlaceholderResolver) -> Value) {
-    val onResolve = PaperVisionEventHandler("PlaceholderResolver-$hexString-OnResolve")
-
-    operator fun invoke(): Value {
-        onResolve()
-        return resolver(this)
-    }
-}
-
-class PlaceholderGenValueResolver<G: GenValue>(val genValueResolver: () -> G, valueResolver: (G) -> Value) : PlaceholderResolver({
-    val genValue = genValueResolver()
-    valueResolver(genValue)
-})
-
-open class PlaceholderValue(open val resolver: PlaceholderResolver) : Value() {
-    override val type = Type.NONE
-    override val value = String.format(CodeGen.RESOLVER_TEMPLATE, hexString)
-}
-
-class GenPlaceholderValue<G: GenValue>(
-    override val resolver: PlaceholderGenValueResolver<G>
-) : PlaceholderValue(resolver)
 
 class Condition(booleanType: Type, condition: String) : ConValue(booleanType, condition)
 class Operation(numberType: Type, operation: String) : ConValue(numberType, operation)

@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.util.event
 
 import io.github.deltacv.papervision.util.loggerOf
 
-class PaperVisionEventHandler(val name: String) : Runnable {
+class PaperVisionEventHandler(val name: String, val catchExceptions: Boolean = true) : Runnable {
 
     val logger by loggerOf("${name}-EventHandler")
 
@@ -48,15 +48,19 @@ class PaperVisionEventHandler(val name: String) : Runnable {
 
     override fun run() {
         for(listener in listeners) {
-            try {
-                runListener(listener, false)
-            } catch (ex: Exception) {
-                if(ex is InterruptedException) {
-                    logger.warn("Rethrowing InterruptedException...")
-                    throw ex
-                } else {
-                    logger.error("Error while running listener ${listener.javaClass.name}", ex)
+            if(catchExceptions) {
+                try {
+                    runListener(listener, false)
+                } catch (ex: Exception) {
+                    if(ex is InterruptedException) {
+                        logger.warn("Rethrowing InterruptedException...")
+                        throw ex
+                    } else {
+                        logger.error("Error while running listener ${listener.javaClass.name}", ex)
+                    }
                 }
+            } else {
+                runListener(listener, false)
             }
         }
 
@@ -64,15 +68,19 @@ class PaperVisionEventHandler(val name: String) : Runnable {
 
         //executing "doOnce" listeners
         for(listener in onceListeners) {
-            try {
-                runListener(listener, true)
-            } catch (ex: Exception) {
-                if(ex is InterruptedException) {
-                    logger.warn("Rethrowing InterruptedException...")
-                    throw ex
-                } else {
-                    logger.error("Error while running \"once\" ${listener.javaClass.name}", ex)
+            if(catchExceptions) {
+                try {
+                    runListener(listener, true)
+                } catch (ex: Exception) {
+                    if(ex is InterruptedException) {
+                        logger.warn("Rethrowing InterruptedException...")
+                        throw ex
+                    } else {
+                        logger.error("Error while running \"once\" ${listener.javaClass.name}", ex)
+                    }
                 }
+            } else {
+                runListener(listener, true)
             }
 
             toRemoveOnceListeners.add(listener)

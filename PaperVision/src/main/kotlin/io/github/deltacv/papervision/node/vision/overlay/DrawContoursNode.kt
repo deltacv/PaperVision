@@ -81,9 +81,8 @@ open class DrawContoursNode
 
                 val contoursList = contours.value(current)
 
-                val output = uniqueVariable("${input.value.value!!}Contours", Mat.new())
-
-                var drawMat = input.value
+                val output = uniqueVariable("${input.value.v}Contours", Mat.new())
+                var drawMat = input.value.v
 
                 group {
                     if (!isDrawOnInput) {
@@ -96,13 +95,13 @@ open class DrawContoursNode
 
                     if(!isDrawOnInput) {
                         drawMat = output
-                        input.value("copyTo", drawMat)
+                        input.value.v("copyTo", drawMat)
                     }
 
                     if(contoursList is GenValue.GList.RuntimeListOf<*>) {
-                        Imgproc("drawContours", drawMat, contoursList.value, (-1).v,
-                            lineParams.colorScalarValue,
-                            lineParams.thicknessValue
+                        Imgproc("drawContours", drawMat, contoursList.value.v, (-1).v,
+                            lineParams.colorScalarValue.v,
+                            lineParams.thicknessValue.v
                         )
                     } else {
                         separate()
@@ -112,8 +111,8 @@ open class DrawContoursNode
 
                         for (contour in (contoursList as GenValue.GList.ListOf<*>).elements) {
                             if (contour is GenValue.GPoints.RuntimePoints) {
-                                ifCondition(contour.value notEqualsTo language.nullValue) {
-                                    list("add", contour.value)
+                                ifCondition(contour.value.v notEqualsTo language.nullValue) {
+                                    list("add", contour.value.v)
                                 }
                             } else {
                                 raise("Points are not supported")
@@ -123,13 +122,13 @@ open class DrawContoursNode
                         separate()
 
                         Imgproc("drawContours", drawMat, list, (-1).v,
-                            lineParams.colorScalarValue,
-                            lineParams.thicknessValue
+                            lineParams.colorScalarValue.v,
+                            lineParams.thicknessValue.v
                         )
                     }
 
                     if(!isDrawOnInput) {
-                        outputMat.streamIfEnabled(drawMat, input.color)
+                        outputMat.streamIfEnabled(drawMat, input.color.v)
                     }
                 }
 

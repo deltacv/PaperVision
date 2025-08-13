@@ -19,6 +19,7 @@
 package io.github.deltacv.papervision.codegen.dsl
 
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
+import io.github.deltacv.papervision.codegen.Resolvable
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
 import io.github.deltacv.papervision.node.vision.ColorSpace
@@ -58,10 +59,14 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
     }
 
     fun streamMat(id: Int, mat: Value, matColor: ColorSpace = ColorSpace.RGB) {
+        streamMat(id, mat, Resolvable.Now(matColor))
+    }
+
+    fun streamMat(id: Int, mat: Value, matColor: Resolvable<ColorSpace> = Resolvable.Now(ColorSpace.RGB)) {
         scope.streamMat(id, mat, matColor)
     }
 
-    fun MatAttribute.streamIfEnabled(mat: Value, matColor: ColorSpace = ColorSpace.RGB) {
+    fun MatAttribute.streamIfEnabled(mat: Value, matColor: Resolvable<ColorSpace> = Resolvable.Now(ColorSpace.RGB)) {
         if(displayWindow != null) {
             streamMat(displayWindow!!.imageDisplay.id, mat, matColor)
         }

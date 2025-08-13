@@ -37,6 +37,7 @@ import io.github.deltacv.papervision.codegen.dsl.generatorFor
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.now
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -115,8 +116,8 @@ class InputMatNode @JvmOverloads constructor(
     override fun getOutputValueOf(current: CodeGen.Current,
                                   attrib: Attribute
     ) = when(current.language) {
-        is CPythonLanguage -> GenValue.Mat(Variable(CPythonLanguage.NoType, "input"), ColorSpace.RGBA)
-        else -> GenValue.Mat(Variable(JvmOpenCvTypes.Mat, "input"), ColorSpace.RGBA)
+        is CPythonLanguage -> GenValue.Mat(Variable(CPythonLanguage.NoType, "input").now(), ColorSpace.RGBA.now())
+        else -> GenValue.Mat(Variable(JvmOpenCvTypes.Mat, "input").now(), ColorSpace.RGBA.now())
     }
 }
 
