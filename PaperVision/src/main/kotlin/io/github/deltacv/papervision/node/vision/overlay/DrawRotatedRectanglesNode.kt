@@ -60,9 +60,10 @@ open class DrawRotatedRectanglesNode
 
     override fun onEnable() {
         + inputMat.rebuildOnChange()
-        + rectangles.rebuildOnChange()
 
         + lineParams
+
+        + rectangles.rebuildOnChange()
 
         if (!isDrawOnInput) {
             + outputMat.enablePrevizButton().rebuildOnChange()

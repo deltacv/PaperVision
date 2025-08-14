@@ -59,9 +59,10 @@ open class DrawContoursNode
 
     override fun onEnable() {
         + inputMat.rebuildOnChange()
-        + contours.rebuildOnChange()
 
         + lineParams
+
+        + contours.rebuildOnChange()
 
         if(!isDrawOnInput) {
             + outputMat.enablePrevizButton().rebuildOnChange()

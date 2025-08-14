@@ -57,10 +57,11 @@ open class DrawRectanglesNode
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
-        +inputMat.rebuildOnChange()
-        +rectangles.rebuildOnChange()
+        + inputMat.rebuildOnChange()
 
-        +lineParams
+        + lineParams
+
+        + rectangles.rebuildOnChange()
 
         if (!isDrawOnInput) {
             +outputMat.enablePrevizButton().rebuildOnChange()
