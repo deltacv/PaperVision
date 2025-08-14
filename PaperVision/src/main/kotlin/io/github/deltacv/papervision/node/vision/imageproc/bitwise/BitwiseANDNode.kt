@@ -62,8 +62,10 @@ class BitwiseANDNode : DrawNode<BitwiseANDNode.Session>() {
             val firstValue = first.value(current)
             val secondValue = second.value(current)
 
-            if(firstValue.isBinary != secondValue.isBinary) {
-                raise("err_bitwiseor_binary")
+            Resolvable.DoubleDependentPlaceholder(firstValue.isBinary.value, secondValue.isBinary.value) { first, second ->
+                first == second
+            }.letOrDefer {
+                raiseAssert(it, "err_bitwiseor_binary")
             }
 
             current {
@@ -98,8 +100,10 @@ class BitwiseANDNode : DrawNode<BitwiseANDNode.Session>() {
             val firstValue = first.value(current)
             val secondValue = second.value(current)
 
-            if(firstValue.isBinary != secondValue.isBinary) {
-                raise("err_bitwiseor_binary")
+            Resolvable.DoubleDependentPlaceholder(firstValue.isBinary.value, secondValue.isBinary.value) { first, second ->
+                first == second
+            }.letOrDefer {
+                raiseAssert(it, "err_bitwiseor_binary")
             }
 
             current {

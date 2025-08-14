@@ -67,10 +67,8 @@ object JythonLanguage : LanguageBase(
 
     override fun instanceVariableSetDeclaration(variable: Variable, v: Value) = "${variable.name} = ${v.value!!}" + semicolonIfNecessary()
 
-    override fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value?) =
-        if(cvtColor != null)
-            methodCallDeclaration("stream", id, mat, cvtColor)
-        else methodCallDeclaration("stream", id, mat)
+    override fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value) =
+        methodCallDeclaration("stream", id, mat, cvtColor)
 
     override fun methodDeclaration(
         vis: Visibility,

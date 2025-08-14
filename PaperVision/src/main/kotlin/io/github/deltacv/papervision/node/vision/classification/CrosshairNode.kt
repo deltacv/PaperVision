@@ -96,7 +96,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
             val drawOn = drawCrosshairOn.value(current)
 
-            val crosshairLineParams = (crosshairLineParams.value(current) as GenValue.LineParameters).ensureRuntimeLineJava(current)
+            val crosshairLineParams = crosshairLineParams.value(current).ensureRuntimeLineJava(current)
 
             val crosshairSizeValue = crosshairScale.value(current).value
 

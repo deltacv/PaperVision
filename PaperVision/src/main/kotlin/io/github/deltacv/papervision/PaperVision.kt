@@ -27,6 +27,7 @@ import io.github.deltacv.papervision.action.Action
 import io.github.deltacv.papervision.action.RootAction
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.CodeGenManager
+import io.github.deltacv.papervision.codegen.Resolvable
 import io.github.deltacv.papervision.engine.bridge.NoOpPaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.client.message.PrevizAskNameMessage

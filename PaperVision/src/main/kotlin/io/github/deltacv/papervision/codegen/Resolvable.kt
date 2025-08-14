@@ -2,6 +2,8 @@ package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.codegen.build.ConValue
 import io.github.deltacv.papervision.codegen.build.Type
+import io.github.deltacv.papervision.id.IdElement
+import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.hexString
 
@@ -32,29 +34,20 @@ sealed class Resolvable<T> {
         override fun toString() = result.toString()
     }
 
-    open class Placeholder<T>(private val resolver: () -> T?) : Resolvable<T>() {
-        companion object {
-            private val globalPlaceholders = mutableMapOf<String, Placeholder<*>>()
-            val registeredPlaceholders get() = globalPlaceholders.keys
+    open class Placeholder<T>(private val resolver: () -> T?) : Resolvable<T>(), IdElement {
+        val placeholder get() = String.format(CodeGen.RESOLVER_TEMPLATE, id)
 
-            fun fetchPlaceholder(placeholder: String) = globalPlaceholders[placeholder]
-        }
+        val onResolve by lazy { PaperVisionEventHandler("Placeholder-$placeholder-OnResolve", catchExceptions = false) }
 
-        val timestamp = System.currentTimeMillis()
-        val placeholder = String.format(CodeGen.RESOLVER_TEMPLATE, "$timestamp$hexString")
-
-        val onResolve = PaperVisionEventHandler("Placeholder-$placeholder-OnResolve", catchExceptions = false)
-
-        init {
-            globalPlaceholders[placeholder] = this
-        }
+        private var cachedValue: T? = null
 
         override fun resolve(): T? {
-            val value = resolver()
+            val value = cachedValue ?: resolver()
             if (value != null) {
                 onResolve()
             }
 
+            cachedValue = value
             return value
         }
 
@@ -80,6 +73,8 @@ sealed class Resolvable<T> {
         }
 
         override fun toString() = placeholder
+
+        override val id by IdElementContainerStack.threadStack.peekNonNull<Placeholder<*>>().nextId(this)
     }
 
     data class DependentPlaceholder<P, T>(val dependency: Resolvable<P>, val resolver: (P) -> T?) : Placeholder<T>({
@@ -105,7 +100,7 @@ sealed class Resolvable<T> {
         }
     })
 
-    val value = ConValue(Type.NONE, toString())
+    val value get() = ConValue(Type.NONE, toString())
 
     abstract fun letOrDefer(block: (T) -> Unit)
     abstract fun <R> tryReturn(success: (T) -> R, fail: (String) -> R): R

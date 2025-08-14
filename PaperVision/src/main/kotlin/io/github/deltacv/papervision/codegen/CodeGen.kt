@@ -22,6 +22,8 @@ import io.github.deltacv.papervision.codegen.build.Scope
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.dsl.CodeGenContext
 import io.github.deltacv.papervision.codegen.language.Language
+import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.util.loggerFor
 
 enum class Visibility {
     PUBLIC, PRIVATE, PROTECTED
@@ -34,8 +36,13 @@ class CodeGen(
 ) {
 
     companion object {
-        // %s is the hexcode of the placeholder
-        val RESOLVER_TEMPLATE = "<mack!%s>"
+        val RESOLVER_PREFIX = "<mack!"
+        val RESOLVER_SUFFIX = ">"
+
+        // %s is the ID of the placeholder
+        val RESOLVER_TEMPLATE = "$RESOLVER_PREFIX%d$RESOLVER_SUFFIX"
+
+        val logger by loggerFor<CodeGen>()
     }
 
     val importScope     = Scope(0, language)
@@ -69,19 +76,73 @@ class CodeGen(
     private fun resolveAllPlaceholders(preprocessed: String): String {
         var resolved = preprocessed
 
-        for(placeholder in Resolvable.Placeholder.registeredPlaceholders) {
-            val placeholderTemplate = RESOLVER_TEMPLATE.format(placeholder)
-            val placeholder = Resolvable.Placeholder.fetchPlaceholder(placeholder) ?: continue
+        val placeholders = IdElementContainerStack.threadStack
+            .peekNonNull<Resolvable.Placeholder<*>>()
 
-            val value = placeholder.resolve()
+        logger.info("Resolving active placeholders: ${placeholders.inmutable.size}")
 
-            if(value is Value) {
-                resolved = resolved.replace(placeholderTemplate, value.value ?: "")
-                importScope.importType(value.type)
-            } else {
-                resolved = resolved.replace(placeholderTemplate, value.toString())
-            }
+        // Initial debug log of all placeholders
+        placeholders.inmutable.forEach {
+            val v = it.resolve()
+            logger.info("${it.placeholder} = $v")
         }
+
+        do {
+            var changed = false
+            val sb = StringBuilder()
+            var i = 0
+
+            // Resolve all once per pass
+            placeholders.inmutable.forEach { it.resolve() }
+
+            while (i < resolved.length) {
+                val start = resolved.indexOf(RESOLVER_PREFIX, i)
+                if (start == -1) {
+                    // No more placeholders
+                    sb.append(resolved, i, resolved.length)
+                    break
+                }
+
+                val end = resolved.indexOf(RESOLVER_SUFFIX, start)
+                if (end == -1) {
+                    // No closing '>', append rest as-is
+                    sb.append(resolved, i, resolved.length)
+                    break
+                }
+
+                // Append text before the placeholder
+                sb.append(resolved, i, start)
+
+                // Extract the number part
+                val idPart = resolved.substring(start + 6, end) // after "<mack!"
+                val id = idPart.toIntOrNull()
+
+                if (id != null) {
+                    val placeholder = placeholders.inmutable.find { it.id == id }
+                    if (placeholder != null) {
+                        val value = placeholder.resolve()
+                        val replacement = if (value is Value) {
+                            importScope.importType(value.type)
+                            value.value ?: ""
+                        } else {
+                            value.toString()
+                        }
+                        sb.append(replacement)
+                        changed = true
+                    } else {
+                        // Keep the placeholder as-is if no match found
+                        sb.append(resolved, start, end + 1)
+                    }
+                } else {
+                    // Not a valid number after <mack!
+                    sb.append(resolved, start, end + 1)
+                }
+
+                i = end + 1
+            }
+
+            resolved = sb.toString()
+        } while (changed)
 
         return resolved
     }

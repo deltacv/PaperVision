@@ -26,7 +26,7 @@ import kotlin.reflect.KClass
 
 sealed class GenValue {
 
-    open class Mat(val value: Resolvable<Value>, val color: Resolvable<ColorSpace>, val isBinary: Boolean = Boolean.TRUE) : GenValue() {
+    open class Mat(val value: Resolvable<Value>, val color: Resolvable<ColorSpace>, val isBinary: Boolean = Boolean.FALSE) : GenValue() {
         open fun requireBinary(attribute: Attribute) {
             isBinary.value.letOrDefer {
                 attribute.raiseAssert(it, "Mat is not binary as required, this causes runtime issues.")
@@ -43,6 +43,7 @@ sealed class GenValue {
             fun defer(genValueResolver: () -> GenValue.Mat?) = GenValue.Mat(
                 Resolvable.fromResolvable { genValueResolver()?.value },
                 Resolvable.fromResolvable { genValueResolver()?.color },
+                Boolean.defer { genValueResolver()?.isBinary }
             )
         }
     }
@@ -123,7 +124,7 @@ sealed class GenValue {
     sealed class LineParameters : GenValue() {
         data class Line(val color: Scalar, val thickness: Int) : LineParameters() {
             companion object {
-                fun defer(genValueResolver: () -> Line?) = GenValue.LineParameters.Line(
+                fun defer(genValueResolver: () -> Line?) = Line(
                     Scalar.defer { genValueResolver()?.color },
                     Int.defer { genValueResolver()?.thickness }
                 )
@@ -226,6 +227,12 @@ sealed class GenValue {
     open class Boolean(val value: Resolvable<kotlin.Boolean>) : GenValue() {
         object TRUE : Boolean(Resolvable.Now(true))
         object FALSE : Boolean(Resolvable.Now(false))
+
+        companion object {
+            fun defer(genValueResolver: () -> Boolean?) = Boolean(
+                Resolvable.fromResolvable { genValueResolver()?.value }
+            )
+        }
     }
 
     sealed class GList : GenValue() {

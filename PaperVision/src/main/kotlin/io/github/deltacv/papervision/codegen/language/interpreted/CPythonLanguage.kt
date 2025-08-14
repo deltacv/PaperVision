@@ -72,7 +72,7 @@ object CPythonLanguage : LanguageBase(
 
     override fun instanceVariableSetDeclaration(variable: Variable, v: Value) = "${variable.name} = ${v.value!!}" + semicolonIfNecessary()
 
-    override fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value?) =
+    override fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value) =
         throw UnsupportedOperationException("streamMatCallDeclaration is not supported in Python")
 
     override fun cvtColorValue(a: ColorSpace, b: ColorSpace): Value {

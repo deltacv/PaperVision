@@ -29,6 +29,7 @@ import io.github.deltacv.papervision.attribute.vision.structs.ScalarRangeAttribu
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.Resolvable
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Core
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
@@ -37,6 +38,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Scalar
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.Category
@@ -106,8 +108,6 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
                 val matColor = inputMat.color
                 val targetColor = lastColor
 
-                val needsCvt = matColor != targetColor
-
                 val cvtMat = uniqueVariable("${targetColor.name.lowercase()}Mat", Mat.new())
                 val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}BinaryMat", Mat.new())
 
@@ -115,19 +115,19 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
                 val lowerScalar = uniqueVariable("lower${targetColor.name}",
                     Scalar.new(
-                        range.a.min.v,
-                        range.b.min.v,
-                        range.c.min.v,
-                        range.d.min.v,
+                        range.a.min.value.v,
+                        range.b.min.value.v,
+                        range.c.min.value.v,
+                        range.d.min.value.v,
                     )
                 )
 
                 val upperScalar = uniqueVariable("upper${targetColor.name}",
                     Scalar.new(
-                        range.a.max.v,
-                        range.b.max.v,
-                        range.c.max.v,
-                        range.d.max.v,
+                        range.a.max.value.v,
+                        range.b.max.value.v,
+                        range.c.max.value.v,
+                        range.d.max.value.v,
                     )
                 )
 
@@ -137,10 +137,6 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
                     // upper color scalar
                     public(upperScalar, scalarLabels.second)
-
-                    if (needsCvt) {
-                        private(cvtMat)
-                    }
                     // output mat target
                     private(thresholdTargetMat)
                 }
@@ -148,16 +144,21 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
                 current.scope {
                     writeNameComment()
 
-                    if(needsCvt) {
-                        Imgproc("cvtColor", inputMat.value, cvtMat, cvtColorValue(matColor, targetColor))
-                        inputMat = GenValue.Mat(cvtMat, targetColor)
-                    }
+                    deferredBlock(Resolvable.DependentPlaceholder(matColor) {
+                        {
+                            if(it != targetColor) {
+                                Imgproc("cvtColor", inputMat.value.v, thresholdTargetMat, cvtColorValue(it, targetColor))
+                            } else {
+                                inputMat.value.v("copyTo", thresholdTargetMat)
+                            }
+                        }
+                    })
 
-                    Core("inRange", inputMat.value, lowerScalar, upperScalar, thresholdTargetMat)
-                    output.streamIfEnabled(thresholdTargetMat, ColorSpace.GRAY)
+                    Core("inRange", thresholdTargetMat, lowerScalar, upperScalar, thresholdTargetMat)
+                    output.streamIfEnabled(thresholdTargetMat, ColorSpace.GRAY.resolved())
                 }
 
-                session.outputMat = GenValue.Mat(thresholdTargetMat, ColorSpace.GRAY, true)
+                session.outputMat = GenValue.Mat(thresholdTargetMat.resolved(), ColorSpace.GRAY.resolved(), GenValue.Boolean.TRUE)
 
                 session
             }
@@ -175,34 +176,28 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
                 val matColor = inputMat.color
                 val targetColor = lastColor
 
-                val needsCvt = matColor != targetColor
-
-                val cvtMat = uniqueVariable(
-                    targetColor.name.lowercase(),
-                    cv2.callValue("cvtColor", CPythonLanguage.NoType, inputMat.value, cvtColorValue(matColor, targetColor))
-                )
-
-                val target = if(needsCvt) {
-                    cvtMat
-                } else inputMat.value
-
-                val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}_thresh",
-                    cv2.callValue("inRange", CPythonLanguage.NoType, target,
-                        CPythonLanguage.tuple(range.a.min.v, range.b.min.v, range.c.min.v, range.d.min.v),
-                        CPythonLanguage.tuple(range.a.max.v, range.b.max.v, range.c.max.v, range.d.max.v)
-                    )
-                )
-
                 current.scope {
                     writeNameComment()
 
-                    if(needsCvt) {
-                        local(cvtMat)
-                    }
+                    val target = uniqueVariable("thresholdTargetMat", inputMat.value.v)
+                    local(target)
+
+                    deferredBlock(Resolvable.DependentPlaceholder(matColor) {
+                        {
+                            target set cv2.callValue("cvtColor", CPythonLanguage.NoType, inputMat.value.v, cvtColorValue(it, targetColor))
+                        }
+                    })
+
+                    val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}_thresh",
+                        cv2.callValue("inRange", CPythonLanguage.NoType, target,
+                            CPythonLanguage.tuple(range.a.min.value.v, range.b.min.value.v, range.c.min.value.v, range.d.min.value.v),
+                            CPythonLanguage.tuple(range.a.max.value.v, range.b.max.value.v, range.c.max.value.v, range.d.max.value.v)
+                        )
+                    )
 
                     local(thresholdTargetMat)
 
-                    session.outputMat = GenValue.Mat(thresholdTargetMat, targetColor, true)
+                    session.outputMat = GenValue.Mat(thresholdTargetMat.resolved(), targetColor.resolved(), GenValue.Boolean.TRUE)
                 }
 
                 session

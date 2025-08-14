@@ -92,17 +92,12 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
             session
         }
     }
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        val lp = current.sessionOf(this)?.lineParameters
 
-        return when (current.language) {
-            // select the appropriate type based on the language;
-            // Java always uses runtime line parameters
-            // CPython always uses the static line parameters
-            is JavaLanguage   -> GenValue.LineParameters.RuntimeLine.defer { lp as? GenValue.LineParameters.RuntimeLine }
-            is CPythonLanguage -> GenValue.LineParameters.Line.defer { lp as? GenValue.LineParameters.Line }
-            else -> null
-        } ?: noValue(attrib)
+    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+        return when(attrib) {
+            output -> current.nonNullSessionOf(this).lineParameters
+            else -> noValue(attrib)
+        }
     }
 
 

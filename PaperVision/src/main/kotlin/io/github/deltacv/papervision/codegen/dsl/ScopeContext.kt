@@ -129,20 +129,18 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
     fun deferredBlock(resolvable: Resolvable<ScopeContext.() -> Unit>) {
         val block = resolvable.resolve()
 
-        val scope = Scope(scope.tabsCount, scope.language, scope.importScope)
-
         if(block != null) {
             block(scope.context)
         } else {
             val placeholder = Resolvable.DependentPlaceholder(resolvable) {
                 val newScope = Scope(scope.tabsCount, scope.language, scope.importScope)
                 it(newScope.context)
+
+                newScope.get()
             }
 
-            scope.write(placeholder.toString())
+            scope.write(placeholder.placeholder)
         }
-
-        scope.scope(scope)
     }
 
     fun method(

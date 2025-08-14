@@ -25,6 +25,7 @@ import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
 import io.github.deltacv.papervision.serialization.data.SerializeData
@@ -81,8 +82,8 @@ class RangeAttribute(
 
     override fun value(current: CodeGen.Current) = value(
         current, "a Range", GenValue.Range(
-            minValue.get().toDouble(),
-            maxValue.get().toDouble()
+            GenValue.Double(minValue.get().toDouble().resolved()),
+            GenValue.Double(maxValue.get().toDouble().resolved())
         )
     ) { it is GenValue.Range }
 

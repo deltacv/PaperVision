@@ -68,6 +68,8 @@ open class ConValue(override val type: Type, override val value: String?): Value
     init {
         processImports()
     }
+
+    override fun toString() = value ?: "null"
 }
 
 class Condition(booleanType: Type, condition: String) : ConValue(booleanType, condition)
@@ -81,4 +83,5 @@ open class Variable(val name: String, val variableValue: Value) : ConValue(varia
         additionalImports(*variableValue.imports.toTypedArray())
     }
 
+    override fun toString() = name
 }

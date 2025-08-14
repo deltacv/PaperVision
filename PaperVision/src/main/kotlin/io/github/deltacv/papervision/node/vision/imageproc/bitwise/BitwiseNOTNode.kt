@@ -47,7 +47,6 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
 
     override fun onEnable() {
         + input.rebuildOnChange()
-
         + output.enablePrevizButton().rebuildOnChange()
     }
 
@@ -69,6 +68,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
 
                     outputMat("release")
                     JvmOpenCvTypes.Core("bitwise_not", firstValue.value.v, outputMat)
+
                     output.streamIfEnabled(outputMat, firstValue.color)
                 }
 

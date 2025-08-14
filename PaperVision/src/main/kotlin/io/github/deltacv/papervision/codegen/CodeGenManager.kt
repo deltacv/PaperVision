@@ -31,6 +31,7 @@ import io.github.deltacv.papervision.gui.ToastWindow
 import io.github.deltacv.papervision.gui.util.DialogMessageWindow
 import io.github.deltacv.papervision.gui.util.Popup
 import io.github.deltacv.papervision.gui.util.TooltipPopup
+import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.Node
@@ -45,6 +46,10 @@ class CodeGenManager(val paperVision: PaperVision) {
         language: Language = JavaLanguage,
         isForPreviz: Boolean = false
     ): String? {
+        val placeholders = IdElementContainer<Resolvable.Placeholder<*>>()
+
+        IdElementContainerStack.threadStack.push(placeholders)
+
         val timestamp = System.currentTimeMillis()
 
         logger.info("Starting code gen at $timestamp")
@@ -120,6 +125,8 @@ class CodeGenManager(val paperVision: PaperVision) {
         codeGen.stage = CodeGen.Stage.ENDED_SUCCESS
 
         logger.info("Code gen $timestamp OK")
+
+        IdElementContainerStack.threadStack.pop<Resolvable.Placeholder<*>>()
 
         return result.trim()
     }
