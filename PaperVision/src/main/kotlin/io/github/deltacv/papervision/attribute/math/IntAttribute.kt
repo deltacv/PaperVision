@@ -27,6 +27,7 @@ import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.serialization.AttributeSerializationData
 import io.github.deltacv.papervision.util.Range2i
@@ -98,7 +99,7 @@ class IntAttribute(
     override fun thisGet() = value.get()
 
     override fun value(current: CodeGen.Current) = value(
-        current, "an Int", GenValue.Int(value.get())
+        current, "an Int", GenValue.Int(value.get().resolved())
     ) { it is GenValue.Int }
 
     override fun makeSerializationData() = Data(value.get())

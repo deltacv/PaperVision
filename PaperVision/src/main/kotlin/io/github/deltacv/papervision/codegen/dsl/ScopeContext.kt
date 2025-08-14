@@ -19,6 +19,7 @@
 package io.github.deltacv.papervision.codegen.dsl
 
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
+import io.github.deltacv.papervision.codegen.Resolvable
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
 import io.github.deltacv.papervision.node.vision.ColorSpace
@@ -58,10 +59,14 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
     }
 
     fun streamMat(id: Int, mat: Value, matColor: ColorSpace = ColorSpace.RGB) {
+        streamMat(id, mat, Resolvable.Now(matColor))
+    }
+
+    fun streamMat(id: Int, mat: Value, matColor: Resolvable<ColorSpace> = Resolvable.Now(ColorSpace.RGB)) {
         scope.streamMat(id, mat, matColor)
     }
 
-    fun MatAttribute.streamIfEnabled(mat: Value, matColor: ColorSpace = ColorSpace.RGB) {
+    fun MatAttribute.streamIfEnabled(mat: Value, matColor: Resolvable<ColorSpace> = Resolvable.Now(ColorSpace.RGB)) {
         if(displayWindow != null) {
             streamMat(displayWindow!!.imageDisplay.id, mat, matColor)
         }
@@ -121,6 +126,23 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         scope.constructor(vis, clazz.className, constructorScope, *parameters)
     }
 
+    fun deferredBlock(resolvable: Resolvable<ScopeContext.() -> Unit>) {
+        val block = resolvable.resolve()
+
+        if(block != null) {
+            block(scope.context)
+        } else {
+            val placeholder = Resolvable.DependentPlaceholder(resolvable) {
+                val newScope = Scope(scope.tabsCount, scope.language, scope.importScope)
+                it(newScope.context)
+
+                newScope.get()
+            }
+
+            scope.write(placeholder.placeholder)
+        }
+    }
+
     fun method(
         vis: Visibility, returnType: Type, name: String,
         vararg parameters: Parameter, isStatic: Boolean = false,
@@ -153,6 +175,10 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         block(clazzScope.context)
 
         scope.clazz(vis, name, clazzScope, extends, *implements, isStatic = isStatic, isFinal = isFinal)
+    }
+
+    fun comment(text: String) {
+        scope.comment(text)
     }
 
 }

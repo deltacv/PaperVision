@@ -34,6 +34,7 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage.tuple
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -80,25 +81,27 @@ class BlurNode : DrawNode<BlurNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     when(algo) {
                         Gaussian -> {
                             val kernelSize = 6.v * blurValVariable + 1.v
                             val sizeBlurVal = Size.new(kernelSize, kernelSize)
 
-                            Imgproc("GaussianBlur", inputMat.value, outputMat, sizeBlurVal, blurValVariable)
+                            Imgproc("GaussianBlur", inputMat.value.v, outputMat, sizeBlurVal, blurValVariable)
                         }
                         Box -> {
                             val kernelSize = 2.v * blurValVariable + 1.v
                             val sizeBlurVal = Size.new(kernelSize, kernelSize)
 
-                            Imgproc("blur", inputMat.value, outputMat, sizeBlurVal)
+                            Imgproc("blur", inputMat.value.v, outputMat, sizeBlurVal)
                         }
                         Median -> {
                             val kernelSize = 2.v * blurValVariable + 1.v
-                            Imgproc("medianBlur", inputMat.value, outputMat, kernelSize)
+                            Imgproc("medianBlur", inputMat.value.v, outputMat, kernelSize)
                         }
                         Bilateral -> {
-                            Imgproc("bilateralFilter", inputMat.value, outputMat, (-1).v, blurValVariable, blurValVariable)
+                            Imgproc("bilateralFilter", inputMat.value.v, outputMat, (-1).v, blurValVariable, blurValVariable)
                         }
                     }
 
@@ -106,7 +109,7 @@ class BlurNode : DrawNode<BlurNode.Session>() {
                     output.streamIfEnabled(outputMat, inputMat.color)
                 }
 
-                session.outputMatValue = GenValue.Mat(outputMat, inputMat.color)
+                session.outputMatValue = GenValue.Mat(outputMat.resolved(), inputMat.color)
 
                 session
             }
@@ -121,32 +124,34 @@ class BlurNode : DrawNode<BlurNode.Session>() {
                 val blurVal = blurValue.value(current)
 
                 current.scope {
+                    writeNameComment()
+
                     val value = when (algo) {
                         Gaussian -> {
                             val kernelSize = uniqueVariable("kernel", 6.v * int(blurVal.value.v) + 1.v)
                             local(kernelSize)
                             val sizeBlurVal = tuple(kernelSize, kernelSize)
 
-                            cv2.callValue("GaussianBlur", CPythonLanguage.NoType, inputMat.value, sizeBlurVal, int(blurVal.value.v))
+                            cv2.callValue("GaussianBlur", CPythonLanguage.NoType, inputMat.value.v, sizeBlurVal, int(blurVal.value.v))
                         }
 
                         Box -> {
                             val kernelSize = uniqueVariable("kernel", 2.v * int(blurVal.value.v) + 1.v)
                             local(kernelSize)
 
-                            cv2.callValue("blur", CPythonLanguage.NoType, inputMat.value, tuple(kernelSize, kernelSize))
+                            cv2.callValue("blur", CPythonLanguage.NoType, inputMat.value.v, tuple(kernelSize, kernelSize))
                         }
 
                         Median -> {
                             val kernelSize = 2.v * int(blurVal.value.v) + 1.v
-                            cv2.callValue("medianBlur", CPythonLanguage.NoType, inputMat.value, kernelSize)
+                            cv2.callValue("medianBlur", CPythonLanguage.NoType, inputMat.value.v, kernelSize)
                         }
 
                         Bilateral -> {
                             cv2.callValue(
                                 "bilateralFilter",
                                 CPythonLanguage.NoType,
-                                inputMat.value,
+                                inputMat.value.v,
                                 (-1).v,
                                 int(blurVal.value.v),
                                 int(blurVal.value.v)
@@ -157,7 +162,7 @@ class BlurNode : DrawNode<BlurNode.Session>() {
                     val variable = uniqueVariable("blur_${algo.name.lowercase()}", value)
                     local(variable)
 
-                    session.outputMatValue = GenValue.Mat(variable, inputMat.color)
+                    session.outputMatValue = GenValue.Mat(variable.resolved(), inputMat.color)
                 }
 
             }
@@ -170,7 +175,7 @@ class BlurNode : DrawNode<BlurNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return current.sessionOf(this)!!.outputMatValue
+            return GenValue.Mat.defer { current.sessionOf(this)?.outputMatValue }
         }
 
         noValue(attrib)

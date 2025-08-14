@@ -19,7 +19,6 @@
 package io.github.deltacv.papervision.node.vision.imageproc
 
 import io.github.deltacv.papervision.attribute.Attribute
-import io.github.deltacv.papervision.attribute.math.DoubleAttribute
 import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
@@ -28,11 +27,11 @@ import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Core
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -69,8 +68,10 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 val input = inputMat.value(current)
                 input.requireNonBinary(inputMat)
 
-                if(input.color != ColorSpace.GRAY) {
-                    raise("err_grayscale_required")
+                input.color.letOrDefer {
+                    if(it != ColorSpace.GRAY) {
+                        inputMat.raise("err_grayscale_required")
+                    }
                 }
 
                 val output = uniqueVariable("${input.value.value!!}Canny", Mat.new())
@@ -89,11 +90,13 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 }
 
                 current.scope {
-                    JvmOpenCvTypes.Imgproc("Canny", input.value, output, firstThresholdVariable, secondThresholdVariable)
+                    writeNameComment()
+
+                    JvmOpenCvTypes.Imgproc("Canny", input.value.v, output, firstThresholdVariable, secondThresholdVariable)
                     outputMat.streamIfEnabled(output, input.color)
                 }
 
-                session.outputMat = GenValue.Mat(output, input.color)
+                session.outputMat = GenValue.Mat(output.resolved(), input.color)
 
                 session
             }
@@ -106,16 +109,20 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 val input = inputMat.value(current)
                 input.requireNonBinary(inputMat)
 
-                if(input.color != ColorSpace.GRAY) {
-                    raise("err_grayscale_required")
+                input.color.letOrDefer {
+                    if(it != ColorSpace.GRAY) {
+                        inputMat.raise("err_grayscale_required")
+                    }
                 }
 
                 current.scope {
-                    val output = uniqueVariable("${input.value.value!!}_canny",
-                        cv2.callValue("Canny", CPythonLanguage.NoType, input.value, firstThreshold.value(current).value.v, secondThreshold.value(current).value.v)
+                    writeNameComment()
+
+                    val output = uniqueVariable("${input.value}_canny",
+                        cv2.callValue("Canny", CPythonLanguage.NoType, input.value.v, firstThreshold.value(current).value.v, secondThreshold.value(current).value.v)
                     )
 
-                    session.outputMat = GenValue.Mat(output, input.color)
+                    session.outputMat = GenValue.Mat(output.resolved(), input.color)
                 }
 
                 session
@@ -127,7 +134,7 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
         genCodeIfNecessary(current)
 
         if(attrib == outputMat) {
-            return current.sessionOf(this)!!.outputMat
+            return GenValue.Mat.defer { current.sessionOf(this)?.outputMat }
         }
 
         noValue(attrib)

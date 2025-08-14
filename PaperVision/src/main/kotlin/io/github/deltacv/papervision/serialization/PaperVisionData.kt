@@ -48,7 +48,6 @@ class BasicNodeData(
     }
 
     constructor() : this(0, ImVec2(0f, 0f))
-
 }
 
 data class LinkSerializationData(

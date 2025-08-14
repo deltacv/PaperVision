@@ -39,6 +39,9 @@ abstract class DrawNode<S: CodeGenSession>(
     var pinToMouse = false
     var pinToMouseOffset = ImVec2()
 
+    override val genNodeName: String?
+        get() = tr(annotationData.name)
+
     private var lastPinToMouse = false
     private var pinToMouseNewOffset = ImVec2()
 

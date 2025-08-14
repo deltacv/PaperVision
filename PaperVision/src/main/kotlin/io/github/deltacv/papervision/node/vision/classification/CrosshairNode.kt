@@ -37,6 +37,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -94,13 +95,14 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
             }
 
             val drawOn = drawCrosshairOn.value(current)
-            val drawOnValue = drawOn.value
 
-            val crosshairLineParams = (crosshairLineParams.value(current) as GenValue.LineParameters).ensureRuntimeLineJava(current)
+            val crosshairLineParams = crosshairLineParams.value(current).ensureRuntimeLineJava(current)
 
             val crosshairSizeValue = crosshairScale.value(current).value
 
             current {
+                val drawOnValue = drawOn.value.v
+
                 val crosshair = uniqueVariable("crosshair", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
                 val crosshairImage = uniqueVariable("crosshairImage", JvmOpenCvTypes.Mat.new())
                 val crosshairSize = uniqueVariable("crosshairSize", crosshairSizeValue.v)
@@ -113,6 +115,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     drawOnValue("copyTo", crosshairImage)
 
                     separate()
@@ -125,7 +129,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                             val rows = drawOnValue.callValue("rows", IntType)
                             val cols = drawOnValue.callValue("cols", IntType)
 
-                            JvmOpenCvTypes.Point.new((double(cols) / 2.v) + crosshairPositionVector.xValue, (double(rows) / 2.v) + crosshairPositionVector.yValue)
+                            JvmOpenCvTypes.Point.new((double(cols) / 2.v) + crosshairPositionVector.xValue.v, (double(rows) / 2.v) + crosshairPositionVector.yValue.v)
                         }
                     )
 
@@ -160,8 +164,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                             crosshairPoint.propertyValue("x", DoubleType) + adjustedCrosshairSize,
                             crosshairPoint.propertyValue("y", DoubleType)
                         ),
-                        crosshairCol,
-                        crosshairThickness
+                        crosshairCol.v,
+                        crosshairThickness.v
                     )
 
                     Imgproc(
@@ -175,8 +179,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                             crosshairPoint.propertyValue("x", DoubleType),
                             crosshairPoint.propertyValue("y", DoubleType) + adjustedCrosshairSize
                         ),
-                        crosshairCol,
-                        crosshairThickness
+                        crosshairCol.v,
+                        crosshairThickness.v
                     )
 
                     separate()
@@ -205,7 +209,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                         separate()
                     }
 
-                    foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), inputPoints.value) {
+                    foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), inputPoints.value.v) {
                         // Get the bounding rectangle of the current contour
                         val boundingRect = uniqueVariable(
                             "boundingRect", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, it)
@@ -254,8 +258,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     outputCrosshairImage.streamIfEnabled(crosshairImage, drawOn.color)
 
-                    session.outputCrosshair = GenValue.GList.RuntimeListOf(crosshair, GenValue.GPoints.RuntimePoints::class)
-                    session.outputCrosshairImage = GenValue.Mat(crosshairImage, drawOn.color, drawOn.isBinary)
+                    session.outputCrosshair = GenValue.GList.RuntimeListOf(crosshair.resolved(), GenValue.GPoints.RuntimePoints::class.resolved())
+                    session.outputCrosshairImage = GenValue.Mat(crosshairImage.resolved(), drawOn.color, drawOn.isBinary)
                 }
             }
 
@@ -283,16 +287,19 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
             }
 
             val drawOn = drawCrosshairOn.value(current)
-            val drawOnValue = drawOn.value
 
             val crosshairLineParams = (crosshairLineParams.value(current) as GenValue.LineParameters.Line)
             val crosshairSizeValue = crosshairScale.value(current).value
 
             current {
+                val drawOnValue = drawOn.value.v
+
                 val crosshair = uniqueVariable("crosshair", CPythonLanguage.NoType.newArray())
                 val crosshairImage = uniqueVariable("crosshair_image", drawOnValue.callValue("copy", CPythonLanguage.NoType))
 
                 current.scope {
+                    writeNameComment()
+
                     local(crosshair)
                     local(crosshairImage)
 
@@ -310,7 +317,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
-                    val (crosshairPointX, crosshairPointY) = Pair((cols / 2.v) + crosshairPositionVector.x.v, (rows / 2.v) + crosshairPositionVector.y.v)
+                    val (crosshairPointX, crosshairPointY) = Pair((cols / 2.v) + crosshairPositionVector.x.value.v, (rows / 2.v) + crosshairPositionVector.y.value.v)
 
                     val pointX = uniqueVariable("crosshair_point_x", crosshairPointX)
                     val pointY = uniqueVariable("crosshair_point_y", crosshairPointY)
@@ -366,7 +373,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
-                    foreach(variable(CPythonLanguage.NoType, "contour"), inputPoints.value) {
+                    foreach(variable(CPythonLanguage.NoType, "contour"), inputPoints.value.v) {
                         // Get the bounding rectangle of the current contour
                         val boundingRect = CPythonLanguage.tupleVariables(
                             CPythonOpenCvTypes.cv2.callValue("boundingRect", CPythonLanguage.NoType, it),
@@ -394,9 +401,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                         }
                     }
 
-                    session.outputCrosshair =
-                        GenValue.GList.RuntimeListOf(crosshair, GenValue.GPoints.RuntimePoints::class)
-                    session.outputCrosshairImage = GenValue.Mat(crosshairImage, drawOn.color, drawOn.isBinary)
+                    session.outputCrosshair = GenValue.GList.RuntimeListOf(crosshair.resolved(), GenValue.GPoints.RuntimePoints::class.resolved())
+                    session.outputCrosshairImage = GenValue.Mat(crosshairImage.resolved(), drawOn.color, drawOn.isBinary)
                 }
             }
 
@@ -406,8 +412,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when (attrib) {
-            outputCrosshair -> current.nonNullSessionOf(this).outputCrosshair
-            outputCrosshairImage -> current.nonNullSessionOf(this).outputCrosshairImage
+            outputCrosshair -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.outputCrosshair }
+            outputCrosshairImage -> GenValue.Mat.defer { current.sessionOf(this)?.outputCrosshairImage }
             else -> noValue(attrib)
         }
     }

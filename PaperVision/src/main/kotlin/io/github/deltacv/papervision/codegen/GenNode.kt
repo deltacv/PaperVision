@@ -19,6 +19,8 @@
 package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.attribute.Attribute
+import io.github.deltacv.papervision.codegen.build.Scope
+import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.util.loggerForThis
 import java.util.logging.Logger
 
@@ -26,6 +28,9 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
 
     val genOptions: CodeGenOptions
     var lastGenSession: S?
+
+    val genNodeName: String?
+        get() = null
 
     fun propagate(current: CodeGen.Current)
 
@@ -61,14 +66,17 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
             if(!codeGen.busyNodes.contains(this)) {
                 codeGen.busyNodes.add(this)
 
-                logger.info("Generating code for node $this")
+                val name = genNodeName
+
+                logger.info("Generating code for ${name ?: this}")
 
                 lastGenSession = genCode(current)
+
                 codeGen.sessions[this] = lastGenSession!!
 
                 codeGen.busyNodes.remove(this)
 
-                logger.info("DONE generating code for node $this")
+                logger.info("DONE generating code for ${name ?: this}")
 
                 propagate(current)
             }
@@ -76,6 +84,15 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
             lastGenSession = session as S
         }
     }
+
+    fun Scope.writeNameComment() {
+        val name = genNodeName
+        if(name != null) {
+            comment("\"$name\"")
+        }
+    }
+
+    fun ScopeContext.writeNameComment() = scope.writeNameComment()
 
     fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue
 

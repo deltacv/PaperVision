@@ -18,16 +18,26 @@
 
 package io.github.deltacv.papervision.codegen.dsl
 
+import io.github.deltacv.papervision.codegen.Resolvable
 import io.github.deltacv.papervision.codegen.build.*
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.node.vision.ColorSpace
 
+@Suppress("UNUSED")
 open class LanguageContext(val language: Language) {
 
     val Int.v get() = ConValue(language.IntType, toString())
     val Long.v get() = ConValue(language.LongType, toString())
     val Float.v get() = ConValue(language.FloatType, toString())
     val Double.v get() = ConValue(language.DoubleType, toString())
+    val String.v get() = ConValue(Type.NONE, this)
+
+
+    val Resolvable<Double>.v @JvmName("vRDouble") get() = tryReturn({ it.v }, { it.v })
+    val Resolvable<Int>.v @JvmName("vRInt") get() = tryReturn({ it.v }, { it.v })
+    val Resolvable<Value>.v @JvmName("vRValue") get() = tryReturn({ it }, { it.v })
+    val Resolvable<String>.v @JvmName("vRString") get() = tryReturn({ it.v }, { it.v })
+    val Resolvable<ColorSpace>.v @JvmName("vRColorSpace") get() = tryReturn({ it.name.v }, { it.v })
 
     val trueValue get() = language.trueValue
     val falseValue get() = language.falseValue
@@ -39,6 +49,8 @@ open class LanguageContext(val language: Language) {
     val DoubleType get() = language.DoubleType
 
     val VoidType get() = language.VoidType
+
+    val nullVal = language.nullValue
 
     val Type.nullVal get() = language.nullVal(this)
     val Value.nullVal get() = type.nullVal

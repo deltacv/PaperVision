@@ -34,6 +34,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.MatOfPoin
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -70,13 +71,15 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     list("clear")
                     hierarchyMat("release")
 
-                    Imgproc("findContours", input.value, list, hierarchyMat, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE)
+                    Imgproc("findContours", input.value.v, list, hierarchyMat, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE)
                 }
 
-                session.contoursList = GenValue.GList.RuntimeListOf(list, GenValue.GPoints.Points::class)
+                session.contoursList = GenValue.GList.RuntimeListOf(list.resolved(), GenValue.GPoints.Points::class.resolved())
 
                 session
             }
@@ -90,20 +93,22 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
                 input.requireBinary(inputMat)
 
                 current.scope {
+                    writeNameComment()
+
                     val contours = tryName("contours")
                     val hierarchy = tryName("hierarchy")
 
                     val result = CPythonLanguage.tupleVariables(cv2.callValue(
                         "findContours",
                         CPythonLanguage.NoType,
-                        input.value,
+                        input.value.v,
                         cv2.RETR_EXTERNAL,
                         cv2.CHAIN_APPROX_SIMPLE
                     ), contours, hierarchy)
 
                     local(result)
 
-                    session.contoursList = GenValue.GList.RuntimeListOf(result.get(contours), GenValue.GPoints.Points::class)
+                    session.contoursList = GenValue.GList.RuntimeListOf(result.get(contours).resolved(), GenValue.GPoints.Points::class.resolved())
                 }
 
                 session
@@ -115,7 +120,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == outputPoints) {
-            return current.nonNullSessionOf(this).contoursList
+            return GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.contoursList }
         }
 
         noValue(attrib)

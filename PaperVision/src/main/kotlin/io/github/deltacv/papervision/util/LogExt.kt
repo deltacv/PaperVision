@@ -22,6 +22,10 @@ import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 
 internal fun Any.loggerFor(clazz: KClass<*>) = lazy { LoggerFactory.getLogger(clazz.java) }
+// Reified
+internal inline fun <reified T> Any.loggerFor() = lazy { LoggerFactory.getLogger(T::class.java) }
+
+
 internal fun Any.loggerForThis() = lazy { LoggerFactory.getLogger(this::class.java) }
 
 internal fun Any.loggerOf(name: String) = lazy { LoggerFactory.getLogger(name) }

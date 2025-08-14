@@ -33,6 +33,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -66,10 +67,12 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     biggestContour instanceSet biggestContour.nullVal
 
                     if(contoursList is GenValue.GList.RuntimeListOf<*>) {
-                        foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), contoursList.value) { contour ->
+                        foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), contoursList.value.v) { contour ->
                             val contourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, contour)
                             val biggestContourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, biggestContour)
 
@@ -84,7 +87,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                             separate()
 
                             val contour = if(element is GenValue.GPoints.RuntimePoints) {
-                                element.value
+                                element.value.v
                             } else {
                                 raise("Invalid element in contours list")
                             }
@@ -103,7 +106,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                     }
                 }
 
-                session.biggestContour = GenValue.GPoints.RuntimePoints(biggestContour)
+                session.biggestContour = GenValue.GPoints.RuntimePoints(biggestContour.resolved())
 
                 session
             }
@@ -116,16 +119,18 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                 val inputValue = input.value(current)
 
                 current.scope {
+                    writeNameComment()
+
                     val contoursList = if(inputValue is GenValue.GList.RuntimeListOf<*>) {
-                        inputValue.value
+                        inputValue.value.v
                     } else {
                         val list = uniqueVariable("contours_list", CPythonLanguage.NoType.newArray())
                         local(list)
 
                         for(element in (inputValue as GenValue.GList.ListOf<*>).elements) {
                             if(element is GenValue.GPoints.RuntimePoints) {
-                                ifCondition(element.value notEqualsTo language.nullValue) {
-                                    list("append", element.value)
+                                ifCondition(element.value.v notEqualsTo language.nullValue) {
+                                    list("append", element.value.v)
                                 }
                             } else {
                                 raise("Invalid element in contours list")
@@ -151,7 +156,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                         )
                     }
 
-                    session.biggestContour = GenValue.GPoints.RuntimePoints(biggestContour)
+                    session.biggestContour = GenValue.GPoints.RuntimePoints(biggestContour.resolved())
                 }
 
                 session
@@ -163,7 +168,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return current.nonNullSessionOf(this).biggestContour
+            return GenValue.GPoints.RuntimePoints.defer { current.sessionOf(this)?.biggestContour }
         }
 
         noValue(attrib)

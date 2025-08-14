@@ -7,6 +7,8 @@ import java.nio.file.StandardCopyOption
 import java.util.*
 
 object TJLoader {
+    var isLoaded = false
+
     fun load() {
         // get os and arch
         val os = System.getProperty("os.name").lowercase(Locale.getDefault())
@@ -15,39 +17,41 @@ object TJLoader {
         var libPath: String? = null
 
         if (os.contains("win")) {
-            if (arch.contains("64")) {
-                libPath = "/META-INF/lib/windows_64/turbojpeg.dll"
+            libPath = if (arch.contains("64")) {
+                "/META-INF/lib/windows_64/turbojpeg.dll"
             } else {
-                libPath = "/META-INF/lib/windows_32/turbojpeg.dll"
+                "/META-INF/lib/windows_32/turbojpeg.dll"
             }
         } else if (os.contains("linux")) {
-            if (arch.contains("64")) {
-                libPath = "/META-INF/lib/linux_64/libturbojpeg.so"
+            libPath = if (arch.contains("64")) {
+                "/META-INF/lib/linux_64/libturbojpeg.so"
             } else {
-                libPath = "/META-INF/lib/linux_32/libturbojpeg.so"
+                "/META-INF/lib/linux_32/libturbojpeg.so"
             }
         } else if (os.contains("mac") || os.contains("darwin")) {
-            if (arch.contains("64")) {
-                libPath = "/META-INF/lib/osx_64/libturbojpeg.dylib"
+            libPath = if (arch.contains("64")) {
+                "/META-INF/lib/osx_64/libturbojpeg.dylib"
             } else if (arch.contains("ppc")) {
-                libPath = "/META-INF/lib/osx_ppc/libturbojpeg.dylib"
+                "/META-INF/lib/osx_ppc/libturbojpeg.dylib"
             } else {
-                libPath = "/META-INF/lib/osx_32/libturbojpeg.dylib"
+                "/META-INF/lib/osx_32/libturbojpeg.dylib"
             }
         }
 
         if (libPath == null) {
-            throw RuntimeException("Unsupported OS/Arch: " + os + " " + arch)
+            isLoaded = false
+            throw RuntimeException("Unsupported OS/Arch: $os $arch")
         }
 
         loadFromResource(libPath)
+        isLoaded = true
     }
 
     private fun loadFromResource(resource: String) {
         try {
             TJLoader::class.java.getResourceAsStream(resource).use { res ->
                 if (res == null) {
-                    throw RuntimeException("Native lib not found: " + resource)
+                    throw RuntimeException("Native lib not found: $resource")
                 }
                 // Crear archivo temporal
                 val tempFile = File.createTempFile("libturbojpeg", getFileExtension(resource))
@@ -57,7 +61,7 @@ object TJLoader {
                 Files.copy(res, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
 
                 // Cargar la biblioteca
-                System.load(tempFile.getAbsolutePath())
+                System.load(tempFile.absolutePath)
             }
         } catch (e: IOException) {
             throw RuntimeException(e)

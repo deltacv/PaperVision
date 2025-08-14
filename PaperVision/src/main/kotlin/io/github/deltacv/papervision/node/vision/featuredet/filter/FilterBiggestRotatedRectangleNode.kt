@@ -33,6 +33,7 @@ import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -66,6 +67,8 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     biggestRect instanceSet biggestRect.nullVal
 
                     fun ScopeContext.withRuntimeRect(rect: Value) {
@@ -82,7 +85,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                     }
 
                     if (rectsList is GenValue.GList.RuntimeListOf<*>) {
-                        foreach(variable(JvmOpenCvTypes.RotatedRect, "rect"), rectsList.value) { rect ->
+                        foreach(variable(JvmOpenCvTypes.RotatedRect, "rect"), rectsList.value.v) { rect ->
                             withRuntimeRect(rect)
                         }
                     } else {
@@ -110,13 +113,13 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                                 }
                             } else if (element is GenValue.GRect.RuntimeRect) {
                                 separate()
-                                withRuntimeRect(element.value)
+                                withRuntimeRect(element.value.v)
                             }
                         }
                     }
                 }
 
-                session.biggestRect = GenValue.GRect.Rotated.RuntimeRotatedRect(biggestRect)
+                session.biggestRect = GenValue.GRect.Rotated.RuntimeRotatedRect(biggestRect.resolved())
 
                 session
             }
@@ -131,6 +134,8 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                 val biggestRect = uniqueVariable("biggest_rect", CPythonLanguage.nullValue)
 
                 current.scope {
+                    writeNameComment()
+
                     local(biggestRect)
 
                     fun ScopeContext.withRuntimeRect(rect: Value) {
@@ -149,7 +154,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                     }
 
                     if (rectsList is GenValue.GList.RuntimeListOf<*>) {
-                        foreach(variable(CPythonLanguage.NoType, "rect"), rectsList.value) { rect ->
+                        foreach(variable(CPythonLanguage.NoType, "rect"), rectsList.value.v) { rect ->
                             withRuntimeRect(rect)
                         }
                     } else {
@@ -178,13 +183,13 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                                 }
                             } else if (element is GenValue.GRect.Rotated.RuntimeRotatedRect) {
                                 separate()
-                                withRuntimeRect(element.value)
+                                withRuntimeRect(element.value.v)
                             }
                         }
                     }
                 }
 
-                session.biggestRect = GenValue.GRect.Rotated.RuntimeRotatedRect(biggestRect)
+                session.biggestRect = GenValue.GRect.Rotated.RuntimeRotatedRect(biggestRect.resolved())
 
                 session
             }
@@ -195,7 +200,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
         genCodeIfNecessary(current)
 
         if (attrib == output) {
-            return current.sessionOf(this)!!.biggestRect
+            return GenValue.GRect.Rotated.RuntimeRotatedRect.defer { current.sessionOf(this)?.biggestRect }
         }
 
         noValue(attrib)

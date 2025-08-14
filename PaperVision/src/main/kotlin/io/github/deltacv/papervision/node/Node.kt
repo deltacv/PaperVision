@@ -21,6 +21,7 @@ package io.github.deltacv.papervision.node
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
+import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.codegen.GeneratorsGenNode
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
@@ -37,6 +38,7 @@ import io.github.deltacv.papervision.serialization.BasicNodeData
 import io.github.deltacv.papervision.serialization.NodeSerializationData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.event.EventListener
+import io.github.deltacv.papervision.util.loggerFor
 import io.github.deltacv.papervision.util.loggerForThis
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -193,8 +195,6 @@ abstract class Node<S: CodeGenSession>(
     }
 
     override fun propagate(current: CodeGen.Current) {
-        val logger = loggerForThis().value
-
         val linkedNodes = mutableListOf<Node<*>>()
 
         for(attribute in attribs) {
@@ -274,11 +274,23 @@ abstract class Node<S: CodeGenSession>(
         }
     }
 
-    override fun toString() = "Node(type=${this::class.java.typeName}, id=$id)"
+    override fun toString() = "Node(${this::class.java.typeName}, id=$id)"
 
     companion object {
+        val logger by loggerFor<Node<*>>()
+
         @JvmStatic protected val INPUT = AttributeMode.INPUT
         @JvmStatic protected val OUTPUT = AttributeMode.OUTPUT
+
+        fun instantiateNode(nodeClazz: Class<out Node<*>>): Node<*>? = try {
+            nodeClazz.getConstructor().newInstance()
+        } catch (e: NoSuchMethodException) {
+            logger.warn("Node class ${nodeClazz.name} does not have a no-arg constructor", e)
+            null
+        } catch (e: Exception) {
+            logger.warn("Error instantiating node class ${nodeClazz.name}", e)
+            null
+        }
 
         fun checkRecursion(from: Node<*>, to: Node<*>): Boolean {
             val linksBetween = Link.getLinksBetween(from, to)
@@ -310,15 +322,4 @@ abstract class Node<S: CodeGenSession>(
         forgetSerializedId = true
     }
 
-}
-
-fun instantiateNode(nodeClazz: Class<out Node<*>>) = try {
-    nodeClazz.getConstructor().newInstance()
-} catch (e: NoSuchMethodException) {
-    throw UnsupportedOperationException(
-        "Node ${nodeClazz.typeName} does not implement a constructor with no parameters",
-        e
-    )
-} catch (e: Exception) {
-    throw RuntimeException("Error while instantiating node ${nodeClazz.typeName}", e)
 }

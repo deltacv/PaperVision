@@ -39,7 +39,7 @@ fun jsonObjectToDataSerializable(
 
     val dataClass = classLoader.loadClass(jsonObject.get("dataClass").asString)
     val dataObj = jsonObject.get("data") ?: JsonObject()
-    val dataInstance = context?.deserialize(dataObj, dataClass) ?: gson.fromJson(dataObj, dataClass)
+    val dataInstance = context?.deserialize(dataObj, dataClass) ?: dataSerializableGson.fromJson(dataObj, dataClass)
 
     val objectClass = classLoader.loadClass(jsonObject.get("objectClass").asString)
 
@@ -82,7 +82,7 @@ private fun processValue(instance: Any, valueName: String, value: JsonElement, c
                     instance,
                     if (context != null)
                         context.deserialize(value, field.type)
-                    else gson.fromJson(value, field.type)
+                    else dataSerializableGson.fromJson(value, field.type)
                 )
             }
         }

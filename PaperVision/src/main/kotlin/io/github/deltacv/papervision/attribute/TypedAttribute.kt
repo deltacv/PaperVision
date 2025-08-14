@@ -224,10 +224,9 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
 
     protected var cachedLabel: String? = null
 
-    @Suppress("UNCHECKED_CAST")
     open fun label(): String {
         if(cachedLabel == null) {
-            cachedLabel = hexString
+            cachedLabel = hexString + id.toString()
 
             onChange {
                 val value = getIfPossible { rebuildPreviz() } ?: return@onChange

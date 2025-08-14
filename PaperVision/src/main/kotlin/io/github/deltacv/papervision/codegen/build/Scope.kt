@@ -62,6 +62,8 @@ class Scope(
 
     private fun importValue(vararg values: Value) {
         for(value in values) {
+            if(value == Value.NONE) continue
+
             importType(*value.imports.toTypedArray())
         }
     }
@@ -142,17 +144,22 @@ class Scope(
         builder.append("$tabs${language.methodCallDeclaration(callee, methodName, *parameters)}")
     }
 
-    fun streamMat(id: Int, mat: Value, matColor: ColorSpace = ColorSpace.RGB) {
+    fun streamMat(id: Int, mat: Value, matColor: Resolvable<ColorSpace> = Resolvable.Now(ColorSpace.RGB)) {
         if(isForPreviz) {
             newStatement()
 
-            val cvtCode = if(matColor != ColorSpace.RGB) {
-                language.cvtColorValue(matColor, ColorSpace.RGB)
-            } else null
+            val cvtCode = Resolvable.DependentPlaceholder(matColor) {
+                if(it != ColorSpace.RGB) {
+                    language.cvtColorValue(it, ColorSpace.RGB)
+                } else Value.NONE
+            }
 
-            if (cvtCode != null) importValue(cvtCode)
+            val declaration = Resolvable.DependentPlaceholder(cvtCode) {
+                if (it != Value.NONE) importValue(it)
+                language.streamMatCallDeclaration(language.int(id), mat, it)
+            }.placeholder
 
-            builder.append("$tabs${language.streamMatCallDeclaration(language.int(id), mat, cvtCode)}")
+            builder.append("$tabs$declaration")
         }
     }
 
@@ -274,6 +281,18 @@ class Scope(
         )
     }
 
+    fun comment(text: String) {
+        newStatement()
+        // handle if text is multiline, add $tabs to each line
+        val lines = if(text.contains("\n")) {
+            language.comment(text).split("\n").joinToString("\n$tabs") { it.trim() }
+        } else {
+            language.comment(text)
+        }
+
+        builder.append("$tabs$lines")
+    }
+
     fun newStatement() {
         if(builder.isNotEmpty()) {
             builder.appendLine()
@@ -288,6 +307,11 @@ class Scope(
         } else if(!str.endsWith("\n\n")) {
             builder.append("\n")
         }
+    }
+
+    fun write(str: String) {
+        newStatement()
+        builder.append(str)
     }
 
     fun clear() = builder.clear()
@@ -312,7 +336,5 @@ class Scope(
 }
 
 data class Parameter(override val type: Type, val name: String, val isFinal: Boolean = false) : Value() {
-
     override val value = name
-
 }

@@ -23,9 +23,7 @@ import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResp
 open class OkResponse(val info: String = "") : PaperVisionEngineMessageResponse() {
     override val status = true
 
-    override fun toString(): String {
-        return "OkResponse(type=\"${this::class.java.typeName}\", info=\"$info\")"
-    }
+    override fun toString() = "OkResponse(type=\"${this::class.java.typeName}\", info=\"$info\")"
 }
 
 open class ErrorResponse(val reason: String, val stackTrace: Array<String>? = null) : PaperVisionEngineMessageResponse() {
@@ -33,7 +31,5 @@ open class ErrorResponse(val reason: String, val stackTrace: Array<String>? = nu
 
     constructor(reason: String, throwable: Throwable) : this(reason, throwable.stackTrace.map { it.toString() }.toTypedArray())
 
-    override fun toString(): String {
-        return "ErrorResponse(type=\"${this::class.java.typeName}\", reason=\"$reason\", exception=\"${stackTrace?.getOrNull(0)}\")"
-    }
+    override fun toString() = "ErrorResponse(type=\"${this::class.java.typeName}\", reason=\"$reason\", exception=\"${stackTrace?.getOrNull(0)}\")"
 }

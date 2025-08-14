@@ -33,6 +33,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -70,19 +71,21 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     rectsList("clear")
 
                     if (input is GenValue.GList.RuntimeListOf<*>) {
-                        foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value) {
+                        foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value.v) {
                             rectsList("add", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, it))
                         }
                     } else {
                         for (points in (input as GenValue.GList.ListOf<*>).elements) {
                             if (points is GenValue.GPoints.RuntimePoints) {
-                                ifCondition(points.value notEqualsTo language.nullValue) {
+                                ifCondition(points.value.v notEqualsTo language.nullValue) {
                                     rectsList(
                                         "add",
-                                        Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, points.value)
+                                        Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, points.value.v)
                                     )
                                 }
                             } else {
@@ -92,7 +95,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                     }
                 }
 
-                session.outputRects = GenValue.GList.RuntimeListOf(rectsList, GenValue.GRect.RuntimeRect::class)
+                session.outputRects = GenValue.GList.RuntimeListOf(rectsList.resolved(), GenValue.GRect.RuntimeRect::class.resolved())
 
                 session
             }
@@ -111,18 +114,21 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                 val rectsList = uniqueVariable(listName, CPythonLanguage.NoType.newArray(0.v))
 
                 current.scope {
+                    writeNameComment()
+
                     local(rectsList)
+
                     if (input is GenValue.GList.RuntimeListOf<*>) {
-                        foreach(variable(CPythonLanguage.NoType, "points"), input.value) { points ->
+                        foreach(variable(CPythonLanguage.NoType, "points"), input.value.v) { points ->
                             rectsList("append", cv2.callValue("boundingRect", CPythonLanguage.NoType, points))
                         }
                     } else {
                         for (points in (input as GenValue.GList.ListOf<*>).elements) {
                             if (points is GenValue.GPoints.RuntimePoints) {
-                                ifCondition(points.value notEqualsTo language.nullValue) {
+                                ifCondition(points.value.v notEqualsTo language.nullValue) {
                                     rectsList(
                                         "append",
-                                        cv2.callValue("boundingRect", CPythonLanguage.NoType, points.value)
+                                        cv2.callValue("boundingRect", CPythonLanguage.NoType, points.value.v)
                                     )
                                 }
                             } else {
@@ -132,7 +138,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                     }
                 }
 
-                session.outputRects = GenValue.GList.RuntimeListOf(rectsList, GenValue.GRect.RuntimeRect::class)
+                session.outputRects = GenValue.GList.RuntimeListOf(rectsList.resolved(), GenValue.GRect.RuntimeRect::class.resolved())
 
                 session
             }
@@ -143,7 +149,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
         genCodeIfNecessary(current)
 
         if (attrib == outputRects) {
-            return current.nonNullSessionOf(this).outputRects
+            return GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.outputRects }
         }
 
         noValue(attrib)

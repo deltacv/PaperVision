@@ -27,6 +27,7 @@ import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.vision.overlay.LineParametersNode
@@ -67,14 +68,14 @@ class LineParametersAttribute(
         }
     }
 
-    override fun value(current: CodeGen.Current): GenValue {
+    override fun value(current: CodeGen.Current): GenValue.LineParameters {
         return if(mode == AttributeMode.INPUT && !hasLink) {
             GenValue.LineParameters.Line(
-                GenValue.Scalar(0.0, 255.0, 0.0, 0.0),
-                GenValue.Int(3)
+                GenValue.Scalar(GenValue.Double.ZERO, GenValue.Double(255.0.resolved()), GenValue.Double.ZERO, GenValue.Double.ZERO),
+                GenValue.Int(3.resolved())
             )
         } else {
-            value<GenValue.LineParameters>(
+            value(
                 current, "a LineParameters"
             ) { it is GenValue.LineParameters }
         }

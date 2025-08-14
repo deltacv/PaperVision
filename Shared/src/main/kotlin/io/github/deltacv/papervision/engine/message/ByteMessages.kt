@@ -63,7 +63,7 @@ object ByteMessages {
         // first four bytes are the size of the tag string
         val tagSize = ByteBuffer.wrap(bytes, 0, 4).getInt()
 
-        // next four bytes are the id
+        // next four bytes after tag are the id
         return ByteBuffer.wrap(bytes, 4 + tagSize, 4).getInt()
     }
 

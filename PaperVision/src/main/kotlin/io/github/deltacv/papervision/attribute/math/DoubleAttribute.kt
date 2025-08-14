@@ -27,6 +27,7 @@ import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.util.Range2d
 
@@ -79,7 +80,7 @@ class DoubleAttribute(
     override fun thisGet() = value.get()
 
     override fun value(current: CodeGen.Current) = value(
-        current, "a Double", GenValue.Double(value.get())
+        current, "a Double", GenValue.Double(value.get().resolved())
     ) { it is GenValue.Double }
 
 }

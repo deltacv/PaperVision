@@ -81,7 +81,7 @@ interface Language : ValueBuilder {
 
     fun methodCallDeclaration(methodName: String, vararg parameters: Value): String
 
-    fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value? = null): String
+    fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value): String
 
     fun constructorDeclaration(vis: Visibility, className: String, vararg parameters: Parameter): String
 
@@ -103,6 +103,8 @@ interface Language : ValueBuilder {
               isStatic: Boolean = false, isFinal: Boolean = false) : String
 
     fun enumClassDeclaration(name: String, vararg values: String): String
+
+    fun comment(text: String): String
 
     fun block(start: String, body: Scope, tabs: String): String
 

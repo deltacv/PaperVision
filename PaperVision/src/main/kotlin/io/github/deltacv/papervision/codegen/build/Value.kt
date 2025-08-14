@@ -18,10 +18,19 @@
 
 package io.github.deltacv.papervision.codegen.build
 
+import io.github.deltacv.papervision.codegen.CodeGen
+import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.hexString
+
 val String.v get() = ConValue(genType, this)
 val Number.v get() = toString().v
 
 abstract class Value {
+
+    companion object {
+        val NONE = ConValue(Type.NONE, null)
+    }
 
     abstract val type: Type
     abstract val value: String?
@@ -59,6 +68,8 @@ open class ConValue(override val type: Type, override val value: String?): Value
     init {
         processImports()
     }
+
+    override fun toString() = value ?: "null"
 }
 
 class Condition(booleanType: Type, condition: String) : ConValue(booleanType, condition)
@@ -72,4 +83,5 @@ open class Variable(val name: String, val variableValue: Value) : ConValue(varia
         additionalImports(*variableValue.imports.toTypedArray())
     }
 
+    override fun toString() = name
 }

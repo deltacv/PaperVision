@@ -30,6 +30,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -78,7 +79,7 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
 
                 val element = uniqueVariable("element", JvmOpenCvTypes.Mat.nullVal)
 
-                val output = uniqueVariable("${input.value.value!!}ErodedDilated", JvmOpenCvTypes.Mat.new())
+                val output = uniqueVariable("${input.value}ErodedDilated", JvmOpenCvTypes.Mat.new())
 
                 group {
                     public(erodeValVariable, erodeValue.label())
@@ -88,7 +89,9 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                 }
 
                 current.scope {
-                    input.value("copyTo", output)
+                    writeNameComment()
+
+                    input.value.v("copyTo", output)
 
                     ifCondition(erodeValVariable greaterThan int(0)) {
                         element instanceSet JvmOpenCvTypes.Imgproc.callValue(
@@ -122,10 +125,10 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                         element("release")
                     }
 
-                    outputMat.streamIfEnabled(output, ColorSpace.GRAY)
+                    outputMat.streamIfEnabled(output, ColorSpace.GRAY.resolved())
                 }
 
-                session.outputMatValue = GenValue.Mat(output, input.color, input.isBinary)
+                session.outputMatValue = GenValue.Mat(output.resolved(), input.color, input.isBinary)
 
                 session
             }
@@ -142,8 +145,8 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                 val dilateVal = dilateValue.value(current)
 
                 val output = uniqueVariable(
-                    "${input.value.value!!}_eroded_dilated",
-                    input.value.callValue("copy", CPythonLanguage.NoType)
+                    "${input.value}_eroded_dilated",
+                    input.value.v.callValue("copy", CPythonLanguage.NoType)
                 )
 
                 val elementErode = uniqueVariable("element_erode", cv2.callValue(
@@ -163,18 +166,15 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                 public(elementDilate)
 
                 current.scope {
+                    writeNameComment()
+
                     local(output)
 
-                    if (erodeVal.value > 0) {
-                        cv2("erode", output, output, elementErode)
-                    }
-
-                    if (dilateVal.value > 0) {
-                        cv2("dilate", output, output, elementDilate)
-                    }
+                    cv2("erode", output, output, elementErode)
+                    cv2("dilate", output, output, elementDilate)
                 }
 
-                session.outputMatValue = GenValue.Mat(output, input.color, input.isBinary)
+                session.outputMatValue = GenValue.Mat(output.resolved(), input.color, input.isBinary)
 
                 session
             }
@@ -187,7 +187,7 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == outputMat) {
-            return current.sessionOf(this)!!.outputMatValue
+            return GenValue.Mat.defer { current.sessionOf(this)?.outputMatValue }
         }
 
         noValue(attrib)

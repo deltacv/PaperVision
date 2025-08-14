@@ -33,6 +33,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Size
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -141,14 +142,16 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     list("clear")
 
-                    foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), inputContours.value) {
+                    foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), inputContours.value.v) {
                         it("convertTo", contours2f, cvTypeValue("CV_32FC2"))
 
                         separate()
 
-                        Imgproc("approxPolyDP", contours2f, approxPolyDp2f, ((double(100.0) - int(accuracyValue)) / double(100.0)) * Imgproc.callValue("arcLength", DoubleType, contours2f, trueValue), trueValue)
+                        Imgproc("approxPolyDP", contours2f, approxPolyDp2f, ((double(100.0) - int(accuracyValue.v)) / double(100.0)) * Imgproc.callValue("arcLength", DoubleType, contours2f, trueValue), trueValue)
                         approxPolyDp2f("convertTo", approxPolyDp, cvTypeValue("CV_32S"))
 
                         separate()
@@ -165,7 +168,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
                     }
                 }
 
-                session.output = GenValue.GList.RuntimeListOf(list, GenValue.GPoints.RuntimePoints::class)
+                session.output = GenValue.GList.RuntimeListOf(list.resolved(), GenValue.GPoints.RuntimePoints::class.resolved())
 
                 session
             }
@@ -176,7 +179,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return current.nonNullSessionOf(this).output
+            return GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.output }
         }
 
         noValue(attrib)

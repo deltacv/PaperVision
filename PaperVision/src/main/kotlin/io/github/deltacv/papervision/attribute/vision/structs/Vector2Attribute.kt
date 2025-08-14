@@ -68,7 +68,7 @@ class Vector2Attribute (
 
     override fun value(current: CodeGen.Current): GenValue.Vec2 {
         return if(mode == AttributeMode.INPUT && !hasLink) {
-            GenValue.Vec2.Vector2(0.0, 0.0)
+            GenValue.Vec2.Vector2(GenValue.Double.ZERO, GenValue.Double.ZERO)
         } else {
             value(
                 current, "a Vector2"

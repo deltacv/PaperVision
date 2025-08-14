@@ -36,6 +36,7 @@ import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -57,12 +58,13 @@ open class DrawRectanglesNode
 
     override fun onEnable() {
         + inputMat.rebuildOnChange()
-        + rectangles.rebuildOnChange()
 
         + lineParams
 
+        + rectangles.rebuildOnChange()
+
         if (!isDrawOnInput) {
-            + outputMat.enablePrevizButton().rebuildOnChange()
+            +outputMat.enablePrevizButton().rebuildOnChange()
         } else {
             inputMat.variableName = "$[att_drawon_image]"
         }
@@ -77,9 +79,9 @@ open class DrawRectanglesNode
 
                 val input = inputMat.value(current)
                 val rectanglesList = rectangles.value(current)
-                val output = uniqueVariable("${input.value.value!!}Rects", Mat.new())
+                val output = uniqueVariable("${input.value.value}Rects", Mat.new())
 
-                var drawMat = input.value
+                var drawMat = input.value.v
 
                 group {
                     if (!isDrawOnInput) {
@@ -88,9 +90,11 @@ open class DrawRectanglesNode
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     if (!isDrawOnInput) {
                         drawMat = output
-                        input.value("copyTo", drawMat)
+                        input.value.v("copyTo", drawMat)
                     }
 
                     if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
@@ -99,27 +103,36 @@ open class DrawRectanglesNode
                                 Imgproc(
                                     "rectangle", drawMat,
                                     JvmOpenCvTypes.Rect.new(
-                                        double(rectangle.x.value), double(rectangle.y.value),
-                                        double(rectangle.w.value), double(rectangle.h.value)
+                                        double(rectangle.x.value.v), double(rectangle.y.value.v),
+                                        double(rectangle.w.value.v), double(rectangle.h.value.v)
                                     ),
-                                    lineParams.colorScalarValue,
-                                    lineParams.thicknessValue
+                                    lineParams.colorScalarValue.v,
+                                    lineParams.thicknessValue.v
                                 )
                             } else if (rectangle is GenValue.GRect.RuntimeRect) {
-                                ifCondition(rectangle.value notEqualsTo language.nullValue) {
+                                ifCondition(
+                                    rectangle.value.v notEqualsTo language.nullValue and
+                                            (drawMat notEqualsTo language.nullValue) and
+                                            not(drawMat.callValue("empty", BooleanType).condition())
+                                ) {
                                     Imgproc(
-                                        "rectangle", drawMat, rectangle.value,
-                                        lineParams.colorScalarValue, lineParams.thicknessValue
+                                        "rectangle", drawMat, rectangle.value.v,
+                                        lineParams.colorScalarValue.v, lineParams.thicknessValue.v
                                     )
                                 }
                             }
                         }
                     } else {
-                        foreach(variable(JvmOpenCvTypes.Rect, "rect"), rectanglesList.value) {
-                            Imgproc(
-                                "rectangle", drawMat, it,
-                                lineParams.colorScalarValue, lineParams.thicknessValue
-                            )
+                        ifCondition(
+                            (drawMat notEqualsTo language.nullValue) and
+                                    not(drawMat.callValue("empty", BooleanType).condition())
+                        ) {
+                            foreach(variable(JvmOpenCvTypes.Rect, "rect"), rectanglesList.value.v) {
+                                Imgproc(
+                                    "rectangle", drawMat, it,
+                                    lineParams.colorScalarValue.v, lineParams.thicknessValue.v
+                                )
+                            }
                         }
                     }
 
@@ -128,7 +141,7 @@ open class DrawRectanglesNode
                     }
                 }
 
-                session.outputMat = GenValue.Mat(drawMat, input.color, input.isBinary)
+                session.outputMat = GenValue.Mat(drawMat.resolved(), input.color, input.isBinary)
 
                 session
             }
@@ -142,17 +155,19 @@ open class DrawRectanglesNode
                 val rectanglesList = rectangles.value(current)
 
                 val lineParams = lineParams.value(current)
-                if(lineParams !is GenValue.LineParameters.Line) {
+                if (lineParams !is GenValue.LineParameters.Line) {
                     raise("Line parameters must not be runtime")
                 }
 
                 current.scope {
+                    writeNameComment()
+
                     val target = if (isDrawOnInput) {
-                        input.value
+                        input.value.v
                     } else {
                         val output = uniqueVariable(
                             "${input.value.value}_rects",
-                            input.value.callValue("copy", CPythonLanguage.NoType)
+                            input.value.v.callValue("copy", CPythonLanguage.NoType)
                         )
                         local(output)
                         output
@@ -161,7 +176,8 @@ open class DrawRectanglesNode
                     val color = lineParams.color
                     val thickness = lineParams.thickness.value
 
-                    val colorScalar = CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
+                    val colorScalar =
+                        CPythonLanguage.tuple(color.a.value.v, color.b.value.v, color.c.value.v, color.d.value.v)
 
                     fun ScopeContext.runtimeRect(rectValue: Value) {
                         ifCondition(rectValue notEqualsTo language.nullValue) {
@@ -200,16 +216,16 @@ open class DrawRectanglesNode
                                     thickness.v
                                 )
                             } else if (rectangle is GenValue.GRect.RuntimeRect) {
-                                runtimeRect(rectangle.value)
+                                runtimeRect(rectangle.value.v)
                             }
                         }
                     } else {
-                        foreach(variable(CPythonLanguage.NoType, "rect"), rectanglesList.value) { rect ->
+                        foreach(variable(CPythonLanguage.NoType, "rect"), rectanglesList.value.v) { rect ->
                             runtimeRect(rect)
                         }
                     }
 
-                    session.outputMat = GenValue.Mat(target, input.color, input.isBinary)
+                    session.outputMat = GenValue.Mat(target.resolved(), input.color, input.isBinary)
                 }
             }
 
@@ -219,7 +235,7 @@ open class DrawRectanglesNode
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         if (attrib == outputMat) {
-            return current.sessionOf(this)!!.outputMat
+            return GenValue.Mat.defer { current.sessionOf(this)?.outputMat }
         }
 
         noValue(attrib)

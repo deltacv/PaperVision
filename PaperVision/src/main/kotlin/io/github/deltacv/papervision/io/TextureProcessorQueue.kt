@@ -20,12 +20,11 @@ package io.github.deltacv.papervision.io
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.io.turbojpeg.TJLoader
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.PlatformTextureFactory
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
-import io.github.deltacv.papervision.util.loggerForThis
-import io.github.deltacv.papervision.io.turbojpeg.TJLoader
+import io.github.deltacv.papervision.util.loggerFor
 import org.libjpegturbo.turbojpeg.TJ
 import org.libjpegturbo.turbojpeg.TJDecompressor
 import java.nio.ByteBuffer
@@ -46,14 +45,18 @@ class TextureProcessorQueue(
     companion object {
         const val REUSABLE_BUFFER_QUEUE_SIZE = 15
 
+        val logger by loggerFor<TextureProcessorQueue>()
+
         init {
-            TJLoader.load()
+            try {
+                TJLoader.load()
+            } catch (e: Exception) {
+                logger.warn("Failed to load TurboJPEG, there will be reduced performance", e)
+            }
         }
     }
 
     val jpegWorkers = Executors.newFixedThreadPool(5)
-
-    val logger by loggerForThis()
 
     private val reusableBuffers = ConcurrentHashMap<Int, ArrayBlockingQueue<ByteArray>>()
 
@@ -99,7 +102,7 @@ class TextureProcessorQueue(
                     )
                 }
             } catch (e: Exception) {
-                logger.error("Error processing texture: ${e.message}", e)
+                logger.error("Error processing texture", e)
             } finally {
                 returnReusableBuffer(futureTex.data)
             }
@@ -122,22 +125,32 @@ class TextureProcessorQueue(
         id: Int, width: Int, height: Int, data: ByteArray,
         memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
     ) {
-        jpegWorkers.submit {
-            val buffer = getOrCreateReusableBuffer(width * height * 3, memoryBehavior) ?: return@submit
+        if (TJLoader.isLoaded) {
+            jpegWorkers.submit {
+                val buffer = getOrCreateReusableBuffer(width * height * 3, memoryBehavior) ?: return@submit
+                val decompressor = TJDecompressor()
 
-            // beautiful turbojpeg
-            val decompressor = TJDecompressor()
+                decompressor.setJPEGImage(data, data.size)
+                decompressor.decompress(buffer, width, 0, height, TJ.PF_RGB, TJ.FLAG_FASTDCT)
 
-            decompressor.setJPEGImage(data, data.size)
-            decompressor.decompress(buffer, width, 0, height, TJ.PF_RGB, TJ.FLAG_FASTDCT)
+                offerBuffer(id, width, height, buffer, ColorSpace.RGB, jpeg = false)
 
-            offerBuffer(id, width, height, buffer, ColorSpace.RGB, jpeg = false)
-
-            decompressor.close()
+                decompressor.close()
+            }
+        } else {
+            // fallback to offerJpeg
+            offerJpeg(id, width, height, data, memoryBehavior)
         }
     }
 
-    private fun offerBuffer(id: Int, width: Int, height: Int, buffer: ByteArray, colorSpace: ColorSpace, jpeg: Boolean) {
+    private fun offerBuffer(
+        id: Int,
+        width: Int,
+        height: Int,
+        buffer: ByteArray,
+        colorSpace: ColorSpace,
+        jpeg: Boolean
+    ) {
         synchronized(queuedTextures) {
             if (queuedTextures.remainingCapacity() == 0) {
                 returnReusableBuffer(queuedTextures.poll().data)

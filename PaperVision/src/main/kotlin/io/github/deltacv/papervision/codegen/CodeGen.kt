@@ -19,8 +19,11 @@
 package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.codegen.build.Scope
+import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.dsl.CodeGenContext
 import io.github.deltacv.papervision.codegen.language.Language
+import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.util.loggerFor
 
 enum class Visibility {
     PUBLIC, PRIVATE, PROTECTED
@@ -31,6 +34,16 @@ class CodeGen(
     val language: Language,
     val isForPreviz: Boolean = false
 ) {
+
+    companion object {
+        val RESOLVER_PREFIX = "<mack!"
+        val RESOLVER_SUFFIX = ">"
+
+        // %s is the ID of the placeholder
+        val RESOLVER_TEMPLATE = "$RESOLVER_PREFIX%d$RESOLVER_SUFFIX"
+
+        val logger by loggerFor<CodeGen>()
+    }
 
     val importScope     = Scope(0, language)
     val classStartScope = Scope(1, language, importScope, isForPreviz)
@@ -58,7 +71,81 @@ class CodeGen(
 
     var stage = Stage.CREATION
 
-    fun gen() = language.gen(this)
+    fun gen() = resolveAllPlaceholders(language.gen(this))
+
+    private fun resolveAllPlaceholders(preprocessed: String): String {
+        var resolved = preprocessed
+
+        val placeholders = IdElementContainerStack.threadStack
+            .peekNonNull<Resolvable.Placeholder<*>>()
+
+        logger.info("Resolving active placeholders: ${placeholders.inmutable.size}")
+
+        // Initial debug log of all placeholders
+        placeholders.inmutable.forEach {
+            val v = it.resolve()
+            logger.info("${it.placeholder} = $v")
+        }
+
+        do {
+            var changed = false
+            val sb = StringBuilder()
+            var i = 0
+
+            // Resolve all once per pass
+            placeholders.inmutable.forEach { it.resolve() }
+
+            while (i < resolved.length) {
+                val start = resolved.indexOf(RESOLVER_PREFIX, i)
+                if (start == -1) {
+                    // No more placeholders
+                    sb.append(resolved, i, resolved.length)
+                    break
+                }
+
+                val end = resolved.indexOf(RESOLVER_SUFFIX, start)
+                if (end == -1) {
+                    // No closing '>', append rest as-is
+                    sb.append(resolved, i, resolved.length)
+                    break
+                }
+
+                // Append text before the placeholder
+                sb.append(resolved, i, start)
+
+                // Extract the number part
+                val idPart = resolved.substring(start + 6, end) // after "<mack!"
+                val id = idPart.toIntOrNull()
+
+                if (id != null) {
+                    val placeholder = placeholders.inmutable.find { it.id == id }
+                    if (placeholder != null) {
+                        val value = placeholder.resolve()
+                        val replacement = if (value is Value) {
+                            importScope.importType(value.type)
+                            value.value ?: ""
+                        } else {
+                            value.toString()
+                        }
+                        sb.append(replacement)
+                        changed = true
+                    } else {
+                        // Keep the placeholder as-is if no match found
+                        sb.append(resolved, start, end + 1)
+                    }
+                } else {
+                    // Not a valid number after <mack!
+                    sb.append(resolved, start, end + 1)
+                }
+
+                i = end + 1
+            }
+
+            resolved = sb.toString()
+        } while (changed)
+
+        return resolved
+    }
 
     fun addFlag(flag: String) = if(!flags.contains(flag)) flags.add(flag) else false
     fun hasFlag(flag: String) = flags.contains(flag)
@@ -74,10 +161,11 @@ class CodeGen(
         @Suppress("UNCHECKED_CAST")
         fun <S: CodeGenSession> sessionOf(node: GenNode<S>) = codeGen.sessions[node] as S?
 
-        fun <S: CodeGenSession> nonNullSessionOf(node: GenNode<S>) = sessionOf(node) ?: {
+        fun <S: CodeGenSession> nonNullSessionOf(node: GenNode<S>) = sessionOf(node) ?: run {
             node.genCodeIfNecessary(this)
-            sessionOf(node) ?: throw IllegalStateException("Node ${node::class.simpleName} did not generate a session")
-        }()
+            this@Current.sessionOf(node)
+                ?: throw IllegalStateException("Node ${node::class.simpleName} did not generate a session")
+        }
 
         operator fun <T> invoke(scopeBlock: CodeGenContext.() -> T) = codeGen.invoke(scopeBlock)
     }

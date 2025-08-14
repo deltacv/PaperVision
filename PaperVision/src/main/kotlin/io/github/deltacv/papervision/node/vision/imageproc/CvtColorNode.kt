@@ -25,12 +25,14 @@ import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.Resolvable
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -66,7 +68,9 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
                 val targetColor = convertTo.value(current).value
                 val matColor = inputMat.color
 
-                if(matColor != targetColor) {
+                val matColorResolved = matColor.resolve()
+
+                if(matColorResolved == null || matColorResolved != targetColor) {
                     val mat = uniqueVariable("${targetColor.name.lowercase()}Mat", Mat.new())
 
                     group {
@@ -75,11 +79,23 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
                     }
 
                     current.scope { // add a cvtColor step in processFrame
-                        Imgproc("cvtColor", inputMat.value, mat, cvtColorValue(matColor, targetColor))
-                        output.streamIfEnabled(mat, targetColor)
+                        writeNameComment()
+
+                        deferredBlock(Resolvable.DependentPlaceholder(matColor) {
+                            {
+                                if(it != targetColor) {
+                                    Imgproc("cvtColor", inputMat.value.v, mat, cvtColorValue(it, targetColor))
+                                } else {
+                                    // copyTo
+                                    Imgproc("copyTo", inputMat.value.v, mat)
+                                }
+                            }
+                        })
+
+                        output.streamIfEnabled(mat, targetColor.resolved())
                     }
 
-                    session.outputMatValue = GenValue.Mat(mat, targetColor) // store data in the current session
+                    session.outputMatValue = GenValue.Mat(mat.resolved(), targetColor.resolved()) // store data in the current session
                 } else {
                     // we don't need to do any processing if the mat is
                     // already of the color the user specified to convert to
@@ -99,17 +115,25 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
 
                 val targetColor = convertTo.value(current).value
                 val matColor = inputMat.color
-
+                val matColorResolved = matColor.resolve()
 
                 current.scope {
-                    if (matColor != targetColor) {
-                        val mat = uniqueVariable("${inputMat.value}_${targetColor.name.lowercase()}", cv2.callValue("cvtColor",
-                            CPythonLanguage.NoType, inputMat.value, cvtColorValue(matColor, targetColor))
-                        )
+                    writeNameComment()
+
+                    if (matColorResolved == null || matColorResolved != targetColor) {
+                        val value = Resolvable.DependentPlaceholder(matColor) {
+                            if(it != targetColor) {
+                                cv2.callValue("cvtColor", CPythonLanguage.NoType, inputMat.value.v, cvtColorValue(it, targetColor))
+                            } else {
+                                inputMat.value.v.callValue("copy", CPythonLanguage.NoType)
+                            }
+                        }.v
+
+                        val mat = uniqueVariable("${inputMat.value.value}_${targetColor.name.lowercase()}", value)
 
                         local(mat)
 
-                        session.outputMatValue = GenValue.Mat(mat, targetColor) // store data in the current session
+                        session.outputMatValue = GenValue.Mat(mat.resolved(), targetColor.resolved()) // store data in the current session
                     } else {
                         // we don't need to do any processing if the mat is
                         // already of the color the user specified to convert to
@@ -126,7 +150,7 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return current.sessionOf(this)!!.outputMatValue
+            return GenValue.Mat.defer { current.sessionOf(this)?.outputMatValue }
         }
 
         noValue(attrib)
