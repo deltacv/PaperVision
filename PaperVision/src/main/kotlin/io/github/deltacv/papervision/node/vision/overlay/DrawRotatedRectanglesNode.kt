@@ -38,6 +38,7 @@ import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -80,9 +81,9 @@ open class DrawRotatedRectanglesNode
                 val input = inputMat.value(current)
                 val rectanglesList = rectangles.value(current)
 
-                val output = uniqueVariable("${input.value.value!!}RotRects", Mat.new())
+                val output = uniqueVariable("${input.value.value}RotRects", Mat.new())
 
-                var drawMat = input.value
+                var drawMat = input.value.v
 
                 group {
                     if (!isDrawOnInput) {
@@ -95,7 +96,7 @@ open class DrawRotatedRectanglesNode
 
                     if (!isDrawOnInput) {
                         drawMat = output
-                        input.value("copyTo", drawMat)
+                        input.value.v("copyTo", drawMat)
                     }
 
                     fun ScopeContext.drawRuntimeRect(rectValue: Value) {
@@ -118,8 +119,8 @@ open class DrawRotatedRectanglesNode
                                     matOfPoint
                                 ), // list of points forming the rotated rectangle
                                 trueValue, // closed polygon
-                                lineParams.colorScalarValue,
-                                lineParams.thicknessValue
+                                lineParams.colorScalarValue.v,
+                                lineParams.thicknessValue.v
                             )
                         }
                     }
@@ -129,11 +130,11 @@ open class DrawRotatedRectanglesNode
                             if (rectangle is GenValue.GRect.Rotated.RotatedRect) {
                                 TODO("")
                             } else if (rectangle is GenValue.GRect.Rotated.RuntimeRotatedRect) {
-                                drawRuntimeRect(rectangle.value)
+                                drawRuntimeRect(rectangle.value.v)
                             }
                         }
                     } else {
-                        foreach(variable(JvmOpenCvTypes.RotatedRect, "rect"), rectanglesList.value) {
+                        foreach(variable(JvmOpenCvTypes.RotatedRect, "rect"), rectanglesList.value.v) {
                             drawRuntimeRect(it)
                         }
                     }
@@ -143,7 +144,7 @@ open class DrawRotatedRectanglesNode
                     }
                 }
 
-                session.outputMat = GenValue.Mat(drawMat, input.color, input.isBinary)
+                session.outputMat = GenValue.Mat(drawMat.resolved(), input.color, input.isBinary)
 
                 session
             }
@@ -166,11 +167,11 @@ open class DrawRotatedRectanglesNode
                     writeNameComment()
 
                     val target = if (isDrawOnInput) {
-                        input.value
+                        input.value.v
                     } else {
                         val output = uniqueVariable(
                             "${input.value.value}_rot_rects",
-                            input.value.callValue("copy", CPythonLanguage.NoType)
+                            input.value.v.callValue("copy", CPythonLanguage.NoType)
                         )
                         local(output)
                         output
@@ -179,7 +180,7 @@ open class DrawRotatedRectanglesNode
                     val color = lineParams.color
                     val thickness = lineParams.thickness.value
 
-                    val colorScalar = CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
+                    val colorScalar = CPythonLanguage.tuple(color.a.value.v, color.b.value.v, color.c.value.v, color.d.value.v)
 
                     // TODO: Implement rotated rect drawing in python
 
@@ -197,16 +198,16 @@ open class DrawRotatedRectanglesNode
                             if (rectangle is GenValue.GRect.Rotated.RotatedRect) {
                                 raise("RotatedRects are not supported")
                             } else if (rectangle is GenValue.GRect.RuntimeRect) {
-                                runtimeRect(rectangle.value)
+                                runtimeRect(rectangle.value.v)
                             }
                         }
                     } else {
-                        foreach(variable(CPythonLanguage.NoType, "rect"), rectanglesList.value) { rect ->
+                        foreach(variable(CPythonLanguage.NoType, "rect"), rectanglesList.value.v) { rect ->
                             runtimeRect(rect)
                         }
                     }
 
-                    session.outputMat = GenValue.Mat(target, input.color, input.isBinary)
+                    session.outputMat = GenValue.Mat(target.resolved(), input.color, input.isBinary)
                 }
             }
 
@@ -216,7 +217,7 @@ open class DrawRotatedRectanglesNode
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         if (attrib == outputMat) {
-            return current.sessionOf(this)!!.outputMat
+            return GenValue.Mat.defer { current.sessionOf(this)?.outputMat }
         }
 
         noValue(attrib)

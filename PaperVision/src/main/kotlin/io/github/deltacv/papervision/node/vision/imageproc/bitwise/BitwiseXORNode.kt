@@ -24,12 +24,14 @@ import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.Resolvable
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -75,11 +77,16 @@ class BitwiseXORNode : DrawNode<BitwiseXORNode.Session>() {
                     writeNameComment()
 
                     outputMat("release")
-                    JvmOpenCvTypes.Core("bitwise_xor", firstValue.value, secondValue.value, outputMat)
+                    JvmOpenCvTypes.Core("bitwise_xor", firstValue.value.v, secondValue.value.v, outputMat)
                     output.streamIfEnabled(outputMat, secondValue.color)
                 }
 
-                session.outputMatValue = GenValue.Mat(outputMat, secondValue.color, firstValue.isBinary && secondValue.isBinary)
+                val isBinaryPlaceholder = Resolvable.DoubleDependentPlaceholder(firstValue.isBinary.value, secondValue.isBinary.value) { first, second ->
+                    first && second
+                }
+                val isBinary = GenValue.Boolean(isBinaryPlaceholder)
+
+                session.outputMatValue = GenValue.Mat(outputMat.resolved(), secondValue.color, isBinary)
             }
 
             session
@@ -96,7 +103,7 @@ class BitwiseXORNode : DrawNode<BitwiseXORNode.Session>() {
             }
 
             current {
-                val value = CPythonOpenCvTypes.cv2.callValue("bitwise_xor", CPythonLanguage.NoType, firstValue.value, secondValue.value)
+                val value = CPythonOpenCvTypes.cv2.callValue("bitwise_xor", CPythonLanguage.NoType, firstValue.value.v, secondValue.value.v)
                 val variable = uniqueVariable("bitwiseXORMat", value)
 
                 current.scope {
@@ -104,7 +111,12 @@ class BitwiseXORNode : DrawNode<BitwiseXORNode.Session>() {
                     local(variable)
                 }
 
-                session.outputMatValue = GenValue.Mat(variable, secondValue.color, firstValue.isBinary && secondValue.isBinary)
+                val isBinaryPlaceholder = Resolvable.DoubleDependentPlaceholder(firstValue.isBinary.value, secondValue.isBinary.value) { first, second ->
+                    first && second
+                }
+                val isBinary = GenValue.Boolean(isBinaryPlaceholder)
+
+                session.outputMatValue = GenValue.Mat(variable.resolved(), secondValue.color, isBinary)
             }
 
             session
@@ -115,7 +127,7 @@ class BitwiseXORNode : DrawNode<BitwiseXORNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return current.sessionOf(this)!!.outputMatValue
+            return GenValue.Mat.defer { current.sessionOf(this)?.outputMatValue }
         }
 
         noValue(attrib)

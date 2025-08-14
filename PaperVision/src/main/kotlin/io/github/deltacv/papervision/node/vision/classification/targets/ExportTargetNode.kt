@@ -51,7 +51,7 @@ class ExportTargetNode : DrawNode<NoSession>() {
         generatorFor(JavaLanguage) {
             current.targets {
                 current.scope {
-                    addRectTarget(string(label.value(current).value), inputTarget.value(current).value)
+                    addRectTarget(string(label.value(current).value.v), inputTarget.value(current).value.v)
                 }
             }
 
@@ -86,7 +86,7 @@ class ExportRotTarget : DrawNode<NoSession>() {
         generatorFor(JavaLanguage) {
             current.targets {
                 current.scope {
-                    addRotRectTarget(string(label.value(current).value), inputTarget.value(current).value)
+                    addRotRectTarget(string(label.value(current).value.v), inputTarget.value(current).value.v)
                 }
             }
 

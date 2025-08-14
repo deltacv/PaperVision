@@ -32,6 +32,7 @@ import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -81,7 +82,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                     }
 
                     if(rectsList is GenValue.GList.RuntimeListOf<*>) {
-                        foreach(variable(JvmOpenCvTypes.Rect, "rect"), rectsList.value) { rect ->
+                        foreach(variable(JvmOpenCvTypes.Rect, "rect"), rectsList.value.v) { rect ->
                             withRuntimeRect(rect)
                         }
                     } else {
@@ -91,10 +92,10 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                                 val rect = Variable(
                                     "rect",
                                     JvmOpenCvTypes.Rect.new(
-                                        element.x.value.toInt().v,
-                                        element.y.value.toInt().v,
-                                        element.w.value.toInt().v,
-                                        element.h.value.toInt().v
+                                        element.x.value.v,
+                                        element.y.value.v,
+                                        element.w.value.v,
+                                        element.h.value.v
                                     )
                                 )
 
@@ -107,13 +108,13 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                                 }
                             } else if(element is GenValue.GRect.RuntimeRect) {
                                 separate()
-                                withRuntimeRect(element.value)
+                                withRuntimeRect(element.value.v)
                             }
                         }
                     }
                 }
 
-                session.biggestRect = GenValue.GRect.RuntimeRect(biggestRect)
+                session.biggestRect = GenValue.GRect.RuntimeRect(biggestRect.resolved())
 
                 session
             }
@@ -147,7 +148,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                     }
 
                     if(rectsList is GenValue.GList.RuntimeListOf<*>) {
-                        foreach(variable(CPythonLanguage.NoType, "rect"), rectsList.value) { rect ->
+                        foreach(variable(CPythonLanguage.NoType, "rect"), rectsList.value.v) { rect ->
                             withRuntimeRect(rect)
                         }
                     } else {
@@ -158,10 +159,10 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                                 val rect = uniqueVariable(
                                     "rect",
                                     CPythonLanguage.tuple(
-                                        element.x.value.toInt().v,
-                                        element.y.value.toInt().v,
-                                        element.w.value.toInt().v,
-                                        element.h.value.toInt().v
+                                        element.x.value.v,
+                                        element.y.value.v,
+                                        element.w.value.v,
+                                        element.h.value.v
                                     )
                                 )
                                 local(rect)
@@ -176,13 +177,13 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                                 }
                             } else if(element is GenValue.GRect.RuntimeRect) {
                                 separate()
-                                withRuntimeRect(element.value)
+                                withRuntimeRect(element.value.v)
                             }
                         }
                     }
                 }
 
-                session.biggestRect = GenValue.GRect.RuntimeRect(biggestRect)
+                session.biggestRect = GenValue.GRect.RuntimeRect(biggestRect.resolved())
 
                 session
             }
@@ -193,7 +194,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return current.sessionOf(this)!!.biggestRect
+            return GenValue.GRect.RuntimeRect.defer { current.sessionOf(this)?.biggestRect }
         }
 
         noValue(attrib)

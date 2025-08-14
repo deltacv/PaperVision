@@ -30,6 +30,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -64,7 +65,7 @@ class MaskNode : DrawNode<MaskNode.Session>(){
                 val mask = maskMat.value(current)
                 mask.requireBinary(maskMat)
 
-                val output = uniqueVariable("${input.value.value!!}Mask", Mat.new())
+                val output = uniqueVariable("${input.value}Mask", Mat.new())
 
                 group {
                     private(output)
@@ -74,11 +75,11 @@ class MaskNode : DrawNode<MaskNode.Session>(){
                     writeNameComment()
 
                     output("release")
-                    Core("bitwise_and", input.value, input.value, output, mask.value)
+                    Core("bitwise_and", input.value.v, input.value.v, output, mask.value.v)
                     outputMat.streamIfEnabled(output, input.color)
                 }
 
-                session.outputMat = GenValue.Mat(output, input.color)
+                session.outputMat = GenValue.Mat(output.resolved(), input.color)
 
                 session
             }
@@ -97,12 +98,12 @@ class MaskNode : DrawNode<MaskNode.Session>(){
                 current.scope {
                     writeNameComment()
 
-                    val output = uniqueVariable("${input.value.value!!}_mask",
-                        cv2.callValue("bitwise_and", CPythonLanguage.NoType, input.value, input.value, CPythonLanguage.namedArgument("mask", mask.value))
+                    val output = uniqueVariable("${input.value}_mask",
+                        cv2.callValue("bitwise_and", CPythonLanguage.NoType, input.value.v, input.value.v, CPythonLanguage.namedArgument("mask", mask.value.v))
                     )
                     local(output)
 
-                    session.outputMat = GenValue.Mat(output, input.color)
+                    session.outputMat = GenValue.Mat(output.resolved(), input.color)
                 }
 
                 session
@@ -114,7 +115,7 @@ class MaskNode : DrawNode<MaskNode.Session>(){
         genCodeIfNecessary(current)
 
         if(attrib == outputMat) {
-            return current.sessionOf(this)!!.outputMat
+            return GenValue.Mat.defer { current.sessionOf(this)?.outputMat }
         }
 
         noValue(attrib)

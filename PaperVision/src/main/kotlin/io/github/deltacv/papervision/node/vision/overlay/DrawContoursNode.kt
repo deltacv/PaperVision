@@ -36,6 +36,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -128,11 +129,11 @@ open class DrawContoursNode
                     }
 
                     if(!isDrawOnInput) {
-                        outputMat.streamIfEnabled(drawMat, input.color.v)
+                        outputMat.streamIfEnabled(drawMat, input.color)
                     }
                 }
 
-                session.outputMat = GenValue.Mat(drawMat, input.color, input.isBinary)
+                session.outputMat = GenValue.Mat(drawMat.resolved(), input.color, input.isBinary)
 
                 session
             }
@@ -158,13 +159,13 @@ open class DrawContoursNode
                     val color = lineParams.color
                     val thickness = lineParams.thickness.value
 
-                    val colorScalar = CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
+                    val colorScalar = CPythonLanguage.tuple(color.a.value.v, color.b.value.v, color.c.value.v, color.d.value.v)
 
                     val target = if(isDrawOnInput) {
-                        input.value
+                        input.value.v
                     } else {
                         val output = uniqueVariable(
-                            "${input.value.value!!}_contours", input.value.callValue("copy", CPythonLanguage.NoType)
+                            "${input.value}_contours", input.value.v.callValue("copy", CPythonLanguage.NoType)
                         )
                         local(output)
 
@@ -172,7 +173,7 @@ open class DrawContoursNode
                     }
 
                     if(contoursList is GenValue.GList.RuntimeListOf<*>) {
-                        cv2("drawContours", target, contoursList.value, (-1).v, colorScalar, thickness.v)
+                        cv2("drawContours", target, contoursList.value.v, (-1).v, colorScalar, thickness.v)
                     } else {
                         separate()
 
@@ -181,8 +182,8 @@ open class DrawContoursNode
 
                         for(contour in (contoursList as GenValue.GList.ListOf<*>).elements) {
                             if(contour is GenValue.GPoints.RuntimePoints) {
-                                ifCondition(contour.value notEqualsTo CPythonLanguage.nullValue) {
-                                    list("append", contour.value)
+                                ifCondition(contour.value.v notEqualsTo CPythonLanguage.nullValue) {
+                                    list("append", contour.value.v)
                                 }
                             } else {
                                 raise("Invalid contour type")
@@ -194,7 +195,7 @@ open class DrawContoursNode
                         cv2("drawContours", target, list, (-1).v, colorScalar, thickness.v)
                     }
 
-                    session.outputMat = GenValue.Mat(target, input.color, input.isBinary)
+                    session.outputMat = GenValue.Mat(target.resolved(), input.color, input.isBinary)
                 }
             }
 
@@ -206,14 +207,7 @@ open class DrawContoursNode
         genCodeIfNecessary(current)
 
         if(attrib == outputMat) {
-            return current.getGenValueOrMakePlaceholder(
-                this,
-                Session::outputMat,
-                GenValue.Mat::value
-            ) {
-                val session = current.nonNullSessionOf(this)
-                GenValue.Mat(it, GenValue.ColorSpace(current.makePlaceholder { session.outputMat.color.value }))
-            }
+            return GenValue.Mat.defer { current.sessionOf(this)?.outputMat }
         }
 
         noValue(attrib)

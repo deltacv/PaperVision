@@ -4,7 +4,6 @@ import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
-import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
@@ -15,10 +14,10 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
-import io.github.deltacv.papervision.util.Range2i
 
 @PaperNode(
     name = "nod_grouprects_byratio",
@@ -77,7 +76,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
 
                     rectsVar("clear")
 
-                    foreach(Variable(JvmOpenCvTypes.Rect, "rect"), rects.value) { rect ->
+                    foreach(Variable(JvmOpenCvTypes.Rect, "rect"), rects.value.v) { rect ->
                         val ratioVar = uniqueVariable("ratio", rect.propertyValue("height", IntType).castTo(DoubleType) / rect.propertyValue("width", IntType).castTo(DoubleType))
                         local(ratioVar)
 
@@ -87,7 +86,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
                     }
                 }
 
-                session.output = GenValue.GList.RuntimeListOf(rectsVar, GenValue.GRect.RuntimeRect::class)
+                session.output = GenValue.GList.RuntimeListOf(rectsVar.resolved(), GenValue.GRect.RuntimeRect::class.resolved())
             }
 
             session
@@ -115,7 +114,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
 
                     separate()
 
-                    foreach(Variable(CPythonLanguage.NoType, "rect"), rects.value) { rect ->
+                    foreach(Variable(CPythonLanguage.NoType, "rect"), rects.value.v) { rect ->
                         val ratioVar = uniqueVariable("ratio", (rect[2.v, IntType] / rect[3.v, IntType]))
                         local(ratioVar)
 
@@ -125,7 +124,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
                     }
                 }
 
-                session.output = GenValue.GList.RuntimeListOf(rectsVar, GenValue.GPoints.RuntimePoints::class)
+                session.output = GenValue.GList.RuntimeListOf(rectsVar.resolved(), GenValue.GPoints.RuntimePoints::class.resolved())
             }
 
             session
@@ -133,11 +132,10 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        when(attrib) {
-            output -> return current.nonNullSessionOf(this).output
+        return when(attrib) {
+            output -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.output }
+            else -> noValue(attrib)
         }
-
-        noValue(attrib)
     }
 
     class Session : CodeGenSession {

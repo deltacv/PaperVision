@@ -37,7 +37,7 @@ import io.github.deltacv.papervision.codegen.dsl.generatorFor
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
-import io.github.deltacv.papervision.codegen.now
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -116,8 +116,8 @@ class InputMatNode @JvmOverloads constructor(
     override fun getOutputValueOf(current: CodeGen.Current,
                                   attrib: Attribute
     ) = when(current.language) {
-        is CPythonLanguage -> GenValue.Mat(Variable(CPythonLanguage.NoType, "input").now(), ColorSpace.RGBA.now())
-        else -> GenValue.Mat(Variable(JvmOpenCvTypes.Mat, "input").now(), ColorSpace.RGBA.now())
+        is CPythonLanguage -> GenValue.Mat(Variable(CPythonLanguage.NoType, "input").resolved(), ColorSpace.RGBA.resolved())
+        else -> GenValue.Mat(Variable(JvmOpenCvTypes.Mat, "input").resolved(), ColorSpace.RGBA.resolved())
     }
 }
 
@@ -204,8 +204,8 @@ class OutputMatNode @JvmOverloads constructor(
                     if (crosshair.linkedAttributes().isNotEmpty()) {
                         val crosshairValue = crosshair.value(current)
 
-                        ifCondition((crosshairValue.value notEqualsTo crosshairValue.value.type.nullVal)) {val boundingRect =
-                            uniqueVariable("boundingRect", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, crosshairValue.value))
+                        ifCondition((crosshairValue.value.v notEqualsTo nullVal)) {
+                            val boundingRect = uniqueVariable("boundingRect", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, crosshairValue.value.v))
                             local(boundingRect)
 
                             separate()
@@ -227,7 +227,7 @@ class OutputMatNode @JvmOverloads constructor(
 
                             val centroid = uniqueVariable("centroid", JvmOpenCvTypes.Point.new(centroidX, centroidY))
                             local(centroid)
-                            val contourArea = uniqueVariable("contourArea", Imgproc.callValue("contourArea", DoubleType, crosshairValue.value))
+                            val contourArea = uniqueVariable("contourArea", Imgproc.callValue("contourArea", DoubleType, crosshairValue.value.v))
                             local(contourArea)
 
                             separate()
@@ -243,14 +243,14 @@ class OutputMatNode @JvmOverloads constructor(
                             separate()
 
                             Imgproc("line",
-                                inputValue.value,
+                                inputValue.value.v,
                                 JvmOpenCvTypes.Point.new(centroidX - crosshairSize, centroidY),
                                 JvmOpenCvTypes.Point.new(centroidX + crosshairSize, centroidY),
                                 crosshairCol,
                                 crosshairThickness
                             )
                             Imgproc("line",
-                                inputValue.value,
+                                inputValue.value.v,
                                 JvmOpenCvTypes.Point.new(centroidX, centroidY - crosshairSize),
                                 JvmOpenCvTypes.Point.new(centroidX, centroidY + crosshairSize),
                                 crosshairCol,
@@ -261,8 +261,8 @@ class OutputMatNode @JvmOverloads constructor(
                         separate()
                     }
 
-                    streamMat(streamId!!, inputValue.value, inputValue.color)
-                    returnMethod(inputValue.value)
+                    streamMat(streamId!!, inputValue.value.v, inputValue.color)
+                    returnMethod(inputValue.value.v)
 
                     appendWhiteline = false
                 }
@@ -279,25 +279,29 @@ class OutputMatNode @JvmOverloads constructor(
                 val dataValue = exportedData.value(current)
 
                 current.scope {
-                    val llpython = uniqueVariable("llpython", if(dataValue is GenValue.GList.RuntimeListOf<*>) {
-                        dataValue.value
-                    } else if(dataValue is GenValue.GList.ListOf<*>) {
-                        val data = mutableListOf<Value>()
-
-                        for (d in dataValue.elements) {
-                            if(d is GenValue.Double) {
-                                data.add(d.value.v)
-                            }
+                    val llpython = uniqueVariable("llpython", when (dataValue) {
+                        is GenValue.GList.RuntimeListOf<*> -> {
+                            dataValue.value.v
                         }
 
-                        CPythonLanguage.newArrayOf(CPythonLanguage.NoType, *data.toTypedArray())
-                    } else raise("Uh oh, this shouldn't happen"))
+                        is GenValue.GList.ListOf<*> -> {
+                            val data = mutableListOf<Value>()
+
+                            for (d in dataValue.elements) {
+                                if (d is GenValue.Double) {
+                                    data.add(d.value.v)
+                                }
+                            }
+
+                            CPythonLanguage.newArrayOf(CPythonLanguage.NoType, *data.toTypedArray())
+                        }
+                    })
 
                     local(llpython)
 
                     separate()
 
-                    returnMethod(CPythonLanguage.tuple(crosshairValue.value, inputValue.value, llpython))
+                    returnMethod(CPythonLanguage.tuple(crosshairValue.value.v, inputValue.value.v, llpython))
                     appendWhiteline = false
                 }
 

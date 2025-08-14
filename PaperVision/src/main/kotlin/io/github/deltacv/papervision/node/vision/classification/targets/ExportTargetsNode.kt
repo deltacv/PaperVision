@@ -60,14 +60,16 @@ class ExportTargetsNode : DrawNode<NoSession>() {
 
                 val labelValue = label.value(current).value
 
-                if(labelValue.isEmpty()) {
-                    label.raise("err_emptylabel")
+                labelValue.letOrDefer {
+                    if(it.isEmpty()) {
+                        label.raise("err_emptylabel")
+                    }
                 }
 
                 current.targets {
                     current.scope {
-                        forLoop(Variable(IntType, "i"), 0.v, targetsValue.value.callValue("size", IntType), 1.v) {
-                            addRectTarget(string("${labelValue}_").plus(it), targetsValue.value.callValue("get", JvmOpenCvTypes.Rect, it).castTo(JvmOpenCvTypes.Rect))
+                        forLoop(Variable(IntType, "i"), 0.v, targetsValue.value.v.callValue("size", IntType), 1.v) {
+                            addRectTarget(string("${labelValue}_").plus(it), targetsValue.value.v.callValue("get", JvmOpenCvTypes.Rect, it).castTo(JvmOpenCvTypes.Rect))
                         }
                     }
                 }
@@ -110,15 +112,16 @@ class ExportRotTargetsNode : DrawNode<NoSession>() {
                 }
 
                 val labelValue = label.value(current).value
-
-                if(labelValue.isEmpty()) {
-                    label.raise("err_emptylabel")
+                labelValue.letOrDefer {
+                    if(it.isEmpty()) {
+                        label.raise("err_emptylabel")
+                    }
                 }
 
                 current.targets {
                     current.scope {
-                        forLoop(Variable(IntType, "i"), 0.v, targetsValue.value.callValue("size", IntType), 1.v) {
-                            addRotRectTarget(string("${labelValue}_").plus(it), targetsValue.value.callValue("get", JvmOpenCvTypes.RotatedRect, it).castTo(JvmOpenCvTypes.RotatedRect))
+                        forLoop(Variable(IntType, "i"), 0.v, targetsValue.value.v.callValue("size", IntType), 1.v) {
+                            addRotRectTarget(string("${labelValue}_").plus(it), targetsValue.value.v.callValue("get", JvmOpenCvTypes.RotatedRect, it).castTo(JvmOpenCvTypes.RotatedRect))
                         }
                     }
                 }

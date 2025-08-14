@@ -33,6 +33,7 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.util.Range2i
@@ -65,15 +66,15 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
             val session = Session()
 
             current {
-                val x = uniqueVariable("vectorX", xAttribute.value(current).value.toDouble().v)
-                val y = uniqueVariable("vectorY", yAttribute.value(current).value.toDouble().v)
+                val x = uniqueVariable("vectorX", xAttribute.value(current).value.v)
+                val y = uniqueVariable("vectorY", yAttribute.value(current).value.v)
 
                 group {
                     public(x, xAttribute.label())
                     public(y, yAttribute.label())
                 }
 
-                session.vector2 = GenValue.Vec2.RuntimeVector2(x, y)
+                session.vector2 = GenValue.Vec2.RuntimeVector2(x.resolved(), y.resolved())
             }
 
             session
@@ -82,7 +83,10 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            session.vector2 = GenValue.Vec2.Vector2(xAttribute.value(current).value.toDouble(), yAttribute.value(current).value.toDouble())
+            session.vector2 = GenValue.Vec2.Vector2(
+                GenValue.Double(xAttribute.value(current).value.convertTo { it?.toDouble() }),
+                GenValue.Double(yAttribute.value(current).value.convertTo { it?.toDouble() })
+            )
             session
         }
     }

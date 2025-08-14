@@ -30,6 +30,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -67,11 +68,11 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
                     writeNameComment()
 
                     outputMat("release")
-                    JvmOpenCvTypes.Core("bitwise_not", firstValue.value, outputMat)
+                    JvmOpenCvTypes.Core("bitwise_not", firstValue.value.v, outputMat)
                     output.streamIfEnabled(outputMat, firstValue.color)
                 }
 
-                session.outputMatValue = GenValue.Mat(outputMat, firstValue.color, firstValue.isBinary)
+                session.outputMatValue = GenValue.Mat(outputMat.resolved(), firstValue.color, firstValue.isBinary)
             }
 
             session
@@ -83,7 +84,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
             val firstValue = input.value(current)
 
             current {
-                val value = CPythonOpenCvTypes.cv2.callValue("bitwise_not", CPythonLanguage.NoType, firstValue.value)
+                val value = CPythonOpenCvTypes.cv2.callValue("bitwise_not", CPythonLanguage.NoType, firstValue.value.v)
                 val variable = uniqueVariable("bitwiseNOTMat", value)
 
                 current.scope {
@@ -91,7 +92,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
                     local(variable)
                 }
 
-                session.outputMatValue = GenValue.Mat(variable, firstValue.color, firstValue.isBinary)
+                session.outputMatValue = GenValue.Mat(variable.resolved(), firstValue.color, firstValue.isBinary)
             }
 
             session
@@ -102,7 +103,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return current.sessionOf(this)!!.outputMatValue
+            return GenValue.Mat.defer { current.sessionOf(this)?.outputMatValue }
         }
 
         noValue(attrib)

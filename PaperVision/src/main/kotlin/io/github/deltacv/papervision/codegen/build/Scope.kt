@@ -309,6 +309,11 @@ class Scope(
         }
     }
 
+    fun write(str: String) {
+        newStatement()
+        builder.append(str)
+    }
+
     fun clear() = builder.clear()
 
     fun get() = importBuilder.build() + builder.toString()

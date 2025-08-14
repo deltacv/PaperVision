@@ -17,6 +17,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -93,7 +94,7 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
 
                     contoursVar("clear")
 
-                    foreach(Variable(JvmOpenCvTypes.MatOfPoint, "contour"), contours.value) { contour ->
+                    foreach(Variable(JvmOpenCvTypes.MatOfPoint, "contour"), contours.value.v) { contour ->
                         val ratioVar = if(mode == BoundingMode.Normal) {
                             val rect = uniqueVariable("rect", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, contour))
                             local(rect)
@@ -137,7 +138,7 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
                     }
                 }
 
-                session.output = GenValue.GList.RuntimeListOf(contoursVar, GenValue.GPoints.RuntimePoints::class)
+                session.output = GenValue.GList.RuntimeListOf(contoursVar.resolved(), GenValue.GPoints.RuntimePoints::class.resolved())
             }
 
             session
@@ -163,7 +164,7 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
 
                     separate()
 
-                    foreach(Variable(CPythonLanguage.NoType, "contour"), contours.value) { contour ->
+                    foreach(Variable(CPythonLanguage.NoType, "contour"), contours.value.v) { contour ->
                         val rectangle = CPythonLanguage.tupleVariables(
                             CPythonOpenCvTypes.cv2.callValue("boundingRect", CPythonLanguage.NoType, contour), // "rect" is a tuple of 4 values:
                             "x", "y", "w", "h"
@@ -181,7 +182,7 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
                     }
                 }
 
-                session.output = GenValue.GList.RuntimeListOf(contoursVar, GenValue.GPoints.RuntimePoints::class)
+                session.output = GenValue.GList.RuntimeListOf(contoursVar.resolved(), GenValue.GPoints.RuntimePoints::class.resolved())
             }
 
             session
@@ -189,11 +190,10 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
     }
 
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        when(attrib) {
-            output -> return current.nonNullSessionOf(this).output
+        return when(attrib) {
+            output -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.output }
+            else -> noValue(attrib)
         }
-
-        noValue(attrib)
     }
 
     class Session : CodeGenSession {

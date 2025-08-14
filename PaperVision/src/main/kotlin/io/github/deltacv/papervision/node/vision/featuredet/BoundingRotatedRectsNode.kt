@@ -35,6 +35,7 @@ import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -62,7 +63,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                 val input = contours.value(current)
 
                 val name = if(input is GenValue.GList.RuntimeListOf<*>) {
-                    input.value.value
+                    input.value.value.toString()
                 } else null
 
                 val points2f = uniqueVariable("${name ?: "points"}2f", JvmOpenCvTypes.MatOfPoint2f.new())
@@ -88,13 +89,13 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                     }
 
                     if(input is GenValue.GList.RuntimeListOf<*>) {
-                        foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value) {
+                        foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value.v) {
                             withPoints(it)
                         }
                     } else {
                         for(element in (input as GenValue.GList.ListOf<*>).elements) {
                             if(element is GenValue.GPoints.RuntimePoints) {
-                                withPoints(element.value)
+                                withPoints(element.value.v)
                             } else {
                                 raise("Invalid input type for contours")
                             }
@@ -102,7 +103,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                     }
                 }
 
-                session.rects = GenValue.GList.RuntimeListOf(rectsList, GenValue.GRect.Rotated.RuntimeRotatedRect::class)
+                session.rects = GenValue.GList.RuntimeListOf(rectsList.resolved(), GenValue.GRect.Rotated.RuntimeRotatedRect::class.resolved())
             }
 
             session
@@ -115,7 +116,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                 val input = contours.value(current)
 
                 val name = if(input is GenValue.GList.RuntimeListOf<*>) {
-                    input.value.value + "_r"
+                    input.value.value.toString() + "_r"
                 } else null
 
                 val rectsList = uniqueVariable("${name ?: "r"}ot_rects", CPythonLanguage.NoType.newArray())
@@ -130,13 +131,13 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                     }
 
                     if(input is GenValue.GList.RuntimeListOf<*>) {
-                        foreach(variable(CPythonLanguage.NoType, "points"), input.value) {
+                        foreach(variable(CPythonLanguage.NoType, "points"), input.value.v) {
                             withPoints(it)
                         }
                     } else {
                         for(element in (input as GenValue.GList.ListOf<*>).elements) {
                             if(element is GenValue.GPoints.RuntimePoints) {
-                                withPoints(element.value)
+                                withPoints(element.value.v)
                             } else {
                                 raise("Invalid input type for contours")
                             }
@@ -144,7 +145,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                     }
                 }
 
-                session.rects = GenValue.GList.RuntimeListOf(rectsList, GenValue.GRect.Rotated.RuntimeRotatedRect::class)
+                session.rects = GenValue.GList.RuntimeListOf(rectsList.resolved(), GenValue.GRect.Rotated.RuntimeRotatedRect::class.resolved())
             }
 
             session

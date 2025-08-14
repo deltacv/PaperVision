@@ -30,6 +30,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -64,7 +65,7 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
                 val lineColorValue = lineColor.value(current)
 
                 val lineColorVar = uniqueVariable("lineColor", JvmOpenCvTypes.Scalar.new(
-                    lineColorValue.a.v, lineColorValue.b.v, lineColorValue.c.v, lineColorValue.d.v
+                    lineColorValue.a.value.v, lineColorValue.b.value.v, lineColorValue.c.value.v, lineColorValue.d.value.v
                 ))
 
                 val lineThicknessVar = uniqueVariable("lineThickness", lineThickness.value(current).value.v)
@@ -74,7 +75,7 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
                     public(lineThicknessVar, lineThickness.label())
                 }
 
-                session.lineParameters = GenValue.LineParameters.RuntimeLine(lineColorVar, lineThicknessVar)
+                session.lineParameters = GenValue.LineParameters.RuntimeLine(lineColorVar.resolved(), lineThicknessVar.resolved())
             }
 
             session
@@ -91,13 +92,19 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
             session
         }
     }
-
     override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        return when (attrib) {
-            output -> current.nonNullSessionOf(this).lineParameters
-            else -> noValue(attrib)
-        }
+        val lp = current.sessionOf(this)?.lineParameters
+
+        return when (current.language) {
+            // select the appropriate type based on the language;
+            // Java always uses runtime line parameters
+            // CPython always uses the static line parameters
+            is JavaLanguage   -> GenValue.LineParameters.RuntimeLine.defer { lp as? GenValue.LineParameters.RuntimeLine }
+            is CPythonLanguage -> GenValue.LineParameters.Line.defer { lp as? GenValue.LineParameters.Line }
+            else -> null
+        } ?: noValue(attrib)
     }
+
 
     class Session : CodeGenSession {
         lateinit var lineParameters: GenValue.LineParameters

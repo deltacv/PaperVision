@@ -81,7 +81,7 @@ interface Language : ValueBuilder {
 
     fun methodCallDeclaration(methodName: String, vararg parameters: Value): String
 
-    fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value? = null): String
+    fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value): String
 
     fun constructorDeclaration(vis: Visibility, className: String, vararg parameters: Parameter): String
 

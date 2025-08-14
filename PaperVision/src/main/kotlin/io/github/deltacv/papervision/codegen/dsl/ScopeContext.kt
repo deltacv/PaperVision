@@ -126,6 +126,25 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         scope.constructor(vis, clazz.className, constructorScope, *parameters)
     }
 
+    fun deferredBlock(resolvable: Resolvable<ScopeContext.() -> Unit>) {
+        val block = resolvable.resolve()
+
+        val scope = Scope(scope.tabsCount, scope.language, scope.importScope)
+
+        if(block != null) {
+            block(scope.context)
+        } else {
+            val placeholder = Resolvable.DependentPlaceholder(resolvable) {
+                val newScope = Scope(scope.tabsCount, scope.language, scope.importScope)
+                it(newScope.context)
+            }
+
+            scope.write(placeholder.toString())
+        }
+
+        scope.scope(scope)
+    }
+
     fun method(
         vis: Visibility, returnType: Type, name: String,
         vararg parameters: Parameter, isStatic: Boolean = false,

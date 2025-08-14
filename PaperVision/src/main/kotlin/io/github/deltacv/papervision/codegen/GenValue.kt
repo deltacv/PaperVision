@@ -38,28 +38,53 @@ sealed class GenValue {
                 attribute.raiseAssert(!it, "Mat is binary where it shouldn't be, this causes runtime issues.")
             }
         }
+
+        companion object {
+            fun defer(genValueResolver: () -> GenValue.Mat?) = GenValue.Mat(
+                Resolvable.fromResolvable { genValueResolver()?.value },
+                Resolvable.fromResolvable { genValueResolver()?.color },
+            )
+        }
     }
 
     data class Point(val x: Resolvable<Double>, val y: Resolvable<Double>) : GenValue()
 
     sealed class GPoints : GenValue() {
         class Points(val points: Resolvable<Array<Point>>) : GPoints()
-        data class RuntimePoints(val value: Resolvable<Value>) : GPoints()
+        data class RuntimePoints(val value: Resolvable<Value>) : GPoints() {
+            companion object {
+                fun defer(genValueResolver: () -> RuntimePoints?) = RuntimePoints(
+                    Resolvable.fromResolvable { genValueResolver()?.value }
+                )
+            }
+        }
     }
 
     sealed class GRect : GenValue() {
-        data class Rect(val x: Resolvable<Double>, val y: Resolvable<Double>, val w: Resolvable<Double>, val h: Resolvable<Double>) : GRect()
+        data class Rect(val x: Double, val y: Double, val w: Double, val h: Double) : GRect()
 
-        data class RuntimeRect(val value: Resolvable<Value>) : GRect()
+        data class RuntimeRect(val value: Resolvable<Value>) : GRect() {
+            companion object {
+                fun defer(genValueResolver: () -> RuntimeRect?) = RuntimeRect(
+                    Resolvable.fromResolvable { genValueResolver()?.value }
+                )
+            }
+        }
 
         sealed class Rotated : GRect() {
             data class RotatedRect(
-                val x: Resolvable<Double>, val y: Resolvable<Double>,
-                val w: Resolvable<Double>, val h: Resolvable<Double>,
-                val angle: Resolvable<Double>
+                val x: Double, val y: Double,
+                val w: Double, val h: Double,
+                val angle: Double
             ) : Rotated()
 
-            data class RuntimeRotatedRect(val value: Resolvable<Value>) : Rotated()
+            data class RuntimeRotatedRect(val value: Resolvable<Value>) : Rotated() {
+                companion object {
+                    fun defer(genValueResolver: () -> RuntimeRotatedRect?) = RuntimeRotatedRect(
+                        Resolvable.fromResolvable { genValueResolver()?.value }
+                    )
+                }
+            }
         }
     }
 
@@ -68,24 +93,50 @@ sealed class GenValue {
     data class Int(val value: Resolvable<kotlin.Int>) : GenValue(){
         companion object {
             val ZERO = Int(Resolvable.Now(0))
+
+            fun defer(genValueResolver: () -> Int?) = Int(
+                Resolvable.fromResolvable { genValueResolver()?.value }
+            )
         }
     }
     data class Float(val value: Resolvable<kotlin.Float>) : GenValue() {
         companion object {
             val ZERO = Float(Resolvable.Now(0.0f))
+
+            fun defer(genValueResolver: () -> Float?) = Float(
+                Resolvable.fromResolvable { genValueResolver()?.value }
+            )
         }
     }
     data class Double(val value: Resolvable<kotlin.Double>) : GenValue() {
         companion object {
             val ZERO = Double(Resolvable.Now(0.0))
+
+            fun defer(genValueResolver: () -> Double?) = Double(
+                Resolvable.fromResolvable { genValueResolver()?.value }
+            )
         }
     }
 
     data class String(val value: Resolvable<kotlin.String>) : GenValue()
 
     sealed class LineParameters : GenValue() {
-        data class Line(val color: Scalar, val thickness: Int) : LineParameters()
-        data class RuntimeLine(val colorScalarValue: Resolvable<Value>, val thicknessValue: Resolvable<Value>) : LineParameters()
+        data class Line(val color: Scalar, val thickness: Int) : LineParameters() {
+            companion object {
+                fun defer(genValueResolver: () -> Line?) = GenValue.LineParameters.Line(
+                    Scalar.defer { genValueResolver()?.color },
+                    Int.defer { genValueResolver()?.thickness }
+                )
+            }
+        }
+        data class RuntimeLine(val colorScalarValue: Resolvable<Value>, val thicknessValue: Resolvable<Value>) : LineParameters() {
+            companion object {
+                fun defer(genValueResolver: () -> RuntimeLine?) = RuntimeLine(
+                    Resolvable.fromResolvable { genValueResolver()?.colorScalarValue },
+                    Resolvable.fromResolvable { genValueResolver()?.thicknessValue }
+                )
+            }
+        }
 
         fun ensureRuntimeLineJava(current: CodeGen.Current): RuntimeLine {
             return current {
@@ -124,6 +175,13 @@ sealed class GenValue {
     ) : GList.ListOf<GenValue.Double>(arrayOf(a, b, c, d)) {
         companion object {
             val ZERO = Scalar(Double.ZERO, Double.ZERO, Double.ZERO, Double.ZERO)
+
+            fun defer(genValueResolver: () -> Scalar?) = Scalar(
+                Double.defer { genValueResolver()?.a },
+                Double.defer { genValueResolver()?.b },
+                Double.defer { genValueResolver()?.c },
+                Double.defer { genValueResolver()?.d }
+            )
         }
     }
 
@@ -174,7 +232,16 @@ sealed class GenValue {
         open class ListOf<T : GenValue>(val elements: Array<T>) : GList()
         class List(elements: Array<GenValue>) : ListOf<GenValue>(elements)
 
-        data class RuntimeListOf<T : GenValue>(val value: Resolvable<Value>, val typeClass: KClass<T>) : GList()
+        data class RuntimeListOf<T : GenValue>(val value: Resolvable<Value>, val typeClass: Resolvable<KClass<T>>) : GList() {
+            companion object {
+                fun <T : GenValue> defer(
+                    genValueResolver: () -> RuntimeListOf<T>?
+                ): RuntimeListOf<T> = RuntimeListOf(
+                    Resolvable.fromResolvable { genValueResolver()?.value },
+                    Resolvable.fromResolvable { genValueResolver()?.typeClass }
+                )
+            }
+        }
     }
 
     object None : GenValue()
