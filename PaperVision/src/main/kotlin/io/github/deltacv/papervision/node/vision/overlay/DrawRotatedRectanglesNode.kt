@@ -111,17 +111,19 @@ open class DrawRotatedRectanglesNode
                             separate()
 
                             // Draw the rectangle using the points
-                            Imgproc(
-                                "polylines", drawMat,
-                                JavaTypes.Collections.callValue(
-                                    "singletonList",
-                                    JavaTypes.List(JvmOpenCvTypes.MatOfPoint),
-                                    matOfPoint
-                                ), // list of points forming the rotated rectangle
-                                trueValue, // closed polygon
-                                lineParams.colorScalarValue.v,
-                                lineParams.thicknessValue.v
-                            )
+                            ifCondition((drawMat notEqualsTo language.nullValue) and not(drawMat.callValue("empty", BooleanType).condition())) {
+                                Imgproc(
+                                    "polylines", drawMat,
+                                    JavaTypes.Collections.callValue(
+                                        "singletonList",
+                                        JavaTypes.List(JvmOpenCvTypes.MatOfPoint),
+                                        matOfPoint
+                                    ), // list of points forming the rotated rectangle
+                                    trueValue, // closed polygon
+                                    lineParams.colorScalarValue.v,
+                                    lineParams.thicknessValue.v
+                                )
+                            }
                         }
                     }
 

@@ -57,13 +57,13 @@ open class DrawRectanglesNode
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
-        + inputMat.rebuildOnChange()
-        + rectangles.rebuildOnChange()
+        +inputMat.rebuildOnChange()
+        +rectangles.rebuildOnChange()
 
-        + lineParams
+        +lineParams
 
         if (!isDrawOnInput) {
-            + outputMat.enablePrevizButton().rebuildOnChange()
+            +outputMat.enablePrevizButton().rebuildOnChange()
         } else {
             inputMat.variableName = "$[att_drawon_image]"
         }
@@ -109,7 +109,11 @@ open class DrawRectanglesNode
                                     lineParams.thicknessValue.v
                                 )
                             } else if (rectangle is GenValue.GRect.RuntimeRect) {
-                                ifCondition(rectangle.value.v notEqualsTo language.nullValue) {
+                                ifCondition(
+                                    rectangle.value.v notEqualsTo language.nullValue and
+                                            (drawMat notEqualsTo language.nullValue) and
+                                            not(drawMat.callValue("empty", BooleanType).condition())
+                                ) {
                                     Imgproc(
                                         "rectangle", drawMat, rectangle.value.v,
                                         lineParams.colorScalarValue.v, lineParams.thicknessValue.v
@@ -118,11 +122,16 @@ open class DrawRectanglesNode
                             }
                         }
                     } else {
-                        foreach(variable(JvmOpenCvTypes.Rect, "rect"), rectanglesList.value.v) {
-                            Imgproc(
-                                "rectangle", drawMat, it,
-                                lineParams.colorScalarValue.v, lineParams.thicknessValue.v
-                            )
+                        ifCondition(
+                            (drawMat notEqualsTo language.nullValue) and
+                                    not(drawMat.callValue("empty", BooleanType).condition())
+                        ) {
+                            foreach(variable(JvmOpenCvTypes.Rect, "rect"), rectanglesList.value.v) {
+                                Imgproc(
+                                    "rectangle", drawMat, it,
+                                    lineParams.colorScalarValue.v, lineParams.thicknessValue.v
+                                )
+                            }
                         }
                     }
 
@@ -145,7 +154,7 @@ open class DrawRectanglesNode
                 val rectanglesList = rectangles.value(current)
 
                 val lineParams = lineParams.value(current)
-                if(lineParams !is GenValue.LineParameters.Line) {
+                if (lineParams !is GenValue.LineParameters.Line) {
                     raise("Line parameters must not be runtime")
                 }
 
@@ -166,7 +175,8 @@ open class DrawRectanglesNode
                     val color = lineParams.color
                     val thickness = lineParams.thickness.value
 
-                    val colorScalar = CPythonLanguage.tuple(color.a.value.v, color.b.value.v, color.c.value.v, color.d.value.v)
+                    val colorScalar =
+                        CPythonLanguage.tuple(color.a.value.v, color.b.value.v, color.c.value.v, color.d.value.v)
 
                     fun ScopeContext.runtimeRect(rectValue: Value) {
                         ifCondition(rectValue notEqualsTo language.nullValue) {
