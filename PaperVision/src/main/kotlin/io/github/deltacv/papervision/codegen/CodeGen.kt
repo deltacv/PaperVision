@@ -45,7 +45,11 @@ class CodeGen(
         val logger by loggerFor<CodeGen>()
     }
 
-    val importScope     = Scope(0, language)
+    val importScope            = Scope(0, language)
+    val importScopePlaceholder = Resolvable.Placeholder(resolveLast = true) {
+        importScope
+    }
+
     val classStartScope = Scope(1, language, importScope, isForPreviz)
     val classEndScope   = Scope(1, language, importScope, isForPreviz)
 
@@ -87,62 +91,67 @@ class CodeGen(
             logger.info("${it.placeholder} = $v")
         }
 
-        do {
-            var changed = false
-            val sb = StringBuilder()
-            var i = 0
+        fun resolve(currentPlaceholdersProvider: () -> Collection<Resolvable.Placeholder<*>>) {
+            do {
+                var changed = false
+                val sb = StringBuilder()
+                var i = 0
 
-            // Resolve all once per pass
-            placeholders.inmutable.forEach { it.resolve() }
+                // Resolve all once per pass
+                currentPlaceholdersProvider().forEach { it.resolve() }
 
-            while (i < resolved.length) {
-                val start = resolved.indexOf(RESOLVER_PREFIX, i)
-                if (start == -1) {
-                    // No more placeholders
-                    sb.append(resolved, i, resolved.length)
-                    break
-                }
+                while (i < resolved.length) {
+                    val start = resolved.indexOf(RESOLVER_PREFIX, i)
+                    if (start == -1) {
+                        // No more placeholders
+                        sb.append(resolved, i, resolved.length)
+                        break
+                    }
 
-                val end = resolved.indexOf(RESOLVER_SUFFIX, start)
-                if (end == -1) {
-                    // No closing '>', append rest as-is
-                    sb.append(resolved, i, resolved.length)
-                    break
-                }
+                    val end = resolved.indexOf(RESOLVER_SUFFIX, start)
+                    if (end == -1) {
+                        // No closing '>', append rest as-is
+                        sb.append(resolved, i, resolved.length)
+                        break
+                    }
 
-                // Append text before the placeholder
-                sb.append(resolved, i, start)
+                    // Append text before the placeholder
+                    sb.append(resolved, i, start)
 
-                // Extract the number part
-                val idPart = resolved.substring(start + 6, end) // after "<mack!"
-                val id = idPart.toIntOrNull()
+                    // Extract the number part
+                    val idPart = resolved.substring(start + 6, end) // after "<mack!"
+                    val id = idPart.toIntOrNull()
 
-                if (id != null) {
-                    val placeholder = placeholders.inmutable.find { it.id == id }
-                    if (placeholder != null) {
-                        val value = placeholder.resolve()
-                        val replacement = if (value is Value) {
-                            importScope.importType(value.type)
-                            value.value ?: ""
+                    if (id != null) {
+                        val placeholder = currentPlaceholdersProvider().find { it.id == id }
+                        if (placeholder != null) {
+                            val value = placeholder.resolve()
+                            val replacement = if (value is Value) {
+                                importScope.importType(value.type)
+                                value.value ?: ""
+                            } else {
+                                value.toString()
+                            }
+                            sb.append(replacement)
+                            changed = true
                         } else {
-                            value.toString()
+                            // Keep the placeholder as-is if no match found
+                            sb.append(resolved, start, end + 1)
                         }
-                        sb.append(replacement)
-                        changed = true
                     } else {
-                        // Keep the placeholder as-is if no match found
+                        // Not a valid number after <mack!
                         sb.append(resolved, start, end + 1)
                     }
-                } else {
-                    // Not a valid number after <mack!
-                    sb.append(resolved, start, end + 1)
+
+                    i = end + 1
                 }
 
-                i = end + 1
-            }
+                resolved = sb.toString()
+            } while (changed)
+        }
 
-            resolved = sb.toString()
-        } while (changed)
+        resolve { placeholders.inmutable.filter { !it.resolveLast } } // Resolve non-last placeholders first
+        resolve { placeholders.inmutable.filter { it.resolveLast } } // Then resolve last placeholders
 
         return resolved
     }

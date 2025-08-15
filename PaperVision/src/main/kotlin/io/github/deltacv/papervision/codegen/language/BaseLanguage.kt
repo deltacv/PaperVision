@@ -274,7 +274,7 @@ open class LanguageBase(
             importScope.importType(pipelineClass)
         }
 
-        mainScope.scope(importScope)
+        mainScope.write(importScopePlaceholder.placeholder)
         mainScope.newStatement()
 
         if(genInClass) {
