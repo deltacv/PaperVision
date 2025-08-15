@@ -15,7 +15,7 @@ sealed class Resolvable<T> {
             return if (value != null) {
                 Now(value)
             } else {
-                Placeholder(resolver)
+                Placeholder(resolver = resolver)
             }
         }
 
@@ -34,12 +34,17 @@ sealed class Resolvable<T> {
         override fun toString() = result.toString()
     }
 
-    open class Placeholder<T>(private val resolver: () -> T?) : Resolvable<T>(), IdElement {
+    open class Placeholder<T>(
+        val resolveLast: Boolean,
+        private val resolver: () -> T?
+    ) : Resolvable<T>(), IdElement {
         val placeholder get() = String.format(CodeGen.RESOLVER_TEMPLATE, id)
 
         val onResolve by lazy { PaperVisionEventHandler("Placeholder-$placeholder-OnResolve", catchExceptions = false) }
 
         private var cachedValue: T? = null
+
+        constructor(resolver: () -> T?) : this(resolveLast = false, resolver = resolver)
 
         override fun resolve(): T? {
             val value = cachedValue ?: resolver()
@@ -77,7 +82,7 @@ sealed class Resolvable<T> {
         override val id by IdElementContainerStack.threadStack.peekNonNull<Placeholder<*>>().nextId(this)
     }
 
-    data class DependentPlaceholder<P, T>(val dependency: Resolvable<P>, val resolver: (P) -> T?) : Placeholder<T>({
+    data class DependentPlaceholder<P, T>(val dependency: Resolvable<P>, val resolver: (P) -> T?) : Placeholder<T>(resolver = {
         val depValue = dependency.resolve()
         if (depValue != null) {
             resolver(depValue)
@@ -90,7 +95,7 @@ sealed class Resolvable<T> {
         val dependency1: Resolvable<P1>,
         val dependency2: Resolvable<P2>,
         val resolver: (P1, P2) -> T?
-    ) : Placeholder<T>({
+    ) : Placeholder<T>(resolver ={
         val depValue1 = dependency1.resolve()
         val depValue2 = dependency2.resolve()
         if (depValue1 != null && depValue2 != null) {

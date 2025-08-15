@@ -155,7 +155,7 @@ class Scope(
             }
 
             val declaration = Resolvable.DependentPlaceholder(cvtCode) {
-                if (it != Value.NONE) importValue(it)
+                importValue(it)
                 language.streamMatCallDeclaration(language.int(id), mat, it)
             }.placeholder
 

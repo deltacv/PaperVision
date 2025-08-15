@@ -137,6 +137,10 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation project(":LwjglPlatform")
 
+    implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
+    implementation "org.apache.logging.log4j:log4j-slf4j2-impl:$log4j_version"
+
     compileOnly('org.deltacv.EOCV-Sim:EOCV-Sim:4.0.1') { transitive = false }
     compileOnly('org.deltacv.EOCV-Sim:Common:4.0.1') { transitive = false }
     compileOnly('org.deltacv.EOCV-Sim:Vision:4.0.1')
@@ -145,7 +149,6 @@ dependencies {
     implementation "com.google.code.gson:gson:$gson_version"
     implementation 'org.java-websocket:Java-WebSocket:1.5.7'
     implementation 'info.picocli:picocli:4.7.6'
-    implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 
     implementation('org.deltacv.visionloop:visionloop:1.2.7') {
         exclude group: 'org.jetbrains.skiko'

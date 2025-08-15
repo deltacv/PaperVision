@@ -194,7 +194,7 @@ object CPythonLanguage : LanguageBase(
             classBodyScope.scope(classEndScope)
         }
 
-        mainScope.scope(importScope)
+        mainScope.write(importScopePlaceholder.placeholder)
         mainScope.newStatement()
 
         mainScope.scope(classBodyScope, trimIndent = true)
