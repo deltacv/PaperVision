@@ -61,7 +61,6 @@ class TextureProcessorQueue(
     private val queuedTextures = ArrayBlockingQueue<FutureTexture>(REUSABLE_BUFFER_QUEUE_SIZE)
     private val textures = mutableMapOf<Int, PlatformTexture>()
 
-    @Synchronized
     override fun draw() {
         val currentQueueSize = queuedTextures.size
 
@@ -134,6 +133,7 @@ class TextureProcessorQueue(
                         decompressor.decompress(buffer, PixelFormat.RGB)
                     } catch(e: Exception) {
                         logger.warn("Failed to decompress JPEG #$id", e)
+                        returnReusableBuffer(buffer)
                         return@use
                     }
 
