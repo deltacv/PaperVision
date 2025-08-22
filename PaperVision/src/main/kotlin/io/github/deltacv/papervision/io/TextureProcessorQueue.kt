@@ -20,16 +20,16 @@ package io.github.deltacv.papervision.io
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
-import io.github.deltacv.papervision.io.turbojpeg.TJLoader
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.PlatformTextureFactory
 import io.github.deltacv.papervision.util.loggerFor
-import org.libjpegturbo.turbojpeg.TJ
-import org.libjpegturbo.turbojpeg.TJDecompressor
+import org.deltacv.mackjpeg.MackJPEG
+import org.deltacv.mackjpeg.PixelFormat
 import java.nio.ByteBuffer
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class TextureProcessorQueue(
@@ -46,24 +46,20 @@ class TextureProcessorQueue(
         const val REUSABLE_BUFFER_QUEUE_SIZE = 15
 
         val logger by loggerFor<TextureProcessorQueue>()
-
-        init {
-            try {
-                TJLoader.load()
-            } catch (e: Exception) {
-                logger.warn("Failed to load TurboJPEG, there will be reduced performance", e)
-            }
-        }
     }
 
-    val jpegWorkers = Executors.newFixedThreadPool(5)
+    val jpegWorkers: ExecutorService = Executors.newFixedThreadPool(5) {
+        val thread = Thread(it)
+        thread.isDaemon = true
+        thread.name = "JPEGWorker-${thread.id}"
+
+        thread
+    }
 
     private val reusableBuffers = ConcurrentHashMap<Int, ArrayBlockingQueue<ByteArray>>()
 
     private val queuedTextures = ArrayBlockingQueue<FutureTexture>(REUSABLE_BUFFER_QUEUE_SIZE)
     private val textures = mutableMapOf<Int, PlatformTexture>()
-
-    val idCache = mutableMapOf<PlatformTexture, Int>()
 
     @Synchronized
     override fun draw() {
@@ -113,29 +109,36 @@ class TextureProcessorQueue(
         id: Int, width: Int, height: Int, data: ByteArray,
         memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
     ) =
-        offer(id, width, height, data, jpeg = true)
+        offer(id, width, height, data, jpeg = true, memoryBehavior = memoryBehavior)
 
     fun offerJpeg(
         id: Int, width: Int, height: Int, data: ByteBuffer,
         memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
     ) =
-        offer(id, width, height, data, jpeg = true)
+        offer(id, width, height, data, jpeg = true, memoryBehavior = memoryBehavior)
 
     fun offerJpegAsync(
         id: Int, width: Int, height: Int, data: ByteArray,
         memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
     ) {
-        if (TJLoader.isLoaded) {
+        if (MackJPEG.getSupportedBackend() != null) {
             jpegWorkers.submit {
-                val buffer = getOrCreateReusableBuffer(width * height * 3, memoryBehavior) ?: return@submit
-                val decompressor = TJDecompressor()
+                val decompressor = MackJPEG.getSupportedBackend()?.makeDecompressor() ?: return@submit
 
-                decompressor.setJPEGImage(data, data.size)
-                decompressor.decompress(buffer, width, 0, height, TJ.PF_RGB, TJ.FLAG_FASTDCT)
+                decompressor.use {
+                    decompressor.setJPEG(data, data.size)
 
-                offerBuffer(id, width, height, buffer, ColorSpace.RGB, jpeg = false)
+                    val buffer = getOrCreateReusableBuffer(decompressor.decodedWidth * decompressor.decodedHeight * 3, memoryBehavior) ?: return@submit
 
-                decompressor.close()
+                    try {
+                        decompressor.decompress(buffer, PixelFormat.RGB)
+                    } catch(e: Exception) {
+                        logger.warn("Failed to decompress JPEG #$id", e)
+                        return@use
+                    }
+
+                    offerBuffer(id, decompressor.decodedWidth, decompressor.decodedHeight, buffer, ColorSpace.RGB, jpeg = false)
+                }
             }
         } else {
             // fallback to offerJpeg
@@ -222,25 +225,6 @@ class TextureProcessorQueue(
         }
     }
 
-    fun getQIdOf(texture: PlatformTexture) = idCache[texture]?.also { return it }
-        ?: textures.entries.firstOrNull { it.value == texture }?.key?.also { idCache[texture] = it }
-
-    /**
-     * Assigns an ID to a texture. This is used to keep track of textures that are not initially part of this queue.
-     * @param texture The texture to assign the ID to
-     * @param id The ID to assign to the texture. Must be negative to avoid conflicts with existing textures.
-     */
-    fun assignQIdTo(texture: PlatformTexture): Int {
-        if (getQIdOf(texture) != null) throw IllegalArgumentException("Texture already has a qID assigned")
-
-        textures[-texture.id] = texture
-        idCache[texture] = -texture.id - 1
-
-        logger.info("Assigned qID ${-texture.id - 1} to texture $texture")
-
-        return -texture.id - 1
-    }
-
     operator fun get(id: Int) = textures[id]
 
     fun clear() {
@@ -256,7 +240,7 @@ class TextureProcessorQueue(
     override val idElementContainer: IdElementContainer<TextureProcessorQueue>
         get() = IdElementContainerStack.threadStack.peekNonNull()
 
-    data class FutureTexture(
+    class FutureTexture(
         val id: Int,
         val width: Int,
         val height: Int,

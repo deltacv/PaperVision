@@ -141,30 +141,28 @@ dependencies {
     implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
     implementation "org.apache.logging.log4j:log4j-slf4j2-impl:$log4j_version"
 
-    compileOnly('org.deltacv.EOCV-Sim:EOCV-Sim:4.0.1') { transitive = false }
-    compileOnly('org.deltacv.EOCV-Sim:Common:4.0.1') { transitive = false }
-    compileOnly('org.deltacv.EOCV-Sim:Vision:4.0.1')
+    compileOnly('org.deltacv.EOCV-Sim:EOCV-Sim:4.0.2') { transitive = false }
+    compileOnly('org.deltacv.EOCV-Sim:Common:4.0.2') { transitive = false }
+    compileOnly('org.deltacv.EOCV-Sim:Vision:4.0.2')
 
     implementation 'org.codehaus.janino:janino:3.1.12'
     implementation "com.google.code.gson:gson:$gson_version"
     implementation 'org.java-websocket:Java-WebSocket:1.5.7'
     implementation 'info.picocli:picocli:4.7.6'
 
-    implementation('org.deltacv.visionloop:visionloop:1.2.7') {
+    implementation('org.deltacv.visionloop:visionloop:1.2.8') {
         exclude group: 'org.jetbrains.skiko'
-        exclude group: 'org.deltacv'
         exclude group: 'org.deltacv.EOCVSim'
         exclude group: 'org.deltacv.steve'
         exclude group: 'org.openpnp'
     }
-    implementation('org.deltacv.visionloop:streaming:1.2.7') {
+    implementation('org.deltacv.visionloop:streaming:1.2.9') {
         exclude group: 'org.jetbrains.skiko'
-        exclude group: 'org.deltacv'
         exclude group: 'org.deltacv.EOCVSim'
         exclude group: 'org.deltacv.steve'
         exclude group: 'org.openpnp'
     }
 
-    implementation("io.javalin:javalin:6.3.0")
+    implementation("io.javalin:javalin:6.7.0")
     implementation 'commons-io:commons-io:2.17.0'
 }

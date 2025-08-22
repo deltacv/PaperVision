@@ -89,6 +89,7 @@ class InputSourceWindow(
                     InputSourceType.IMAGE -> FontAwesomeIcons.Image
                     InputSourceType.CAMERA -> FontAwesomeIcons.Camera
                     InputSourceType.VIDEO -> FontAwesomeIcons.Film
+                    InputSourceType.HTTP -> FontAwesomeIcons.Globe
                 }
 
                 ImGui.text(type)
@@ -155,6 +156,14 @@ class CreateInputSourceWindow(
 
         if(ImGui.button(FontAwesomeIcons.Film)){
             client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.VIDEO))
+            delete()
+        }
+
+        ImGui.sameLine()
+        ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+
+        if(ImGui.button(FontAwesomeIcons.Globe)){
+            client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.HTTP))
             delete()
         }
 

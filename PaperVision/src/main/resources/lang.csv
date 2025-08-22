@@ -141,7 +141,7 @@ des_lineparameters,Specify the visual properties for<br>a node that will draw li
 des_drawrects_onimage,Draws the rectangles in the passed image.,Dibuja los rectangulos en la imagen de entrada
 des_drawcontours,Draws the contours on a copy of the<br>given image and outputs the result.,Dibuja los contornos en una copia de la<br>imagen dada y devuelve el resultado.
 des_drawcontours_onimage,Draws the contours on the input image,Dibuja los contornos en la imagen de entrada.
-des_cannyedge,Filters edges in the input image using the Canny algorithm.,Filters bordes en la imagen de entrada usando el algoritmo Canny.
+des_cannyedge,Filters edges in the input image using the Canny algorithm.,Filtra bordes en la imagen de entrada usando el algoritmo Canny.
 des_vector2,Composes a Vector in two dimensions,Compone un Vector en dos dimensiones
 err_bitwiseor_binary,"Both inputs must be of the same type, binary or not","Ambas entradas deben ser del mismo tipo, binario o no"
 err_grayscale_required,"Grayscale image required","Se requiere una imagen en escala de grises"

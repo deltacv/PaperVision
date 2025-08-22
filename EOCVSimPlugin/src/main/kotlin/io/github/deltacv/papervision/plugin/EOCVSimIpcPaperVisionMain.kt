@@ -142,11 +142,11 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
                         serializeToTree(
                             app.paperVision.nodes.inmutable, app.paperVision.links.inmutable
                         )
-                    ).onResponse(OnResponseCallback { response: PaperVisionEngineMessageResponse? ->
+                    ).onResponse { response: PaperVisionEngineMessageResponse? ->
                         if (response is OkResponse) {
                             exitProcess(0)
                         }
-                    })
+                    }
                 )
 
                 CloseConfirmWindow.Action.NO -> app.paperVision.engineClient.sendMessage(

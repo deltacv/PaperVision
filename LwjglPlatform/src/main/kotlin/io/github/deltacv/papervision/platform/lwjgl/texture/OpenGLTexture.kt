@@ -1,3 +1,21 @@
+/*
+ * PaperVision
+ * Copyright (C) 2025 Sebastian Erives, deltacv
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.github.deltacv.papervision.platform.lwjgl.texture
 
 import io.github.deltacv.papervision.platform.ColorSpace
@@ -59,10 +77,7 @@ data class OpenGLTexture(
             val w = it.mallocInt(1)
             val h = it.mallocInt(1)
             val img = stbi_load_from_memory(bytes, w, h, comp, 3)
-
-            if (img == null) {
-                throw RuntimeException("Failed to load image due to ${stbi_failure_reason()}")
-            }
+                ?: throw RuntimeException("Failed to load image due to ${stbi_failure_reason()}")
 
             try {
                 callback(img)

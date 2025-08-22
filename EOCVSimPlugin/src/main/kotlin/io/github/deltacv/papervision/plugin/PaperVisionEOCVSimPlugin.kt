@@ -330,9 +330,11 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             eocvSim.onMainUpdate.doOnce {
                 DialogFactory.createSourceDialog(
                     eocvSim, when (message.sourceType) {
+                        InputSourceType.IMAGE -> SourceType.IMAGE
                         InputSourceType.CAMERA -> SourceType.CAMERA
                         InputSourceType.VIDEO -> SourceType.VIDEO
-                        else -> SourceType.IMAGE
+                        InputSourceType.HTTP -> SourceType.HTTP
+                        else -> return@doOnce
                     }
                 )
                 respond(OkResponse())
