@@ -150,7 +150,7 @@ dependencies {
     implementation 'org.java-websocket:Java-WebSocket:1.5.7'
     implementation 'info.picocli:picocli:4.7.6'
 
-    implementation('org.deltacv.visionloop:visionloop:1.2.8') {
+    implementation('org.deltacv.visionloop:visionloop:1.2.9') {
         exclude group: 'org.jetbrains.skiko'
         exclude group: 'org.deltacv.EOCVSim'
         exclude group: 'org.deltacv.steve'
