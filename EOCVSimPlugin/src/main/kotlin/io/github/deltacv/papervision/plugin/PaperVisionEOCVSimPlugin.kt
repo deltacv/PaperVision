@@ -343,6 +343,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             when (eocvSim.inputSourceManager.getSourceType(it.key)) {
                 SourceType.CAMERA -> InputSourceType.CAMERA
                 SourceType.VIDEO -> InputSourceType.VIDEO
+                SourceType.HTTP -> InputSourceType.HTTP
                 else -> InputSourceType.IMAGE
             },
             it.value.creationTime
