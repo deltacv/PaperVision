@@ -21,7 +21,7 @@ package io.github.deltacv.papervision.plugin.ipc.eocvsim
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
-import com.github.serivesmejia.eocvsim.util.loggerForThis
+import io.github.deltacv.papervision.util.loggerForThis
 import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipeline
 import io.github.deltacv.eocvsim.stream.ImageStreamer
 import io.github.deltacv.eocvsim.virtualreflect.VirtualReflectContext

@@ -23,6 +23,8 @@ import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.PlatformTextureFactory
+import io.github.deltacv.papervision.util.ReusableBufferPool
+import io.github.deltacv.papervision.util.ReusableBufferPool.MemoryBehavior
 import io.github.deltacv.papervision.util.loggerFor
 import org.deltacv.mackjpeg.MackJPEG
 import org.deltacv.mackjpeg.PixelFormat
@@ -35,12 +37,6 @@ import java.util.concurrent.Executors
 class TextureProcessorQueue(
     val textureFactory: PlatformTextureFactory
 ) : DrawableIdElementBase<TextureProcessorQueue>() {
-
-    enum class MemoryBehavior {
-        ALLOCATE_WHEN_EXHAUSTED,
-        DISCARD_WHEN_EXHAUSTED,
-        EXCEPTION_WHEN_EXHAUSTED
-    }
 
     companion object {
         const val REUSABLE_BUFFER_QUEUE_SIZE = 15
@@ -56,7 +52,7 @@ class TextureProcessorQueue(
         thread
     }
 
-    private val reusableBuffers = ConcurrentHashMap<Int, ArrayBlockingQueue<ByteArray>>()
+    private val bufferPool = ReusableBufferPool(REUSABLE_BUFFER_QUEUE_SIZE)
 
     private val queuedTextures = ArrayBlockingQueue<FutureTexture>(REUSABLE_BUFFER_QUEUE_SIZE)
     private val textures = mutableMapOf<Int, PlatformTexture>()
@@ -117,7 +113,7 @@ class TextureProcessorQueue(
         offer(id, width, height, data, jpeg = true, memoryBehavior = memoryBehavior)
 
     fun offerJpegAsync(
-        id: Int, width: Int, height: Int, data: ByteArray,
+        id: Int, width: Int, height: Int, data: ByteArray, dataOffset: Int = 0,
         memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
     ) {
         if (MackJPEG.getSupportedBackend() != null) {
@@ -125,19 +121,38 @@ class TextureProcessorQueue(
                 val decompressor = MackJPEG.getSupportedBackend()?.makeDecompressor() ?: return@submit
 
                 decompressor.use {
-                    decompressor.setJPEG(data, data.size)
+                    val offsetData = if(dataOffset != 0) {
+                        // round in 5k intervals
+                        val roundedLength = ((data.size - dataOffset) / 4096 + 1) * 4096
 
-                    val buffer = getOrCreateReusableBuffer(decompressor.decodedWidth * decompressor.decodedHeight * 3, memoryBehavior) ?: return@submit
+                        val offsetArray = getOrCreateReusableBuffer(roundedLength, memoryBehavior) ?: return@submit
+                        System.arraycopy(data, dataOffset, offsetArray, 0, data.size - dataOffset)
+
+                        offsetArray
+                    } else data
 
                     try {
-                        decompressor.decompress(buffer, PixelFormat.RGB)
-                    } catch(e: Exception) {
-                        logger.warn("Failed to decompress JPEG #$id", e)
-                        returnReusableBuffer(buffer)
-                        return@use
-                    }
+                        decompressor.setJPEG(offsetData, offsetData.size)
 
-                    offerBuffer(id, decompressor.decodedWidth, decompressor.decodedHeight, buffer, ColorSpace.RGB, jpeg = false)
+                        val buffer = getOrCreateReusableBuffer(
+                            decompressor.decodedWidth * decompressor.decodedHeight * 3,
+                            memoryBehavior
+                        ) ?: return@submit
+
+                        try {
+                            decompressor.decompress(buffer, PixelFormat.RGB)
+                        } catch (e: Exception) {
+                            logger.warn("Failed to decompress JPEG #$id", e)
+                            returnReusableBuffer(buffer)
+                            return@use
+                        }
+
+                        offerBuffer(id, decompressor.decodedWidth, decompressor.decodedHeight, buffer, ColorSpace.RGB, jpeg = false)
+                    } finally {
+                        if(dataOffset != 0) {
+                            returnReusableBuffer(offsetData)
+                        }
+                    }
                 }
             }
         } else {
@@ -196,34 +211,11 @@ class TextureProcessorQueue(
     }
 
     private fun returnReusableBuffer(buffer: ByteArray) {
-        synchronized(reusableBuffers) {
-            reusableBuffers[buffer.size]?.offer(buffer)
-                ?: logger.warn("Buffer pool for size ${buffer.size} is null")
-        }
+        bufferPool.returnBuffer(buffer)
     }
 
-    private fun getOrCreateReusableBuffer(size: Int, memoryBehavior: MemoryBehavior): ByteArray? {
-        synchronized(reusableBuffers) {
-            if (reusableBuffers[size] == null) {
-                val queue = ArrayBlockingQueue<ByteArray>(REUSABLE_BUFFER_QUEUE_SIZE)
-
-                repeat(REUSABLE_BUFFER_QUEUE_SIZE) {
-                    queue.offer(ByteArray(size))
-                }
-
-                reusableBuffers[size] = queue
-            }
-
-            val queue = reusableBuffers[size]!!
-            return queue.poll() ?: run {
-                when (memoryBehavior) {
-                    MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED -> ByteArray(size)
-                    MemoryBehavior.DISCARD_WHEN_EXHAUSTED -> null
-                    MemoryBehavior.EXCEPTION_WHEN_EXHAUSTED -> throw IllegalStateException("Buffer pool for size $size is empty")
-                }
-            }
-        }
-    }
+    private fun getOrCreateReusableBuffer(size: Int, memoryBehavior: MemoryBehavior) =
+        bufferPool.getOrCreate(size, memoryBehavior)
 
     operator fun get(id: Int) = textures[id]
 
@@ -231,10 +223,7 @@ class TextureProcessorQueue(
         queuedTextures.clear()
         textures.values.forEach { it.delete() }
         textures.clear()
-
-        synchronized(reusableBuffers) {
-            reusableBuffers.values.forEach { it.clear() }
-        }
+        bufferPool.clear()
     }
 
     override val idElementContainer: IdElementContainer<TextureProcessorQueue>

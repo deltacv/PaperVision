@@ -95,7 +95,7 @@ sealed class Resolvable<T> {
         val dependency1: Resolvable<P1>,
         val dependency2: Resolvable<P2>,
         val resolver: (P1, P2) -> T?
-    ) : Placeholder<T>(resolver ={
+    ) : Placeholder<T>(resolver = {
         val depValue1 = dependency1.resolve()
         val depValue2 = dependency2.resolve()
         if (depValue1 != null && depValue2 != null) {

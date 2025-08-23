@@ -18,7 +18,7 @@
 
 package io.github.deltacv.papervision.plugin.ipc
 
-import com.github.serivesmejia.eocvsim.util.loggerForThis
+import io.github.deltacv.papervision.util.loggerForThis
 import io.github.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.client.response.StringResponse
@@ -45,7 +45,6 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
     private val clients = mutableListOf<PaperVisionEngineClient>()
 
     override val onClientProcess = PaperVisionEventHandler("LocalPaperVisionEngineBridge-OnClientProcess")
-    override val processedBinaryMessagesHashes = ArrayBlockingQueue<Int>(100)
 
     private var wsClient = WsClient(port, this)
 
@@ -64,11 +63,6 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
             if(!clients.contains(client)) {
                 it.removeThis()
                 return@onProcess
-            }
-
-            while(client.processedBinaryMessagesHashes.remainingCapacity() != 0) {
-                val poolValue = client.processedBinaryMessagesHashes.poll() ?: break
-                processedBinaryMessagesHashes.add(poolValue)
             }
 
             onClientProcess.run()

@@ -65,7 +65,6 @@ class PaperVisionProjectManager(
     val fileSystem: SandboxFileSystem,
     val engine: EOCVSimIpcEngine,
     val eocvSim: EOCVSim,
-    val streamerServerPortProvider: () -> Int
 ) {
 
     companion object {
@@ -361,7 +360,7 @@ class PaperVisionProjectManager(
             }
         }
 
-        PaperVisionProcessRunner.execPaperVision(classpath, streamerServerPortProvider())
+        PaperVisionProcessRunner.execPaperVision(classpath)
 
         currentProject = project
     }

@@ -115,6 +115,7 @@ shadowJar {
     exclude "android/"
     exclude "androidx/"
     exclude "dalvik/"
+    exclude "libcore/"
 }
 
 configurations.configureEach {
@@ -153,18 +154,7 @@ dependencies {
     implementation 'org.java-websocket:Java-WebSocket:1.5.7'
     implementation 'info.picocli:picocli:4.7.6'
 
-    implementation('org.deltacv.visionloop:visionloop:1.2.9') {
-        exclude group: 'org.jetbrains.skiko'
-        exclude group: 'org.deltacv.EOCVSim'
-        exclude group: 'org.deltacv.steve'
-        exclude group: 'org.openpnp'
-    }
-    implementation('org.deltacv.visionloop:streaming:1.2.9') {
-        exclude group: 'org.jetbrains.skiko'
-        exclude group: 'org.deltacv.EOCVSim'
-        exclude group: 'org.deltacv.steve'
-        exclude group: 'org.openpnp'
-    }
+    implementation "org.deltacv:mackjpeg:$mackjpeg_version"
 
     implementation("io.javalin:javalin:6.7.0")
     implementation 'commons-io:commons-io:2.17.0'

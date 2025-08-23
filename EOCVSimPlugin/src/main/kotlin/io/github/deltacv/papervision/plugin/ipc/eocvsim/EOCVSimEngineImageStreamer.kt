@@ -18,71 +18,140 @@
 
 package io.github.deltacv.papervision.plugin.ipc.eocvsim
 
-import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.stream.ImageStreamer
-import io.github.deltacv.visionloop.sink.MjpegHttpStreamSink
-import io.javalin.http.Handler
-import org.opencv.core.*
+import io.github.deltacv.papervision.engine.PaperVisionEngine
+import io.github.deltacv.papervision.engine.message.ByteMessageTag
+import io.github.deltacv.papervision.util.ReusableBufferPool
+import io.github.deltacv.papervision.util.loggerFor
+import org.deltacv.mackjpeg.MackJPEG
+import org.deltacv.mackjpeg.PixelFormat
+import org.deltacv.mackjpeg.exception.JPEGException
+import org.opencv.core.CvType
+import org.opencv.core.Mat
+import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
+import org.openftc.easyopencv.MatRecycler
+import java.nio.ByteBuffer
+import java.util.concurrent.Executors
 
 class EOCVSimEngineImageStreamer(
+    val previzNameProvider: () -> String,
     val resolution: Size,
+    val ipcEngine: PaperVisionEngine,
     var streamQualityFormula: (Int) -> Int = { 50 }
 ) : ImageStreamer {
 
-    private val handlers = mutableMapOf<Int, Handler>()
-    val receivers = mutableMapOf<Int, MjpegHttpStreamSink>()
+    companion object {
+        val logger by loggerFor<EOCVSimEngineImageStreamer>()
 
-    val logger by loggerForThis()
+        init {
+            if (MackJPEG.getSupportedBackend() == null) {
+                logger.error("No JPEG backend is available for MackJPEG! EOCVSim image streaming will not work!")
+            } else {
+                logger.info("Using JPEG backend: ${MackJPEG.getSupportedBackend()!!.name}")
+            }
+        }
+    }
 
-    private val tempMat = Mat()
+    private val bufferPool = ReusableBufferPool(5)
+    private val matRecycler = MatRecycler(10)
+
+    val tag by lazy { ByteMessageTag.fromString(previzNameProvider()) }
+
+    private val jpegWorkers = Executors.newFixedThreadPool(5) { r ->
+        val t = Thread(r)
+        t.isDaemon = true
+        t.name = "EOCVSim-JPEG-Worker-${t.id}"
+
+        t
+    }
 
     override fun sendFrame(
         id: Int,
         image: Mat,
         cvtCode: Int?
     ) {
-        if(image.empty()) {
-            return // silly user
+        if (image.empty()) {
+            return
+        }
+        if (jpegWorkers.isShutdown) {
+            return
         }
 
-        if (!receivers.containsKey(id)) {
-            val receiver = MjpegHttpStreamSink(0, resolution, streamQualityFormula(receivers.size).coerceAtLeast(0).coerceAtMost(100))
-            handlers[id] = receiver.takeHandler() // save handler for later
-
-            logger.info("Creating new Mjpeg stream for id $id with quality ${receiver.quality}")
-
-            receiver.init(emptyArray())
-            receivers[id] = receiver
-        }
-
-        val receiver = receivers[id]!!
-
-        receiver.quality = streamQualityFormula(receivers.size).coerceAtLeast(0).coerceAtMost(100)
+        val targetImage = matRecycler.takeMatOrNull() ?: return
 
         if (cvtCode != null) {
             // convert image to the desired color space
-            Imgproc.cvtColor(image, tempMat, cvtCode)
-            receiver.take(tempMat)
+            Imgproc.cvtColor(image, targetImage, cvtCode)
         } else {
-            receiver.take(image)
+            image.copyTo(targetImage)
+        }
+
+        jpegWorkers.submit {
+            try {
+                (MackJPEG.getSupportedBackend()?.makeCompressor() ?: return@submit).use { compressor ->
+                    // resize
+                    if (targetImage.size() != resolution) {
+                        // hopefully this is not too slow
+                        Imgproc.resize(targetImage, targetImage, resolution)
+                    }
+
+                    if (targetImage.type() != CvType.CV_8UC3) {
+                        // convert to 8UC3 to keep turbojpeg happy
+                        targetImage.convertTo(targetImage, CvType.CV_8UC3)
+                    }
+
+                    val imageBuffer = bufferPool.getOrCreate(
+                        targetImage.rows() * targetImage.cols() * 3, // width * height * 3 (RGB)
+                        ReusableBufferPool.MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
+                    ) ?: return@submit
+
+                    // memcpy the mat data to the imageBuffer array
+                    targetImage.get(0, 0, imageBuffer)
+
+                    val width = targetImage.cols()
+                    val height = targetImage.rows()
+
+                    compressor.setImage(imageBuffer, width, height, PixelFormat.RGB)
+                    compressor.setQuality(streamQualityFormula(id).coerceIn(1, 100))
+
+                    val jpegBuffer = bufferPool.getOrCreate(
+                        50_000, // 50 KB should be enough for all cases, use common size to recycle buffers better
+                        ReusableBufferPool.MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
+                    ) ?: return@submit
+
+                    try {
+                        try {
+                            compressor.compress(jpegBuffer)
+                        } catch (e: JPEGException) {
+                            logger.error("Failed to compress image for EOCVSim stream", e)
+                            return@submit
+                        }
+
+                        // offset jpeg data to leave space for the header
+                        System.arraycopy(jpegBuffer, 0, jpegBuffer, 4 + tag.tag.size + 4, compressor.compressedSize)
+
+                        // append header to jpegBuffer, uses a ByteBuffer for convenience
+                        val byteMessageBuffer = ByteBuffer.wrap(jpegBuffer)
+
+                        byteMessageBuffer.putInt(tag.tag.size) // tag size
+                        byteMessageBuffer.put(tag.tag) // tag
+                        byteMessageBuffer.putInt(id) // id
+                        // data is already in place thanks to the System.arraycopy above
+
+                        ipcEngine.sendBytes(jpegBuffer)
+                    } finally {
+                        bufferPool.returnBuffer(jpegBuffer)
+                    }
+                }
+            } finally {
+                matRecycler.returnMat(targetImage)
+            }
         }
     }
 
-    /**
-     * Get the handler for a specific id
-     * Used to attach the handler to a Javalin instance
-     * @param id the id of the stream
-     */
-    fun handlerFor(id: Int) = handlers[id]
-
-    fun handlers() = handlers.toMap()
-
     fun stop() {
         logger.info("Stopping EOCVSimEngineImageStreamer")
-
-        for ((_, receiver) in receivers) {
-            receiver.close()
-        }
+        jpegWorkers.shutdown()
     }
 }

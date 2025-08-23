@@ -18,7 +18,7 @@
 
 package io.github.deltacv.papervision.plugin.ipc
 
-import com.github.serivesmejia.eocvsim.util.loggerForThis
+import io.github.deltacv.papervision.util.loggerForThis
 import io.github.deltacv.papervision.engine.MessageHandlerPaperVisionEngine
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse

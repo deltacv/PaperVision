@@ -28,7 +28,6 @@ interface PaperVisionEngineBridge {
     val isConnected: Boolean
 
     val onClientProcess: PaperVisionEventHandler
-    val processedBinaryMessagesHashes: ArrayBlockingQueue<Int>
 
     fun connectClient(client: PaperVisionEngineClient)
     fun terminate(client: PaperVisionEngineClient)
