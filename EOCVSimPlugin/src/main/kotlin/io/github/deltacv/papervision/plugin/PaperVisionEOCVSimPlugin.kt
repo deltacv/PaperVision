@@ -59,8 +59,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     val engine = PaperVisionProcessRunner.paperVisionEngine
 
-    var streamerServerPort = 0
-        private set
+    var isRunningPreviewPipeline = false
 
     var currentPrevizSession: EOCVSimPrevizSession? = null
 
@@ -79,7 +78,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     }
 
     val paperVisionProjectManager = PaperVisionProjectManager(
-        fullClasspath, fileSystem, engine, eocvSim
+        fullClasspath, fileSystem, engine, this, eocvSim
     )
 
     override fun onLoad() {
@@ -88,10 +87,18 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         eocvSim.visualizer.onPluginGuiAttachment.doOnce {
             val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
 
-            switchablePanel.addTab("PaperVision", PaperVisionTabPanel(paperVisionProjectManager, eocvSim, switchablePanel))
+            switchablePanel.addTab(
+                "PaperVision",
+                PaperVisionTabPanel(paperVisionProjectManager, eocvSim, switchablePanel)
+            )
 
             switchablePanel.addChangeListener {
+                isRunningPreviewPipeline = false
                 changeToPaperVisionPipelineIfNecessary()
+
+                eocvSim.onMainUpdate.doOnce {
+                    paperVisionProjectManager.clearPreviewPipelines()
+                }
             }
 
             val fileNewMenu = eocvSim.visualizer.menuBar.mFileMenu.getMenuComponent(0) as JMenu
@@ -155,7 +162,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     override fun onEnable() {
         fun tunableFieldOf(field: VirtualField): TunableField<*> {
-            if(tunableFieldCache.containsKey(field)) {
+            if (tunableFieldCache.containsKey(field)) {
                 return tunableFieldCache[field]!!
             }
 
@@ -193,7 +200,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             eocvSim.onMainUpdate.doOnce {
                 val field = currentPrevizSession?.latestVirtualReflect?.getLabeledField(message.label)
 
-                if(field != null) {
+                if (field != null) {
                     val tunableField = tunableFieldOf(field)
 
                     for (i in message.values.indices) {
@@ -354,11 +361,15 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     override fun onDisable() {
     }
 
-    private fun changeToPaperVisionPipelineIfNecessary() {
+    internal fun changeToPaperVisionPipelineIfNecessary() {
         val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
+
+        if(isRunningPreviewPipeline) return
 
         if (switchablePanel.selectedIndex == switchablePanel.indexOfTab("PaperVision")) {
             if (currentPrevizSession?.previzRunning != true || !PaperVisionProcessRunner.isRunning) {
+                isRunningPreviewPipeline = false
+
                 eocvSim.pipelineManager.requestAddPipelineClass(
                     PaperVisionDefaultPipeline::class.java,
                     PipelineSource.CLASSPATH

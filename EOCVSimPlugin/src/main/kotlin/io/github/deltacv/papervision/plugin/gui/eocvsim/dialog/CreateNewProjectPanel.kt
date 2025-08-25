@@ -93,13 +93,18 @@ class CreateNewProjectPanel(
             addActionListener {
                 val newGroup = JOptionPane.showInputDialog(this@CreateNewProjectPanel, "Enter new group name:") ?: return@addActionListener
 
-                if(newGroup.startsWith(".")) {
+                if(newGroup.trim().isBlank()) {
+                    JOptionPane.showMessageDialog(this@CreateNewProjectPanel, "Group name cannot be empty !")
+                    return@addActionListener
+                }
+
+                if(newGroup.trim().startsWith(".")) {
                     JOptionPane.showMessageDialog(this@CreateNewProjectPanel, "Group name cannot start with a dot !")
                     return@addActionListener
                 }
 
                 (groupComboBox.model as DefaultComboBoxModel<String>).addElement(newGroup)
-                groupComboBox.selectedItem = newGroup
+                groupComboBox.selectedItem = newGroup.trim()
             }
         }, GridBagConstraints().apply {
             gridx = 2

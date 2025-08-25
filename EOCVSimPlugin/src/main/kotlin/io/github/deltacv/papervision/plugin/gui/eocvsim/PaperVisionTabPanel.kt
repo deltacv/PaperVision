@@ -22,21 +22,16 @@ import com.formdev.flatlaf.demo.HintManager
 import com.github.serivesmejia.eocvsim.EOCVSim
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectTree
-import java.awt.Graphics
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.event.FocusAdapter
-import java.awt.event.FocusEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTabbedPane
 import javax.swing.JTree
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
-import javax.swing.event.ChangeListener
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 
@@ -56,14 +51,19 @@ class PaperVisionTabPanel(
         projectList.apply {
             addMouseListener(object : MouseAdapter() {
                 override fun mousePressed(e: MouseEvent) {
+                    val node = projectList.lastSelectedPathComponent ?: return
+                    if (node !is DefaultMutableTreeNode) return
+
+                    val nodeObject = node.userObject
+
                     if (e.clickCount >= 2) {
-                        val node = projectList.lastSelectedPathComponent ?: return
-                        if (node !is DefaultMutableTreeNode) return
-
-                        val nodeObject = node.userObject
-                        if (nodeObject !is PaperVisionProjectTree.ProjectTreeNode.Project) return
-
-                        projectManager.requestOpenProject(nodeObject)
+                        if (nodeObject is PaperVisionProjectTree.ProjectTreeNode.Project) {
+                            projectManager.requestOpenProject(nodeObject)
+                        }
+                    } else if(e.clickCount == 1) {
+                        if (nodeObject is PaperVisionProjectTree.ProjectTreeNode.Project) {
+                            projectManager.requestPreviewLatestPipeline(nodeObject)
+                        }
                     }
                 }
             })

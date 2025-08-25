@@ -18,6 +18,7 @@
 
 package io.github.deltacv.papervision.plugin.eocvsim
 
+import android.graphics.*
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import org.firstinspires.ftc.robotcore.external.Telemetry
@@ -35,6 +36,9 @@ class PaperVisionDefaultPipeline(
 ) : OpenCvPipeline() {
 
     val logger by loggerForThis()
+
+
+    private lateinit var textPaint: Paint
 
     lateinit var drawMat: Mat
 
@@ -66,6 +70,12 @@ class PaperVisionDefaultPipeline(
         } catch(e: Exception) {
             logger.warn("Failed to load logo", e)
         }
+
+        textPaint = Paint()
+        textPaint.color = Color.WHITE
+        textPaint.typeface = Typeface.DEFAULT_ITALIC
+        textPaint.textSize = 30f
+        textPaint.isAntiAlias = true
     }
 
     override fun processFrame(input: Mat): Mat {
@@ -73,6 +83,17 @@ class PaperVisionDefaultPipeline(
         telemetry.update()
 
         return drawMat
+    }
+
+    override fun onDrawFrame(
+        canvas: Canvas,
+        onscreenWidth: Int,
+        onscreenHeight: Int,
+        scaleBmpPxToCanvasPx: Float,
+        scaleCanvasDensity: Float,
+        userContext: Any?
+    ) {
+        canvas.drawText("Select a project to visualize", 5f, 33f, textPaint)
     }
 
 }
