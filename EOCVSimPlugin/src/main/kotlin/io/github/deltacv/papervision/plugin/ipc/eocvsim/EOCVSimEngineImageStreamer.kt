@@ -119,13 +119,13 @@ class EOCVSimEngineImageStreamer(
                         return@submit
                     }
 
-                    // resize
-                    scaleToFit(targetImage, targetImage)
-
                     if (targetImage.type() != CvType.CV_8UC3) {
                         // convert to 8UC3 to keep turbojpeg happy
                         targetImage.convertTo(targetImage, CvType.CV_8UC3)
                     }
+
+                    // resize
+                    scaleToFit(targetImage, targetImage)
 
                     val imageBuffer = bufferPool.getOrCreate(
                         targetImage.rows() * targetImage.cols() * 3, // width * height * 3 (RGB)
@@ -150,6 +150,7 @@ class EOCVSimEngineImageStreamer(
                         try {
                             compressor.compress(jpegBuffer)
                         } catch (e: JPEGException) {
+                            // fallback
                             val bytes = MatOfByte()
 
                             Imgcodecs.imencode(".jpg", targetImage, bytes)
@@ -269,17 +270,20 @@ class EOCVSimEngineImageStreamer(
                 val yOffset = (resolution.height - newSize.height) / 2
 
                 val resizedImg = matRecycler.takeMatOrNull()
-                resizedImg.create(newSize, src.type())
 
                 try {
-                    Imgproc.resize(src, dst, newSize, 0.0, 0.0, Imgproc.INTER_AREA)
+                    resizedImg.create(newSize, src.type())
+                    Imgproc.resize(src, resizedImg, newSize, 0.0, 0.0, Imgproc.INTER_AREA)
+
+                    dst.create(resolution, src.type())
+                    dst.setTo(Scalar(0.0, 0.0, 0.0, 255.0))
 
                     //get submat of the exact required size and offset position from the "videoMat",
                     //which has the user-defined size of the current video.
                     val rectX = xOffset.roundToInt().coerceAtLeast(0)
                     val rectY = yOffset.roundToInt().coerceAtLeast(0)
-                    val rectWidth = newSize.width.roundToInt().coerceAtMost(dst.cols() - rectX)
-                    val rectHeight = newSize.height.roundToInt().coerceAtMost(dst.rows() - rectY)
+                    val rectWidth = newSize.width.roundToInt()
+                    val rectHeight = newSize.height.roundToInt()
 
                     val submat = dst.submat(Rect(rectX, rectY, rectWidth, rectHeight))
 

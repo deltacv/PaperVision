@@ -21,9 +21,12 @@ package io.github.deltacv.papervision.plugin.ipc
 import io.github.deltacv.papervision.util.loggerForThis
 import io.github.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
+import io.github.deltacv.papervision.engine.client.message.TunerChangeValueMessage
+import io.github.deltacv.papervision.engine.client.message.TunerChangeValuesMessage
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
+import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
 import io.github.deltacv.papervision.plugin.ipc.serialization.ipcGson
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.vision.external.util.Timestamped
@@ -38,6 +41,12 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
 
     companion object {
         var logHighFrequencyMessages = true
+
+        val blacklistedSentTooOften = listOf(
+            EditorChangeMessage::class,
+            TunerChangeValueMessage::class,
+            TunerChangeValuesMessage::class
+        )
     }
 
     private val highFrequencyMessages = mutableMapOf<String, MutableList<Long>>()
@@ -86,7 +95,7 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
 
         wsClient.send(messageJson)
 
-        if(logHighFrequencyMessages) {
+        if(logHighFrequencyMessages && message::class !in blacklistedSentTooOften) {
             val messages = highFrequencyMessages.getOrPut(message::class.java.name) { mutableListOf() }
             messages.add(System.currentTimeMillis())
 
