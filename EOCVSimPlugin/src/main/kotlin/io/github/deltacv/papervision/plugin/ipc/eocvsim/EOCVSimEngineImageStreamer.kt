@@ -18,21 +18,25 @@
 
 package io.github.deltacv.papervision.plugin.ipc.eocvsim
 
+import com.qualcomm.robotcore.util.ElapsedTime
+import com.qualcomm.robotcore.util.MovingStatistics
 import io.github.deltacv.eocvsim.stream.ImageStreamer
 import io.github.deltacv.papervision.engine.PaperVisionEngine
 import io.github.deltacv.papervision.engine.message.ByteMessageTag
 import io.github.deltacv.papervision.util.ReusableBufferPool
 import io.github.deltacv.papervision.util.loggerFor
+import io.github.deltacv.vision.external.util.extension.aspectRatio
+import io.github.deltacv.vision.external.util.extension.clipTo
 import org.deltacv.mackjpeg.MackJPEG
 import org.deltacv.mackjpeg.PixelFormat
 import org.deltacv.mackjpeg.exception.JPEGException
-import org.opencv.core.CvType
-import org.opencv.core.Mat
-import org.opencv.core.Size
+import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
 import org.openftc.easyopencv.MatRecycler
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
+import kotlin.math.roundToInt
 
 class EOCVSimEngineImageStreamer(
     val previzNameProvider: () -> String,
@@ -46,12 +50,23 @@ class EOCVSimEngineImageStreamer(
 
         init {
             if (MackJPEG.getSupportedBackend() == null) {
-                logger.error("No JPEG backend is available for MackJPEG! EOCVSim image streaming will not work!")
+                logger.error("No JPEG backend is available for MackJPEG! Image streaming will not work!")
             } else {
                 logger.info("Using JPEG backend: ${MackJPEG.getSupportedBackend()!!.name}")
             }
         }
     }
+
+
+    private val latestMatMap = mutableMapOf<Int, Mat>()
+    private val maskMatMap = mutableMapOf<Int, Mat>()
+
+    private val changeRateAvgs = mutableMapOf<Int, MovingStatistics>()
+    private val changeRateTimers = mutableMapOf<Int, ElapsedTime>()
+    private val diffSlowDownTimers = mutableMapOf<Int, ElapsedTime>()
+    private val hasSent = mutableMapOf<Int, Boolean>()
+
+    private val changeCheckLock = mutableMapOf<Int, Any>()
 
     private val bufferPool = ReusableBufferPool(5)
     private val matRecycler = MatRecycler(10)
@@ -87,14 +102,24 @@ class EOCVSimEngineImageStreamer(
             image.copyTo(targetImage)
         }
 
+        try {
+            submitJpeg(id, targetImage)
+        } catch (_: RejectedExecutionException) {
+            // ignored, shutdown in progress
+        }
+    }
+
+    private fun submitJpeg(id: Int, targetImage: MatRecycler.RecyclableMat) {
         jpegWorkers.submit {
             try {
                 (MackJPEG.getSupportedBackend()?.makeCompressor() ?: return@submit).use { compressor ->
-                    // resize
-                    if (targetImage.size() != resolution) {
-                        // hopefully this is not too slow
-                        Imgproc.resize(targetImage, targetImage, resolution)
+                    if(!hasChanged(id, targetImage)) {
+                        // no significant changes, skip frame
+                        return@submit
                     }
+
+                    // resize
+                    scaleToFit(targetImage, targetImage)
 
                     if (targetImage.type() != CvType.CV_8UC3) {
                         // convert to 8UC3 to keep turbojpeg happy
@@ -116,7 +141,7 @@ class EOCVSimEngineImageStreamer(
                     compressor.setQuality(streamQualityFormula(id).coerceIn(1, 100))
 
                     val jpegBuffer = bufferPool.getOrCreate(
-                        50_000, // 50 KB should be enough for all cases, use common size to recycle buffers better
+                        width * height * 3 / 4, // rough rounded estimate of max jpeg size
                         ReusableBufferPool.MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
                     ) ?: return@submit
 
@@ -124,7 +149,7 @@ class EOCVSimEngineImageStreamer(
                         try {
                             compressor.compress(jpegBuffer)
                         } catch (e: JPEGException) {
-                            logger.error("Failed to compress image for EOCVSim stream", e)
+                            logger.error("JPEG compression failed (w:$width h:$height)", e)
                             return@submit
                         }
 
@@ -146,6 +171,121 @@ class EOCVSimEngineImageStreamer(
                 }
             } finally {
                 matRecycler.returnMat(targetImage)
+            }
+        }
+    }
+
+    private fun hasChanged(id: Int, image: Mat): Boolean {
+        val lock = changeCheckLock.getOrPut(id) { Any() }
+
+        synchronized(lock) {
+            if (!hasSent.getOrDefault(id, false)) {
+                hasSent[id] = true
+                return true // always send the first frame
+            }
+
+            val maskMat = maskMatMap.getOrPut(id) { Mat() }
+            val latestMat = latestMatMap.getOrPut(id) { Mat() }
+
+            val changeRateTimer = changeRateTimers.getOrPut(id) { ElapsedTime() }
+            val diffSlowDownTimer = diffSlowDownTimers.getOrPut(id) { ElapsedTime() }
+            val changeRateAvg = changeRateAvgs.getOrPut(id) { MovingStatistics(50) }
+
+            changeRateAvg.add(changeRateTimer.seconds())
+
+            val mean = changeRateAvg.mean
+            val isFastChange = mean <= 0.5
+
+            // Perform the diff check only if the change rate is slow enough
+            try {
+                // Skip diff check if changes are frequent
+                if (isFastChange) {
+                    return true
+                } else if (!latestMat.empty() && latestMat.size() == image.size()) {
+                    // Slow down diff check after 3 seconds of no changes
+                    if (changeRateTimer.seconds() > 3) {
+                        val slowDown = ((changeRateTimer.seconds() - 3) * 0.1).coerceAtMost(0.5)
+                        if (diffSlowDownTimer.seconds() <= slowDown) {
+                            return false
+                        } else {
+                            diffSlowDownTimer.reset()
+                        }
+                    }
+
+                    Core.absdiff(latestMat, image, maskMat)
+                    Imgproc.cvtColor(maskMat, maskMat, Imgproc.COLOR_RGB2GRAY)
+
+                    val diffPixels = Core.countNonZero(maskMat)
+
+                    // If there are significant differences or change rate indicates slower changes, send bytes
+                    if (diffPixels > 0) {
+                        changeRateTimer.reset()
+                        return true
+                    } else {
+                        return false
+                    }
+                } else {
+                    return true // Size changed, send frame
+                }
+            } catch (e: Exception) {
+                logger.error("hasChanged exception for stream id $id", e)
+                return true // In case of error, send the frame
+            } finally {
+                image.copyTo(latestMat) // Update the latest mat
+            }
+        }
+    }
+
+    private fun scaleToFit(src: Mat, dst: Mat) {
+        if (src.size() == resolution) { //nice, the mat size is the exact same as the video size
+            if(src != dst) src.copyTo(dst)
+        } else { //uh oh, this might get a bit harder here...
+            val targetR = resolution.aspectRatio()
+            val inputR = src.aspectRatio()
+
+            //ok, we have the same aspect ratio, we can just scale to the required size
+            if (targetR == inputR) {
+                Imgproc.resize(src, dst, resolution, 0.0, 0.0, Imgproc.INTER_AREA)
+            } else { //hmm, not the same aspect ratio, we'll need to do some fancy stuff here...
+                val inputW = src.size().width
+                val inputH = src.size().height
+
+                val widthRatio = resolution.width / inputW
+                val heightRatio = resolution.height / inputH
+                val bestRatio = widthRatio.coerceAtMost(heightRatio)
+
+                val newSize = Size(inputW * bestRatio, inputH * bestRatio).clipTo(resolution)
+
+                //get offsets so that we center the image instead of leaving it at (0,0)
+                //(basically the black bars you see)
+                val xOffset = (resolution.width - newSize.width) / 2
+                val yOffset = (resolution.height - newSize.height) / 2
+
+                val resizedImg = matRecycler.takeMatOrNull()
+                resizedImg.create(newSize, src.type())
+
+                try {
+                    Imgproc.resize(src, dst, newSize, 0.0, 0.0, Imgproc.INTER_AREA)
+
+                    //get submat of the exact required size and offset position from the "videoMat",
+                    //which has the user-defined size of the current video.
+                    val rectX = xOffset.roundToInt().coerceAtLeast(0)
+                    val rectY = yOffset.roundToInt().coerceAtLeast(0)
+                    val rectWidth = newSize.width.roundToInt().coerceAtMost(dst.cols() - rectX)
+                    val rectHeight = newSize.height.roundToInt().coerceAtMost(dst.rows() - rectY)
+
+                    val submat = dst.submat(Rect(rectX, rectY, rectWidth, rectHeight))
+
+                    //then we copy our adjusted mat into the gotten submat. since a submat is just
+                    //a reference to the parent mat, when we copy here our data will be actually
+                    //copied to the actual mat, and so our new mat will be of the correct size and
+                    //centered with the required offset
+                    resizedImg.copyTo(submat)
+                } catch(e: Exception) {
+                    logger.error("scaleToFit error", e)
+                } finally {
+                    resizedImg.returnMat()
+                }
             }
         }
     }

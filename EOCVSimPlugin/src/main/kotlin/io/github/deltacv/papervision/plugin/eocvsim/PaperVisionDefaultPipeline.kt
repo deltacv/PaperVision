@@ -39,7 +39,7 @@ class PaperVisionDefaultPipeline(
     lateinit var drawMat: Mat
 
     override fun init(mat: Mat) {
-        drawMat = Mat(mat.size(), mat.type())
+        drawMat = Mat(Size(2160.0, 1800.0), mat.type())
         drawMat.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
 
         try {
