@@ -28,11 +28,13 @@ import io.github.deltacv.eocvsim.virtualreflect.VirtualReflectContext
 import io.github.deltacv.eocvsim.virtualreflect.jvm.JvmVirtualReflection
 import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
 import io.github.deltacv.papervision.plugin.eocvsim.SinglePipelineCompiler
+import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import org.openftc.easyopencv.OpenCvPipeline
 
 class EOCVSimPrevizSession(
     val sessionName: String,
     val eocvSim: EOCVSim,
+    val projectManager: PaperVisionProjectManager,
     val streamer: ImageStreamer = NoOpEngineImageStreamer,
     initialSourceCode: String
 ) {
@@ -114,6 +116,8 @@ class EOCVSimPrevizSession(
 
     fun refreshPreviz(sourceCode: String) {
         if(!previzRunning) return
+
+        projectManager.saveLatestSource(sourceCode)
 
         eocvSim.pipelineManager.onUpdate.doOnce {
             logger.info("Refreshing previz session $sessionName with new source code")

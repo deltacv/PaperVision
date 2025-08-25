@@ -291,7 +291,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
                 currentPrevizSession = EOCVSimPrevizSession(
                     message.previzName,
-                    eocvSim, streamer,
+                    eocvSim, paperVisionProjectManager,
+                    streamer,
                     message.sourceCode
                 )
 

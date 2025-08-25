@@ -110,7 +110,7 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
 
             if(avgDelta < 100) {
                 // get calling class
-                val callingClass = Thread.currentThread().stackTrace[2]
+                val callingClass = Thread.currentThread().stackTrace.getOrNull(2) ?: return
                 logger.warn("Sent too often: ${message::class.java.name} - avg $avgDelta. Last sent at ${callingClass.className} line ${callingClass.lineNumber}")
             }
         }

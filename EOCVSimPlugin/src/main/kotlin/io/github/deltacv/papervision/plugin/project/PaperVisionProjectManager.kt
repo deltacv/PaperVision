@@ -20,10 +20,8 @@ package io.github.deltacv.papervision.plugin.project
 
 import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.util.SysUtil
-import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.extension.plus
 import com.github.serivesmejia.eocvsim.util.extension.removeFromEnd
-import com.github.serivesmejia.eocvsim.util.io.EOCVSimFolder
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -43,18 +41,15 @@ import io.github.deltacv.papervision.plugin.project.recovery.RecoveryDaemonProce
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.hexString
-import java.awt.Component
 import java.awt.Window
 import java.io.File
 import java.io.FileNotFoundException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.time.Instant
-import javax.swing.JComponent
 import javax.swing.JFileChooser
-import javax.swing.JFrame
 import javax.swing.JOptionPane
-import javax.swing.JPanel
 import javax.swing.SwingUtilities
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.io.path.exists
@@ -73,6 +68,8 @@ class PaperVisionProjectManager(
     }
 
     val root = fileSystem.getPath("")
+
+    val latestSourceFolder = root.resolve(".latest_source")
 
     val onMainUpdate = eocvSim.onMainUpdate
 
@@ -494,6 +491,20 @@ class PaperVisionProjectManager(
         logger.info("Recovered project ${recoveredProject.originalProjectPath} from ${recoveredProject.date}")
 
         refresh()
+    }
+
+    fun saveLatestSource(source: String, project: PaperVisionProjectTree.ProjectTreeNode.Project? = currentProject) {
+        fileSystem.createDirectories(latestSourceFolder)
+
+        val path = (if(project == null) "" else findProjectFolderPath(project)?.pathString ?: "").replace("/", "_")
+        val name = project?.name?.removeFromEnd(".paperproj") ?: "unsaved_project_${System.currentTimeMillis()}"
+
+        val sourceFile = latestSourceFolder.resolve("${path}_$name.java")
+        if(!sourceFile.exists()) {
+            fileSystem.createFile(sourceFile)
+        }
+
+        fileSystem.write(sourceFile, source.toByteArray(StandardCharsets.UTF_8), StandardOpenOption.WRITE)
     }
 
     fun closeCurrentProject() {

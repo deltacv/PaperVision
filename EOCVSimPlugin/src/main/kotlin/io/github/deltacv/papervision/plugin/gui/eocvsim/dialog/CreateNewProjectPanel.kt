@@ -92,6 +92,12 @@ class CreateNewProjectPanel(
         add(JButton("New Group").apply {
             addActionListener {
                 val newGroup = JOptionPane.showInputDialog(this@CreateNewProjectPanel, "Enter new group name:") ?: return@addActionListener
+
+                if(newGroup.startsWith(".")) {
+                    JOptionPane.showMessageDialog(this@CreateNewProjectPanel, "Group name cannot start with a dot !")
+                    return@addActionListener
+                }
+
                 (groupComboBox.model as DefaultComboBoxModel<String>).addElement(newGroup)
                 groupComboBox.selectedItem = newGroup
             }
