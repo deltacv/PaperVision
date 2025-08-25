@@ -31,6 +31,7 @@ import org.deltacv.mackjpeg.MackJPEG
 import org.deltacv.mackjpeg.PixelFormat
 import org.deltacv.mackjpeg.exception.JPEGException
 import org.opencv.core.*
+import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 import org.openftc.easyopencv.MatRecycler
 import java.nio.ByteBuffer
@@ -149,7 +150,13 @@ class EOCVSimEngineImageStreamer(
                         try {
                             compressor.compress(jpegBuffer)
                         } catch (e: JPEGException) {
-                            logger.error("JPEG compression failed (w:$width h:$height)", e)
+                            val bytes = MatOfByte()
+
+                            Imgcodecs.imencode(".jpg", targetImage, bytes)
+                            bytes.get(0, 0, jpegBuffer)
+
+                            bytes.release()
+
                             return@submit
                         }
 
