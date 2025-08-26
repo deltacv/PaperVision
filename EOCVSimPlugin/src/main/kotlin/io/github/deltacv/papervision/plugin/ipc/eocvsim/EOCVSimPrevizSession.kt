@@ -117,6 +117,8 @@ class EOCVSimPrevizSession(
     fun refreshPreviz(sourceCode: String) {
         if(!previzRunning) return
 
+        projectManager.plugin.isRunningPreviewPipeline = false
+
         projectManager.saveLatestSource(sourceCode)
 
         eocvSim.pipelineManager.onUpdate.doOnce {
