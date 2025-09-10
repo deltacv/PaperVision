@@ -360,7 +360,7 @@ open class ListAttribute(
         return Data(objects)
     }
 
-    override fun takeDeserializationData(data: AttributeSerializationData) {
+    override fun takeSerializationData(data: AttributeSerializationData) {
         if (data is Data)
             serializationData = data
     }

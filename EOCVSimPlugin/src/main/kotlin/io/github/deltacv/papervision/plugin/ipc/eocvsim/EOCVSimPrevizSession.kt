@@ -42,6 +42,8 @@ class EOCVSimPrevizSession(
     var previzRunning = false
         private set
 
+    private var allClasses = mutableSetOf<Class<*>>()
+
     private var latestClass: Class<*>? = null
     private var latestSourceCode: String? = null
 
@@ -52,39 +54,41 @@ class EOCVSimPrevizSession(
 
     val logger by loggerForThis()
 
-    init {
-        var isChangingPipeline = false
+    private var isChangingPipeline = false
 
+    init {
         eocvSim.pipelineManager.onPipelineChange {
-            if(!previzRunning) {
+            if (!previzRunning) {
                 it.removeThis()
                 return@onPipelineChange
             }
 
-            if(latestClass == null) return@onPipelineChange
+            if (latestClass == null) return@onPipelineChange
 
-            if(isChangingPipeline) {
-                isChangingPipeline = false
+            if (isChangingPipeline) {
                 return@onPipelineChange
             }
 
             val current = eocvSim.pipelineManager.currentPipeline ?: return@onPipelineChange
 
-            if(previzRunning && current::class.java != latestClass) {
+            if (previzRunning && current::class.java != latestClass) {
                 // Temporarily disable the listener
                 isChangingPipeline = true
 
-                eocvSim.pipelineManager.forceChangePipeline(eocvSim.pipelineManager.getIndexOf(latestClass!!, PipelineSource.COMPILED_ON_RUNTIME))
+                eocvSim.pipelineManager.forceChangePipeline(
+                    eocvSim.pipelineManager.getIndexOf(
+                        latestClass!!,
+                        PipelineSource.COMPILED_ON_RUNTIME
+                    )
+                )
 
                 latestPipeline = eocvSim.pipelineManager.currentPipeline
 
-                latestVirtualReflect = if(latestPipeline != null) {
+                latestVirtualReflect = if (latestPipeline != null) {
                     JvmVirtualReflection.contextOf(latestPipeline!!)
                 } else {
                     null
                 }
-
-                refreshPrevizPipelineStreamer()
 
                 // Re-enable the listener after the change
                 isChangingPipeline = false
@@ -92,7 +96,7 @@ class EOCVSimPrevizSession(
         }
 
         eocvSim.pipelineManager.onPause {
-            if(previzRunning) {
+            if (previzRunning) {
                 eocvSim.pipelineManager.setPaused(false, PipelineManager.PauseReason.NOT_PAUSED)
             } else {
                 it.removeThis()
@@ -115,7 +119,7 @@ class EOCVSimPrevizSession(
     }
 
     fun refreshPreviz(sourceCode: String) {
-        if(!previzRunning) return
+        if (!previzRunning) return
 
         projectManager.plugin.isRunningPreviewPipeline = false
 
@@ -124,66 +128,66 @@ class EOCVSimPrevizSession(
         eocvSim.pipelineManager.onUpdate.doOnce {
             logger.info("Refreshing previz session $sessionName with new source code")
 
-            val beforeClass = latestClass
+            eocvSim.pipelineManager.pipelines.removeIf { it.clazz == latestClass }
 
-            latestClass = SinglePipelineCompiler.compilePipeline(sessionName, sourceCode)
+            val newClass = SinglePipelineCompiler.compilePipeline(sourceCode)
+
+            latestClass = newClass
+            allClasses.add(newClass)
 
             latestSourceCode = sourceCode
 
-            eocvSim.pipelineManager.pipelines.removeAll { it.clazz == beforeClass }
-            eocvSim.pipelineManager.refreshGuiPipelineList()
+            if (streamer is EOCVSimEngineImageStreamer) {
+                streamer.refreshed()
+            }
+
+            eocvSim.pipelineManager.addInstantiator(
+                newClass,
+                StreamableNoReflectOpenCvPipelineInstantiator(streamer)
+            )
+            eocvSim.pipelineManager.addPipelineClass(newClass, PipelineSource.CLASSPATH)
+
+            isChangingPipeline = true
 
             eocvSim.pipelineManager.onUpdate.doOnce {
-                eocvSim.pipelineManager.addInstantiator(latestClass!!, StreamableNoReflectOpenCvPipelineInstantiator(streamer))
-                eocvSim.pipelineManager.addPipelineClass(latestClass!!, PipelineSource.COMPILED_ON_RUNTIME)
-
                 eocvSim.pipelineManager.forceChangePipeline(
                     eocvSim.pipelineManager.getIndexOf(
-                        latestClass!!,
-                        PipelineSource.COMPILED_ON_RUNTIME
+                        newClass,
+                        PipelineSource.CLASSPATH
                     )
                 )
 
                 latestPipeline = eocvSim.pipelineManager.currentPipeline!!
                 latestVirtualReflect = JvmVirtualReflection.contextOf(latestPipeline!!)
 
-                refreshPrevizPipelineStreamer()
+                isChangingPipeline = false
             }
         }
     }
 
     fun ensurePrevizPipelineRunning() {
         eocvSim.onMainUpdate.doOnce {
-            if(eocvSim.pipelineManager.currentPipeline?.javaClass?.name != sessionName && latestSourceCode != null) {
+            if (!isChangingPipeline &&
+                eocvSim.pipelineManager.currentPipeline?.javaClass?.name != sessionName &&
+                latestSourceCode != null
+            ) {
                 refreshPreviz(latestSourceCode!!)
             }
         }
     }
 
-    fun refreshPrevizPipelineStreamer() {
-        if(!previzRunning) return
-
-        eocvSim.onMainUpdate.doOnce {
-            val pipeline = eocvSim.pipelineManager.currentPipeline
-
-            if(pipeline is StreamableOpenCvPipeline) {
-                pipeline.streamer = streamer
-            }
-        }
-    }
-
     fun stopPreviz() {
-        if(!previzRunning) return
+        if (!previzRunning) return
         previzRunning = false
 
         logger.info("Stopping previz session $sessionName")
 
-        if(streamer is EOCVSimEngineImageStreamer) {
+        if (streamer is EOCVSimEngineImageStreamer) {
             streamer.stop()
         }
 
         eocvSim.onMainUpdate.doOnce {
-            eocvSim.pipelineManager.pipelines.removeAll { it.clazz == latestClass }
+            eocvSim.pipelineManager.pipelines.removeAll { it.clazz in allClasses }
             eocvSim.pipelineManager.refreshGuiPipelineList()
 
             eocvSim.pipelineManager.forceChangePipeline(0)

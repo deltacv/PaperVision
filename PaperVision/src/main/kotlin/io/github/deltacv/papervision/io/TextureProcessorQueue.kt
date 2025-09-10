@@ -47,7 +47,7 @@ class TextureProcessorQueue(
     val jpegWorkers: ExecutorService = Executors.newFixedThreadPool(5) {
         val thread = Thread(it)
         thread.isDaemon = true
-        thread.name = "JPEGWorker-${thread.id}"
+        thread.name = "JPEG-Decomp-Worker-${thread.id}"
 
         thread
     }

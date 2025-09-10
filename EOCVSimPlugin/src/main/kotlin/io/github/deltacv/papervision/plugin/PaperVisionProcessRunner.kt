@@ -42,8 +42,9 @@ object PaperVisionProcessRunner {
 
     val paperVisionEngine = EOCVSimIpcEngine()
 
-    val onPaperVisionExit = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionExit")
+    val onPaperVisionStart = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionStart")
 
+    val onPaperVisionExit = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionExit")
     val onPaperVisionExitError = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionExitError")
 
     private val pool = Executors.newFixedThreadPool(1)
@@ -57,6 +58,8 @@ object PaperVisionProcessRunner {
         if(isRunning) return
 
         isRunning = true
+
+        onPaperVisionStart.run()
 
         currentJob = pool.submit {
             logger.info("Starting PaperVision process...")

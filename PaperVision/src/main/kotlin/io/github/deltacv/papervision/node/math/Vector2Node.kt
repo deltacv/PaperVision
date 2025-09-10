@@ -42,7 +42,7 @@ import io.github.deltacv.papervision.util.Range2i
 @PaperNode(
     name = "nod_vector2",
     category = Category.MATH,
-    description = "Composes a Vector in 2D"
+    description = "des_vector2"
 )
 class Vector2Node : DrawNode<Vector2Node.Session>() {
 

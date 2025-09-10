@@ -24,7 +24,6 @@ import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.exception.AttributeGenException
-import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.node.Link
@@ -270,15 +269,14 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     protected fun getOutputValue(current: CodeGen.Current) = parentNode.getOutputValueOf(current, this)
 
     open fun makeSerializationData(): AttributeSerializationData = BasicAttribData(id)
-    open fun takeDeserializationData(data: AttributeSerializationData) { /* do nothing */ }
+    open fun takeSerializationData(data: AttributeSerializationData) { /* do nothing */ }
 
     /**
      * Call before enable()
      */
     final override fun deserialize(data: AttributeSerializationData) {
         serializedId = data.id
-
-        takeDeserializationData(data)
+        takeSerializationData(data)
     }
 
     final override fun serialize(): AttributeSerializationData {

@@ -93,7 +93,7 @@ class PaperVisionDefaultPipeline(
         scaleCanvasDensity: Float,
         userContext: Any?
     ) {
-        canvas.drawText("Select a project to visualize", 5f, 33f, textPaint)
+        canvas.drawText("Select a project to preview", 5f, 33f, textPaint)
     }
 
 }

@@ -82,7 +82,7 @@ class StringAttribute(
 
     override fun makeSerializationData() = Data(value.get())
 
-    override fun takeDeserializationData(data: AttributeSerializationData) {
+    override fun takeSerializationData(data: AttributeSerializationData) {
         if(data is Data) {
             nextValue = data.value
         }

@@ -38,6 +38,7 @@ import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import java.util.concurrent.RejectedExecutionException
 import kotlin.math.roundToInt
+import kotlin.text.startsWith
 
 class EOCVSimEngineImageStreamer(
     val previzNameProvider: () -> String,
@@ -58,6 +59,7 @@ class EOCVSimEngineImageStreamer(
         }
     }
 
+    private val ids = mutableMapOf<Int, Long>()
 
     private val latestMatMap = mutableMapOf<Int, Mat>()
     private val maskMatMap = mutableMapOf<Int, Mat>()
@@ -77,7 +79,7 @@ class EOCVSimEngineImageStreamer(
     private val jpegWorkers = Executors.newFixedThreadPool(5) { r ->
         val t = Thread(r)
         t.isDaemon = true
-        t.name = "EOCVSim-JPEG-Worker-${t.id}"
+        t.name = "JPEG-Comp-Worker-${t.id}"
 
         t
     }
@@ -114,7 +116,7 @@ class EOCVSimEngineImageStreamer(
         jpegWorkers.submit {
             try {
                 (MackJPEG.getSupportedBackend()?.makeCompressor() ?: return@submit).use { compressor ->
-                    if(!hasChanged(id, targetImage)) {
+                    if (!hasChanged(id, targetImage)) {
                         // no significant changes, skip frame
                         return@submit
                     }
@@ -150,7 +152,7 @@ class EOCVSimEngineImageStreamer(
                         try {
                             compressor.compress(jpegBuffer)
                         } catch (e: JPEGException) {
-                            // fallback
+                            // fallback to opencv
                             val bytes = MatOfByte()
 
                             Imgcodecs.imencode(".jpg", targetImage, bytes)
@@ -173,6 +175,22 @@ class EOCVSimEngineImageStreamer(
                         // data is already in place thanks to the System.arraycopy above
 
                         ipcEngine.sendBytes(jpegBuffer)
+
+                        synchronized(ids) {
+                            if (!ids.containsKey(id) || System.currentTimeMillis() - ids[id]!! > 5000) {
+                                val status = if(ids.containsKey(id))
+                                    "Started"
+                                else "Resumed"
+
+                                val lastFrameInfo = if (ids.containsKey(id))
+                                    "${(System.currentTimeMillis() - ids[id]!!) / 1000.0}s ago"
+                                else "never received"
+
+                                logger.info("$status streaming for ${previzNameProvider()} id=$id (last frame was $lastFrameInfo)")
+                            }
+
+                            ids[id] = System.currentTimeMillis()
+                        }
                     } finally {
                         bufferPool.returnBuffer(jpegBuffer)
                     }
@@ -246,7 +264,7 @@ class EOCVSimEngineImageStreamer(
 
     private fun scaleToFit(src: Mat, dst: Mat) {
         if (src.size() == resolution) { //nice, the mat size is the exact same as the video size
-            if(src != dst) src.copyTo(dst)
+            if (src != dst) src.copyTo(dst)
         } else { //uh oh, this might get a bit harder here...
             val targetR = resolution.aspectRatio()
             val inputR = src.aspectRatio()
@@ -292,7 +310,7 @@ class EOCVSimEngineImageStreamer(
                     //copied to the actual mat, and so our new mat will be of the correct size and
                     //centered with the required offset
                     resizedImg.copyTo(submat)
-                } catch(e: Exception) {
+                } catch (e: Exception) {
                     logger.error("scaleToFit error", e)
                 } finally {
                     resizedImg.returnMat()
@@ -304,5 +322,9 @@ class EOCVSimEngineImageStreamer(
     fun stop() {
         logger.info("Stopping EOCVSimEngineImageStreamer")
         jpegWorkers.shutdown()
+    }
+
+    fun refreshed() {
+        ids.clear()
     }
 }

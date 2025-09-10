@@ -27,6 +27,7 @@ import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
+import io.github.deltacv.papervision.codegen.CodeGenOptions
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.codegen.build.Value
@@ -133,11 +134,9 @@ class OutputMatNode @JvmOverloads constructor(
     var streamId: Int? = null
     private var lastWindowSize: ImVec2? = null
 
-    init {
-        genOptions {
-            genAtTheEnd = true
-        }
-    }
+    override val genOptions = CodeGenOptions(
+        genAtTheEnd = true
+    )
 
     override fun init() {
         editor.onDraw { remover ->

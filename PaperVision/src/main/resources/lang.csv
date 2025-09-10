@@ -123,17 +123,17 @@ des_filterbiggest_rect,Finds the biggest rectangle from a list of rectangles.,En
 des_filterbiggest_rotrect,Finds the biggest rotated rectangle<br>from a list of rotated rectangles.,Encuentra el rectángulo rotado más grande<br>de una lista de rectángulos rotados.
 des_filterbiggest_contour,Finds the biggest contour from a list of contours.,Encuentra el contorno más grande<br>de una lista de contornos.
 des_crosshair,Selects only the contours that are<br>inside an adjustable crosshair.,Selecciona solo los contornos que están<br>dentro de un crosshair ajustable.
-des_boundingrotated_rect,Calculates the bounding rotated rectangles<br>of a given list of points.,Calcula los rectángulos delimitadores rotados<br>de una lista de puntos dada.
+des_boundingrotated_rect,Calculates the bounding rotated rectangles<br>of a given list of points.,Calcula los rectángulos delimitadores<br>rotados de una lista de puntos dada.
 des_boundingrect,Calculates the bounding rectangles<br>of a given list of points.,Calcula los rectángulos delimitadores<br>de una lista de puntos dada.
 des_findcontours,Finds all the contours (list of points)<br>of a given binary image.,Encuentra todos los contornos (lista de puntos)<br>de una imagen binaria dada.
-des_blur,Blurs the input image using the specified algorithm.,Difumina la imagen de entrada con el algoritmo especificado.
-des_bitwiseor,Performs a bitwise OR operation on two binary images.,Realiza una operación OR a nivel de bits en dos imágenes binarias.
-des_bitwiseand,Performs a bitwise AND operation on two binary images.,Realiza una operación AND a nivel de bits en dos imágenes binarias.
-des_bitwisexor,Performs a bitwise XOR operation on two binary images.,Realiza una operación XOR a nivel de bits en dos imágenes binarias.
-des_bitwisenot,Performs a bitwise NOT operation on a binary image.,Realiza una operación NOT a nivel de bits en una imagen binaria.
+des_blur,Blurs the input image<br>using the specified algorithm.,Difumina la imagen de entrada<br>con el algoritmo especificado.
+des_bitwiseor,Performs a bitwise OR operation<br>on two binary images.,Realiza una operación OR a nivel<br>de bits en dos imágenes binarias.
+des_bitwiseand,Performs a bitwise AND operation<br>on two binary images.,Realiza una operación AND a nivel<br>de bits en dos imágenes binarias.
+des_bitwisexor,Performs a bitwise XOR operation<br>on two binary images.,Realiza una operación XOR a nivel<br>de bits en dos imágenes binarias.
+des_bitwisenot,Performs a bitwise NOT operation<br>on a binary image.,Realiza una operación NOT a nivel<br>de bits en una imagen binaria.
 des_cvtcolor,"Converts a Mat from its current color space<br>to the specified color space. If the mat is already<br>in the specified color space, no conversion is made.","Convierte un Mat de su espacio de color actual<br>al espacio de color especificado. Si el Mat ya está<br>en el espacio de color especificado,<br>no se realiza ninguna conversión."
-des_erodedilate,Erodes and dilates the areas of a given binary image.,Erosiona y dilata las áreas de una imagen binaria dada.
-des_binarymask,"Takes a normal image and performs a mask<br>based on a binary image, discards or includes areas<br>from the normal image based on the binary image.","Toma una imagen normal y aplica una máscara<br>basada en una imagen binaria, descartando o incluyendo áreas<br>de la imagen normal según la imagen binaria."
+des_erodedilate,Erodes and dilates the areas<br>of a given binary image.,Erosiona y dilata las áreas<br>de una imagen binaria dada.
+des_binarymask,"Takes a normal image and performs a mask<br>based on a binary image, discards or includes areas<br>from the normal image based on the binary image.","Toma una imagen normal y aplica una máscara basada<br>en una imagen binaria, descartando o incluyendo áreas<br>de la imagen normal según la imagen binaria."
 des_colorthresh,"Performs a threshold in the input image<br>and returns a binary image, discarding<br>the pixels that were outside the range.","Realiza un umbral en la imagen de entrada<br>y devuelve una imagen binaria, descartando<br>los píxeles que estaban fuera del rango."
 des_drawrects,Draws the rectangles on a copy of the<br>given image and outputs the result.,Dibuja los rectangulos en una copia de la<br>imagen dada y devuelve el resultado.
 des_drawrotated_rects,Draws the rotated rectangles on a copy<br>of the given image and outputs the result.,Dibuja los rectangulos rotados en una copia de la<br>imagen dada y devuelve el resultado.
@@ -141,7 +141,7 @@ des_lineparameters,Specify the visual properties for<br>a node that will draw li
 des_drawrects_onimage,Draws the rectangles in the passed image.,Dibuja los rectangulos en la imagen de entrada
 des_drawcontours,Draws the contours on a copy of the<br>given image and outputs the result.,Dibuja los contornos en una copia de la<br>imagen dada y devuelve el resultado.
 des_drawcontours_onimage,Draws the contours on the input image,Dibuja los contornos en la imagen de entrada.
-des_cannyedge,Filters edges in the input image using the Canny algorithm.,Filtra bordes en la imagen de entrada usando el algoritmo Canny.
+des_cannyedge,Filters edges in the input<br>image using the Canny algorithm.,Filtra bordes en la imagen de<br>entrada usando el algoritmo Canny.
 des_vector2,Composes a Vector in two dimensions,Compone un Vector en dos dimensiones
 err_bitwiseor_binary,"Both inputs must be of the same type, binary or not","Ambas entradas deben ser del mismo tipo, binario o no"
 err_grayscale_required,"Grayscale image required","Se requiere una imagen en escala de grises"

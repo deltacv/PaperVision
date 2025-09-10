@@ -181,10 +181,7 @@ class CodeGen(
 
 }
 
-class CodeGenOptions {
-    var genAtTheEnd = false
-    inline operator fun invoke(block: CodeGenOptions.() -> Unit) = block()
-}
+data class CodeGenOptions(var genAtTheEnd: Boolean = false)
 
 interface CodeGenSession
 

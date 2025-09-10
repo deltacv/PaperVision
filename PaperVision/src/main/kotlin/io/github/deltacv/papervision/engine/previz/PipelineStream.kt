@@ -29,10 +29,8 @@ import io.github.deltacv.papervision.io.scaleToFit
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.animation.TimedTextureAnimation
-import io.github.deltacv.papervision.util.ReusableBufferPool
 import io.github.deltacv.papervision.util.loggerForThis
 import java.awt.image.BufferedImage
-import java.nio.ByteBuffer
 
 class PipelineStream(
     val sessionName: String,
@@ -56,13 +54,13 @@ class PipelineStream(
     private var requestedMaximize = false
     private var requestedMinimize = false
 
-    private val bufferPool = ReusableBufferPool(10)
-
     // get the texture container of the current thread
     val textureQueue = IdElementContainerStack.threadStack.peekSingleNonNull<TextureProcessorQueue>()
 
     var offlineTexture: PlatformTexture? = null
         private set
+
+    private val startedStreamIds = mutableMapOf<Int, Long>()
 
     constructor(
         sessionName: String,
@@ -110,6 +108,16 @@ class PipelineStream(
 
     private val defaultHandler: Handler = { id, tag, bytes, length ->
         if (tag.startsWith(sessionName)) {
+            if(!startedStreamIds.containsKey(id) || System.currentTimeMillis() - startedStreamIds[id]!! > 5000) {
+                val lastFrameInfo = if(startedStreamIds.containsKey(id))
+                    "${(System.currentTimeMillis() - startedStreamIds[id]!!) / 1000.0 }s ago"
+                else
+                    "never received"
+
+                logger.info("Started/resumed stream reception id=$id for $sessionName (last frame was $lastFrameInfo)")
+            }
+
+            startedStreamIds[id] = System.currentTimeMillis()
             // offer to texture queue
             textureQueue.offerJpegAsync(id, width, height, bytes, dataOffset = ByteMessages.messageOffsetFromBytes(bytes))
         }

@@ -360,7 +360,7 @@ class PaperVisionProjectManager(
             try {
                 val source = latestSourceFolder.resolve("${path}_$name.java").readText()
 
-                val clazz = SinglePipelineCompiler.compilePipeline(name.toValidIdentifier(), source)
+                val clazz = SinglePipelineCompiler.compilePipeline(source)
 
                 clearPreviewPipelines()
 

@@ -32,14 +32,14 @@ object SinglePipelineCompiler {
      * Takes source code and returns a compiled pipeline class
      */
     @Suppress("UNCHECKED_CAST")
-    fun compilePipeline(pipelineName: String, pipelineSource: String): Class<out OpenCvPipeline> {
+    fun compilePipeline(pipelineSource: String): Class<out OpenCvPipeline> {
         // Create a SimpleCompiler instance
         val compiler = SimpleCompiler()
 
         // Set the source code
         compiler.cook(pipelineSource)
 
-        val clazz = compiler.classLoader.loadClass(pipelineName)
+        val clazz = compiler.classLoader.loadClass(compiler.classFiles.firstOrNull()?.thisClassName ?: throw IllegalStateException("No class found in compiled source"))
 
         require(ReflectUtil.hasSuperclass(clazz, OpenCvPipeline::class.java)) {
             "Pipeline class must extend OpenCvPipeline"

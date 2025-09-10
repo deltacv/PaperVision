@@ -48,6 +48,9 @@ import javax.swing.JMenu
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
+import kotlin.collections.containsKey
+import kotlin.collections.get
+import kotlin.collections.set
 
 /**
  * Main entry point for the PaperVision plugin.
@@ -123,65 +126,28 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             fileNewMenu.add(fileNewPaperVisionMenu)
         }
 
-        val recoveredProjectsListener = Runnable {
-            if (paperVisionProjectManager.recoveredProjects.isNotEmpty()) {
-                SwingUtilities.invokeLater {
-                    PaperVisionDialogFactory.displayProjectRecoveryDialog(
-                        eocvSim.visualizer.frame, paperVisionProjectManager.recoveredProjects
-                    ) {
-                        for (recoveredProject in it) {
-                            paperVisionProjectManager.recoverProject(recoveredProject)
-                        }
-
-                        if (it.isNotEmpty()) {
-                            JOptionPane.showMessageDialog(
-                                eocvSim.visualizer.frame,
-                                "Successfully recovered ${it.size} unsaved project(s)",
-                                "PaperVision Project Recovery",
-                                JOptionPane.INFORMATION_MESSAGE
-                            )
-                        }
-
-                        paperVisionProjectManager.deleteAllRecoveredProjects()
-                    }
-                }
-            }
-        }
-
-        eocvSim.onMainUpdate.doOnce(recoveredProjectsListener)
-        PaperVisionProcessRunner.onPaperVisionExitError.doOnce(recoveredProjectsListener)
+        eocvSim.onMainUpdate.doOnce(this::recoverProjects)
+        PaperVisionProcessRunner.onPaperVisionExitError.doOnce(this::recoverProjects)
 
         eocvSim.pipelineManager.onPipelineChange {
             changeToPaperVisionPipelineIfNecessary()
         }
 
+        PaperVisionProcessRunner.onPaperVisionStart {
+            // abort papervision pipeline
+            changeToPaperVisionPipelineIfNecessary()
+            eocvSim.pipelineManager.requestForceChangePipeline(0);
+        }
+
         PaperVisionProcessRunner.onPaperVisionExit {
             changeToPaperVisionPipelineIfNecessary()
+
+            currentPrevizSession?.stopPreviz()
+            currentPrevizSession = null
         }
     }
 
     override fun onEnable() {
-        fun tunableFieldOf(field: VirtualField): TunableField<*> {
-            if (tunableFieldCache.containsKey(field)) {
-                return tunableFieldCache[field]!!
-            }
-
-            val tunableFieldClass = eocvSim.tunerManager.getTunableFieldOf(field)
-
-            val tunableField = tunableFieldClass.getConstructor(
-                Object::class.java,
-                VirtualField::class.java,
-                EOCVSim::class.java
-            ).newInstance(
-                currentPrevizSession!!.latestPipeline,
-                field,
-                eocvSim
-            )
-
-            tunableFieldCache[field] = tunableField
-            return tunableField
-        }
-
         engine.setMessageHandlerOf<TunerChangeValueMessage> {
             eocvSim.onMainUpdate.doOnce {
                 val field = currentPrevizSession?.latestVirtualReflect?.getLabeledField(message.label)
@@ -326,7 +292,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                     currentPrevizSession?.stopPreviz()
                     currentPrevizSession = null
                 }
-            }
+
 
             respond(OkResponse())
         }
@@ -361,10 +327,33 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     override fun onDisable() {
     }
 
+    private fun recoverProjects() {
+        if (paperVisionProjectManager.recoveredProjects.isNotEmpty()) {
+            PaperVisionDialogFactory.displayProjectRecoveryDialog(
+                eocvSim.visualizer.frame, paperVisionProjectManager.recoveredProjects
+            ) {
+                for (recoveredProject in it) {
+                    paperVisionProjectManager.recoverProject(recoveredProject)
+                }
+
+                if (it.isNotEmpty()) {
+                    JOptionPane.showMessageDialog(
+                        eocvSim.visualizer.frame,
+                        "Successfully recovered ${it.size} unsaved project(s)",
+                        "PaperVision Project Recovery",
+                        JOptionPane.INFORMATION_MESSAGE
+                    )
+                }
+
+                paperVisionProjectManager.deleteAllRecoveredProjects()
+            }
+        }
+    }
+
     internal fun changeToPaperVisionPipelineIfNecessary() {
         val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
 
-        if(isRunningPreviewPipeline) return
+        if (isRunningPreviewPipeline) return
 
         if (switchablePanel.selectedIndex == switchablePanel.indexOfTab("PaperVision")) {
             if (currentPrevizSession?.previzRunning != true || !PaperVisionProcessRunner.isRunning) {
@@ -392,5 +381,26 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             eocvSim.pipelineManager.pipelines.removeAll { it.clazz == PaperVisionDefaultPipeline::class.java }
             eocvSim.pipelineManager.refreshGuiPipelineList()
         }
+    }
+
+    private fun tunableFieldOf(field: VirtualField): TunableField<*> {
+        if (tunableFieldCache.containsKey(field)) {
+            return tunableFieldCache[field]!!
+        }
+
+        val tunableFieldClass = eocvSim.tunerManager.getTunableFieldOf(field)
+
+        val tunableField = tunableFieldClass.getConstructor(
+            Object::class.java,
+            VirtualField::class.java,
+            EOCVSim::class.java
+        ).newInstance(
+            currentPrevizSession!!.latestPipeline,
+            field,
+            eocvSim
+        )
+
+        tunableFieldCache[field] = tunableField
+        return tunableField
     }
 }
