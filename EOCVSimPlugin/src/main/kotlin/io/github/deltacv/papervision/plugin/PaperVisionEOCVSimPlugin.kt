@@ -292,7 +292,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                     currentPrevizSession?.stopPreviz()
                     currentPrevizSession = null
                 }
-
+            }
 
             respond(OkResponse())
         }
