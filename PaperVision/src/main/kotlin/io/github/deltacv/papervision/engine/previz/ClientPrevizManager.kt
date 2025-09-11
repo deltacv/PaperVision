@@ -68,6 +68,7 @@ class ClientPrevizManager(
     var previzRunning = false
         private set
 
+    private val firstPingTimer = ElapsedTime()
     private val pingTimer = ElapsedTime()
 
     fun startPreviz(previzName: String) {
@@ -126,6 +127,7 @@ class ClientPrevizManager(
 
                 stream.start()
                 pingTimer.reset()
+                firstPingTimer.reset()
             }
         })
     }
@@ -160,8 +162,9 @@ class ClientPrevizManager(
             return
         }
 
-        if(previzRunning)
+        if(previzRunning) {
             client.sendMessage(PrevizSourceCodeMessage(previzName!!, sourceCode))
+        }
     }
 
     fun stopPreviz() {
@@ -180,7 +183,7 @@ class ClientPrevizManager(
     }
 
     fun update() {
-        if(previzName != null && previzRunning && pingTimer.seconds > 2) {
+        if(previzName != null && previzRunning && pingTimer.seconds > 3 && firstPingTimer.seconds > 5) {
             client.sendMessage(PrevizPingMessage(previzName!!))
             pingTimer.reset()
         }
