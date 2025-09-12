@@ -51,7 +51,7 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
 
         if(genOptions.genAtTheEnd && codeGen.stage != CodeGen.Stage.END_GEN) {
             if(!codeGen.endingNodes.contains(this)) {
-                logger.info("Marked node $this as an ending node")
+                logger.debug("Marked $this as an ending node")
                 codeGen.endingNodes.add(this)
             }
 

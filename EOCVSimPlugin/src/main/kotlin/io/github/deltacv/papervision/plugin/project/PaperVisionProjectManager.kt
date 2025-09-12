@@ -508,8 +508,6 @@ class PaperVisionProjectManager(
         val projectPath = findProjectPath(projectNode)?.pathString ?: return
         val hex = projectPath.hexString
 
-        logger.debug("Sending recovery for {}", projectPath)
-
         recoveryDaemonProcessManager.sendRecoveryData(
             RecoveryData(
                 recoveryFolder.path,

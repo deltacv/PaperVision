@@ -52,6 +52,8 @@ public class RecoveryDaemonClientMain extends WebSocketClient {
     }
 
     public static void main(String[] args) {
+        System.setProperty("apple.awt.UIElement", "true");
+
         int port = args.length > 0 ? Integer.parseInt(args[0]) : 17112;
 
         RecoveryDaemonClientMain client = null;

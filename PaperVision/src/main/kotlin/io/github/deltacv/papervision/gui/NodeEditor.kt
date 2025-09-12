@@ -29,7 +29,6 @@ import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImInt
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.PaperVision
-import io.github.deltacv.papervision.PaperVision.Companion.defaultImGuiFontSmall
 import io.github.deltacv.papervision.action.editor.CreateLinkAction
 import io.github.deltacv.papervision.action.editor.CreateNodesAction
 import io.github.deltacv.papervision.action.editor.DeleteLinksAction
@@ -43,9 +42,9 @@ import io.github.deltacv.papervision.engine.bridge.NoOpPaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.message.AskProjectGenClassNameMessage
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.gui.NodeEditor.SourceCodeExportSelectLanguageWindow.Companion.SEPARATION_MULTIPLIER
-import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
-import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
-import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayWindow
+import io.github.deltacv.papervision.gui.display.ImageDisplay
+import io.github.deltacv.papervision.gui.display.ImageDisplayNode
+import io.github.deltacv.papervision.gui.display.ImageDisplayWindow
 import io.github.deltacv.papervision.gui.util.Popup
 import io.github.deltacv.papervision.gui.util.TooltipPopup
 import io.github.deltacv.papervision.gui.util.Window
@@ -108,7 +107,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     lateinit var optionsButton: OptionsButtonWindow
         private set
 
-    lateinit var playButton: EOCVSimPlayButtonWindow
+    lateinit var playButton: PlayButtonWindow
         private set
 
     lateinit var sourceCodeExportButton: SourceCodeExportButtonWindow
@@ -188,7 +187,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         sourceCodeExportButton.enable()
 
-        playButton = EOCVSimPlayButtonWindow(
+        playButton = PlayButtonWindow(
             sourceCodeExportButton,
             paperVision,
             paperVision.fontAwesomeBig
@@ -208,7 +207,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         optionsButton.enable()
 
         paperVision.previzManager.onStreamChange {
-            outputImageDisplay.pipelineStream = paperVision.previzManager.stream
+            outputImageDisplay.clientPrevizStream = paperVision.previzManager.stream
         }
         paperVision.previzManager.onPrevizStart {
             val streamWindow = ImageDisplayWindow(outputImageDisplay)
@@ -551,7 +550,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         val window = ImageDisplayNode(ImageDisplay(paperVision.previzManager.stream))
         paperVision.previzManager.onStreamChange {
             // automagically update the stream of all windows
-            window.imageDisplay.pipelineStream = paperVision.previzManager.stream
+            window.imageDisplay.clientPrevizStream = paperVision.previzManager.stream
         }
 
         window.pinToMouse = true
@@ -904,7 +903,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
     }
 
-    class EOCVSimPlayButtonWindow(
+    class PlayButtonWindow(
         val sourceCodeExportButton: SourceCodeExportButtonWindow,
         val paperVision: PaperVision,
         val fontAwesome: Font
@@ -964,7 +963,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
 
     class OptionsButtonWindow(
-        val eocvSimPlayButtonWindow: EOCVSimPlayButtonWindow,
+        val eocvSimPlayButtonWindow: PlayButtonWindow,
         val paperVision: PaperVision,
         val options: Map<String, Option>,
         val tooltipFont: Font,

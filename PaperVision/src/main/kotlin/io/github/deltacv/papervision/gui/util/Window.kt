@@ -47,6 +47,8 @@ abstract class Window(
 
     open val isModal: Boolean = false
 
+    private var modalIsClosing = false
+
     private var nextPosition: ImVec2? = null
     private var internalPosition = ImVec2()
 
@@ -85,14 +87,6 @@ abstract class Window(
     private var firstDraw = true
 
     override fun enable() {
-        if(isModal) {
-            for(window in idElementContainer.inmutable) {
-                if(window.isModal) {
-                    window.delete()
-                }
-            }
-        }
-
         super.enable()
         firstDraw = true
     }
@@ -112,11 +106,19 @@ abstract class Window(
         }
 
         if(isModal) {
-            if(firstDraw)
+            if(firstDraw) {
+                ImGui.closeCurrentPopup()
                 ImGui.openPopup(titleId)
+            }
 
             if(ImGui.beginPopupModal(titleId, modalPOpen, windowFlags)) {
                 contents()
+
+                if(modalIsClosing) {
+                    ImGui.closeCurrentPopup()
+                    super.delete() // bye bye finally
+                }
+
                 ImGui.endPopup()
             }
 
@@ -152,6 +154,13 @@ abstract class Window(
         position = ImVec2((displaySize.x - size.x) / 2, (displaySize.y - size.y) / 2)
     }
 
+    override fun delete() {
+        if(isModal && !modalIsClosing) {
+            modalIsClosing = true
+        } else {
+            super.delete()
+        }
+    }
 }
 
 abstract class FrameWidthWindow : Window() {

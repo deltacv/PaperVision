@@ -88,7 +88,7 @@ class CodeGen(
         // Initial debug log of all placeholders
         placeholders.inmutable.forEach {
             val v = it.resolve()
-            logger.info("${it.placeholder} = $v")
+            logger.debug("${it.placeholder} = $v")
         }
 
         fun resolve(currentPlaceholdersProvider: () -> Collection<Resolvable.Placeholder<*>>) {

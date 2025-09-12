@@ -168,6 +168,10 @@ mis_dontshow_again,Don't Show Again,No Mostrar de Nuevo
 mis_next,Next,Siguiente
 mis_close,Close,Cerrar
 mis_cancel,Cancel,Cancelar
+mis_camerasource,Camera Source,Camara
+mis_videosource,Video File Source,Archivo de Video
+mis_imagesource,Image File Source,Archivo de Imagen
+mis_httpsource,HTTP Stream Source,Video HTTP
 mis_guidedtour,Guided Tour,Visita Guiada
 mis_guidedtour_1,Welcome to the guided tour!,¡Bienvenido al recorrido guiado!
 mis_guidedtour_2,This will help you get started with PaperVision.<br>Read each step carefully !,Esto te ayudará a comenzar con PaperVision.<br>¡Lee cada paso con cuidado!
@@ -210,6 +214,7 @@ mis_guidedtour_notavailable_1,"This guided tour is not available for existing pr
 mis_guidedtour_notavailable_2,"Please create a new project and try again.","Por favor, crea un nuevo proyecto e intenta de nuevo."
 mis_loading,Loading...,Cargando...
 mis_runningok,Running OK,Estatus OK
+mis_runningok_atfps,OK at $[0] FPS,OK a $[0] FPS
 mis_savebefore_exit,Do you wanna save before exiting?,¿Quieres guardar antes de salir?
 mis_save,Save,Guardar
 mis_discard,Discard,Descartar

@@ -22,7 +22,6 @@ import com.github.serivesmejia.eocvsim.EOCVSim
 import com.github.serivesmejia.eocvsim.pipeline.PipelineManager
 import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import io.github.deltacv.papervision.util.loggerForThis
-import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipeline
 import io.github.deltacv.eocvsim.stream.ImageStreamer
 import io.github.deltacv.eocvsim.virtualreflect.VirtualReflectContext
 import io.github.deltacv.eocvsim.virtualreflect.jvm.JvmVirtualReflection
@@ -165,7 +164,7 @@ class EOCVSimPrevizSession(
         }
     }
 
-    fun ensurePrevizPipelineRunning() {
+    fun handlePrevizPing() {
         eocvSim.onMainUpdate.doOnce {
             if (!isChangingPipeline &&
                 eocvSim.pipelineManager.currentPipeline?.javaClass?.name != sessionName &&

@@ -30,6 +30,7 @@ import io.github.deltacv.eocvsim.virtualreflect.VirtualField
 import io.github.deltacv.papervision.engine.client.message.*
 import io.github.deltacv.papervision.engine.client.response.ErrorResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
+import io.github.deltacv.papervision.engine.client.response.PrevizStatisticsResponse
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.plugin.eocvsim.PaperVisionDefaultPipeline
 import io.github.deltacv.papervision.plugin.gui.eocvsim.PaperVisionTabPanel
@@ -47,9 +48,6 @@ import java.util.*
 import javax.swing.JMenu
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
-import javax.swing.SwingUtilities
-import kotlin.collections.containsKey
-import kotlin.collections.get
 import kotlin.collections.set
 
 /**
@@ -269,7 +267,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                     message.sourceCode
                 )
 
-                logger.info("Received source code\n{}", message.sourceCode)
+                logger.debug("Starting with new source code\n{}", message.sourceCode)
 
                 respond(OkResponse())
             }
@@ -280,8 +278,11 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                 if (currentPrevizSession == null || currentPrevizSession?.sessionName != message.previzName) {
                     respond(ErrorResponse("Previz is not running"))
                 } else {
-                    currentPrevizSession?.ensurePrevizPipelineRunning()
-                    respond(OkResponse())
+                    currentPrevizSession?.handlePrevizPing()
+
+                    val stats = eocvSim.pipelineManager.pipelineStatisticsCalculator
+
+                    respond(PrevizStatisticsResponse(stats.avgFps, stats.avgPipelineTime.toLong()))
                 }
             }
         }
@@ -301,7 +302,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             eocvSim.onMainUpdate.doOnce {
                 if (currentPrevizSession?.sessionName == message.previzName) {
                     currentPrevizSession!!.refreshPreviz(message.sourceCode)
-                    logger.info("Received source code\n{}", message.sourceCode)
+                    logger.debug("Received source code\n{}", message.sourceCode)
 
                     respond(OkResponse())
                 } else {

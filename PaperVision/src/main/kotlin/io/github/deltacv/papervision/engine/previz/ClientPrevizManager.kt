@@ -28,12 +28,10 @@ import io.github.deltacv.papervision.engine.client.message.PrevizSourceCodeMessa
 import io.github.deltacv.papervision.engine.client.message.PrevizStartMessage
 import io.github.deltacv.papervision.engine.client.message.PrevizStopMessage
 import io.github.deltacv.papervision.engine.client.response.OkResponse
-import io.github.deltacv.papervision.io.TextureProcessorQueue
+import io.github.deltacv.papervision.engine.client.response.PrevizStatisticsResponse
 import io.github.deltacv.papervision.io.bufferedImageFromResource
-import io.github.deltacv.papervision.platform.PlatformTextureFactory
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
-import io.github.deltacv.papervision.util.hexString
 import io.github.deltacv.papervision.util.loggerForThis
 
 class ClientPrevizManager(
@@ -52,11 +50,13 @@ class ClientPrevizManager(
     var previzName: String? = null
         private set
 
-    var stream = PipelineStream("", client, offlineImages = offlineImages)
+    var stream = ClientPrevizStream("", client.byteReceiver, offlineImages = offlineImages)
         private set(value) {
             field = value
             onStreamChange.run()
         }
+
+    val livePipelineStatistics = LivePipelineStatistics()
 
     val onPrevizStart = PaperVisionEventHandler("ClientPrevizManager-OnPrevizStart")
     val onPrevizStop = PaperVisionEventHandler("ClientPrevizManager-OnPrevizStop")
@@ -75,8 +75,14 @@ class ClientPrevizManager(
         startPreviz(previzName, JavaLanguage)
     }
 
-    fun startPreviz(previzName: String, streamWidth: Int, streamHeight: Int, streamStatus: PipelineStream.Status) {
-        startPreviz(previzName, codeGenManager.build(previzName, JavaLanguage, true), streamWidth, streamHeight, streamStatus)
+    fun startPreviz(previzName: String, streamWidth: Int, streamHeight: Int, streamSizing: ClientPrevizStream.Sizing) {
+        startPreviz(
+            previzName,
+            codeGenManager.build(previzName, JavaLanguage, true),
+            streamWidth,
+            streamHeight,
+            streamSizing
+        )
     }
 
     fun startPreviz(previzName: String, language: Language) {
@@ -88,81 +94,81 @@ class ClientPrevizManager(
         sourceCode: String?,
         streamWidth: Int = defaultPrevizStreamWidth,
         streamHeight: Int = defaultPrevizStreamHeight,
-        streamStatus: PipelineStream.Status = PipelineStream.Status.MINIMIZED
+        streamSizing: ClientPrevizStream.Sizing = ClientPrevizStream.Sizing.MINIMIZED
     ) {
         this.previzName = previzName
 
-        if(sourceCode == null) {
+        if (sourceCode == null) {
             logger.warn("Failed to start previz session $previzName, source code is null (probably due to code gen error)")
             return
         }
 
         logger.info("Starting previz session $previzName")
 
-        client.sendMessage(PrevizStartMessage(previzName, sourceCode, streamWidth, streamHeight).onResponseWith<OkResponse> {
-            client.onProcess.doOnce {
-                logger.info("Previz session $previzName running")
+        client.sendMessage(
+            PrevizStartMessage(
+                previzName,
+                sourceCode,
+                streamWidth,
+                streamHeight
+            ).onResponseWith<OkResponse> {
+                client.onProcess.doOnce {
+                    logger.info("Previz session $previzName running")
 
-                previzRunning = true
+                    previzRunning = true
 
-                onPrevizStart.run()
+                    onPrevizStart.run()
 
-                stream.stop()
+                    stream.stop()
 
-                stream = if(byteReceiverProvider == null) {
-                    PipelineStream(
-                        previzName, client,
-                        width = streamWidth, height = streamHeight,
+                    stream = ClientPrevizStream(
+                        previzName,
+                        byteReceiverProvider?.invoke() ?: client.byteReceiver,
+                        livePipelineStatistics,
+                        width = streamWidth,
+                        height = streamHeight,
                         offlineImages = offlineImages,
-                        status = streamStatus
+                        sizing = streamSizing
                     )
-                } else {
-                    PipelineStream(
-                        previzName, byteReceiverProvider(),
-                        width = streamWidth, height = streamHeight,
-                        offlineImages = offlineImages,
-                        status = streamStatus
-                    )
+
+                    stream.start()
+                    pingTimer.reset()
+                    firstPingTimer.reset()
                 }
-
-                stream.start()
-                pingTimer.reset()
-                firstPingTimer.reset()
-            }
-        })
+            })
     }
 
     private fun restartWithStreamResolution(
         previzName: String = this.previzName!!,
         previzStreamWidth: Int = this.defaultPrevizStreamWidth,
         previzStreamHeight: Int = this.defaultPrevizStreamHeight,
-        status: PipelineStream.Status = stream.status
+        sizing: ClientPrevizStream.Sizing = stream.sizing
     ) {
-        if(previzRunning) {
+        if (previzRunning) {
             logger.info("Restarting previz session $previzName with new stream resolution")
 
-            onPrevizStop.doOnce {
-                startPreviz(previzName, previzStreamWidth, previzStreamHeight, status)
+            onPrevizStop.doOnce { // restart after fully stopped
+                startPreviz(previzName, previzStreamWidth, previzStreamHeight, sizing)
             }
 
             stopPreviz()
         } else {
             logger.info("Starting previz session $previzName with new stream resolution")
-            startPreviz(previzName, previzStreamWidth, previzStreamHeight, status)
+            startPreviz(previzName, previzStreamWidth, previzStreamHeight, sizing)
         }
     }
 
-    fun refreshPreviz() = previzName?.let{
+    fun refreshPreviz() = previzName?.let {
         refreshPreviz(codeGenManager.build(it, JavaLanguage, true))
     }
 
     fun refreshPreviz(sourceCode: String?) {
-        if(sourceCode == null) {
+        if (sourceCode == null) {
             logger.warn("Failed to refresh previz session $previzName, source code is null (probably due to code gen error)")
             return
         }
 
-        if(previzRunning) {
+        if (previzRunning) {
             client.sendMessage(PrevizSourceCodeMessage(previzName!!, sourceCode))
         }
     }
@@ -183,28 +189,32 @@ class ClientPrevizManager(
     }
 
     fun update() {
-        if(previzName != null && previzRunning && pingTimer.seconds > 3 && firstPingTimer.seconds > 5) {
-            client.sendMessage(PrevizPingMessage(previzName!!))
+        if (previzName != null && previzRunning && pingTimer.seconds > 1 && firstPingTimer.seconds > 3) {
+            client.sendMessage(PrevizPingMessage(previzName!!).onResponseWith<PrevizStatisticsResponse> {
+                livePipelineStatistics.fps = it.fps
+                livePipelineStatistics.frameTimeMs = it.frameTimeMs
+            })
+
             pingTimer.reset()
         }
 
-        if(stream.popRequestedMaximize() && previzName != null && previzRunning) {
+        if (stream.popRequestedMaximize() && previzName != null && previzRunning) {
             logger.info("Maximizing previz session $previzName")
 
             restartWithStreamResolution(
                 previzStreamWidth = stream.width * 2,
                 previzStreamHeight = stream.height * 2,
-                status = PipelineStream.Status.MAXIMIZED
+                sizing = ClientPrevizStream.Sizing.MAXIMIZED
             )
         }
 
-        if(stream.popRequestedMinimize() && previzName != null && previzRunning) {
+        if (stream.popRequestedMinimize() && previzName != null && previzRunning) {
             logger.info("Minimizing previz session $previzName")
 
             restartWithStreamResolution(
                 previzStreamWidth = stream.width / 2,
                 previzStreamHeight = stream.height / 2,
-                status = PipelineStream.Status.MINIMIZED
+                sizing = ClientPrevizStream.Sizing.MINIMIZED
             )
         }
     }

@@ -211,9 +211,9 @@ abstract class Node<S: CodeGenSession>(
         for(linkedNode in linkedNodes) {
             if(linkedNode.hasDeadEnd()) {
                 deadEndNodes.add(linkedNode)
-                logger.info("Dead end node: $linkedNode")
+                logger.debug("Dead end: $linkedNode")
             } else {
-                logger.info("Complete path node: $linkedNode")
+                logger.debug("Complete path: $linkedNode")
                 completePathNodes.add(linkedNode)
             }
         }
