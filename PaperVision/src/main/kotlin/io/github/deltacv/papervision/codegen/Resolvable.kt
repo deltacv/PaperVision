@@ -5,7 +5,6 @@ import io.github.deltacv.papervision.codegen.build.Type
 import io.github.deltacv.papervision.id.IdElement
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
-import io.github.deltacv.papervision.util.hexString
 
 sealed class Resolvable<T> {
 
@@ -26,6 +25,18 @@ sealed class Resolvable<T> {
         }
     }
 
+    /* -- abstract Resolvable members -- */
+
+    val value get() = ConValue(Type.NONE, toString())
+
+    abstract fun letOrDefer(block: (T) -> Unit)
+    abstract fun <R> tryReturn(success: (T) -> R, fail: (String) -> R): R
+    abstract fun resolve(): T?
+    
+    fun <R> convertTo(converter: (T?) -> R?): Resolvable<R> = from { converter(resolve()) }
+
+    /* -- IMPLEMENTATIONS -- */
+
     data class Now<T>(val result: T) : Resolvable<T>() {
         override fun letOrDefer(block: (T) -> Unit) = block(result)
         override fun <R> tryReturn(success: (T) -> R, fail: (String) -> R) = success(result)
@@ -40,7 +51,11 @@ sealed class Resolvable<T> {
     ) : Resolvable<T>(), IdElement {
         val placeholder get() = String.format(CodeGen.RESOLVER_TEMPLATE, id)
 
-        val onResolve by lazy { PaperVisionEventHandler("Placeholder-$placeholder-OnResolve", catchExceptions = false) }
+        private var usingOnResolve = false // to avoid creating the event handler if not necessary
+        val onResolve by lazy {
+            usingOnResolve = true
+            PaperVisionEventHandler("Placeholder-$placeholder-OnResolve", catchExceptions = false) 
+        }
 
         private var cachedValue: T? = null
 
@@ -48,7 +63,7 @@ sealed class Resolvable<T> {
 
         override fun resolve(): T? {
             val value = cachedValue ?: resolver()
-            if (value != null) {
+            if (value != null && usingOnResolve) {
                 onResolve()
             }
 
@@ -104,12 +119,4 @@ sealed class Resolvable<T> {
             null
         }
     })
-
-    val value get() = ConValue(Type.NONE, toString())
-
-    abstract fun letOrDefer(block: (T) -> Unit)
-    abstract fun <R> tryReturn(success: (T) -> R, fail: (String) -> R): R
-    fun <R> convertTo(converter: (T?) -> R?): Resolvable<R> = Resolvable.from { converter(resolve()) }
-
-    abstract fun resolve(): T?
 }

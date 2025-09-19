@@ -176,7 +176,7 @@ abstract class Node<S: CodeGenSession>(
                 continue
             }
 
-            for(linkedAttribute in attribute.enabledLinkedAttributes()) {
+            for(linkedAttribute in attribute.availableLinkedAttributes) {
                if(linkedAttribute != null) {
                    if(linkedAttribute.mode == AttributeMode.OUTPUT || linkedAttribute.parentNode == initialNode) {
                        continue // uh oh
@@ -197,7 +197,7 @@ abstract class Node<S: CodeGenSession>(
 
         for(attribute in _nodeAttributes) {
             if(attribute.mode == AttributeMode.OUTPUT) {
-                for(linkedAttribute in attribute.enabledLinkedAttributes()) {
+                for(linkedAttribute in attribute.availableLinkedAttributes) {
                     if(linkedAttribute != null && !linkedNodes.contains(linkedAttribute.parentNode)) {
                         linkedNodes.add(linkedAttribute.parentNode)
                     }

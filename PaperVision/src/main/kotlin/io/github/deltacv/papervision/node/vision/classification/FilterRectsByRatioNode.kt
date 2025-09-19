@@ -72,7 +72,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     rectsVar("clear")
 
@@ -108,7 +108,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
                 val rectsVar = uniqueVariable("${rects.value.value}_by_ratio", CPythonLanguage.newArrayOf(CPythonLanguage.NoType))
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     local(rectsVar)
 

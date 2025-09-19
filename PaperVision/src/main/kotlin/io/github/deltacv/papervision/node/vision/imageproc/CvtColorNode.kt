@@ -79,7 +79,7 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
                     }
 
                     current.scope { // add a cvtColor step in processFrame
-                        writeNameComment()
+                        nameComment()
 
                         deferredBlock(Resolvable.DependentPlaceholder(matColor) {
                             {
@@ -118,7 +118,7 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
                 val matColorResolved = matColor.resolve()
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     if (matColorResolved == null || matColorResolved != targetColor) {
                         val value = Resolvable.DependentPlaceholder(matColor) {

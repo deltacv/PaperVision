@@ -68,8 +68,6 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         null
     else serializedId
 
-    @Transient private var getThisSupplier: (() -> Any)? = null
-
     private var serializedId: Int? = null
 
     abstract val mode: AttributeMode
@@ -179,9 +177,9 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         }
     }
 
-    fun enabledLinkedAttribute(): Attribute? {
+    val availableLinkedAttribute: Attribute? get() {
         if(!isInput) {
-            raise("Output attributes might have more than one link, call linkedAttributes() instead")
+            raise("Output attributes might have more than one link, use linkedAttributes instead")
         }
 
         if(!hasLink) {
@@ -195,13 +193,13 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         } else link.aAttrib
     }
 
-    fun linkedAttributes() = enabledLinks.map {
+    val allLinkedAttributes get() = enabledLinks.map {
         if(it.aAttrib == this) {
             it.bAttrib
         } else it.aAttrib
     }
 
-    fun enabledLinkedAttributes() = enabledLinks.map {
+    val availableLinkedAttributes get() = enabledLinks.map {
         if(it.aAttrib == this) {
             it.bAttrib
         } else it.aAttrib
@@ -231,30 +229,12 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
     abstract fun value(current: CodeGen.Current): GenValue
 
-    fun thisGetTo(supplier: () -> Any) {
-        getThisSupplier = supplier
-    }
+    internal open fun readEditorValue(): Any? = null
 
-    open fun thisGet(): Any? = throw IllegalStateException("This attribute can't return a get() value")
-
-    fun get(): Any? = when {
-        mode == AttributeMode.INPUT -> thisGet()
-        hasLink -> enabledLinkedAttribute()!!.get()
-        else -> (getThisSupplier ?: throw IllegalStateException("This attribute can't return a get() value")).invoke()
-    }
-
-    @OptIn(ExperimentalContracts::class)
-    fun getIfPossible(orElse: () -> Unit): Any? {
-        contract {
-            callsInPlace(orElse, InvocationKind.AT_MOST_ONCE)
-        }
-
-        return try {
-            get()
-        } catch (_: IllegalStateException) {
-            orElse()
-            null
-        }
+    val editorValue get() = when {
+        mode == AttributeMode.INPUT -> readEditorValue()
+        hasLink -> availableLinkedAttribute!!.readEditorValue()
+        else -> null
     }
 
     fun rebuildPreviz() {

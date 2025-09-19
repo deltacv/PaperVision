@@ -74,7 +74,7 @@ class StringAttribute(
         }
     }
 
-    override fun thisGet() = value.get()
+    override fun readEditorValue() = value.get()
 
     override fun value(current: CodeGen.Current) = value(
         current, "a String", GenValue.String(value.get().resolved())

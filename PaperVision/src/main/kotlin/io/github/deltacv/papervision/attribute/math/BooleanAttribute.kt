@@ -51,12 +51,12 @@ class BooleanAttribute(
         }
     }
 
-    override fun thisGet() = value.get()
+    override fun readEditorValue() = value.get()
 
     override fun value(current: CodeGen.Current): GenValue.Boolean {
         if(isInput) {
             if(hasLink) {
-                val linkedAttrib = enabledLinkedAttribute()
+                val linkedAttrib = availableLinkedAttribute
 
                 raiseAssert(
                     linkedAttrib != null,

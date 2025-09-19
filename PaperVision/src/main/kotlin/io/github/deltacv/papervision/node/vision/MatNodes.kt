@@ -200,7 +200,7 @@ class OutputMatNode @JvmOverloads constructor(
                 val inputValue = input.value(current)
 
                 current.scope {
-                    if (crosshair.linkedAttributes().isNotEmpty()) {
+                    if (crosshair.allLinkedAttributes.isNotEmpty()) {
                         val crosshairValue = crosshair.value(current)
 
                         ifCondition((crosshairValue.value.v notEqualsTo nullVal)) {

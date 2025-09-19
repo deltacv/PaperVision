@@ -67,7 +67,7 @@ class EnumAttribute<T: Enum<T>>(
 
     override fun acceptLink(other: Attribute) = other is EnumAttribute<*> && values[0]::class == other.values[0]::class
 
-    override fun thisGet() = values[currentIndex.get()]
+    override fun readEditorValue() = values[currentIndex.get()]
 
     @Suppress("UNCHECKED_CAST")
     override fun value(current: CodeGen.Current): GenValue.Enum<T> {
@@ -75,7 +75,7 @@ class EnumAttribute<T: Enum<T>>(
 
         if(isInput) {
             if(hasLink) {
-                val linkedAttrib = enabledLinkedAttribute()
+                val linkedAttrib = availableLinkedAttribute
 
                 raiseAssert(
                     linkedAttrib != null,

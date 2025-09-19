@@ -28,11 +28,14 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
+import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.Misc
 import io.github.deltacv.papervision.serialization.data.SerializeData
 
 class RangeAttribute(
     override val mode: AttributeMode,
-    override var variableName: String? = null
+    override var variableName: String? = null,
+    val valueMutator: (Int) -> Double = { it.toDouble() }
 ) : TypedAttribute(Companion) {
     companion object : AttributeType {
         override val icon = FontAwesomeIcons.TextWidth
@@ -40,7 +43,27 @@ class RangeAttribute(
     }
 
     var min = 0
+        set(value) {
+            field = value
+            if(minValue.get() < value) {
+                minValue.set(value)
+            }
+            if(maxValue.get() < value) {
+                maxValue.set(value)
+            }
+        }
     var max = 255
+        set(value) {
+            field = value
+            if(maxValue.get() > value) {
+                maxValue.set(value)
+            }
+            if(minValue.get() > value) {
+                minValue.set(value)
+            }
+        }
+
+    var useSliders = true
 
     @SerializeData
     val minValue = ImInt(min)
@@ -50,8 +73,8 @@ class RangeAttribute(
     private var prevMin: Int? = null
     private var prevMax: Int? = null
 
-    private val minId by PaperVision.miscIds.nextId()
-    private val maxId by PaperVision.miscIds.nextId()
+    private val minId by Misc.newMiscId()
+    private val maxId by Misc.newMiscId()
 
     override fun drawAttribute() {
         super.drawAttribute()
@@ -59,12 +82,21 @@ class RangeAttribute(
         if(!hasLink) {
             sameLineIfNeeded()
 
-            ExtraWidgets.rangeSliders(
-                min, max,
-                minValue, maxValue,
-                minId, maxId,
-                width = 95f
-            )
+            if(useSliders) {
+                ExtraWidgets.rangeSliders(
+                    min, max,
+                    minValue, maxValue,
+                    minId, maxId,
+                    width = 95f
+                )
+            } else {
+                ExtraWidgets.rangeTextInputs(
+                    min, max,
+                    minValue, maxValue,
+                    minId, maxId,
+                    width = 95f
+                )
+            }
 
             val mn = minValue.get()
             val mx = maxValue.get()
@@ -78,12 +110,12 @@ class RangeAttribute(
         }
     }
 
-    override fun thisGet() = arrayOf(minValue.get().toDouble(), maxValue.get().toDouble())
+    override fun readEditorValue() = arrayOf(valueMutator(minValue.get()), valueMutator(maxValue.get()))
 
     override fun value(current: CodeGen.Current) = value(
         current, "a Range", GenValue.Range(
-            GenValue.Double(minValue.get().toDouble().resolved()),
-            GenValue.Double(maxValue.get().toDouble().resolved())
+            GenValue.Double(valueMutator(minValue.get()).resolved()),
+            GenValue.Double(valueMutator(maxValue.get()).resolved())
         )
     ) { it is GenValue.Range }
 

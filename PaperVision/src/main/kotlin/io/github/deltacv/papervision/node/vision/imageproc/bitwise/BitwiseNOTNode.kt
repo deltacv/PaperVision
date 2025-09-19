@@ -64,7 +64,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     outputMat("release")
                     JvmOpenCvTypes.Core("bitwise_not", firstValue.value.v, outputMat)
@@ -88,7 +88,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
                 val variable = uniqueVariable("bitwiseNOTMat", value)
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
                     local(variable)
                 }
 

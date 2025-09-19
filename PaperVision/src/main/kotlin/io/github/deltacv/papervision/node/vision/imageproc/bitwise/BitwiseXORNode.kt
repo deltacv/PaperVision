@@ -76,7 +76,7 @@ class BitwiseXORNode : DrawNode<BitwiseXORNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     outputMat("release")
                     JvmOpenCvTypes.Core("bitwise_xor", firstValue.value.v, secondValue.value.v, outputMat)
@@ -111,7 +111,7 @@ class BitwiseXORNode : DrawNode<BitwiseXORNode.Session>() {
                 val variable = uniqueVariable("bitwiseXORMat", value)
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
                     local(variable)
                 }
 

@@ -948,7 +948,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                     ToastWindow("err_noop_engine", font = paperVision.defaultFontBig).enable()
                 } else {
                     if (!paperVision.previzManager.previzRunning) {
-                        paperVision.startPrevizAsk()
+                        paperVision.startPrevizWithEngine()
                     } else {
                         paperVision.previzManager.stopPreviz()
                     }

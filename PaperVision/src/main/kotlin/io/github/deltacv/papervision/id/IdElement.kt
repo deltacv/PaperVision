@@ -18,10 +18,6 @@
 
 package io.github.deltacv.papervision.id
 
-object NoneIdElement : IdElement {
-    override val id = 0xDAFC
-}
-
 interface IdElement {
     val id: Int
 }
@@ -87,4 +83,9 @@ abstract class DrawableIdElementBase<T : DrawableIdElementBase<T>> : DrawableIdE
 
     override fun pollChange() = false
 
+}
+
+object Misc : IdElement {
+    override val id = 0xDAFC
+    fun newMiscId() = IdElementContainerStack.threadStack.peekNonNull<Misc>().nextId()
 }

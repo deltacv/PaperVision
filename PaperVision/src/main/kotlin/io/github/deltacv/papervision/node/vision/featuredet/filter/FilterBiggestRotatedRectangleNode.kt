@@ -21,7 +21,6 @@ package io.github.deltacv.papervision.node.vision.featuredet.filter
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
-import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.RotatedRectAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
@@ -67,7 +66,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     biggestRect instanceSet biggestRect.nullVal
 
@@ -134,7 +133,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                 val biggestRect = uniqueVariable("biggest_rect", CPythonLanguage.nullValue)
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     local(biggestRect)
 

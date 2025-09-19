@@ -29,6 +29,7 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
+import io.github.deltacv.papervision.id.Misc
 import io.github.deltacv.papervision.util.Range2d
 
 class DoubleAttribute(
@@ -45,7 +46,7 @@ class DoubleAttribute(
     val value = ImDouble()
     private val sliderValue = ImFloat()
 
-    private val sliderId by PaperVision.miscIds.nextId()
+    private val sliderId by Misc.newMiscId()
 
     private var range: Range2d? = null
 
@@ -77,7 +78,7 @@ class DoubleAttribute(
         this.range = null
     }
 
-    override fun thisGet() = value.get()
+    override fun readEditorValue() = value.get()
 
     override fun value(current: CodeGen.Current) = value(
         current, "a Double", GenValue.Double(value.get().resolved())

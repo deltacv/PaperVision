@@ -1,3 +1,3 @@
 package io.github.deltacv.papervision.codegen
 
-fun <T> T.resolved() = Resolvable.Now(this)
+inline fun <reified T> T.resolved() = Resolvable.Now(this)

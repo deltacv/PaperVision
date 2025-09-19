@@ -28,6 +28,7 @@ import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.gui.Font
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.Misc
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
 import java.awt.Toolkit
@@ -182,7 +183,7 @@ class DialogMessageWindow(
         ImGuiWindowFlags.NoScrollWithMouse
     )
 
-    val textAreaId by PaperVision.miscIds.nextId()
+    val textAreaId by Misc.newMiscId()
 
     override val isModal = true
 

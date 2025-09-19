@@ -21,14 +21,12 @@ package io.github.deltacv.papervision.id
 class IdElementContainerStack {
 
     companion object {
-        // map of thread-dependent IdElementContainerStack-s
-        private val threadStacks = mutableMapOf<Thread, IdElementContainerStack>()
+        // Thread-local instance of IdElementContainerStack
+        private val threadLocalStack = ThreadLocal.withInitial { IdElementContainerStack() }
 
-        // function that returns a thread-dependent IdElementContainerStack, based on the current thread
+        // Accessor for the current thread's stack
         val threadStack: IdElementContainerStack
-            get() = threadStacks.getOrPut(Thread.currentThread()) { IdElementContainerStack() }
-
-        fun getStackOfThread(thread: Thread) = threadStacks[thread]
+            get() = threadLocalStack.get()
     }
 
     private val stacks = mutableMapOf<Class<out IdElement>, ArrayDeque<IdElementContainer<*>>>()

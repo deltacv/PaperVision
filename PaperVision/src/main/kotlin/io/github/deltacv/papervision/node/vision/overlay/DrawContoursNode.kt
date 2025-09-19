@@ -93,7 +93,7 @@ open class DrawContoursNode
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     if(!isDrawOnInput) {
                         drawMat = output
@@ -155,7 +155,7 @@ open class DrawContoursNode
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     val color = lineParams.color
                     val thickness = lineParams.thickness.value

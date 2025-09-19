@@ -90,7 +90,7 @@ open class DrawRectanglesNode
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     if (!isDrawOnInput) {
                         drawMat = output
@@ -160,7 +160,7 @@ open class DrawRectanglesNode
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     val target = if (isDrawOnInput) {
                         input.value.v

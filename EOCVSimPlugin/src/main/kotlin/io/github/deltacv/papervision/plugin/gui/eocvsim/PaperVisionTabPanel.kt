@@ -43,6 +43,7 @@ class PaperVisionTabPanel(
 
     val root = DefaultMutableTreeNode("Projects")
 
+    private var previousSelectedProjectNode: PaperVisionProjectTree.ProjectTreeNode.Project? = null
     val projectList = JTree(root)
 
     init {
@@ -58,10 +59,12 @@ class PaperVisionTabPanel(
 
                     if (e.clickCount >= 2) {
                         if (nodeObject is PaperVisionProjectTree.ProjectTreeNode.Project) {
+                            previousSelectedProjectNode = nodeObject
                             projectManager.requestOpenProject(nodeObject)
                         }
-                    } else if(e.clickCount == 1) {
+                    } else if(e.clickCount == 1 && previousSelectedProjectNode != nodeObject) {
                         if (nodeObject is PaperVisionProjectTree.ProjectTreeNode.Project) {
+                            previousSelectedProjectNode = nodeObject
                             projectManager.requestPreviewLatestPipeline(nodeObject)
                         }
                     }

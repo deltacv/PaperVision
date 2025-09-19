@@ -90,7 +90,7 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     contoursVar("clear")
 

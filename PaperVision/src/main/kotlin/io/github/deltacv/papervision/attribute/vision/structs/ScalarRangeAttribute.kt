@@ -45,7 +45,7 @@ class ScalarRangeAttribute(
 
     override var icon = FontAwesomeIcons.GripVertical
 
-    override fun drawAttributeText(index: Int, attrib: Attribute) {
+    override fun drawAttributeText(index: Int, attrib: Attribute): Boolean {
         if(index < color.channelNames.size) {
             val name = color.channelNames[index]
             val elementName = name + if(name.length == 1) " " else ""
@@ -58,7 +58,11 @@ class ScalarRangeAttribute(
             ImGui.pushFont(PaperVision.defaultImGuiFont.imfont)
             ImGui.text(elementName)
             ImGui.popFont()
+
+            return true
         }
+
+        return false
     }
 
     override fun value(current: CodeGen.Current): GenValue.ScalarRange {
@@ -86,7 +90,9 @@ class ScalarRangeAttribute(
         val hexMax = hexMin.hexString
 
         onChange {
-            val values = (getIfPossible { rebuildPreviz() } ?: return@onChange) as Array<*>
+            val values = editorValue?.let {
+                it as Array<*>
+            } ?: return@onChange
 
             val minValues = arrayOf(0.0, 0.0, 0.0, 0.0)
             val maxValues = arrayOf(0.0, 0.0, 0.0, 0.0)

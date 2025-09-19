@@ -76,7 +76,7 @@ class BitwiseANDNode : DrawNode<BitwiseANDNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     outputMat("release")
                     JvmOpenCvTypes.Core("bitwise_and", firstValue.value.v, secondValue.value.v, outputMat)
@@ -111,7 +111,7 @@ class BitwiseANDNode : DrawNode<BitwiseANDNode.Session>() {
                 val variable = uniqueVariable("bitwiseANDMat", value)
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
                     local(variable)
                 }
 

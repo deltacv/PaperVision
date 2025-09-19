@@ -1,7 +1,6 @@
 package io.github.deltacv.papervision.node.vision.classification
 
 import io.github.deltacv.papervision.attribute.Attribute
-import io.github.deltacv.papervision.attribute.math.DoubleAttribute
 import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
@@ -13,7 +12,6 @@ import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.v
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -74,7 +72,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     contoursVar("clear")
 
@@ -88,7 +86,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                     }
                 }
 
-                session.output = GenValue.GList.RuntimeListOf(contoursVar.resolved(), GenValue.GPoints.RuntimePoints::class.resolved())
+                session.output = GenValue.GList.RuntimeListOf<GenValue.GPoints.RuntimePoints>(contoursVar.resolved())
             }
 
             session

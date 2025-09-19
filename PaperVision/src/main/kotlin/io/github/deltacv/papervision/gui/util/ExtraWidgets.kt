@@ -46,6 +46,34 @@ object ExtraWidgets {
             maxValue.set(mn)
         }
     }
+    fun rangeTextInputs(
+        min: Int, max: Int,
+        minValue: ImInt, maxValue: ImInt,
+        minId: Int, maxId: Int,
+        width: Float = 110f
+    ) {
+        ImGui.pushItemWidth(width)
+        ImGui.inputInt("###$minId", minValue)
+        ImGui.sameLine()
+        ImGui.inputInt("###$maxId", maxValue)
+        ImGui.popItemWidth()
+
+        // Clamp values within range
+        val mn = minValue.get().coerceIn(min, max)
+        val mx = maxValue.get().coerceIn(min, max)
+
+        if (mn > mx) {
+            minValue.set(mx)
+        } else {
+            minValue.set(mn)
+        }
+
+        if (mx < mn) {
+            maxValue.set(mn)
+        } else {
+            maxValue.set(mx)
+        }
+    }
 
     private val valuesStringCache = mutableMapOf<Class<*>, Array<String>>()
 

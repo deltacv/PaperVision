@@ -89,7 +89,7 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     input.value.v("copyTo", output)
 
@@ -166,7 +166,7 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                 public(elementDilate)
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     local(output)
 

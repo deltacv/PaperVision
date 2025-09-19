@@ -71,15 +71,15 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
         + sides.rebuildOnChange()
 
         sides.onChange {
-            if (sides.thisGet() < 3  && previousSides >= 3) {
+            if (sides.readEditorValue() < 3  && previousSides >= 3) {
                 sides.value.set(0)
                 shape.currentIndex.set(Shape.Circle.ordinal)
-            } else if (sides.thisGet() in 1..2) {
+            } else if (sides.readEditorValue() in 1..2) {
                 sides.value.set(3)
                 shape.currentIndex.set(Shape.Triangle.ordinal)
             } else {
                 for ((i, shapeE) in Shape.values().withIndex()) {
-                    if (sides.thisGet() == shapeE.sides) {
+                    if (sides.readEditorValue() == shapeE.sides) {
                         shape.currentIndex.set(i)
                         return@onChange
                     }
@@ -109,7 +109,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
             firstDraw = false
         }
 
-        if(sides.thisGet() < 0) sides.value.set(0)
+        if(sides.readEditorValue() < 0) sides.value.set(0)
     }
 
     override val generators = generatorsBuilder {
@@ -142,7 +142,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     list("clear")
 

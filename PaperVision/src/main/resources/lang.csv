@@ -37,6 +37,7 @@ nod_groupcontours_byarea,Filter Contours by Area,Filtrar Contornos por Area
 nod_groupcontours_byratio,Filter Contours by Ratio,Filtrar Contornos por Ratio
 nod_grouprects_byratio,Filter Rectangles by Ratio,Filtrar Rectangulos por Ratio
 nod_cannyedge,Canny Edge,Canny Edge
+nod_blobdetector,Simple Blob Detector,Detector de Blobs
 nod_exportrect_target,Export Rectangle,Exportar Rectangulo
 nod_exportrot_recttarget,Export Rotated Rectangle,Exportar Rectangulo Rotado
 nod_exportrect_targets,Export Rectangles,Exportar Rectangulos
@@ -100,6 +101,10 @@ att_sides,Sides,Lados
 att_accuracy,Accuracy,Precision
 att_erode,Erode,Erosion
 att_dilate,Dilate,Dilatacion
+att_area,Area,Area
+att_circularity,Circularity,Circularidad
+att_convexity,Convexity,Convexidad
+att_keypoints,Key Points,Puntos Clave
 att_source,Source,Fuente
 att_boundingmode,Bounding Mode,Modo de Delimitacion
 att_areaorientation,Area Orientation,Orientacion de Area
@@ -142,6 +147,7 @@ des_drawrects_onimage,Draws the rectangles in the passed image.,Dibuja los recta
 des_drawcontours,Draws the contours on a copy of the<br>given image and outputs the result.,Dibuja los contornos en una copia de la<br>imagen dada y devuelve el resultado.
 des_drawcontours_onimage,Draws the contours on the input image,Dibuja los contornos en la imagen de entrada.
 des_cannyedge,Filters edges in the input<br>image using the Canny algorithm.,Filtra bordes en la imagen de<br>entrada usando el algoritmo Canny.
+des_blobdetector,Detects blobs in an image<br>using OpenCV's Simple Blob Detector.,Detecta blobs en una imagen<br>usando el Detector de Blobs Simple de OpenCV.
 des_vector2,Composes a Vector in two dimensions,Compone un Vector en dos dimensiones
 err_bitwiseor_binary,"Both inputs must be of the same type, binary or not","Ambas entradas deben ser del mismo tipo, binario o no"
 err_grayscale_required,"Grayscale image required","Se requiere una imagen en escala de grises"

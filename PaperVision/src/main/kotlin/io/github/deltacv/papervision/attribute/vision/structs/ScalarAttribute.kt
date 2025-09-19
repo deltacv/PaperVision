@@ -47,7 +47,7 @@ class ScalarAttribute(
 
     override var icon = FontAwesomeIcons.GripHorizontal
 
-    override fun drawAttributeText(index: Int, attrib: Attribute) {
+    override fun drawAttributeText(index: Int, attrib: Attribute): Boolean {
         if(index < color.channelNames.size) {
             val name = color.channelNames[index]
             val elementName = name + if(name.length == 1) " " else ""
@@ -60,7 +60,11 @@ class ScalarAttribute(
             ImGui.pushFont(PaperVision.defaultImGuiFont.imfont)
             ImGui.text(elementName)
             ImGui.popFont()
+
+            return true
         }
+
+        return false
     }
 
     override fun onElementCreation(element: Attribute) {

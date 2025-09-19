@@ -49,8 +49,8 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
     val outputRects = ListAttribute(OUTPUT, RectAttribute, "$[att_boundingrects]")
 
     override fun onEnable() {
-        +inputContours.rebuildOnChange()
-        +outputRects.rebuildOnChange()
+        + inputContours.rebuildOnChange()
+        + outputRects.rebuildOnChange()
     }
 
     override val generators = generatorsBuilder {
@@ -71,7 +71,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     rectsList("clear")
 
@@ -114,7 +114,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                 val rectsList = uniqueVariable(listName, CPythonLanguage.NoType.newArray(0.v))
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     local(rectsList)
 

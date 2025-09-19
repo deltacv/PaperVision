@@ -142,7 +142,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     deferredBlock(Resolvable.DependentPlaceholder(matColor) {
                         {
@@ -177,7 +177,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
                 val targetColor = lastColor
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     val target = uniqueVariable("thresholdTargetMat", inputMat.value.v)
                     local(target)

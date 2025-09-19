@@ -96,7 +96,7 @@ class IntAttribute(
         sliders = false
     }
 
-    override fun thisGet() = value.get()
+    override fun readEditorValue() = value.get()
 
     override fun value(current: CodeGen.Current) = value(
         current, "an Int", GenValue.Int(value.get().resolved())

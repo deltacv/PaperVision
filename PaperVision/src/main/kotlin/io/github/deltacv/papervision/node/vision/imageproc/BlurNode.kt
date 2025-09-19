@@ -81,7 +81,7 @@ class BlurNode : DrawNode<BlurNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     when(algo) {
                         Gaussian -> {
@@ -124,7 +124,7 @@ class BlurNode : DrawNode<BlurNode.Session>() {
                 val blurVal = blurValue.value(current)
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     val value = when (algo) {
                         Gaussian -> {

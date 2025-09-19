@@ -75,7 +75,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     rectsList("clear")
 
@@ -122,7 +122,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                 val rectsList = uniqueVariable("${name ?: "r"}ot_rects", CPythonLanguage.NoType.newArray())
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     local(rectsList)
 

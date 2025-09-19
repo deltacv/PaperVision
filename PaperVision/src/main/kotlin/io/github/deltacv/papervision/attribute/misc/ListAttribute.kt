@@ -76,7 +76,7 @@ open class ListAttribute(
             onEnable()
         }
 
-    private val allowAod get() = allowAddOrDelete && fixedLength == null
+    private val allowMutation get() = allowAddOrDelete && fixedLength == null
 
     private var serializationData: Data? = null
 
@@ -154,13 +154,13 @@ open class ListAttribute(
         var ignoreNewLink = false
 
         // accepts links of elementAttributeType to redirect them into a list element
-        if (mode == AttributeMode.INPUT && beforeHasLink != hasLink && hasLink && enabledLinkedAttribute() !is ListAttribute) {
-            val linkedAttribute = enabledLinkedAttribute()!!
+        if (mode == AttributeMode.INPUT && beforeHasLink != hasLink && hasLink && availableLinkedAttribute !is ListAttribute) {
+            val linkedAttribute = availableLinkedAttribute!!
 
             // the user might be crazy and try to link an attribute that is already linked to one of our elements
             // this caused a funny bug during testing, so, please don't do that (not that you can do it anymore)
             val alreadyLinkedAttribute = listAttributes.find {
-                it.enabledLinkedAttribute() == linkedAttribute
+                it.availableLinkedAttribute == linkedAttribute
             }
             if(alreadyLinkedAttribute == null) {
                 createElement(linkTo = linkedAttribute, relatedLink = linkedAttribute.links.last())
@@ -187,10 +187,10 @@ open class ListAttribute(
             }
 
             if (!hasLink) { // only draw attributes if there's not a link attached
-                isDrawAttributeTextOverriden = true
-                drawAttributeText(i, attrib)
+                val isDrawAttributeTextOverridden =
+                    drawAttributeText(i, attrib)
 
-                if (isDrawAttributeTextOverriden) {
+                if (isDrawAttributeTextOverridden) {
                     ImGui.sameLine()
                 } else {
                     attrib.inputSameLine = true
@@ -203,19 +203,17 @@ open class ListAttribute(
         beforeHasLink = hasLink
     }
 
-    private var isDrawAttributeTextOverriden = false
-
     // accept either another ListAttribute with the same element type or a TypedAttribute with the same type as the element type
-    override fun acceptLink(other: Attribute) = (other is ListAttribute && other.elementAttributeType == elementAttributeType) || (other is TypedAttribute && other.attributeType == elementAttributeType)
+    override fun acceptLink(other: Attribute) =
+        (other is ListAttribute && other.elementAttributeType == elementAttributeType) ||
+                (other is TypedAttribute && other.attributeType == elementAttributeType)
 
-    open fun drawAttributeText(index: Int, attrib: Attribute) {
-        isDrawAttributeTextOverriden = false
-    }
+    open fun drawAttributeText(index: Int, attrib: Attribute): Boolean = false
 
     override fun value(current: CodeGen.Current): GenValue.GList {
         return if (mode == AttributeMode.INPUT) {
             if (hasLink) {
-                val linkedAttrib = enabledLinkedAttribute()
+                val linkedAttrib = availableLinkedAttribute
 
                 raiseAssert(
                     linkedAttrib != null,
@@ -249,7 +247,7 @@ open class ListAttribute(
     override fun drawAttribute() {
         super.drawAttribute()
 
-        if (!hasLink && elementAttributeType.allowsNew && allowAod && mode == AttributeMode.INPUT) {
+        if (!hasLink && elementAttributeType.allowsNew && allowMutation && mode == AttributeMode.INPUT) {
             // idk wat the frame height is, i just stole it from
             // https://github.com/ocornut/imgui/blob/7b8bc864e9af6c6c9a22125d65595d526ba674c5/imgui_widgets.cpp#L3439
 
@@ -292,11 +290,11 @@ open class ListAttribute(
         }
     }
 
-    override fun thisGet(): Array<Any?> {
+    override fun readEditorValue(): Array<Any?> {
         val list = mutableListOf<Any?>()
 
         for(attribute in listAttributes) {
-            list.add(attribute.get())
+            list.add(attribute.editorValue)
         }
 
         return list.toTypedArray()

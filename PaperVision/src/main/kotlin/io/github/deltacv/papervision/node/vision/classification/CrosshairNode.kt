@@ -41,7 +41,6 @@ import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
-import jdk.nashorn.internal.codegen.types.BooleanType
 
 @PaperNode(
     name = "nod_crosshair",
@@ -115,7 +114,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     drawOnValue("copyTo", crosshairImage)
 
@@ -298,7 +297,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                 val crosshairImage = uniqueVariable("crosshair_image", drawOnValue.callValue("copy", CPythonLanguage.NoType))
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     local(crosshair)
                     local(crosshairImage)
