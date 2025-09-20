@@ -152,7 +152,7 @@ class EOCVSimEngineImageStreamer(
                         try {
                             compressor.compress(jpegBuffer)
                         } catch (e: JPEGException) {
-                            // fallback to opencv
+                            // fallback to opencv !?
                             val bytes = MatOfByte()
 
                             Imgcodecs.imencode(".jpg", targetImage, bytes)
@@ -222,10 +222,12 @@ class EOCVSimEngineImageStreamer(
             val mean = changeRateAvg.mean
             val isFastChange = mean <= 0.5
 
+            val forceSend = changeRateTimer.seconds() >= 5.0
+
             // Perform the diff check only if the change rate is slow enough
             try {
                 // Skip diff check if changes are frequent
-                if (isFastChange) {
+                if (isFastChange || forceSend) {
                     return true
                 } else if (!latestMat.empty() && latestMat.size() == image.size()) {
                     // Slow down diff check after 3 seconds of no changes

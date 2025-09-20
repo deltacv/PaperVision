@@ -142,7 +142,10 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                     }
 
                     val biggestContour = uniqueVariable(
-                        "biggest_contour", CPythonOpenCvTypes.np.callValue("array", CPythonLanguage.NoType, CPythonLanguage.newArrayOf(CPythonLanguage.NoType, 0.v))
+                        "biggest_contour",
+                        CPythonOpenCvTypes.np.callValue("array",
+                            CPythonLanguage.NoType, CPythonLanguage.newArrayOf(CPythonLanguage.NoType, 0.v)
+                        )
                     )
 
                     local(biggestContour)

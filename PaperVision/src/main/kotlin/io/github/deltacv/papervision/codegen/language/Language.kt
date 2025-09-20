@@ -43,7 +43,7 @@ interface Language : ValueBuilder {
 
     val nullValue get() = ConValue(VoidType, "null")
 
-    val newImportBuilder: () -> ImportBuilder
+    fun newImportBuilder(): ImportBuilder
 
     fun Array<out Parameter>.csv(): String {
         val stringArray = this.map { it.string }.toTypedArray()
@@ -53,7 +53,6 @@ interface Language : ValueBuilder {
     val Parameter.string: String
 
     fun isImportExcluded(import: Type) = excludedImports.contains(import)
-
 
     fun int(value: Value) = castValue(value, language.IntType)
     fun int(value: Int) = ConValue(language.IntType, value.toString())

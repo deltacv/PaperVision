@@ -1,3 +1,21 @@
+/*
+ * PaperVision
+ * Copyright (C) 2025 Sebastian Erives, deltacv
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.github.deltacv.papervision.node.vision.featuredet
 
 import io.github.deltacv.papervision.attribute.Attribute
@@ -9,11 +27,8 @@ import io.github.deltacv.papervision.attribute.vision.structs.KeyPointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.Resolvable
-import io.github.deltacv.papervision.codegen.build.Value
-import io.github.deltacv.papervision.codegen.build.Variable
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -66,6 +81,7 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
             val session = Session()
 
             current {
+                input.requireAttachedAttribute()
                 val inputValue = input.value(current).value
 
                 val areaRangeValue = area.value(current)
@@ -118,7 +134,7 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
                     private(keyPoints)
                 }
 
-                initContext {
+                initScope {
                     detector instanceSet JvmOpenCvTypes.SimpleBlobDetector.callValue("create", JvmOpenCvTypes.SimpleBlobDetector, params)
                 }
 
@@ -164,6 +180,65 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
 
         generatorFor(CPythonLanguage) {
             val session = Session()
+
+            current {
+                input.requireAttachedAttribute()
+                val inputValue = input.value(current).value
+
+                val areaRangeValue = area.value(current)
+                val thresholdRangeValue = threshold.value(current)
+                val circularityRangeValue = circularity.value(current)
+                val convexityRangeValue = convexity.value(current)
+
+                val params = uniqueVariable("blob_detector_params",
+                    CPythonOpenCvTypes.cv2.callValue("SimpleBlobDetector_Params", CPythonLanguage.NoType)
+                )
+
+                val detector = uniqueVariable("blob_detector",
+                    CPythonOpenCvTypes.cv2.callValue("SimpleBlobDetector_create", CPythonLanguage.NoType, params)
+                )
+
+                initScope {
+                    local(params)
+
+                    separate()
+
+                    params.propertyVariable("minThreshold", CPythonLanguage.NoType) set float(thresholdRangeValue.min.value.v)
+                    params.propertyVariable("maxThreshold", CPythonLanguage.NoType) set float(thresholdRangeValue.max.value.v)
+
+                    separate()
+
+                    params.propertyVariable("filterByArea", CPythonLanguage.NoType) set trueValue
+                    params.propertyVariable("minArea", CPythonLanguage.NoType) set float(areaRangeValue.min.value.v)
+                    params.propertyVariable("maxArea", CPythonLanguage.NoType) set float(areaRangeValue.max.value.v)
+
+                    separate()
+
+                    params.propertyVariable("filterByCircularity", CPythonLanguage.NoType) set trueValue
+                    params.propertyVariable("minCircularity", CPythonLanguage.NoType) set float(circularityRangeValue.min.value.v)
+                    params.propertyVariable("maxCircularity", CPythonLanguage.NoType) set float(circularityRangeValue.max.value.v)
+
+                    separate()
+
+                    params.propertyVariable("filterByConvexity", CPythonLanguage.NoType) set trueValue
+                    params.propertyVariable("minConvexity", CPythonLanguage.NoType) set float(convexityRangeValue.min.value.v)
+                    params.propertyVariable("maxConvexity", CPythonLanguage.NoType) set float(convexityRangeValue.max.value.v)
+
+                    separate()
+
+                    local(detector)
+                }
+
+                current.scope {
+                    nameComment()
+
+                    val keyPoints = uniqueVariable("keypoints", detector.callValue("detect", CPythonLanguage.NoType, inputValue.v))
+
+                    local(keyPoints)
+
+                    session.output = GenValue.RuntimeKeyPoints(keyPoints.resolved())
+                }
+            }
 
             session
         }

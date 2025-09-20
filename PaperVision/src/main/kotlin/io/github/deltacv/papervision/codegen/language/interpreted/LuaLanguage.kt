@@ -20,7 +20,6 @@ package io.github.deltacv.papervision.codegen.language.interpreted
 
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.LanguageBase
@@ -35,7 +34,7 @@ object LuaLanguage : LanguageBase(
     override val trueValue = ConValue(BooleanType, "true")
     override val falseValue = ConValue(BooleanType, "false")
 
-    override val newImportBuilder = { LuaImportBuilder(this) }
+    override fun newImportBuilder() = LuaImportBuilder(this)
 
     object java {
         val array = Type("array", "java")
@@ -157,7 +156,7 @@ object LuaLanguage : LanguageBase(
         private val imports = mutableMapOf<String, MutableList<String>>()
 
         override fun import(type: Type) {
-            val actualType = type.actualImport ?: type
+            val actualType = type.overridenImport ?: type
 
             if(lang.isImportExcluded(actualType) || !actualType.shouldImport) return
 

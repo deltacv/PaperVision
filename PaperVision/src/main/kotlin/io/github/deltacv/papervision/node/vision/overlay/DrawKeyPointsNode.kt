@@ -30,6 +30,7 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.Value
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
@@ -126,7 +127,30 @@ open class DrawKeyPointsNode
         generatorFor(CPythonLanguage) {
             val session = Session()
 
+            current {
+                val color = lineColor.value(current)
 
+                val input = inputMat.value(current)
+                val keypointsValue = keypoints.value(current)
+
+                current.scope {
+                    nameComment()
+
+                    val output = uniqueVariable("${input.value.value}_keypoints",
+                        cv2.callValue("drawKeypoints",
+                            CPythonLanguage.NoType,
+                            input.value.v,
+                            keypointsValue.value.v,
+                            CPythonOpenCvTypes.np.callValue("array",
+                                CPythonLanguage.NoType, CPythonLanguage.newArrayOf(CPythonLanguage.NoType, 0.v)
+                            ),
+                            CPythonLanguage.tuple(color.a.value.v, color.b.value.v, color.c.value.v)
+                        )
+                    )
+
+                    local(output)
+                }
+            }
 
             session
         }

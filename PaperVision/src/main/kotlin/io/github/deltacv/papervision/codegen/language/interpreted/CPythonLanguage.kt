@@ -21,7 +21,6 @@ package io.github.deltacv.papervision.codegen.language.interpreted
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.CPythonType
 import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.codegen.language.Language
@@ -47,7 +46,7 @@ object CPythonLanguage : LanguageBase(
 
     override val nullValue = ConValue(NoType, "None")
 
-    override val newImportBuilder = { PythonImportBuilder(this) }
+    override fun newImportBuilder() = PythonImportBuilder(this)
 
     override fun and(left: Condition, right: Condition) = condition("(${left.value}) and (${right.value})")
     override fun or(left: Condition, right: Condition) = condition("(${left.value}) or (${right.value})")
@@ -250,7 +249,7 @@ object CPythonLanguage : LanguageBase(
 
         override fun import(type: Type) {
             // Resolve actual import type
-            val actualType = type.actualImport ?: type
+            val actualType = type.overridenImport ?: type
 
             // Skip excluded types or types that shouldn't be imported
             if (lang.isImportExcluded(actualType) || !actualType.shouldImport) return

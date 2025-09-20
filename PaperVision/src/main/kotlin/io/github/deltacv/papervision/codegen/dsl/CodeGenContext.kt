@@ -29,15 +29,15 @@ class CodeGenContext(val codeGen: CodeGen) : LanguageContext(codeGen.language) {
         codeGen.classStartScope.enumClass(name, *values)
     }
 
-    fun initContext(block: ScopeContext.() -> Unit) {
+    fun initScope(block: ScopeContext.() -> Unit) {
         codeGen.initScope(block)
     }
 
-    fun processFrameContext(block: ScopeContext.() -> Unit) {
+    fun processFrameScope(block: ScopeContext.() -> Unit) {
         codeGen.processFrameScope(block)
     }
 
-    fun onViewportTappedContext(block: ScopeContext.() -> Unit) {
+    fun onViewportTappedScope(block: ScopeContext.() -> Unit) {
         codeGen.viewportTappedScope(block)
     }
 

@@ -46,6 +46,6 @@ object CPythonOpenCvTypes {
     val np = CPythonType("numpy", null, "np")
 
     val npArray = object: CPythonType("np.ndarray") {
-        override var actualImport = np
+        override var overridenImport = np
     }
 }

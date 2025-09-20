@@ -25,7 +25,7 @@ open class Type(
     open val packagePath: String = "",
     val generics: Array<Type>? = null,
 
-    open val actualImport: Type? = null,
+    open val overridenImport: Type? = null,
     val isArray: Boolean = false
 ) {
 
@@ -42,7 +42,7 @@ open class Type(
             "$className<${generics.csv()}>"
         else className
 
-    override fun toString() = "Type(className=$className, packagePath=$packagePath, actualImport=$actualImport, isArray=$isArray)"
+    override fun toString() = "Type(className=$className, packagePath=$packagePath, actualImport=$overridenImport, isArray=$isArray)"
 
 }
 
