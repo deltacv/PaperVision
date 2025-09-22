@@ -141,16 +141,16 @@ class PaperVision(
         private set
 
     fun init() {
-        IdElementContainerStack.threadStack.push(nodes)
-        IdElementContainerStack.threadStack.push(attributes)
-        IdElementContainerStack.threadStack.push(links)
-        IdElementContainerStack.threadStack.push(windows)
-        IdElementContainerStack.threadStack.push(textures)
-        IdElementContainerStack.threadStack.push(textureProcessorQueues)
-        IdElementContainerStack.threadStack.push(streamDisplays)
-        IdElementContainerStack.threadStack.push(actions)
-        IdElementContainerStack.threadStack.push(popups)
-        IdElementContainerStack.threadStack.push(misc)
+        IdElementContainerStack.localStack.push(nodes)
+        IdElementContainerStack.localStack.push(attributes)
+        IdElementContainerStack.localStack.push(links)
+        IdElementContainerStack.localStack.push(windows)
+        IdElementContainerStack.localStack.push(textures)
+        IdElementContainerStack.localStack.push(textureProcessorQueues)
+        IdElementContainerStack.localStack.push(streamDisplays)
+        IdElementContainerStack.localStack.push(actions)
+        IdElementContainerStack.localStack.push(popups)
+        IdElementContainerStack.localStack.push(misc)
 
         logger.info("Starting PaperVision...\n\n${IntroModalWindow.iconLogo}\n")
 
@@ -218,16 +218,16 @@ class PaperVision(
             logger.warn("Taskbar icon not supported")
         }
 
-        IdElementContainerStack.threadStack.pop<Node<*>>()
-        IdElementContainerStack.threadStack.pop<Attribute>()
-        IdElementContainerStack.threadStack.pop<Link>()
-        IdElementContainerStack.threadStack.pop<Window>()
-        IdElementContainerStack.threadStack.pop<PlatformTexture>()
-        IdElementContainerStack.threadStack.pop<TextureProcessorQueue>()
-        IdElementContainerStack.threadStack.pop<ImageDisplay>()
-        IdElementContainerStack.threadStack.pop<Action>()
-        IdElementContainerStack.threadStack.pop<Popup>()
-        IdElementContainerStack.threadStack.pop<Misc>()
+        IdElementContainerStack.localStack.pop<Node<*>>()
+        IdElementContainerStack.localStack.pop<Attribute>()
+        IdElementContainerStack.localStack.pop<Link>()
+        IdElementContainerStack.localStack.pop<Window>()
+        IdElementContainerStack.localStack.pop<PlatformTexture>()
+        IdElementContainerStack.localStack.pop<TextureProcessorQueue>()
+        IdElementContainerStack.localStack.pop<ImageDisplay>()
+        IdElementContainerStack.localStack.pop<Action>()
+        IdElementContainerStack.localStack.pop<Popup>()
+        IdElementContainerStack.localStack.pop<Misc>()
 
         logger.info("PaperVision started")
     }
@@ -270,16 +270,16 @@ class PaperVision(
     }
 
     fun process() {
-        IdElementContainerStack.threadStack.push(nodes)
-        IdElementContainerStack.threadStack.push(attributes)
-        IdElementContainerStack.threadStack.push(links)
-        IdElementContainerStack.threadStack.push(windows)
-        IdElementContainerStack.threadStack.push(textures)
-        IdElementContainerStack.threadStack.push(textureProcessorQueues)
-        IdElementContainerStack.threadStack.push(streamDisplays)
-        IdElementContainerStack.threadStack.push(actions)
-        IdElementContainerStack.threadStack.push(popups)
-        IdElementContainerStack.threadStack.push(misc)
+        IdElementContainerStack.localStack.push(nodes)
+        IdElementContainerStack.localStack.push(attributes)
+        IdElementContainerStack.localStack.push(links)
+        IdElementContainerStack.localStack.push(windows)
+        IdElementContainerStack.localStack.push(textures)
+        IdElementContainerStack.localStack.push(textureProcessorQueues)
+        IdElementContainerStack.localStack.push(streamDisplays)
+        IdElementContainerStack.localStack.push(actions)
+        IdElementContainerStack.localStack.push(popups)
+        IdElementContainerStack.localStack.push(misc)
 
         onUpdate.run()
 
@@ -308,16 +308,16 @@ class PaperVision(
 
         previzManager.update()
 
-        IdElementContainerStack.threadStack.pop<Node<*>>()
-        IdElementContainerStack.threadStack.pop<Attribute>()
-        IdElementContainerStack.threadStack.pop<Link>()
-        IdElementContainerStack.threadStack.pop<Window>()
-        IdElementContainerStack.threadStack.pop<PlatformTexture>()
-        IdElementContainerStack.threadStack.pop<TextureProcessorQueue>()
-        IdElementContainerStack.threadStack.pop<ImageDisplay>()
-        IdElementContainerStack.threadStack.pop<Action>()
-        IdElementContainerStack.threadStack.pop<Popup>()
-        IdElementContainerStack.threadStack.pop<Misc>()
+        IdElementContainerStack.localStack.pop<Node<*>>()
+        IdElementContainerStack.localStack.pop<Attribute>()
+        IdElementContainerStack.localStack.pop<Link>()
+        IdElementContainerStack.localStack.pop<Window>()
+        IdElementContainerStack.localStack.pop<PlatformTexture>()
+        IdElementContainerStack.localStack.pop<TextureProcessorQueue>()
+        IdElementContainerStack.localStack.pop<ImageDisplay>()
+        IdElementContainerStack.localStack.pop<Action>()
+        IdElementContainerStack.localStack.pop<Popup>()
+        IdElementContainerStack.localStack.pop<Misc>()
     }
 
     fun destroy() {

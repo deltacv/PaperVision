@@ -68,7 +68,7 @@ class LineParametersAttribute(
         }
     }
 
-    override fun value(current: CodeGen.Current): GenValue.LineParameters {
+    override fun genValue(current: CodeGen.Current): GenValue.LineParameters {
         return if(mode == AttributeMode.INPUT && !hasLink) {
             GenValue.LineParameters.Line(
                 GenValue.Scalar(GenValue.Double.ZERO, GenValue.Double(255.0.resolved()), GenValue.Double.ZERO, GenValue.Double.ZERO),

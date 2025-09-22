@@ -21,16 +21,11 @@ package io.github.deltacv.papervision.node.math
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.attribute.math.IntAttribute
-import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.Generator
-import io.github.deltacv.papervision.codegen.build.v
-import io.github.deltacv.papervision.codegen.dsl.generatorFor
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
-import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolved
@@ -66,8 +61,8 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
             val session = Session()
 
             current {
-                val x = uniqueVariable("vectorX", xAttribute.value(current).value.v)
-                val y = uniqueVariable("vectorY", yAttribute.value(current).value.v)
+                val x = uniqueVariable("vectorX", xAttribute.genValue(current).value.v)
+                val y = uniqueVariable("vectorY", yAttribute.genValue(current).value.v)
 
                 group {
                     public(x, xAttribute.label())
@@ -84,8 +79,8 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
             val session = Session()
 
             session.vector2 = GenValue.Vec2.Vector2(
-                GenValue.Double(xAttribute.value(current).value.convertTo { it?.toDouble() }),
-                GenValue.Double(yAttribute.value(current).value.convertTo { it?.toDouble() })
+                GenValue.Double(xAttribute.genValue(current).value.convertTo { it?.toDouble() }),
+                GenValue.Double(yAttribute.genValue(current).value.convertTo { it?.toDouble() })
             )
             session
         }

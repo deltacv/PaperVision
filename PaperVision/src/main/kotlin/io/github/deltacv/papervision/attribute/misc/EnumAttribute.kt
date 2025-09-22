@@ -70,7 +70,7 @@ class EnumAttribute<T: Enum<T>>(
     override fun readEditorValue() = values[currentIndex.get()]
 
     @Suppress("UNCHECKED_CAST")
-    override fun value(current: CodeGen.Current): GenValue.Enum<T> {
+    override fun genValue(current: CodeGen.Current): GenValue.Enum<T> {
         val expectedClass = values[0]::class
 
         if(isInput) {
@@ -82,7 +82,7 @@ class EnumAttribute<T: Enum<T>>(
                     "Enum attribute must have another attribute attached"
                 )
 
-                val value = linkedAttrib!!.value(current)
+                val value = linkedAttrib!!.genValue(current)
                 raiseAssert(value is GenValue.Enum<*>, "Attribute attached is not a valid Enum")
 
                 val valueEnum = value as GenValue.Enum<*>

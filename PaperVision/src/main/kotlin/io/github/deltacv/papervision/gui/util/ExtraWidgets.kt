@@ -20,7 +20,9 @@ package io.github.deltacv.papervision.gui.util
 
 import imgui.ImGui
 import imgui.flag.ImGuiMouseButton
+import imgui.type.ImBoolean
 import imgui.type.ImInt
+
 
 object ExtraWidgets {
 
@@ -102,6 +104,47 @@ object ExtraWidgets {
         return if(ImGui.isItemClicked(ImGuiMouseButton.Left)) {
             !currentState
         } else currentState
+    }
+
+    fun toggleSwitch(strId: String?, v: ImBoolean) {
+        val p = ImGui.getCursorScreenPos()
+        val drawList = ImGui.getWindowDrawList()
+
+        val height = ImGui.getFrameHeight()
+        val width = height * 1.55f
+        val radius = height * 0.50f
+
+        if (ImGui.invisibleButton(strId, width, height)) {
+            v.set(!v.get())
+        }
+
+        val colBg: Int
+        if (ImGui.isItemHovered()) {
+            colBg = if (v.get())
+                ImGui.getColorU32((145 + 20).toFloat(), 211f, (68 + 20).toFloat(), 255f)
+            else
+                ImGui.getColorU32((218 - 20).toFloat(), (218 - 20).toFloat(), (218 - 20).toFloat(), 255f)
+        } else {
+            colBg = if (v.get())
+                ImGui.getColorU32(145f, 211f, 68f, 255f)
+            else
+                ImGui.getColorU32(218f, 218f, 218f, 255f)
+        }
+
+        drawList.addRectFilled(
+            p.x, p.y,
+            p.x + width, p.y + height,
+            colBg,
+            height * 0.5f
+        )
+
+        drawList.addCircleFilled(
+            if (v.get()) (p.x + width - radius) else (p.x + radius),
+            p.y + radius,
+            radius - 1.5f,
+            ImGui.getColorU32(255f, 255f, 255f, 255f),
+            32
+        )
     }
 
 }

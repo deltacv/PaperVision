@@ -59,10 +59,10 @@ class MaskNode : DrawNode<MaskNode.Session>(){
             current {
                 val session = Session()
 
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireNonBinary(inputMat)
 
-                val mask = maskMat.value(current)
+                val mask = maskMat.genValue(current)
                 mask.requireBinary(maskMat)
 
                 val output = uniqueVariable("${input.value}Mask", Mat.new())
@@ -89,10 +89,10 @@ class MaskNode : DrawNode<MaskNode.Session>(){
             current {
                 val session = Session()
 
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireNonBinary(inputMat)
 
-                val mask = maskMat.value(current)
+                val mask = maskMat.genValue(current)
                 mask.requireBinary(maskMat)
 
                 current.scope {

@@ -58,7 +58,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
             current {
                 val session = Session()
 
-                val input = inputContours.value(current)
+                val input = inputContours.genValue(current)
 
                 val listName = if (input is GenValue.GList.RuntimeListOf<*>) {
                     "${input.value.value}Rects"
@@ -105,7 +105,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
             current {
                 val session = Session()
 
-                val input = inputContours.value(current)
+                val input = inputContours.genValue(current)
 
                 val listName = if (input is GenValue.GList.RuntimeListOf<*>) {
                     "${input.value.value}_rects"

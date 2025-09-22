@@ -25,7 +25,7 @@ class IdElementContainerStack {
         private val threadLocalStack = ThreadLocal.withInitial { IdElementContainerStack() }
 
         // Accessor for the current thread's stack
-        val threadStack: IdElementContainerStack
+        val localStack: IdElementContainerStack
             get() = threadLocalStack.get()
     }
 

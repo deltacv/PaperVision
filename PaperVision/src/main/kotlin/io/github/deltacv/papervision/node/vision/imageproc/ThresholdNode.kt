@@ -100,9 +100,9 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
             current {
                 val session = Session()
 
-                val range = scalar.value(current)
+                val range = scalar.genValue(current)
 
-                var inputMat = input.value(current)
+                var inputMat = input.genValue(current)
                 inputMat.requireNonBinary(input)
 
                 val matColor = inputMat.color
@@ -168,9 +168,9 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
             val session = Session()
 
             current {
-                val range = scalar.value(current)
+                val range = scalar.genValue(current)
 
-                var inputMat = input.value(current)
+                var inputMat = input.genValue(current)
                 inputMat.requireNonBinary(input)
 
                 val matColor = inputMat.color

@@ -35,8 +35,8 @@ class Link(
     override val shouldSerialize: Boolean = true
 ) : DrawableIdElementBase<Link>(), DataSerializable<LinkSerializationData> {
 
-    val attribIdElementContainer = IdElementContainerStack.threadStack.peekNonNull<Attribute>()
-    override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Link>()
+    val attribIdElementContainer = IdElementContainerStack.localStack.peekNonNull<Attribute>()
+    override val idElementContainer = IdElementContainerStack.localStack.peekNonNull<Link>()
 
     val aAttrib get() = attribIdElementContainer[a]
     val bAttrib get() = attribIdElementContainer[b]
@@ -101,7 +101,7 @@ class Link(
         fun getLinksBetween(a: Node<*>, b: Node<*>): List<Link> {
             val l = mutableListOf<Link>()
 
-            for(link in IdElementContainerStack.threadStack.peekNonNull<Link>()) {
+            for(link in IdElementContainerStack.localStack.peekNonNull<Link>()) {
                 val linkNodeA = link.aAttrib?.parentNode ?: continue
                 val linkNodeB = link.bAttrib?.parentNode ?: continue
 

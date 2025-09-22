@@ -25,7 +25,7 @@ import io.github.deltacv.papervision.util.loggerForThis
 abstract class Action(
     val executeOnEnable: Boolean = true
 ) : DrawableIdElementBase<Action>() {
-    override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Action>()
+    override val idElementContainer = IdElementContainerStack.localStack.peekNonNull<Action>()
 
     val logger by loggerForThis()
 

@@ -50,7 +50,7 @@ abstract class Node<S: CodeGenSession>(
     val joinActionStack: Boolean = true
 ) : DrawableIdElementBase<Node<*>>(), GeneratorsGenNode<S>, DataSerializable<NodeSerializationData> {
 
-    override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Node<*>>()
+    override val idElementContainer = IdElementContainerStack.localStack.peekNonNull<Node<*>>()
     override val requestedId get() = if(forgetSerializedId) null else serializedId
 
     private var beforeDeletingPosition = ImVec2()

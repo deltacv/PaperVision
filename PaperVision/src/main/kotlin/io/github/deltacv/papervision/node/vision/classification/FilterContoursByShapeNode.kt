@@ -117,15 +117,15 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
             current {
                 val session = Session()
 
-                val inputContours = input.value(current)
+                val inputContours = input.genValue(current)
 
                 if(inputContours !is GenValue.GList.RuntimeListOf<*>){
                     raise("")
                 }
 
-                val shapeValue = shape.value(current).value
-                val sidesValue = sides.value(current)
-                val accuracyValue = accuracy.value(current).value
+                val shapeValue = shape.genValue(current).value
+                val sidesValue = sides.genValue(current)
+                val accuracyValue = accuracy.genValue(current).value
 
                 val list = uniqueVariable("filtered${shapeValue.name}Contours", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
 

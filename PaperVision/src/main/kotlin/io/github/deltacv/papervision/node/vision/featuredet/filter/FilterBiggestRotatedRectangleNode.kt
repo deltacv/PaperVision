@@ -57,7 +57,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
             current {
                 val session = Session()
 
-                val rectsList = input.value(current)
+                val rectsList = input.genValue(current)
 
                 val biggestRect = uniqueVariable("biggestRotRect", JvmOpenCvTypes.RotatedRect.nullVal)
 
@@ -128,7 +128,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
             current {
                 val session = Session()
 
-                val rectsList = input.value(current)
+                val rectsList = input.genValue(current)
 
                 val biggestRect = uniqueVariable("biggest_rect", CPythonLanguage.nullValue)
 

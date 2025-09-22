@@ -54,6 +54,8 @@ interface Language : ValueBuilder {
 
     fun isImportExcluded(import: Type) = excludedImports.contains(import)
 
+    fun boolean(value: Boolean) = if(value) trueValue else falseValue
+
     fun int(value: Value) = castValue(value, language.IntType)
     fun int(value: Int) = ConValue(language.IntType, value.toString())
 

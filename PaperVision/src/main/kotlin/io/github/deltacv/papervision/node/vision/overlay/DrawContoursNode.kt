@@ -76,12 +76,12 @@ open class DrawContoursNode
             current {
                 val session = Session()
 
-                val lineParams = (lineParams.value(current) as GenValue.LineParameters).ensureRuntimeLineJava(current)
+                val lineParams = (lineParams.genValue(current) as GenValue.LineParameters).ensureRuntimeLineJava(current)
 
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireNonBinary(inputMat)
 
-                val contoursList = contours.value(current)
+                val contoursList = contours.genValue(current)
 
                 val output = uniqueVariable("${input.value.v}Contours", Mat.new())
                 var drawMat = input.value.v
@@ -144,12 +144,12 @@ open class DrawContoursNode
             val session = Session()
 
             current {
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireNonBinary(inputMat)
 
-                val contoursList = contours.value(current)
+                val contoursList = contours.genValue(current)
 
-                val lineParams = lineParams.value(current)
+                val lineParams = lineParams.genValue(current)
                 if(lineParams !is GenValue.LineParameters.Line) {
                     raise("Given line parameters is not a static type")
                 }

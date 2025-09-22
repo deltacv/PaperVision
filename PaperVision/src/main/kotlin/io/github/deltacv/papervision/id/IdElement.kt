@@ -87,5 +87,5 @@ abstract class DrawableIdElementBase<T : DrawableIdElementBase<T>> : DrawableIdE
 
 object Misc : IdElement {
     override val id = 0xDAFC
-    fun newMiscId() = IdElementContainerStack.threadStack.peekNonNull<Misc>().nextId()
+    fun newMiscId() = IdElementContainerStack.localStack.peekNonNull<Misc>().nextId()
 }

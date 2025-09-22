@@ -68,9 +68,9 @@ class BlurNode : DrawNode<BlurNode.Session>() {
             current {
                 val session = Session()
 
-                val inputMat = input.value(current)
-                val algo = blurAlgo.value(current).value
-                val blurVal = blurValue.value(current)
+                val inputMat = input.genValue(current)
+                val algo = blurAlgo.genValue(current).value
+                val blurVal = blurValue.genValue(current)
 
                 val blurValVariable = uniqueVariable("blurValue", int(blurVal.value.v))
                 val outputMat = uniqueVariable("blur${algo.name}Mat", Mat.new())
@@ -119,9 +119,9 @@ class BlurNode : DrawNode<BlurNode.Session>() {
             val session = Session()
 
             current {
-                val inputMat = input.value(current)
-                val algo = blurAlgo.value(current).value
-                val blurVal = blurValue.value(current)
+                val inputMat = input.genValue(current)
+                val algo = blurAlgo.genValue(current).value
+                val blurVal = blurValue.genValue(current)
 
                 current.scope {
                     nameComment()

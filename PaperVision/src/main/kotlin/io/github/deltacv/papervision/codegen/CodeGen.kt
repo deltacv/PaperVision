@@ -80,7 +80,7 @@ class CodeGen(
     private fun resolveAllPlaceholders(preprocessed: String): String {
         var resolved = preprocessed
 
-        val placeholders = IdElementContainerStack.threadStack
+        val placeholders = IdElementContainerStack.localStack
             .peekNonNull<Resolvable.Placeholder<*>>()
 
         logger.info("Resolving active placeholders: ${placeholders.inmutable.size}")

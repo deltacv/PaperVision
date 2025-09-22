@@ -24,7 +24,6 @@ import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImBoolean
 import imgui.type.ImString
 import io.github.deltacv.mai18n.tr
-import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.gui.Font
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
@@ -38,7 +37,7 @@ abstract class Window(
     override val requestedId: Int? = null,
 ) : DrawableIdElementBase<Window>() {
 
-    override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Window>()
+    override val idElementContainer = IdElementContainerStack.localStack.peekNonNull<Window>()
 
     var isVisible: Boolean = false
         private set

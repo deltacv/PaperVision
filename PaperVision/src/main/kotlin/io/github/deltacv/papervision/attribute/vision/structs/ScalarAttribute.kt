@@ -27,11 +27,9 @@ import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.ColorSpace
 import io.github.deltacv.papervision.util.Range2i
-import io.github.deltacv.papervision.util.hexString
 
 class ScalarAttribute(
     mode: AttributeMode,
@@ -73,8 +71,8 @@ class ScalarAttribute(
         }
     }
 
-    override fun value(current: CodeGen.Current): GenValue.Scalar {
-        val values = (super.value(current) as GenValue.GList.List).elements
+    override fun genValue(current: CodeGen.Current): GenValue.Scalar {
+        val values = (super.genValue(current) as GenValue.GList.List).elements
 
         val value = GenValue.Scalar(
             GenValue.Double((values.getOr(0, GenValue.Int.ZERO) as GenValue.Int).value.convertTo { it?.toDouble() }),

@@ -55,7 +55,7 @@ class ClientPrevizStream(
     private var requestedMinimize = false
 
     // get the texture container of the current thread
-    val textureQueue = IdElementContainerStack.threadStack.peekSingleNonNull<TextureProcessorQueue>()
+    val textureQueue = IdElementContainerStack.localStack.peekSingleNonNull<TextureProcessorQueue>()
 
     var offlineTexture: PlatformTexture? = null
         private set

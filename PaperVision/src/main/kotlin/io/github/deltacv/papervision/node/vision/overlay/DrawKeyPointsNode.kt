@@ -19,23 +19,17 @@
 package io.github.deltacv.papervision.node.vision.overlay
 
 import io.github.deltacv.papervision.attribute.Attribute
-import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.KeyPointsAttribute
-import io.github.deltacv.papervision.attribute.vision.structs.LineParametersAttribute
-import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
-import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -79,10 +73,10 @@ open class DrawKeyPointsNode
             current {
                 val session = Session()
 
-                val color = lineColor.value(current)
+                val color = lineColor.genValue(current)
 
-                val input = inputMat.value(current)
-                val keypointsValue = keypoints.value(current)
+                val input = inputMat.genValue(current)
+                val keypointsValue = keypoints.genValue(current)
                 val output = uniqueVariable("${input.value.value}KeyPoints", Mat.new())
 
                 var drawMat = if (!isDrawOnInput) {
@@ -128,10 +122,10 @@ open class DrawKeyPointsNode
             val session = Session()
 
             current {
-                val color = lineColor.value(current)
+                val color = lineColor.genValue(current)
 
-                val input = inputMat.value(current)
-                val keypointsValue = keypoints.value(current)
+                val input = inputMat.genValue(current)
+                val keypointsValue = keypoints.genValue(current)
 
                 current.scope {
                     nameComment()

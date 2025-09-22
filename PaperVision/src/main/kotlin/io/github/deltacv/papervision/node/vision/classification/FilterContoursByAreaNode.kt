@@ -49,14 +49,14 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
         generatorFor(JavaLanguage) {
             val session = Session()
 
-            val contours = input.value(current)
+            val contours = input.genValue(current)
 
             if(contours !is GenValue.GList.RuntimeListOf<*>) {
                 raise("Input contours must be a runtime list") // TODO: support other types
             }
 
-            val minAreaVal = minArea.value(current)
-            val maxAreaVal = maxArea.value(current)
+            val minAreaVal = minArea.genValue(current)
+            val maxAreaVal = maxArea.genValue(current)
 
             current {
                 val minAreaVar = uniqueVariable("minArea", minAreaVal.value.v)
@@ -95,15 +95,15 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            val contours = input.value(current)
+            val contours = input.genValue(current)
 
             if(contours !is GenValue.GList.RuntimeListOf<*>) {
                 raise("Input contours must be a runtime list") // TODO: support other types
             }
 
             current {
-                val minArea = minArea.value(current).value.v
-                val maxArea = maxArea.value(current).value.v
+                val minArea = minArea.genValue(current).value.v
+                val maxArea = maxArea.genValue(current).value.v
 
                 val contoursVar = uniqueVariable("by_area_contours", CPythonLanguage.newArrayOf(CPythonLanguage.NoType))
 

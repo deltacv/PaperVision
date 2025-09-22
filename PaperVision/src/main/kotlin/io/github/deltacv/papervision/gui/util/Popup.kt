@@ -37,7 +37,7 @@ class TooltipPopup(
 
     companion object {
         fun warning(text: String) {
-            for(popup in IdElementContainerStack.threadStack.peekNonNull<Popup>().inmutable) {
+            for(popup in IdElementContainerStack.localStack.peekNonNull<Popup>().inmutable) {
                 if(popup is TooltipPopup && popup.label == "Warning") {
                     popup.delete()
                 }
@@ -84,7 +84,7 @@ class TooltipPopup(
 abstract class Popup(
     val label: String = ""
 ) : DrawableIdElementBase<Popup>() {
-    override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Popup>()
+    override val idElementContainer = IdElementContainerStack.localStack.peekNonNull<Popup>()
 
     abstract val title: String
     abstract val flags: Int

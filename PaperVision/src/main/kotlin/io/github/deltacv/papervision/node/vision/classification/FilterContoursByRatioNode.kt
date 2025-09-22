@@ -60,15 +60,15 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
         generatorFor(JavaLanguage) {
             val session = Session()
 
-            val contours = input.value(current)
+            val contours = input.genValue(current)
 
             if(contours !is GenValue.GList.RuntimeListOf<*>) {
                 raise("Input contours must be a runtime list") // TODO: support other types
             }
 
-            val minRatioVal = minRatio.value(current)
-            val maxRatioVal = maxRatio.value(current)
-            val mode = boundingMode.value(current).value
+            val minRatioVal = minRatio.genValue(current)
+            val maxRatioVal = maxRatio.genValue(current)
+            val mode = boundingMode.genValue(current).value
 
             current {
                 val minRatioVar = uniqueVariable("minRatio", minRatioVal.value.v)
@@ -147,14 +147,14 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            val contours = input.value(current)
+            val contours = input.genValue(current)
 
             if(contours !is GenValue.GList.RuntimeListOf<*>) {
                 raise("Input contours must be a runtime list") // TODO: support other types
             }
 
-            val minRatioVal = minRatio.value(current)
-            val maxRatioVal = maxRatio.value(current)
+            val minRatioVal = minRatio.genValue(current)
+            val maxRatioVal = maxRatio.genValue(current)
 
             current {
                 val contoursVar = uniqueVariable("${contours.value.value}_by_ratio", CPythonLanguage.newArrayOf(CPythonLanguage.NoType))

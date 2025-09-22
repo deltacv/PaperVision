@@ -65,8 +65,8 @@ class ScalarRangeAttribute(
         return false
     }
 
-    override fun value(current: CodeGen.Current): GenValue.ScalarRange {
-        val values = (super.value(current) as GenValue.GList.List).elements
+    override fun genValue(current: CodeGen.Current): GenValue.ScalarRange {
+        val values = (super.genValue(current) as GenValue.GList.List).elements
         val ZERO = GenValue.Range.ZERO
 
         val range = GenValue.ScalarRange(

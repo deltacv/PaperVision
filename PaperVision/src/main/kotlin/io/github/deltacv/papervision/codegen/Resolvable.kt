@@ -94,7 +94,7 @@ sealed class Resolvable<T> {
 
         override fun toString() = placeholder
 
-        override val id by IdElementContainerStack.threadStack.peekNonNull<Placeholder<*>>().nextId(this)
+        override val id by IdElementContainerStack.localStack.peekNonNull<Placeholder<*>>().nextId(this)
     }
 
     data class DependentPlaceholder<P, T>(val dependency: Resolvable<P>, val resolver: (P) -> T?) : Placeholder<T>(resolver = {

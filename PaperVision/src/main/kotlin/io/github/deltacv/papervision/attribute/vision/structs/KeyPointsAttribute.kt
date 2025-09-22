@@ -24,7 +24,7 @@ class KeyPointsAttribute(override val mode: AttributeMode,
         override fun new(mode: AttributeMode, variableName: String) = KeyPointsAttribute(mode, variableName)
     }
 
-    override fun value(current: CodeGen.Current) = value<GenValue.RuntimeKeyPoints>(
+    override fun genValue(current: CodeGen.Current) = value<GenValue.RuntimeKeyPoints>(
         current, "a KeyPoints"
     ) { it is GenValue.RuntimeKeyPoints }
 

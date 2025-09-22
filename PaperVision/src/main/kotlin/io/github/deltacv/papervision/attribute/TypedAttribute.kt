@@ -25,7 +25,6 @@ import imgui.extension.imnodes.flag.ImNodesCol
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.util.hexString
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValueMessage
@@ -183,7 +182,7 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
                     tr("err_musthave_attachedattrib")
                 )
 
-                val value = linkedAttrib!!.value(current)
+                val value = linkedAttrib!!.genValue(current)
                 raiseAssert(checkConsumer(value), tr("err_attachedattrib_isnot", name))
 
                 value as T

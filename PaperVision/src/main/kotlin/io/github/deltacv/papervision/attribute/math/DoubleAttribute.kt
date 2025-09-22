@@ -80,7 +80,7 @@ class DoubleAttribute(
 
     override fun readEditorValue() = value.get()
 
-    override fun value(current: CodeGen.Current) = value(
+    override fun genValue(current: CodeGen.Current) = value(
         current, "a Double", GenValue.Double(value.get().resolved())
     ) { it is GenValue.Double }
 

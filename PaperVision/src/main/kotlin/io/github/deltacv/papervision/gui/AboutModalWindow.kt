@@ -9,7 +9,6 @@ import io.github.deltacv.papervision.gui.util.ARCH
 import io.github.deltacv.papervision.gui.util.OS
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.gui.util.getMemoryUsageMB
-import io.github.deltacv.papervision.gui.util.getProcessCPULoad
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.io.resourceToString
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
@@ -67,7 +66,7 @@ class AboutModalWindow(
         val OS_VERSION = System.getProperty("os.version")
 
         var elementCount = 0
-        for(container in IdElementContainerStack.threadStack.all()) {
+        for(container in IdElementContainerStack.localStack.all()) {
             elementCount += container.elements.size
         }
 

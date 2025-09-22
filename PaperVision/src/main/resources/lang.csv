@@ -50,6 +50,7 @@ nod_drawcontours_onimage,Draw Contours on Image,Dibujar Contornos en Imagen
 nod_drawrects,Draw Rectangles,Dibujar Rectangulos
 nod_drawrects_onimage,Draw Rectangles on Image,Dibujar Rectangulos en Imagen
 nod_drawrotated_rects,Draw Rotated Rectangles,Dibujar Rectangulos Rotados
+nod_drawkeypoints,Draw Key Points,Dibujar Puntos Clave
 nod_crosshair,Crosshair,Crosshair
 nod_lineparameters,Line Parameters,Parametros de Linea
 nod_vector2,Vector in 2D,Vector en 2D
@@ -104,6 +105,7 @@ att_dilate,Dilate,Dilatacion
 att_area,Area,Area
 att_circularity,Circularity,Circularidad
 att_convexity,Convexity,Convexidad
+att_inertia,Inertia,Inercia
 att_keypoints,Key Points,Puntos Clave
 att_source,Source,Fuente
 att_boundingmode,Bounding Mode,Modo de Delimitacion
@@ -146,6 +148,7 @@ des_lineparameters,Specify the visual properties for<br>a node that will draw li
 des_drawrects_onimage,Draws the rectangles in the passed image.,Dibuja los rectangulos en la imagen de entrada
 des_drawcontours,Draws the contours on a copy of the<br>given image and outputs the result.,Dibuja los contornos en una copia de la<br>imagen dada y devuelve el resultado.
 des_drawcontours_onimage,Draws the contours on the input image,Dibuja los contornos en la imagen de entrada.
+des_drawkeypoints,Draws the key points on a copy of the<br>given image and outputs the result.,Dibuja los puntos clave en una copia de la<br>imagen dada y devuelve el resultado.
 des_cannyedge,Filters edges in the input<br>image using the Canny algorithm.,Filtra bordes en la imagen de<br>entrada usando el algoritmo Canny.
 des_blobdetector,Detects blobs in an image<br>using OpenCV's Simple Blob Detector.,Detecta blobs en una imagen<br>usando el Detector de Blobs Simple de OpenCV.
 des_vector2,Composes a Vector in two dimensions,Compone un Vector en dos dimensiones

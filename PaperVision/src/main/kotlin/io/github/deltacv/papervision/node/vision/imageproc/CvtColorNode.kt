@@ -62,10 +62,10 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
             current {
                 val session = Session()
 
-                val inputMat = input.value(current)
+                val inputMat = input.genValue(current)
                 inputMat.requireNonBinary(input)
 
-                val targetColor = convertTo.value(current).value
+                val targetColor = convertTo.genValue(current).value
                 val matColor = inputMat.color
 
                 val matColorResolved = matColor.resolve()
@@ -110,10 +110,10 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
             val session = Session()
 
             current {
-                val inputMat = input.value(current)
+                val inputMat = input.genValue(current)
                 inputMat.requireNonBinary(input)
 
-                val targetColor = convertTo.value(current).value
+                val targetColor = convertTo.genValue(current).value
                 val matColor = inputMat.color
                 val matColorResolved = matColor.resolve()
 

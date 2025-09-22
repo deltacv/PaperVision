@@ -77,10 +77,10 @@ open class DrawRotatedRectanglesNode
             current {
                 val session = Session()
 
-                val lineParams = lineParams.value(current).ensureRuntimeLineJava(current)
+                val lineParams = lineParams.genValue(current).ensureRuntimeLineJava(current)
 
-                val input = inputMat.value(current)
-                val rectanglesList = rectangles.value(current)
+                val input = inputMat.genValue(current)
+                val rectanglesList = rectangles.genValue(current)
 
                 val output = uniqueVariable("${input.value.value}RotRects", Mat.new())
 
@@ -157,10 +157,10 @@ open class DrawRotatedRectanglesNode
             val session = Session()
 
             current {
-                val input = inputMat.value(current)
-                val rectanglesList = rectangles.value(current)
+                val input = inputMat.genValue(current)
+                val rectanglesList = rectangles.genValue(current)
 
-                val lineParams = (lineParams.value(current))
+                val lineParams = (lineParams.genValue(current))
 
                 if(lineParams !is GenValue.LineParameters.Line) {
                     raise("Line parameters must not be runtime")

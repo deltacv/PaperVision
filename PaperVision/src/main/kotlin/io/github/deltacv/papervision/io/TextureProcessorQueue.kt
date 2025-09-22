@@ -30,7 +30,6 @@ import org.deltacv.mackjpeg.MackJPEG
 import org.deltacv.mackjpeg.PixelFormat
 import java.nio.ByteBuffer
 import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -227,7 +226,7 @@ class TextureProcessorQueue(
     }
 
     override val idElementContainer: IdElementContainer<TextureProcessorQueue>
-        get() = IdElementContainerStack.threadStack.peekNonNull()
+        get() = IdElementContainerStack.localStack.peekNonNull()
 
     class FutureTexture(
         val id: Int,

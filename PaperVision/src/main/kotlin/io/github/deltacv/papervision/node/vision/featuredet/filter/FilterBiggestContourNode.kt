@@ -57,7 +57,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
             current {
                 val session = Session()
 
-                val contoursList = input.value(current)
+                val contoursList = input.genValue(current)
 
                 val biggestContour = uniqueVariable("biggestContour", JvmOpenCvTypes.MatOfPoint.nullVal) // TODO: huh???
 
@@ -115,7 +115,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
             current {
                 val session = Session()
 
-                val inputValue = input.value(current)
+                val inputValue = input.genValue(current)
 
                 current.scope {
                     nameComment()

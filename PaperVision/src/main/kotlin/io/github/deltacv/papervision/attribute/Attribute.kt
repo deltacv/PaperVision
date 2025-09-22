@@ -33,9 +33,6 @@ import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.BasicAttribData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import java.util.concurrent.ArrayBlockingQueue
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
 enum class AttributeMode { INPUT, OUTPUT }
 
@@ -55,14 +52,14 @@ class EmptyInputAttribute(
 
     override fun acceptLink(other: Attribute) = true
 
-    override fun value(current: CodeGen.Current): GenValue {
+    override fun genValue(current: CodeGen.Current): GenValue {
         throw NotImplementedError("value() is not implemented for EmptyInputAttribute")
     }
 }
 
 abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<AttributeSerializationData> {
 
-    override val idElementContainer get() = IdElementContainerStack.threadStack.peekNonNull<Attribute>()
+    override val idElementContainer get() = IdElementContainerStack.localStack.peekNonNull<Attribute>()
 
     override val requestedId get() = if(forgetSerializedId || (hasParentNode && parentNode.forgetSerializedId))
         null
@@ -227,7 +224,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
     abstract fun acceptLink(other: Attribute): Boolean
 
-    abstract fun value(current: CodeGen.Current): GenValue
+    abstract fun genValue(current: CodeGen.Current): GenValue
 
     internal open fun readEditorValue(): Any? = null
 

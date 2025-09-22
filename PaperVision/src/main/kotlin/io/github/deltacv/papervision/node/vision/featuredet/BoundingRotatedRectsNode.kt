@@ -60,7 +60,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
             val session = Session()
 
             current {
-                val input = contours.value(current)
+                val input = contours.genValue(current)
 
                 val name = if(input is GenValue.GList.RuntimeListOf<*>) {
                     input.value.value.toString()
@@ -113,7 +113,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
             val session = Session()
 
             current {
-                val input = contours.value(current)
+                val input = contours.genValue(current)
 
                 val name = if(input is GenValue.GList.RuntimeListOf<*>) {
                     input.value.value.toString() + "_r"

@@ -59,7 +59,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
             current {
                 val session = Session()
 
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireBinary(inputMat)
 
                 val list = uniqueVariable("contours", JavaTypes.ArrayList(MatOfPoint).new())
@@ -89,7 +89,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
             current {
                 val session = Session()
 
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireBinary(inputMat)
 
                 current.scope {

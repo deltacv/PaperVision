@@ -197,11 +197,11 @@ class OutputMatNode @JvmOverloads constructor(
     override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
             current {
-                val inputValue = input.value(current)
+                val inputValue = input.genValue(current)
 
                 current.scope {
                     if (crosshair.allLinkedAttributes.isNotEmpty()) {
-                        val crosshairValue = crosshair.value(current)
+                        val crosshairValue = crosshair.genValue(current)
 
                         ifCondition((crosshairValue.value.v notEqualsTo nullVal)) {
                             val boundingRect = uniqueVariable("boundingRect", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, crosshairValue.value.v))
@@ -273,9 +273,9 @@ class OutputMatNode @JvmOverloads constructor(
         @Suppress("UNCHECKED_CAST")
         generatorFor(CPythonLanguage) {
             current {
-                val inputValue = input.value(current)
-                val crosshairValue = crosshair.value(current)
-                val dataValue = exportedData.value(current)
+                val inputValue = input.genValue(current)
+                val crosshairValue = crosshair.genValue(current)
+                val dataValue = exportedData.genValue(current)
 
                 current.scope {
                     val llpython = uniqueVariable("llpython", when (dataValue) {

@@ -106,6 +106,8 @@ open class LanguageContext(val language: Language) {
     infix fun Float.between(right: Float) = language.division(this.v, right.v)
     infix fun Double.between(right: Double) = language.division(this.v, right.v)
 
+    fun boolean(value: Boolean) = language.boolean(value)
+
     fun int(value: Value) = language.int(value)
     fun int(value: Int) = language.int(value)
 

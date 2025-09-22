@@ -87,17 +87,17 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
         generatorFor(JavaLanguage) {
             val session = Session()
 
-            val inputPoints = input.value(current)
+            val inputPoints = input.genValue(current)
 
             if (inputPoints !is GenValue.GList.RuntimeListOf<*>) {
                 raise("") // TODO: Handle non-runtime lists
             }
 
-            val drawOn = drawCrosshairOn.value(current)
+            val drawOn = drawCrosshairOn.genValue(current)
 
-            val crosshairLineParams = crosshairLineParams.value(current).ensureRuntimeLineJava(current)
+            val crosshairLineParams = crosshairLineParams.genValue(current).ensureRuntimeLineJava(current)
 
-            val crosshairSizeValue = crosshairScale.value(current).value
+            val crosshairSizeValue = crosshairScale.genValue(current).value
 
             current {
                 val drawOnValue = drawOn.value.v
@@ -120,7 +120,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
-                    val crosshairPositionVector = crosshairPosition.value(current).ensureRuntimeVector2Java(current)
+                    val crosshairPositionVector = crosshairPosition.genValue(current).ensureRuntimeVector2Java(current)
 
                     val crosshairPoint = uniqueVariable(
                         "crosshairPoint", run {
@@ -188,13 +188,13 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
-                    val currDist = if(detectionMode.value(current).value == DetectionMode.Nearest) {
+                    val currDist = if(detectionMode.genValue(current).value == DetectionMode.Nearest) {
                         uniqueVariable("currDist", 0.0.v)
                     } else {
                         null
                     }
 
-                    val closestContour = if(detectionMode.value(current).value == DetectionMode.Nearest) {
+                    val closestContour = if(detectionMode.genValue(current).value == DetectionMode.Nearest) {
                         uniqueVariable("closestContour", JvmOpenCvTypes.MatOfPoint.nullVal)
                     } else {
                         null
@@ -217,7 +217,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                         separate()
 
-                        when(detectionMode.value(current).value) {
+                        when(detectionMode.genValue(current).value) {
                             DetectionMode.Inside -> {
                                 // Check if the crosshair rectangle is inside the bounding rectangle
                                 ifCondition(
@@ -249,7 +249,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                         }
                     }
 
-                    if(DetectionMode.Nearest == detectionMode.value(current).value) {
+                    if(DetectionMode.Nearest == detectionMode.genValue(current).value) {
                         ifCondition(closestContour!! notEqualsTo JvmOpenCvTypes.MatOfPoint.nullVal) {
                             crosshair("add", closestContour)
                         }
@@ -268,27 +268,27 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            val inputPoints = input.value(current)
+            val inputPoints = input.genValue(current)
 
             if (inputPoints !is GenValue.GList.RuntimeListOf<*>) {
                 raise("") // TODO: Handle non-runtime lists
             }
 
-            val lineParams = crosshairLineParams.value(current)
+            val lineParams = crosshairLineParams.genValue(current)
             if (lineParams !is GenValue.LineParameters.Line) {
                 raise("Line parameters must not be runtime")
             }
 
 
-            val crosshairPositionVector = crosshairPosition.value(current)
+            val crosshairPositionVector = crosshairPosition.genValue(current)
             if(crosshairPositionVector !is GenValue.Vec2.Vector2) {
                 raise("Crosshair position must not be runtime")
             }
 
-            val drawOn = drawCrosshairOn.value(current)
+            val drawOn = drawCrosshairOn.genValue(current)
 
-            val crosshairLineParams = (crosshairLineParams.value(current) as GenValue.LineParameters.Line)
-            val crosshairSizeValue = crosshairScale.value(current).value
+            val crosshairLineParams = (crosshairLineParams.genValue(current) as GenValue.LineParameters.Line)
+            val crosshairSizeValue = crosshairScale.genValue(current).value
 
             current {
                 val drawOnValue = drawOn.value.v

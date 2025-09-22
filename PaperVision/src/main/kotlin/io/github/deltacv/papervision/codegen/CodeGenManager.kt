@@ -20,7 +20,6 @@ package io.github.deltacv.papervision.codegen
 
 import imgui.ImGui
 import imgui.ImVec2
-import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.codegen.language.Language
@@ -48,13 +47,13 @@ class CodeGenManager(val paperVision: PaperVision) {
     ): String? {
         val placeholders = IdElementContainer<Resolvable.Placeholder<*>>()
 
-        IdElementContainerStack.threadStack.push(placeholders)
+        IdElementContainerStack.localStack.push(placeholders)
 
         val timestamp = System.currentTimeMillis()
 
         logger.info("Starting code gen at $timestamp")
 
-        for(popup in IdElementContainerStack.threadStack.peekNonNull<Popup>().inmutable) {
+        for(popup in IdElementContainerStack.localStack.peekNonNull<Popup>().inmutable) {
             if(popup.label == "Gen-Error") {
                 popup.delete()
             }
@@ -126,7 +125,7 @@ class CodeGenManager(val paperVision: PaperVision) {
 
         logger.info("Code gen $timestamp OK")
 
-        IdElementContainerStack.threadStack.pop<Resolvable.Placeholder<*>>()
+        IdElementContainerStack.localStack.pop<Resolvable.Placeholder<*>>()
 
         return result.trim()
     }

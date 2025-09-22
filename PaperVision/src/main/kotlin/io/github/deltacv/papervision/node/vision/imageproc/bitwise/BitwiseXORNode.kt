@@ -59,8 +59,8 @@ class BitwiseXORNode : DrawNode<BitwiseXORNode.Session>() {
         generatorFor(JavaLanguage) {
             val session = Session()
 
-            val firstValue = first.value(current)
-            val secondValue = second.value(current)
+            val firstValue = first.genValue(current)
+            val secondValue = second.genValue(current)
 
             Resolvable.DoubleDependentPlaceholder(firstValue.isBinary.value, secondValue.isBinary.value) { first, second ->
                 first == second
@@ -97,8 +97,8 @@ class BitwiseXORNode : DrawNode<BitwiseXORNode.Session>() {
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            val firstValue = first.value(current)
-            val secondValue = second.value(current)
+            val firstValue = first.genValue(current)
+            val secondValue = second.genValue(current)
 
             Resolvable.DoubleDependentPlaceholder(firstValue.isBinary.value, secondValue.isBinary.value) { first, second ->
                 first == second

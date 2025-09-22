@@ -53,7 +53,7 @@ class BooleanAttribute(
 
     override fun readEditorValue() = value.get()
 
-    override fun value(current: CodeGen.Current): GenValue.Boolean {
+    override fun genValue(current: CodeGen.Current): GenValue.Boolean {
         if(isInput) {
             if(hasLink) {
                 val linkedAttrib = availableLinkedAttribute
@@ -63,7 +63,7 @@ class BooleanAttribute(
                     "Boolean attribute must have another attribute attached"
                 )
 
-                val value = linkedAttrib!!.value(current)
+                val value = linkedAttrib!!.genValue(current)
                 raiseAssert(value is GenValue.Boolean, "Attribute attached is not a Boolean")
 
                 return value as GenValue.Boolean

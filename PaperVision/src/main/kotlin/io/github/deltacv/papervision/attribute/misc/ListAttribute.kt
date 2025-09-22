@@ -210,7 +210,7 @@ open class ListAttribute(
 
     open fun drawAttributeText(index: Int, attrib: Attribute): Boolean = false
 
-    override fun value(current: CodeGen.Current): GenValue.GList {
+    override fun genValue(current: CodeGen.Current): GenValue.GList {
         return if (mode == AttributeMode.INPUT) {
             if (hasLink) {
                 val linkedAttrib = availableLinkedAttribute
@@ -220,7 +220,7 @@ open class ListAttribute(
                     "List attribute must have another attribute attached"
                 )
 
-                val value = linkedAttrib!!.value(current)
+                val value = linkedAttrib!!.genValue(current)
                 raiseAssert(
                     value is GenValue.GList.ListOf<*> || value is GenValue.GList.RuntimeListOf<*>,
                     "Attribute attached is not a list"
@@ -230,7 +230,7 @@ open class ListAttribute(
             } else {
                 // get the values of all the attributes and return a
                 // GenValue.List with the attribute values in an array
-                GenValue.GList.List(listAttributes.map { it.value(current) }.toTypedArray())
+                GenValue.GList.List(listAttributes.map { it.genValue(current) }.toTypedArray())
             }
         } else {
             parentNode.genCodeIfNecessary(current)

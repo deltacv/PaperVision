@@ -18,8 +18,9 @@
 
 package io.github.deltacv.papervision.attribute.math
 
+import imgui.ImGui
+import imgui.type.ImBoolean
 import imgui.type.ImInt
-import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
@@ -28,9 +29,9 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
-import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.id.Misc
 import io.github.deltacv.papervision.serialization.data.SerializeData
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 
 class RangeAttribute(
     override val mode: AttributeMode,
@@ -40,6 +41,12 @@ class RangeAttribute(
     companion object : AttributeType {
         override val icon = FontAwesomeIcons.TextWidth
         override fun new(mode: AttributeMode, variableName: String) = RangeAttribute(mode, variableName)
+    }
+
+    private var usesToggleChanged = false
+    val onToggleChange by lazy {
+        usesToggleChanged = true
+        PaperVisionEventHandler("RangeAttribute-OnToggleChange")
     }
 
     var min = 0
@@ -63,21 +70,29 @@ class RangeAttribute(
             }
         }
 
+    var useToggle = false
     var useSliders = true
+
+    @SerializeData
+    val toggleValue = ImBoolean(true)
 
     @SerializeData
     val minValue = ImInt(min)
     @SerializeData
     val maxValue = ImInt(max)
 
+    private var prevToggle: Boolean? = null
     private var prevMin: Int? = null
     private var prevMax: Int? = null
 
+    private val toggleId by Misc.newMiscId()
     private val minId by Misc.newMiscId()
     private val maxId by Misc.newMiscId()
 
     override fun drawAttribute() {
         super.drawAttribute()
+
+        if(useToggle && !toggleValue.get()) return
 
         if(!hasLink) {
             sameLineIfNeeded()
@@ -110,13 +125,39 @@ class RangeAttribute(
         }
     }
 
+    override fun drawAfterText() {
+        if(mode == AttributeMode.INPUT && !hasLink && useToggle) {
+            ImGui.sameLine()
+
+            ImGui.checkbox("###$toggleId", toggleValue)
+
+            if(prevToggle == null || prevToggle != toggleValue.get()) {
+                changed()
+
+                if(usesToggleChanged) {
+                    onToggleChange()
+                }
+            }
+            prevToggle = toggleValue.get()
+        }
+    }
+
     override fun readEditorValue() = arrayOf(valueMutator(minValue.get()), valueMutator(maxValue.get()))
 
-    override fun value(current: CodeGen.Current) = value(
+    override fun genValue(current: CodeGen.Current) = value(
         current, "a Range", GenValue.Range(
             GenValue.Double(valueMutator(minValue.get()).resolved()),
             GenValue.Double(valueMutator(maxValue.get()).resolved())
         )
     ) { it is GenValue.Range }
 
+}
+
+
+fun RangeAttribute.rebuildOnToggleChange() = apply {
+    onToggleChange {
+        if(idElementContainer[id] != null) {
+            rebuildPreviz()
+        }
+    }
 }

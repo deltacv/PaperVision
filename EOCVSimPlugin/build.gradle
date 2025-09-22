@@ -15,6 +15,11 @@ components.java {
         // only run shadowJar when explicitly specified by the user
         // check if user invoked gradle with :shadowJar
         enabled = project.gradle.startParameter.taskNames.contains("shadowJar")
+        archiveFileName = "PaperVisionPlugin-${project.version}-all.jar"
+    }
+
+    tasks.named("jar").configure {
+        archiveFileName = "PaperVisionPlugin-${project.version}.jar"
     }
 }
 

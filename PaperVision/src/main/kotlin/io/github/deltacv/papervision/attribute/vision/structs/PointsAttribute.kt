@@ -44,7 +44,7 @@ class PointsAttribute (
         override fun new(mode: AttributeMode, variableName: String) = PointsAttribute(mode, variableName)
     }
 
-    override fun value(current: CodeGen.Current) = value<GenValue.GPoints.RuntimePoints>(
+    override fun genValue(current: CodeGen.Current) = value<GenValue.GPoints.RuntimePoints>(
         current, "a Points"
     ) { it is GenValue.GPoints.RuntimePoints }
 
