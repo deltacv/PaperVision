@@ -20,7 +20,6 @@ package io.github.deltacv.papervision.attribute.vision.structs
 
 import imgui.ImGui
 import imgui.ImVec2
-import imgui.flag.ImGuiCol
 import io.github.deltacv.papervision.action.editor.CreateLinkAction
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
@@ -75,7 +74,7 @@ class LineParametersAttribute(
                 GenValue.Int(3.resolved())
             )
         } else {
-            value(
+            readGenValue(
                 current, "a LineParameters"
             ) { it is GenValue.LineParameters }
         }

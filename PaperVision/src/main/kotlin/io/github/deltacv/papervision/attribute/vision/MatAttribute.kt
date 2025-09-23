@@ -103,7 +103,7 @@ class MatAttribute(
         prevIsPrevizEnabled = isPrevizEnabled
     }
 
-    override fun genValue(current: CodeGen.Current) = value<GenValue.Mat>(
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Mat>(
         current, "a Mat"
     ) { it is GenValue.Mat }
 

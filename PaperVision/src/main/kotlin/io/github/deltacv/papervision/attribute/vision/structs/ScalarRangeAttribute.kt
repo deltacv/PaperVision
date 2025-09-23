@@ -76,7 +76,7 @@ class ScalarRangeAttribute(
             values.getOr(3, ZERO) as GenValue.Range
         )
 
-        return value(current, "a scalar range", range) {
+        return readGenValue(current, "a scalar range", range) {
             it is GenValue.ScalarRange
         }
     }

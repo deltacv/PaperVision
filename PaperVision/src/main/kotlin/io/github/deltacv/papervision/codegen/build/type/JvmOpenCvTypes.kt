@@ -63,6 +63,7 @@ object JvmOpenCvTypes {
     val RotatedRect = Type("RotatedRect", "org.opencv.core")
 
     val Point = Type("Point", "org.opencv.core")
+    val KeyPoint = Type("KeyPoint", "org.opencv.core")
 
     object SimpleBlobDetector : Type("SimpleBlobDetector", "org.opencv.features2d") {
         val Params = Type("SimpleBlobDetector_Params", "org.opencv.features2d")

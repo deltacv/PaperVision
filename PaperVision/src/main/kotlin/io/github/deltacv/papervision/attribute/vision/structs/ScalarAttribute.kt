@@ -81,7 +81,7 @@ class ScalarAttribute(
             GenValue.Double((values.getOr(3, GenValue.Int.ZERO) as GenValue.Int).value.convertTo { it?.toDouble() }),
         )
 
-        return value(
+        return readGenValue(
             current, "a Scalar", value
         ) { it is GenValue.Scalar }
     }

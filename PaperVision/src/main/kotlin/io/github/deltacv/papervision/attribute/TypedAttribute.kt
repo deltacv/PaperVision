@@ -167,7 +167,7 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    protected fun <T : GenValue> value(
+    protected fun <T : GenValue> readGenValue(
         current: CodeGen.Current,
         name: String,
         inputFieldValue: T? = null,
@@ -190,7 +190,7 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
                 inputFieldValue
             }
         } else {
-            val value = getOutputValue(current)
+            val value = getGenValueFromNode(current)
             raiseAssert(checkConsumer(value), tr("err_valreturned_isnot", name))
 
             return value as T

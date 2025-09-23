@@ -43,7 +43,7 @@ class RectAttribute (
         override fun new(mode: AttributeMode, variableName: String) = RectAttribute(mode, variableName)
     }
 
-    override fun genValue(current: CodeGen.Current) = value<GenValue.GRect.RuntimeRect>(
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.GRect.RuntimeRect>(
         current, "a Rect"
     ) { it is GenValue.GRect.RuntimeRect }
 

@@ -131,7 +131,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when(attrib) {
             output -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.output }
             else -> noValue(attrib)

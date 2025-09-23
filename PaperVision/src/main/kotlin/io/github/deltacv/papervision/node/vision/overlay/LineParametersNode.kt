@@ -93,7 +93,7 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when(attrib) {
             output -> current.nonNullSessionOf(this).lineParameters
             else -> noValue(attrib)

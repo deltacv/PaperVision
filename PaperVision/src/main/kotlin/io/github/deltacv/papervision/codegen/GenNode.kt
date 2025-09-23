@@ -93,6 +93,6 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
 
     fun ScopeContext.nameComment() = scope.nameComment()
 
-    fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue
+    fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue
 
 }

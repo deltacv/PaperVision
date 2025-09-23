@@ -144,7 +144,7 @@ class RangeAttribute(
 
     override fun readEditorValue() = arrayOf(valueMutator(minValue.get()), valueMutator(maxValue.get()))
 
-    override fun genValue(current: CodeGen.Current) = value(
+    override fun genValue(current: CodeGen.Current) = readGenValue(
         current, "a Range", GenValue.Range(
             GenValue.Double(valueMutator(minValue.get()).resolved()),
             GenValue.Double(valueMutator(maxValue.get()).resolved())

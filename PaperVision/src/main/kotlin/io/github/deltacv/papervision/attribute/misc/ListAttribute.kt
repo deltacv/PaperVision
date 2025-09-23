@@ -67,9 +67,9 @@ open class ListAttribute(
     val listAttributes = mutableListOf<TypedAttribute>()
     val deleteQueue = mutableListOf<TypedAttribute>()
 
-    private var beforeHasLink = false
+    private var lastHasLink = false
 
-    private var previousLength: Int? = 0
+    private var lastLength: Int? = 0
     var fixedLength = length
         set(value) {
             field = value
@@ -94,13 +94,13 @@ open class ListAttribute(
             serializationData = null
         } else {
             // oh god... (it's been only 10 minutes and i have already forgotten how this works)
-            if (previousLength != fixedLength) {
-                if (fixedLength != null && (previousLength == null || previousLength == 0)) {
+            if (lastLength != fixedLength) {
+                if (fixedLength != null && (lastLength == null || lastLength == 0)) {
                     repeat(fixedLength!!) {
                         createElement()
                     }
-                } else if (previousLength != null) {
-                    val delta = (fixedLength ?: 0) - (previousLength ?: 0)
+                } else if (lastLength != null) {
+                    val delta = (fixedLength ?: 0) - (lastLength ?: 0)
 
                     if (delta < 0) {
                         repeat(-delta) {
@@ -131,7 +131,7 @@ open class ListAttribute(
             }
         }
 
-        previousLength = fixedLength
+        lastLength = fixedLength
     }
 
     override fun delete() {
@@ -154,7 +154,7 @@ open class ListAttribute(
         var ignoreNewLink = false
 
         // accepts links of elementAttributeType to redirect them into a list element
-        if (mode == AttributeMode.INPUT && beforeHasLink != hasLink && hasLink && availableLinkedAttribute !is ListAttribute) {
+        if (mode == AttributeMode.INPUT && lastHasLink != hasLink && hasLink && availableLinkedAttribute !is ListAttribute) {
             val linkedAttribute = availableLinkedAttribute!!
 
             // the user might be crazy and try to link an attribute that is already linked to one of our elements
@@ -175,7 +175,7 @@ open class ListAttribute(
         }
 
         for ((i, attrib) in listAttributes.withIndex()) {
-            if (beforeHasLink != hasLink && !ignoreNewLink) {
+            if (lastHasLink != hasLink && !ignoreNewLink) {
                 if (hasLink) {
                     // delete attributes if a link has been created
                     attrib.delete()
@@ -200,7 +200,7 @@ open class ListAttribute(
             }
         }
 
-        beforeHasLink = hasLink
+        lastHasLink = hasLink
     }
 
     // accept either another ListAttribute with the same element type or a TypedAttribute with the same type as the element type
@@ -234,7 +234,7 @@ open class ListAttribute(
             }
         } else {
             parentNode.genCodeIfNecessary(current)
-            val value = getOutputValue(current)
+            val value = getGenValueFromNode(current)
             raiseAssert(
                 value is GenValue.GList,
                 "Value returned from the node is not a list"

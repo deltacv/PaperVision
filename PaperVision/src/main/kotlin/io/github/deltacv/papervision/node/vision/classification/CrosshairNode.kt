@@ -409,7 +409,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when (attrib) {
             outputCrosshair -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.outputCrosshair }
             outputCrosshairImage -> GenValue.Mat.defer { current.sessionOf(this)?.outputCrosshairImage }

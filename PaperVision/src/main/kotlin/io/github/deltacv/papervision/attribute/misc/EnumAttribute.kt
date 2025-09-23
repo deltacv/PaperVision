@@ -99,7 +99,7 @@ class EnumAttribute<T: Enum<T>>(
                 return GenValue.Enum(value, value::class.java)
             }
         } else {
-            val value = getOutputValue(current)
+            val value = getGenValueFromNode(current)
             raiseAssert(value is GenValue.Enum<*>, "Value returned from the node is not an enum")
 
             val valueEnum = value as GenValue.Enum<T>

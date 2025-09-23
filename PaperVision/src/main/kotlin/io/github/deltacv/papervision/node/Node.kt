@@ -166,7 +166,7 @@ abstract class Node<S: CodeGenSession>(
 
     operator fun Attribute.unaryPlus() = addAttribute(this)
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         raise("Node doesn't have output attributes")
     }
 

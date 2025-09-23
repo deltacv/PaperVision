@@ -73,7 +73,7 @@ class BooleanAttribute(
                 } else GenValue.Boolean.FALSE
             }
         } else {
-            val value = getOutputValue(current)
+            val value = getGenValueFromNode(current)
             raiseAssert(value is GenValue.Boolean, "Value returned from the node is not a Boolean")
 
             return value as GenValue.Boolean

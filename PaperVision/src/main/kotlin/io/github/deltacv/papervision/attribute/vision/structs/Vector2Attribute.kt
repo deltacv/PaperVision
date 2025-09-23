@@ -70,7 +70,7 @@ class Vector2Attribute (
         return if(mode == AttributeMode.INPUT && !hasLink) {
             GenValue.Vec2.Vector2(GenValue.Double.ZERO, GenValue.Double.ZERO)
         } else {
-            value(
+            readGenValue(
                 current, "a Vector2"
             ) { it is GenValue.Vec2 }
         }

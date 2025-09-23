@@ -21,7 +21,6 @@ package io.github.deltacv.papervision.attribute.math
 import imgui.ImGui
 import imgui.type.ImDouble
 import imgui.type.ImFloat
-import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
@@ -80,7 +79,7 @@ class DoubleAttribute(
 
     override fun readEditorValue() = value.get()
 
-    override fun genValue(current: CodeGen.Current) = value(
+    override fun genValue(current: CodeGen.Current) = readGenValue(
         current, "a Double", GenValue.Double(value.get().resolved())
     ) { it is GenValue.Double }
 

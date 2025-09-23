@@ -76,7 +76,7 @@ class StringAttribute(
 
     override fun readEditorValue() = value.get()
 
-    override fun genValue(current: CodeGen.Current) = value(
+    override fun genValue(current: CodeGen.Current) = readGenValue(
         current, "a String", GenValue.String(value.get().resolved())
     ) { it is GenValue.String }
 

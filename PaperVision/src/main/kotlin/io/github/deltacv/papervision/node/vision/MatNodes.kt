@@ -114,8 +114,8 @@ class InputMatNode @JvmOverloads constructor(
         propagate(current)
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current,
-                                  attrib: Attribute
+    override fun getGenValueOf(current: CodeGen.Current,
+                               attrib: Attribute
     ) = when(current.language) {
         is CPythonLanguage -> GenValue.Mat(Variable(CPythonLanguage.NoType, "input").resolved(), ColorSpace.RGBA.resolved())
         else -> GenValue.Mat(Variable(JvmOpenCvTypes.Mat, "input").resolved(), ColorSpace.RGBA.resolved())
@@ -309,5 +309,5 @@ class OutputMatNode @JvmOverloads constructor(
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute) = GenValue.None
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute) = GenValue.None
 }
