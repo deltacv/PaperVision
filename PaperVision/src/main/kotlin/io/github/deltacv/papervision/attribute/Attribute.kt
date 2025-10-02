@@ -33,6 +33,8 @@ import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.BasicAttribData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import java.util.concurrent.ArrayBlockingQueue
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 enum class AttributeMode { INPUT, OUTPUT }
 
@@ -106,7 +108,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     val position = ImVec2()
     val editorPosition = ImVec2()
 
-    internal val changeQueue = ArrayBlockingQueue<Boolean>(50)
+    internal val changeQueue = ArrayBlockingQueue<Boolean>(5)
 
     abstract fun drawAttribute()
 
@@ -210,7 +212,12 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
     fun requireAttachedAttribute() = raiseAssert(hasLink, "err_musthave_attachedattrib")
 
+    @OptIn(ExperimentalContracts::class)
     fun raiseAssert(condition: Boolean, message: String) {
+        contract {
+            returns() implies condition
+        }
+
         if(!condition) {
             raise(message)
         }

@@ -41,6 +41,7 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
             val session = Session()
 
             current {
+                input.requireAttachedAttribute()
                 val keypoints = input.genValue(current).value
 
                 val rects = uniqueVariable("keypointsRects", JavaTypes.ArrayList(JvmOpenCvTypes.Rect).new())
@@ -80,6 +81,10 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
                 val rects = uniqueVariable("keypoints_rects", NoType.newArray())
 
                 current.scope {
+                    local(rects)
+
+                    separate()
+
                     foreach(Variable(NoType, "kp"), keypoints.v) {
                         rects("append", CPythonLanguage.tuple(
                             it.propertyValue("pt", NoType)[0.v, NoType],

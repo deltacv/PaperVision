@@ -86,7 +86,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     lateinit var flagsNode: FlagsNode
 
     val flags get() = flagsNode.flags
-
     val numFlags get() = flagsNode.numFlags
 
     var inputNode = InputMatNode(winSizeSupplier)
@@ -146,12 +145,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     private val popupSelection = mutableListOf<DrawableIdElement>()
 
     private var currentRightClickMenuPopup: RightClickMenuPopup? = null
-
-    val rightClickMenuPopup: RightClickMenuPopup get() {
-        val popup = RightClickMenuPopup(paperVision.nodeList, ::undo, ::redo, ::cut, ::copy, ::paste, popupSelection)
-        currentRightClickMenuPopup = popup
-        return popup
-    }
 
     private val rightClickMenuPopupTimer = ElapsedTime()
     private val justDeletedLinkTimer = ElapsedTime()
@@ -307,7 +300,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         if (ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
             if (rightClickMenuPopupTimer.millis <= 200 && (!paperVision.nodeList.isNodesListOpen && !paperVision.isModalWindowOpen && justDeletedLinkTimer.millis >= 200)) {
-                rightClickMenuPopup.open()
+                val popup = RightClickMenuPopup(paperVision.nodeList, ::undo, ::redo, ::cut, ::copy, ::paste, popupSelection)
+                currentRightClickMenuPopup = popup
             }
         }
 

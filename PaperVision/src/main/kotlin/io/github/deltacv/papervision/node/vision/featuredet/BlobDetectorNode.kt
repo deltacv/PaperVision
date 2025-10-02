@@ -92,6 +92,7 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
 
             current {
                 input.requireAttachedAttribute()
+
                 val inputValue = input.genValue(current).value
 
                 val areaRangeValue = area.genValue(current)

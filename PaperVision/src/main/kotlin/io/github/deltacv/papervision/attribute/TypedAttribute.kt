@@ -167,7 +167,7 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    protected fun <T : GenValue> readGenValue(
+    inline fun <reified T : GenValue> readGenValue(
         current: CodeGen.Current,
         name: String,
         inputFieldValue: T? = null,
@@ -182,7 +182,9 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
                     tr("err_musthave_attachedattrib")
                 )
 
-                val value = linkedAttrib!!.genValue(current)
+                linkedAttrib.parentNode.genCodeIfNecessary(current)
+
+                val value = linkedAttrib.genValue(current)
                 raiseAssert(checkConsumer(value), tr("err_attachedattrib_isnot", name))
 
                 value as T
