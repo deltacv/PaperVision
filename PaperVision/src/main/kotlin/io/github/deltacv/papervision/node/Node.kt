@@ -21,7 +21,6 @@ package io.github.deltacv.papervision.node
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
-import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.codegen.GeneratorsGenNode
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
@@ -39,7 +38,6 @@ import io.github.deltacv.papervision.serialization.NodeSerializationData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.event.EventListener
 import io.github.deltacv.papervision.util.loggerFor
-import io.github.deltacv.papervision.util.loggerForThis
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -52,7 +50,7 @@ abstract class Node<S: CodeGenSession>(
     val joinActionStack: Boolean = true
 ) : DrawableIdElementBase<Node<*>>(), GeneratorsGenNode<S>, DataSerializable<NodeSerializationData> {
 
-    override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Node<*>>()
+    override val idElementContainer = IdElementContainerStack.localStack.peekNonNull<Node<*>>()
     override val requestedId get() = if(forgetSerializedId) null else serializedId
 
     private var beforeDeletingPosition = ImVec2()
@@ -100,9 +98,9 @@ abstract class Node<S: CodeGenSession>(
     }
 
     @Transient
-    private val attribs = mutableListOf<Attribute>() // internal mutable list
+    private val _nodeAttributes = mutableListOf<Attribute>() // internal mutable list
 
-    val nodeAttributes = attribs as List<Attribute> // public read-only
+    val nodeAttributes = _nodeAttributes as List<Attribute> // public read-only
 
     protected fun drawAttributes() {
         for((i, attribute) in nodeAttributes.withIndex()) {
@@ -151,24 +149,24 @@ abstract class Node<S: CodeGenSession>(
     }
 
     fun addAttribute(attribute: Attribute) {
-        if(!attribs.contains(attribute)) {
+        if(!_nodeAttributes.contains(attribute)) {
             attribute.parentNode = this
             attribute.onChange(attribOnChangeListener)
-            attribs.add(attribute)
+            _nodeAttributes.add(attribute)
         }
     }
 
     fun removeAttribute(attribute: Attribute) {
-        if(attribs.contains(attribute)) {
+        if(_nodeAttributes.contains(attribute)) {
             //attribute.parentNode = null
             attribute.onChange.removePersistentListener(attribOnChangeListener)
-            attribs.remove(attribute)
+            _nodeAttributes.remove(attribute)
         }
     }
 
     operator fun Attribute.unaryPlus() = addAttribute(this)
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         raise("Node doesn't have output attributes")
     }
 
@@ -178,7 +176,7 @@ abstract class Node<S: CodeGenSession>(
                 continue
             }
 
-            for(linkedAttribute in attribute.enabledLinkedAttributes()) {
+            for(linkedAttribute in attribute.availableLinkedAttributes) {
                if(linkedAttribute != null) {
                    if(linkedAttribute.mode == AttributeMode.OUTPUT || linkedAttribute.parentNode == initialNode) {
                        continue // uh oh
@@ -197,9 +195,9 @@ abstract class Node<S: CodeGenSession>(
     override fun propagate(current: CodeGen.Current) {
         val linkedNodes = mutableListOf<Node<*>>()
 
-        for(attribute in attribs) {
+        for(attribute in _nodeAttributes) {
             if(attribute.mode == AttributeMode.OUTPUT) {
-                for(linkedAttribute in attribute.enabledLinkedAttributes()) {
+                for(linkedAttribute in attribute.availableLinkedAttributes) {
                     if(linkedAttribute != null && !linkedNodes.contains(linkedAttribute.parentNode)) {
                         linkedNodes.add(linkedAttribute.parentNode)
                     }
@@ -213,9 +211,9 @@ abstract class Node<S: CodeGenSession>(
         for(linkedNode in linkedNodes) {
             if(linkedNode.hasDeadEnd()) {
                 deadEndNodes.add(linkedNode)
-                logger.info("Dead end node: $linkedNode")
+                logger.debug("Dead end: $linkedNode")
             } else {
-                logger.info("Complete path node: $linkedNode")
+                logger.debug("Complete path: $linkedNode")
                 completePathNodes.add(linkedNode)
             }
         }
@@ -227,8 +225,7 @@ abstract class Node<S: CodeGenSession>(
     }
 
     open fun makeSerializationData() = BasicNodeData(id, ImNodes.getNodeEditorSpacePos(id))
-
-    open fun takeDeserializationData(data: NodeSerializationData) { /* do nothing */ }
+    open fun takeSerializationData(data: NodeSerializationData) { /* do nothing */ }
 
     /**
      * Call before enable()
@@ -239,7 +236,7 @@ abstract class Node<S: CodeGenSession>(
             nextNodePosition = data.nodePos
         }
 
-        takeDeserializationData(data)
+        takeSerializationData(data)
     }
 
     final override fun serialize(): NodeSerializationData {
@@ -254,7 +251,7 @@ abstract class Node<S: CodeGenSession>(
     fun raise(message: String): Nothing = throw NodeGenException(this, message)
 
     fun warn(message: String) {
-        println("WARN: $message") // TODO: Warnings system...
+        logger.warn("CODE GEN WARN: $message") // TODO: Warnings system...
     }
 
     @OptIn(ExperimentalContracts::class)

@@ -51,19 +51,19 @@ class BooleanAttribute(
         }
     }
 
-    override fun thisGet() = value.get()
+    override fun readEditorValue() = value.get()
 
-    override fun value(current: CodeGen.Current): GenValue.Boolean {
+    override fun genValue(current: CodeGen.Current): GenValue.Boolean {
         if(isInput) {
             if(hasLink) {
-                val linkedAttrib = enabledLinkedAttribute()
+                val linkedAttrib = availableLinkedAttribute
 
                 raiseAssert(
                     linkedAttrib != null,
                     "Boolean attribute must have another attribute attached"
                 )
 
-                val value = linkedAttrib!!.value(current)
+                val value = linkedAttrib!!.genValue(current)
                 raiseAssert(value is GenValue.Boolean, "Attribute attached is not a Boolean")
 
                 return value as GenValue.Boolean
@@ -73,7 +73,7 @@ class BooleanAttribute(
                 } else GenValue.Boolean.FALSE
             }
         } else {
-            val value = getOutputValue(current)
+            val value = getGenValueFromNode(current)
             raiseAssert(value is GenValue.Boolean, "Value returned from the node is not a Boolean")
 
             return value as GenValue.Boolean

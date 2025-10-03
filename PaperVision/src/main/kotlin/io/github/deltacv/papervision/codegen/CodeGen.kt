@@ -80,7 +80,7 @@ class CodeGen(
     private fun resolveAllPlaceholders(preprocessed: String): String {
         var resolved = preprocessed
 
-        val placeholders = IdElementContainerStack.threadStack
+        val placeholders = IdElementContainerStack.localStack
             .peekNonNull<Resolvable.Placeholder<*>>()
 
         logger.info("Resolving active placeholders: ${placeholders.inmutable.size}")
@@ -88,7 +88,7 @@ class CodeGen(
         // Initial debug log of all placeholders
         placeholders.inmutable.forEach {
             val v = it.resolve()
-            logger.info("${it.placeholder} = $v")
+            logger.debug("${it.placeholder} = $v")
         }
 
         fun resolve(currentPlaceholdersProvider: () -> Collection<Resolvable.Placeholder<*>>) {
@@ -181,10 +181,7 @@ class CodeGen(
 
 }
 
-class CodeGenOptions {
-    var genAtTheEnd = false
-    inline operator fun invoke(block: CodeGenOptions.() -> Unit) = block()
-}
+data class CodeGenOptions(var genAtTheEnd: Boolean = false)
 
 interface CodeGenSession
 

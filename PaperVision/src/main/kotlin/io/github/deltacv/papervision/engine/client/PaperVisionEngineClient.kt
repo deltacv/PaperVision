@@ -41,8 +41,6 @@ class PaperVisionEngineClient(
 
     private val messagesAwaitingResponse = mutableMapOf<Int, PaperVisionEngineMessage>()
 
-    val processedBinaryMessagesHashes = ArrayBlockingQueue<Int>(100)
-
     private val bytesQueue = mutableListOf<ByteArray>()
 
     fun connect() {
@@ -89,15 +87,9 @@ class PaperVisionEngineClient(
 
                 val tag = ByteMessageTag(ByteMessages.tagFromBytes(it))
                 val id = ByteMessages.idFromBytes(it)
-
                 bytesQueue.remove(it)
 
-                byteReceiver.callHandlers(id, tag.toString(), it)
-
-                if(processedBinaryMessagesHashes.size >= processedBinaryMessagesHashes.remainingCapacity()) {
-                    processedBinaryMessagesHashes.poll()
-                }
-                processedBinaryMessagesHashes.offer(it.hashCode())
+                byteReceiver.callHandlers(id, tag.toString(), it, ByteMessages.messageLengthFromBytes(it))
             }
         }
 

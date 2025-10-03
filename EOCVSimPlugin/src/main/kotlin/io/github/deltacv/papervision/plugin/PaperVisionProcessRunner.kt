@@ -42,8 +42,9 @@ object PaperVisionProcessRunner {
 
     val paperVisionEngine = EOCVSimIpcEngine()
 
-    val onPaperVisionExit = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionExit")
+    val onPaperVisionStart = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionStart")
 
+    val onPaperVisionExit = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionExit")
     val onPaperVisionExitError = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionExitError")
 
     private val pool = Executors.newFixedThreadPool(1)
@@ -53,17 +54,19 @@ object PaperVisionProcessRunner {
 
     private var currentJob: Future<*>? = null
 
-    fun execPaperVision(classpath: String, jpegPort: Int) {
+    fun execPaperVision(classpath: String) {
         if(isRunning) return
 
         isRunning = true
+
+        onPaperVisionStart.run()
 
         currentJob = pool.submit {
             logger.info("Starting PaperVision process...")
 
             val jvmArgs = mutableListOf("-Dlog4j.configurationFile=log4j2_nofile_pv.xml")
 
-            val programParams = listOf("-q", "-i=${paperVisionEngine.server.port}", "-j=${jpegPort}")
+            val programParams = listOf("-q", "-i=${paperVisionEngine.server.port}")
 
             val exitCode = if(SysUtil.OS == SysUtil.OperatingSystem.MACOS) {
                 logger.info("Running on macOS, adding platform-specific flags")

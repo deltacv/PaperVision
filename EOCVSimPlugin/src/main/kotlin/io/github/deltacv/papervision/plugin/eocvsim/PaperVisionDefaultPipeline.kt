@@ -18,9 +18,9 @@
 
 package io.github.deltacv.papervision.plugin.eocvsim
 
+import android.graphics.*
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.qualcomm.robotcore.eventloop.opmode.Disabled
-import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipeline
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.opencv.core.Mat
 import org.opencv.core.MatOfByte
@@ -33,14 +33,17 @@ import org.openftc.easyopencv.OpenCvPipeline
 @Disabled
 class PaperVisionDefaultPipeline(
     val telemetry: Telemetry
-) : StreamableOpenCvPipeline() {
+) : OpenCvPipeline() {
 
     val logger by loggerForThis()
+
+
+    private lateinit var textPaint: Paint
 
     lateinit var drawMat: Mat
 
     override fun init(mat: Mat) {
-        drawMat = Mat(mat.size(), mat.type())
+        drawMat = Mat(Size(2160.0, 1800.0), mat.type())
         drawMat.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
 
         try {
@@ -67,15 +70,30 @@ class PaperVisionDefaultPipeline(
         } catch(e: Exception) {
             logger.warn("Failed to load logo", e)
         }
+
+        textPaint = Paint()
+        textPaint.color = Color.WHITE
+        textPaint.typeface = Typeface.DEFAULT_ITALIC
+        textPaint.textSize = 30f
+        textPaint.isAntiAlias = true
     }
 
     override fun processFrame(input: Mat): Mat {
         telemetry.addLine("Making computer vision accessible to everyone")
         telemetry.update()
 
-        streamFrame(0, input, null)
-
         return drawMat
+    }
+
+    override fun onDrawFrame(
+        canvas: Canvas,
+        onscreenWidth: Int,
+        onscreenHeight: Int,
+        scaleBmpPxToCanvasPx: Float,
+        scaleCanvasDensity: Float,
+        userContext: Any?
+    ) {
+        canvas.drawText("Select a project to preview", 5f, 33f, textPaint)
     }
 
 }

@@ -21,27 +21,25 @@ package io.github.deltacv.papervision
 import imgui.ImFontGlyphRangesBuilder
 import imgui.ImGui
 import imgui.flag.ImGuiCond
-import imgui.flag.ImGuiKey
 import io.github.deltacv.mai18n.Language
 import io.github.deltacv.papervision.action.Action
 import io.github.deltacv.papervision.action.RootAction
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.CodeGenManager
-import io.github.deltacv.papervision.codegen.Resolvable
 import io.github.deltacv.papervision.engine.bridge.NoOpPaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.client.message.PrevizAskNameMessage
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
 import io.github.deltacv.papervision.gui.*
-import io.github.deltacv.papervision.gui.eocvsim.ImageDisplay
+import io.github.deltacv.papervision.gui.display.ImageDisplay
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
 import io.github.deltacv.papervision.gui.util.Popup
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
-import io.github.deltacv.papervision.id.NoneIdElement
+import io.github.deltacv.papervision.id.Misc
 import io.github.deltacv.papervision.id.SingleIdElementContainer
 import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.io.TextureProcessorQueue
@@ -49,7 +47,6 @@ import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.node.NodeRegistry
 import io.github.deltacv.papervision.platform.*
-import io.github.deltacv.papervision.serialization.PaperVisionSerializer
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 import java.awt.Taskbar
@@ -68,8 +65,6 @@ class PaperVision(
             private set
         lateinit var defaultImGuiFontSmall: Font
             private set
-
-        val miscIds = IdElementContainer<NoneIdElement>()
 
         init {
             imnodesStyle = ImNodesDarkStyle
@@ -113,6 +108,7 @@ class PaperVision(
     val textureProcessorQueues = SingleIdElementContainer<TextureProcessorQueue>()
     val streamDisplays = IdElementContainer<ImageDisplay>()
     val actions = IdElementContainer<Action>()
+    val misc = IdElementContainer<Misc>()
 
     val popups = IdElementContainer<Popup>()
 
@@ -145,15 +141,16 @@ class PaperVision(
         private set
 
     fun init() {
-        IdElementContainerStack.threadStack.push(nodes)
-        IdElementContainerStack.threadStack.push(attributes)
-        IdElementContainerStack.threadStack.push(links)
-        IdElementContainerStack.threadStack.push(windows)
-        IdElementContainerStack.threadStack.push(textures)
-        IdElementContainerStack.threadStack.push(textureProcessorQueues)
-        IdElementContainerStack.threadStack.push(streamDisplays)
-        IdElementContainerStack.threadStack.push(actions)
-        IdElementContainerStack.threadStack.push(popups)
+        IdElementContainerStack.localStack.push(nodes)
+        IdElementContainerStack.localStack.push(attributes)
+        IdElementContainerStack.localStack.push(links)
+        IdElementContainerStack.localStack.push(windows)
+        IdElementContainerStack.localStack.push(textures)
+        IdElementContainerStack.localStack.push(textureProcessorQueues)
+        IdElementContainerStack.localStack.push(streamDisplays)
+        IdElementContainerStack.localStack.push(actions)
+        IdElementContainerStack.localStack.push(popups)
+        IdElementContainerStack.localStack.push(misc)
 
         logger.info("Starting PaperVision...\n\n${IntroModalWindow.iconLogo}\n")
 
@@ -184,6 +181,8 @@ class PaperVision(
         // disable annoying ini file creation (hopefully shouldn't break anything)
         ImGui.getIO().iniFilename = null
         ImGui.getIO().logFilename = null
+
+        // ImGui.getIO().getFonts().setFreeTypeRenderer(true);
 
         // initializing fonts right after the imgui context is created
         // we can't create fonts mid-frame so that's kind of a problem
@@ -219,15 +218,16 @@ class PaperVision(
             logger.warn("Taskbar icon not supported")
         }
 
-        IdElementContainerStack.threadStack.pop<Node<*>>()
-        IdElementContainerStack.threadStack.pop<Attribute>()
-        IdElementContainerStack.threadStack.pop<Link>()
-        IdElementContainerStack.threadStack.pop<Window>()
-        IdElementContainerStack.threadStack.pop<PlatformTexture>()
-        IdElementContainerStack.threadStack.pop<TextureProcessorQueue>()
-        IdElementContainerStack.threadStack.pop<ImageDisplay>()
-        IdElementContainerStack.threadStack.pop<Action>()
-        IdElementContainerStack.threadStack.pop<Popup>()
+        IdElementContainerStack.localStack.pop<Node<*>>()
+        IdElementContainerStack.localStack.pop<Attribute>()
+        IdElementContainerStack.localStack.pop<Link>()
+        IdElementContainerStack.localStack.pop<Window>()
+        IdElementContainerStack.localStack.pop<PlatformTexture>()
+        IdElementContainerStack.localStack.pop<TextureProcessorQueue>()
+        IdElementContainerStack.localStack.pop<ImageDisplay>()
+        IdElementContainerStack.localStack.pop<Action>()
+        IdElementContainerStack.localStack.pop<Popup>()
+        IdElementContainerStack.localStack.pop<Misc>()
 
         logger.info("PaperVision started")
     }
@@ -270,15 +270,16 @@ class PaperVision(
     }
 
     fun process() {
-        IdElementContainerStack.threadStack.push(nodes)
-        IdElementContainerStack.threadStack.push(attributes)
-        IdElementContainerStack.threadStack.push(links)
-        IdElementContainerStack.threadStack.push(windows)
-        IdElementContainerStack.threadStack.push(textures)
-        IdElementContainerStack.threadStack.push(textureProcessorQueues)
-        IdElementContainerStack.threadStack.push(streamDisplays)
-        IdElementContainerStack.threadStack.push(actions)
-        IdElementContainerStack.threadStack.push(popups)
+        IdElementContainerStack.localStack.push(nodes)
+        IdElementContainerStack.localStack.push(attributes)
+        IdElementContainerStack.localStack.push(links)
+        IdElementContainerStack.localStack.push(windows)
+        IdElementContainerStack.localStack.push(textures)
+        IdElementContainerStack.localStack.push(textureProcessorQueues)
+        IdElementContainerStack.localStack.push(streamDisplays)
+        IdElementContainerStack.localStack.push(actions)
+        IdElementContainerStack.localStack.push(popups)
+        IdElementContainerStack.localStack.push(misc)
 
         onUpdate.run()
 
@@ -307,22 +308,23 @@ class PaperVision(
 
         previzManager.update()
 
-        IdElementContainerStack.threadStack.pop<Node<*>>()
-        IdElementContainerStack.threadStack.pop<Attribute>()
-        IdElementContainerStack.threadStack.pop<Link>()
-        IdElementContainerStack.threadStack.pop<Window>()
-        IdElementContainerStack.threadStack.pop<PlatformTexture>()
-        IdElementContainerStack.threadStack.pop<TextureProcessorQueue>()
-        IdElementContainerStack.threadStack.pop<ImageDisplay>()
-        IdElementContainerStack.threadStack.pop<Action>()
-        IdElementContainerStack.threadStack.pop<Popup>()
+        IdElementContainerStack.localStack.pop<Node<*>>()
+        IdElementContainerStack.localStack.pop<Attribute>()
+        IdElementContainerStack.localStack.pop<Link>()
+        IdElementContainerStack.localStack.pop<Window>()
+        IdElementContainerStack.localStack.pop<PlatformTexture>()
+        IdElementContainerStack.localStack.pop<TextureProcessorQueue>()
+        IdElementContainerStack.localStack.pop<ImageDisplay>()
+        IdElementContainerStack.localStack.pop<Action>()
+        IdElementContainerStack.localStack.pop<Popup>()
+        IdElementContainerStack.localStack.pop<Misc>()
     }
 
     fun destroy() {
         nodeEditor.destroy()
     }
 
-    fun startPrevizAsk() {
+    fun startPrevizWithEngine() {
         engineClient.sendMessage(PrevizAskNameMessage().onResponseWith<StringResponse> { response ->
             logger.info("Engine responded with previz name ${response.value}")
             onUpdate.doOnce {

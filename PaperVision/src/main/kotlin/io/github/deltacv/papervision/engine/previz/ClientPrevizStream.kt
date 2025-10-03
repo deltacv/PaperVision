@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.engine.previz
 
 import io.github.deltacv.papervision.engine.client.ByteMessageReceiver
 import io.github.deltacv.papervision.engine.client.Handler
-import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
+import io.github.deltacv.papervision.engine.message.ByteMessages
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bytes
@@ -31,20 +31,21 @@ import io.github.deltacv.papervision.platform.animation.TimedTextureAnimation
 import io.github.deltacv.papervision.util.loggerForThis
 import java.awt.image.BufferedImage
 
-class PipelineStream(
+class ClientPrevizStream(
     val sessionName: String,
     val byteReceiver: ByteMessageReceiver,
+    val statistics: LivePipelineStatistics = LivePipelineStatistics(0f, 0L),
     val width: Int = 160,
     val height: Int = 120,
-    val status: Status = Status.MINIMIZED,
+    val sizing: Sizing = Sizing.MINIMIZED,
     val offlineImages: Array<BufferedImage>? = null,
     val offlineImagesFps: Double = 1.0
 ) {
 
-    enum class Status {
+    enum class Sizing {
         MINIMIZED, MAXIMIZED
     }
-    
+
     val logger by loggerForThis()
 
     var isStarted = false
@@ -54,28 +55,20 @@ class PipelineStream(
     private var requestedMinimize = false
 
     // get the texture container of the current thread
-    val textureQueue = IdElementContainerStack.threadStack.peekSingleNonNull<TextureProcessorQueue>()
+    val textureQueue = IdElementContainerStack.localStack.peekSingleNonNull<TextureProcessorQueue>()
 
     var offlineTexture: PlatformTexture? = null
         private set
 
-    constructor(
-        sessionName: String,
-        engineClient: PaperVisionEngineClient,
-        width: Int = 160,
-        height: Int = 120,
-        status: Status = Status.MINIMIZED,
-        offlineImages: Array<BufferedImage>? = null,
-        offlineImagesFps: Double = 1.0
-    ) : this(sessionName, engineClient.byteReceiver, width, height, status, offlineImages, offlineImagesFps)
+    private val startedStreamIds = mutableMapOf<Int, Long>()
 
     init {
         initOfflineImages()
     }
 
     private fun initOfflineImages() {
-        if(offlineImages != null && offlineImages.isNotEmpty()) {
-            if(offlineImages.size == 1) {
+        if (offlineImages != null && offlineImages.isNotEmpty()) {
+            if (offlineImages.size == 1) {
                 var img = offlineImages[0]
 
                 if (img.width != width || img.height != height) {
@@ -86,7 +79,7 @@ class PipelineStream(
             } else {
                 val textures = mutableListOf<PlatformTexture>()
 
-                for(image in offlineImages) {
+                for (image in offlineImages) {
                     var img = image
 
                     if (img.width != width || img.height != height) {
@@ -103,16 +96,27 @@ class PipelineStream(
         }
     }
 
-    private val defaultHandler: Handler = { id, tag, bytes ->
-        if(tag == sessionName) {
-            textureQueue.offerJpegAsync(id, width, height, bytes)
+    private val defaultHandler: Handler = { id, tag, bytes, length ->
+        if (tag.startsWith(sessionName)) {
+            if(!startedStreamIds.containsKey(id) || System.currentTimeMillis() - startedStreamIds[id]!! > 5000) {
+                val lastFrameInfo = if(startedStreamIds.containsKey(id))
+                    "${(System.currentTimeMillis() - startedStreamIds[id]!!) / 1000.0 }s ago"
+                else
+                    "never received"
+
+                logger.info("Started/resumed stream reception id=$id for $sessionName (last frame was $lastFrameInfo)")
+            }
+
+            startedStreamIds[id] = System.currentTimeMillis()
+            // offer to texture queue
+            textureQueue.offerJpegAsync(id, width, height, bytes, dataOffset = ByteMessages.messageOffsetFromBytes(bytes))
         }
     }
 
     fun start() {
         logger.info("Starting pipeline stream of $sessionName at {}x{}", width, height)
 
-        byteReceiver.addHandler(sessionName, defaultHandler)
+        byteReceiver.addHandler(defaultHandler)
 
         isStarted = true
     }
@@ -126,7 +130,7 @@ class PipelineStream(
 
     fun isAtOfflineTexture(id: Int) = !isStarted
 
-    fun textureOf(id: Int) = if(isStarted)
+    fun textureOf(id: Int) = if (isStarted)
         textureQueue[id] ?: offlineTexture
     else offlineTexture
 

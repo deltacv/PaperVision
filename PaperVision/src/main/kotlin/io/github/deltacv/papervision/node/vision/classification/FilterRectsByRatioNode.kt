@@ -49,14 +49,14 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
         generatorFor(JavaLanguage) {
             val session = Session()
 
-            val rects = input.value(current)
+            val rects = input.genValue(current)
 
             if(rects !is GenValue.GList.RuntimeListOf<*>) {
                 raise("Input contours must be a runtime list") // TODO: support other types
             }
 
-            val minRatioVal = minRatio.value(current)
-            val maxRatioVal = maxRatio.value(current)
+            val minRatioVal = minRatio.genValue(current)
+            val maxRatioVal = maxRatio.genValue(current)
 
             current {
                 val minRatioVar = uniqueVariable("minRatio", minRatioVal.value.v)
@@ -72,7 +72,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     rectsVar("clear")
 
@@ -95,20 +95,20 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            val rects = input.value(current)
+            val rects = input.genValue(current)
 
             if(rects !is GenValue.GList.RuntimeListOf<*>) {
                 raise("Input must be a runtime list") // TODO: support other types
             }
 
-            val minRatioVal = minRatio.value(current)
-            val maxRatioVal = maxRatio.value(current)
+            val minRatioVal = minRatio.genValue(current)
+            val maxRatioVal = maxRatio.genValue(current)
 
             current {
                 val rectsVar = uniqueVariable("${rects.value.value}_by_ratio", CPythonLanguage.newArrayOf(CPythonLanguage.NoType))
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     local(rectsVar)
 
@@ -131,7 +131,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when(attrib) {
             output -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.output }
             else -> noValue(attrib)

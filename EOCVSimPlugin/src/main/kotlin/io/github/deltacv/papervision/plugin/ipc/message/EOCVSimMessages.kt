@@ -26,7 +26,7 @@ data class InputSourceData(
     var timestamp: Long
 )
 enum class InputSourceType {
-    IMAGE, CAMERA, VIDEO
+    IMAGE, CAMERA, VIDEO, HTTP
 }
 
 class GetInputSourcesMessage : PaperVisionEngineMessageBase()

@@ -5,7 +5,6 @@ import io.github.deltacv.papervision.codegen.build.Type
 import io.github.deltacv.papervision.id.IdElement
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
-import io.github.deltacv.papervision.util.hexString
 
 sealed class Resolvable<T> {
 
@@ -26,6 +25,18 @@ sealed class Resolvable<T> {
         }
     }
 
+    /* -- abstract Resolvable members -- */
+
+    val value get() = ConValue(Type.NONE, toString())
+
+    abstract fun letOrDefer(block: (T) -> Unit)
+    abstract fun <R> tryReturn(success: (T) -> R, fail: (String) -> R): R
+    abstract fun resolve(): T?
+    
+    fun <R> convertTo(converter: (T?) -> R?): Resolvable<R> = from { converter(resolve()) }
+
+    /* -- IMPLEMENTATIONS -- */
+
     data class Now<T>(val result: T) : Resolvable<T>() {
         override fun letOrDefer(block: (T) -> Unit) = block(result)
         override fun <R> tryReturn(success: (T) -> R, fail: (String) -> R) = success(result)
@@ -38,21 +49,32 @@ sealed class Resolvable<T> {
         val resolveLast: Boolean,
         private val resolver: () -> T?
     ) : Resolvable<T>(), IdElement {
+
         val placeholder get() = String.format(CodeGen.RESOLVER_TEMPLATE, id)
 
-        val onResolve by lazy { PaperVisionEventHandler("Placeholder-$placeholder-OnResolve", catchExceptions = false) }
+        private var usingOnResolve = false // to avoid creating the event handler if not necessary
+        val onResolve by lazy {
+            usingOnResolve = true
+            PaperVisionEventHandler("Placeholder-$placeholder-OnResolve", catchExceptions = false) 
+        }
+
+        private var resolving = false
 
         private var cachedValue: T? = null
 
         constructor(resolver: () -> T?) : this(resolveLast = false, resolver = resolver)
 
         override fun resolve(): T? {
+            if (resolving) return cachedValue
+            resolving = true
+
             val value = cachedValue ?: resolver()
-            if (value != null) {
+            if (value != null && usingOnResolve) {
                 onResolve()
             }
 
             cachedValue = value
+            resolving = false
             return value
         }
 
@@ -62,7 +84,13 @@ sealed class Resolvable<T> {
                 block(value)
             } else {
                 onResolve.doOnce {
-                    block(resolve() ?: throw IllegalStateException("Placeholder $placeholder could not be resolved"))
+                    val resolved = cachedValue ?: resolver()
+                    if (resolved != null) {
+                        cachedValue = resolved
+                        block(resolved)
+                    } else {
+                        throw IllegalStateException("Placeholder $placeholder could not be resolved")
+                    }
                 }
             }
         }
@@ -79,7 +107,7 @@ sealed class Resolvable<T> {
 
         override fun toString() = placeholder
 
-        override val id by IdElementContainerStack.threadStack.peekNonNull<Placeholder<*>>().nextId(this)
+        override val id by IdElementContainerStack.localStack.peekNonNull<Placeholder<*>>().nextId(this)
     }
 
     data class DependentPlaceholder<P, T>(val dependency: Resolvable<P>, val resolver: (P) -> T?) : Placeholder<T>(resolver = {
@@ -95,7 +123,7 @@ sealed class Resolvable<T> {
         val dependency1: Resolvable<P1>,
         val dependency2: Resolvable<P2>,
         val resolver: (P1, P2) -> T?
-    ) : Placeholder<T>(resolver ={
+    ) : Placeholder<T>(resolver = {
         val depValue1 = dependency1.resolve()
         val depValue2 = dependency2.resolve()
         if (depValue1 != null && depValue2 != null) {
@@ -104,12 +132,4 @@ sealed class Resolvable<T> {
             null
         }
     })
-
-    val value get() = ConValue(Type.NONE, toString())
-
-    abstract fun letOrDefer(block: (T) -> Unit)
-    abstract fun <R> tryReturn(success: (T) -> R, fail: (String) -> R): R
-    fun <R> convertTo(converter: (T?) -> R?): Resolvable<R> = Resolvable.from { converter(resolve()) }
-
-    abstract fun resolve(): T?
 }

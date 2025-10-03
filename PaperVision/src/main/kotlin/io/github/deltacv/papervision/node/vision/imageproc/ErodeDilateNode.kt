@@ -68,13 +68,13 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
             current {
                 val session = Session()
 
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireBinary(inputMat)
 
-                val erodeVal = erodeValue.value(current)
+                val erodeVal = erodeValue.genValue(current)
                 val erodeValVariable = uniqueVariable("erodeValue", int(erodeVal.value.v))
 
-                val dilateVal = erodeValue.value(current)
+                val dilateVal = erodeValue.genValue(current)
                 val dilateValVariable = uniqueVariable("dilateValue", int(dilateVal.value.v))
 
                 val element = uniqueVariable("element", JvmOpenCvTypes.Mat.nullVal)
@@ -89,7 +89,7 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     input.value.v("copyTo", output)
 
@@ -138,11 +138,11 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
             val session = Session()
 
             current {
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireBinary(inputMat)
 
-                val erodeVal = erodeValue.value(current)
-                val dilateVal = dilateValue.value(current)
+                val erodeVal = erodeValue.genValue(current)
+                val dilateVal = dilateValue.genValue(current)
 
                 val output = uniqueVariable(
                     "${input.value}_eroded_dilated",
@@ -166,7 +166,7 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                 public(elementDilate)
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     local(output)
 
@@ -183,7 +183,7 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         genCodeIfNecessary(current)
 
         if(attrib == outputMat) {

@@ -74,15 +74,15 @@ class StringAttribute(
         }
     }
 
-    override fun thisGet() = value.get()
+    override fun readEditorValue() = value.get()
 
-    override fun value(current: CodeGen.Current) = value(
+    override fun genValue(current: CodeGen.Current) = readGenValue(
         current, "a String", GenValue.String(value.get().resolved())
     ) { it is GenValue.String }
 
     override fun makeSerializationData() = Data(value.get())
 
-    override fun takeDeserializationData(data: AttributeSerializationData) {
+    override fun takeSerializationData(data: AttributeSerializationData) {
         if(data is Data) {
             nextValue = data.value
         }

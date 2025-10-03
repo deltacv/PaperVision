@@ -16,12 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.gui.eocvsim
+package io.github.deltacv.papervision.gui.display
 
 import imgui.ImGui
 import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.mai18n.tr
-import io.github.deltacv.papervision.engine.previz.PipelineStream
+import io.github.deltacv.papervision.engine.previz.ClientPrevizStream
 import io.github.deltacv.papervision.gui.util.Window
 import io.github.deltacv.papervision.util.flags
 
@@ -32,23 +32,22 @@ class ImageDisplayWindow(
 
     override val windowFlags = flags(
         ImGuiWindowFlags.AlwaysAutoResize,
-        ImGuiWindowFlags.NoMove,
-        ImGuiWindowFlags.NoCollapse
+        ImGuiWindowFlags.NoMove
     )
 
     override fun drawContents() {
         imageDisplay.drawStream()
 
-        val pipelineStream = imageDisplay.pipelineStream
+        val pipelineStream = imageDisplay.clientPrevizStream
 
-        val buttonText = if(pipelineStream.status == PipelineStream.Status.MINIMIZED) {
+        val buttonText = if(pipelineStream.sizing == ClientPrevizStream.Sizing.MINIMIZED) {
             "Maximize"
         } else {
             "Minimize"
         }
 
         if (ImGui.button(buttonText)) {
-            if(pipelineStream.status == PipelineStream.Status.MINIMIZED) {
+            if(pipelineStream.sizing == ClientPrevizStream.Sizing.MINIMIZED) {
                 pipelineStream.maximize()
             } else {
                 pipelineStream.minimize()
@@ -57,10 +56,14 @@ class ImageDisplayWindow(
 
         ImGui.sameLine()
 
+        val pipelineFps = pipelineStream.statistics.fps
+
         val statusText = if(pipelineStream.isAtOfflineTexture(imageDisplay.id))
             "mis_loading"
-        else "mis_runningok"
+        else if(pipelineFps <= 0)
+            "mis_runningok"
+        else "mis_runningok_atfps"
 
-        ImGui.text(tr(statusText))
+        ImGui.text(tr(statusText, String.format("%.1f", pipelineFps)))
     }
 }

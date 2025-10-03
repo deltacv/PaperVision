@@ -27,6 +27,7 @@ import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
+import io.github.deltacv.papervision.codegen.CodeGenOptions
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.codegen.build.Value
@@ -113,8 +114,8 @@ class InputMatNode @JvmOverloads constructor(
         propagate(current)
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current,
-                                  attrib: Attribute
+    override fun getGenValueOf(current: CodeGen.Current,
+                               attrib: Attribute
     ) = when(current.language) {
         is CPythonLanguage -> GenValue.Mat(Variable(CPythonLanguage.NoType, "input").resolved(), ColorSpace.RGBA.resolved())
         else -> GenValue.Mat(Variable(JvmOpenCvTypes.Mat, "input").resolved(), ColorSpace.RGBA.resolved())
@@ -133,11 +134,9 @@ class OutputMatNode @JvmOverloads constructor(
     var streamId: Int? = null
     private var lastWindowSize: ImVec2? = null
 
-    init {
-        genOptions {
-            genAtTheEnd = true
-        }
-    }
+    override val genOptions = CodeGenOptions(
+        genAtTheEnd = true
+    )
 
     override fun init() {
         editor.onDraw { remover ->
@@ -198,11 +197,11 @@ class OutputMatNode @JvmOverloads constructor(
     override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
             current {
-                val inputValue = input.value(current)
+                val inputValue = input.genValue(current)
 
                 current.scope {
-                    if (crosshair.linkedAttributes().isNotEmpty()) {
-                        val crosshairValue = crosshair.value(current)
+                    if (crosshair.allLinkedAttributes.isNotEmpty()) {
+                        val crosshairValue = crosshair.genValue(current)
 
                         ifCondition((crosshairValue.value.v notEqualsTo nullVal)) {
                             val boundingRect = uniqueVariable("boundingRect", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, crosshairValue.value.v))
@@ -274,9 +273,9 @@ class OutputMatNode @JvmOverloads constructor(
         @Suppress("UNCHECKED_CAST")
         generatorFor(CPythonLanguage) {
             current {
-                val inputValue = input.value(current)
-                val crosshairValue = crosshair.value(current)
-                val dataValue = exportedData.value(current)
+                val inputValue = input.genValue(current)
+                val crosshairValue = crosshair.genValue(current)
+                val dataValue = exportedData.genValue(current)
 
                 current.scope {
                     val llpython = uniqueVariable("llpython", when (dataValue) {
@@ -310,5 +309,5 @@ class OutputMatNode @JvmOverloads constructor(
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute) = GenValue.None
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute) = GenValue.None
 }

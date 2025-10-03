@@ -67,22 +67,22 @@ class EnumAttribute<T: Enum<T>>(
 
     override fun acceptLink(other: Attribute) = other is EnumAttribute<*> && values[0]::class == other.values[0]::class
 
-    override fun thisGet() = values[currentIndex.get()]
+    override fun readEditorValue() = values[currentIndex.get()]
 
     @Suppress("UNCHECKED_CAST")
-    override fun value(current: CodeGen.Current): GenValue.Enum<T> {
+    override fun genValue(current: CodeGen.Current): GenValue.Enum<T> {
         val expectedClass = values[0]::class
 
         if(isInput) {
             if(hasLink) {
-                val linkedAttrib = enabledLinkedAttribute()
+                val linkedAttrib = availableLinkedAttribute
 
                 raiseAssert(
                     linkedAttrib != null,
                     "Enum attribute must have another attribute attached"
                 )
 
-                val value = linkedAttrib!!.value(current)
+                val value = linkedAttrib!!.genValue(current)
                 raiseAssert(value is GenValue.Enum<*>, "Attribute attached is not a valid Enum")
 
                 val valueEnum = value as GenValue.Enum<*>
@@ -99,7 +99,7 @@ class EnumAttribute<T: Enum<T>>(
                 return GenValue.Enum(value, value::class.java)
             }
         } else {
-            val value = getOutputValue(current)
+            val value = getGenValueFromNode(current)
             raiseAssert(value is GenValue.Enum<*>, "Value returned from the node is not an enum")
 
             val valueEnum = value as GenValue.Enum<T>

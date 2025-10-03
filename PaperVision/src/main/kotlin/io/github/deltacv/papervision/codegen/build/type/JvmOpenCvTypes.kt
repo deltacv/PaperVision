@@ -44,6 +44,8 @@ object JvmOpenCvTypes {
         }
     }
 
+    val Features2d = Type("Features2d", "org.opencv.features2d")
+
     object CvType : Type("CvType", "org.opencv.core")
 
     val Core = Type("Core", "org.opencv.core")
@@ -52,6 +54,7 @@ object JvmOpenCvTypes {
     val MatOfInt = Type("MatOfInt", "org.opencv.core")
     val MatOfPoint = Type("MatOfPoint", "org.opencv.core")
     val MatOfPoint2f = Type("MatOfPoint2f", "org.opencv.core")
+    val MatOfKeyPoint = Type("MatOfKeyPoint", "org.opencv.core")
 
     val Size = Type("Size", "org.opencv.core")
     val Scalar = Type("Scalar", "org.opencv.core")
@@ -60,5 +63,10 @@ object JvmOpenCvTypes {
     val RotatedRect = Type("RotatedRect", "org.opencv.core")
 
     val Point = Type("Point", "org.opencv.core")
+    val KeyPoint = Type("KeyPoint", "org.opencv.core")
+
+    object SimpleBlobDetector : Type("SimpleBlobDetector", "org.opencv.features2d") {
+        val Params = Type("SimpleBlobDetector_Params", "org.opencv.features2d")
+    }
 
 }

@@ -34,4 +34,4 @@ fun <S: CodeGenSession> generatorFor(language: Language, init: GeneratorContext<
     language to generator(init)
 
 fun <S: CodeGenSession> generatorFor(vararg languages: Language, init: GeneratorContext<S>.() -> S) =
-    languages.associate { it to generator(init) }
+    languages.associateWith { generator(init) }

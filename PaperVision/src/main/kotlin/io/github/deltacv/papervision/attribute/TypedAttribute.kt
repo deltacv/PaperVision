@@ -25,7 +25,6 @@ import imgui.extension.imnodes.flag.ImNodesCol
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.util.hexString
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValueMessage
@@ -75,6 +74,9 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
 
     var ownedByList = false
         internal set
+
+    private var previousGet: Any? = null
+    private var cachedLabels = mutableMapOf<Int?, String>()
 
     private val finalVarName by lazy {
         variableName ?: if (mode == AttributeMode.INPUT) "$[mis_input]" else "$[mis_output]"
@@ -156,8 +158,7 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
         }
     }
 
-    open fun drawAfterText() {
-    }
+    open fun drawAfterText() { }
 
     protected fun sameLineIfNeeded() {
         if(inputSameLine) {
@@ -166,7 +167,7 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    protected fun <T : GenValue> value(
+    inline fun <reified T : GenValue> readGenValue(
         current: CodeGen.Current,
         name: String,
         inputFieldValue: T? = null,
@@ -174,14 +175,14 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
     ): T {
         if(isInput) {
             return if(hasLink || inputFieldValue == null) {
-                val linkedAttrib = enabledLinkedAttribute()
+                val linkedAttrib = availableLinkedAttribute
 
                 raiseAssert(
                     linkedAttrib != null,
                     tr("err_musthave_attachedattrib")
                 )
 
-                val value = linkedAttrib!!.value(current)
+                val value = linkedAttrib.genValue(current)
                 raiseAssert(checkConsumer(value), tr("err_attachedattrib_isnot", name))
 
                 value as T
@@ -189,7 +190,7 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
                 inputFieldValue
             }
         } else {
-            val value = getOutputValue(current)
+            val value = getGenValueFromNode(current)
             raiseAssert(checkConsumer(value), tr("err_valreturned_isnot", name))
 
             return value as T
@@ -205,14 +206,15 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
                 (other is ListAttribute && other.elementAttributeType == attributeType && mode == AttributeMode.OUTPUT)
 
     protected fun changed() {
-        if(!isFirstDraw && !isSecondDraw) onChange.run()
+        if (!isFirstDraw && !isSecondDraw) onChange.run()
     }
 
-    private var previousGet: Any? = null
-
+    /**
+     * MUST be called if you want to get change detection for input attributes
+     */
     protected open fun checkChange() {
         if(mode == AttributeMode.INPUT) {
-            val currentGet = get()
+            val currentGet = editorValue
 
             if (currentGet != previousGet) {
                 changed()
@@ -222,29 +224,40 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
         }
     }
 
-    protected var cachedLabel: String? = null
-
-    open fun label(): String {
-        if(cachedLabel == null) {
-            cachedLabel = hexString + id.toString()
+    fun label(indexIfApplicable: Int? = null): String {
+        if(!cachedLabels.containsKey(indexIfApplicable)) {
+            val label = id.toString() + (indexIfApplicable?.let { "_$it" } ?: "")
+            cachedLabels[indexIfApplicable] = label
 
             onChange {
-                val value = getIfPossible { rebuildPreviz() } ?: return@onChange
-                broadcastLabelMessageFor(cachedLabel!!, value)
+                val value = editorValue
+
+                if(value == null) {
+                    rebuildPreviz()
+                    return@onChange
+                }
+
+                broadcastLabelMessageFor(label, value, indexIfApplicable)
             }
         }
 
-        return cachedLabel!!
+        return cachedLabels[indexIfApplicable]!!
     }
 
-    protected fun broadcastLabelMessageFor(label: String, value: Any) {
+    protected fun broadcastLabelMessageFor(label: String, value: Any, indexIfApplicable: Int? = null) {
         if(!isOnEditor) return
 
         parentNode.editor.paperVision.engineClient.sendMessage(
             when (value) {
-                is Array<*> -> TunerChangeValuesMessage(label, value)
-                is Iterable<*> -> TunerChangeValuesMessage(label, value.map { it as Any }.toTypedArray())
-                else -> TunerChangeValueMessage(label, value)
+                is Array<*> -> if(indexIfApplicable != null) {
+                    TunerChangeValueMessage(label, value[indexIfApplicable] as Any) // only send the specific index that we want
+                } else TunerChangeValuesMessage(label, value) // send all values
+
+                is Iterable<*> -> if(indexIfApplicable != null) {
+                    TunerChangeValueMessage(label, value.elementAt(indexIfApplicable) as Any) // only send the specific index that we want
+                } else TunerChangeValuesMessage(label, value.map { it as Any }.toTypedArray()) // send all values
+
+                else -> TunerChangeValueMessage(label, value) // bleh
             }
         )
     }

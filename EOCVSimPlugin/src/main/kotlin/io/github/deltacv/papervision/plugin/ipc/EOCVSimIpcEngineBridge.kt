@@ -18,26 +18,32 @@
 
 package io.github.deltacv.papervision.plugin.ipc
 
-import com.github.serivesmejia.eocvsim.util.loggerForThis
+import io.github.deltacv.papervision.util.loggerForThis
 import io.github.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
-import io.github.deltacv.papervision.engine.client.response.StringResponse
+import io.github.deltacv.papervision.engine.client.message.TunerChangeValueMessage
+import io.github.deltacv.papervision.engine.client.message.TunerChangeValuesMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
+import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
 import io.github.deltacv.papervision.plugin.ipc.serialization.ipcGson
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
-import io.github.deltacv.vision.external.util.Timestamped
 import org.java_websocket.client.WebSocketClient
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.nio.ByteBuffer
-import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.TimeUnit
 
 class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
 
     companion object {
         var logHighFrequencyMessages = true
+
+        val blacklistedSentTooOftenMessages = listOf(
+            EditorChangeMessage::class,
+            TunerChangeValueMessage::class,
+            TunerChangeValuesMessage::class
+        )
     }
 
     private val highFrequencyMessages = mutableMapOf<String, MutableList<Long>>()
@@ -45,7 +51,6 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
     private val clients = mutableListOf<PaperVisionEngineClient>()
 
     override val onClientProcess = PaperVisionEventHandler("LocalPaperVisionEngineBridge-OnClientProcess")
-    override val processedBinaryMessagesHashes = ArrayBlockingQueue<Int>(100)
 
     private var wsClient = WsClient(port, this)
 
@@ -64,11 +69,6 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
             if(!clients.contains(client)) {
                 it.removeThis()
                 return@onProcess
-            }
-
-            while(client.processedBinaryMessagesHashes.remainingCapacity() != 0) {
-                val poolValue = client.processedBinaryMessagesHashes.poll() ?: break
-                processedBinaryMessagesHashes.add(poolValue)
             }
 
             onClientProcess.run()
@@ -92,7 +92,7 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
 
         wsClient.send(messageJson)
 
-        if(logHighFrequencyMessages) {
+        if(logHighFrequencyMessages && message::class !in blacklistedSentTooOftenMessages) {
             val messages = highFrequencyMessages.getOrPut(message::class.java.name) { mutableListOf() }
             messages.add(System.currentTimeMillis())
 
@@ -107,7 +107,7 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
 
             if(avgDelta < 100) {
                 // get calling class
-                val callingClass = Thread.currentThread().stackTrace[2]
+                val callingClass = Thread.currentThread().stackTrace.getOrNull(2) ?: return
                 logger.warn("Sent too often: ${message::class.java.name} - avg $avgDelta. Last sent at ${callingClass.className} line ${callingClass.lineNumber}")
             }
         }

@@ -35,7 +35,7 @@ object JythonLanguage : LanguageBase(
     override val trueValue = ConValue(BooleanType, "True")
     override val falseValue = ConValue(BooleanType, "False")
 
-    override val newImportBuilder = { PythonImportBuilder(this) }
+    override fun newImportBuilder() = PythonImportBuilder(this)
 
     object jarray {
         val array = Type("array", "jarray")
@@ -156,7 +156,7 @@ object JythonLanguage : LanguageBase(
         private val imports = mutableMapOf<String, MutableList<String>>()
 
         override fun import(type: Type) {
-            val actualType = type.actualImport ?: type
+            val actualType = type.overridenImport ?: type
 
             if(lang.isImportExcluded(actualType) || !actualType.shouldImport) return
 

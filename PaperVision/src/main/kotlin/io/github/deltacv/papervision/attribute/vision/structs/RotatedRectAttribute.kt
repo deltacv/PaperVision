@@ -43,7 +43,7 @@ class RotatedRectAttribute (
         override fun new(mode: AttributeMode, variableName: String) = RotatedRectAttribute(mode, variableName)
     }
 
-    override fun value(current: CodeGen.Current) = value<GenValue.GRect.Rotated.RuntimeRotatedRect>(
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.GRect.Rotated.RuntimeRotatedRect>(
         current, "a Rotated Rect"
     ) { it is GenValue.GRect.Rotated.RuntimeRotatedRect }
 

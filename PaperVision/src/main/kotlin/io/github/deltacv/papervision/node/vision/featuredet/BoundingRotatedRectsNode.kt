@@ -60,7 +60,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
             val session = Session()
 
             current {
-                val input = contours.value(current)
+                val input = contours.genValue(current)
 
                 val name = if(input is GenValue.GList.RuntimeListOf<*>) {
                     input.value.value.toString()
@@ -75,7 +75,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     rectsList("clear")
 
@@ -113,7 +113,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
             val session = Session()
 
             current {
-                val input = contours.value(current)
+                val input = contours.genValue(current)
 
                 val name = if(input is GenValue.GList.RuntimeListOf<*>) {
                     input.value.value.toString() + "_r"
@@ -122,7 +122,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                 val rectsList = uniqueVariable("${name ?: "r"}ot_rects", CPythonLanguage.NoType.newArray())
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     local(rectsList)
 
@@ -152,7 +152,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when(attrib) {
             outputRects -> current.nonNullSessionOf(this).rects
             else -> noValue(attrib)

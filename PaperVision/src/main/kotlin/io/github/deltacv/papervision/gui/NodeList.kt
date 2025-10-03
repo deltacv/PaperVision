@@ -119,13 +119,13 @@ class NodeList(
             }
         }
 
-        IdElementContainerStack.threadStack.push(listNodes)
-        IdElementContainerStack.threadStack.push(listAttributes)
+        IdElementContainerStack.localStack.push(listNodes)
+        IdElementContainerStack.localStack.push(listAttributes)
 
         headers = Headers(keyManager, paperVision.defaultFontBig) { nodes }
 
-        IdElementContainerStack.threadStack.pop<Node<*>>()
-        IdElementContainerStack.threadStack.pop<Attribute>()
+        IdElementContainerStack.localStack.pop<Node<*>>()
+        IdElementContainerStack.localStack.pop<Attribute>()
     }
 
     override fun preDrawContents() {
@@ -147,8 +147,8 @@ class NodeList(
             return
         }
 
-        IdElementContainerStack.threadStack.push(listNodes)
-        IdElementContainerStack.threadStack.push(listAttributes)
+        IdElementContainerStack.localStack.push(listNodes)
+        IdElementContainerStack.localStack.push(listAttributes)
 
         val size = paperVision.window.size
 
@@ -333,8 +333,8 @@ class NodeList(
 
         headers.size = size
 
-        IdElementContainerStack.threadStack.pop<Node<*>>()
-        IdElementContainerStack.threadStack.pop<Attribute>()
+        IdElementContainerStack.localStack.pop<Node<*>>()
+        IdElementContainerStack.localStack.pop<Attribute>()
 
         handleClick(!headers.isHeaderHovered)
     }

@@ -18,8 +18,9 @@
 
 package io.github.deltacv.papervision.attribute.math
 
+import imgui.ImGui
+import imgui.type.ImBoolean
 import imgui.type.ImInt
-import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
@@ -28,43 +29,89 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
+import io.github.deltacv.papervision.id.Misc
 import io.github.deltacv.papervision.serialization.data.SerializeData
+import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 
 class RangeAttribute(
     override val mode: AttributeMode,
-    override var variableName: String? = null
+    override var variableName: String? = null,
+    val valueMutator: (Int) -> Double = { it.toDouble() }
 ) : TypedAttribute(Companion) {
     companion object : AttributeType {
         override val icon = FontAwesomeIcons.TextWidth
         override fun new(mode: AttributeMode, variableName: String) = RangeAttribute(mode, variableName)
     }
 
+    private var usesToggleChanged = false
+    val onToggleChange by lazy {
+        usesToggleChanged = true
+        PaperVisionEventHandler("RangeAttribute-OnToggleChange")
+    }
+
     var min = 0
+        set(value) {
+            field = value
+            if(minValue.get() < value) {
+                minValue.set(value)
+            }
+            if(maxValue.get() < value) {
+                maxValue.set(value)
+            }
+        }
     var max = 255
+        set(value) {
+            field = value
+            if(maxValue.get() > value) {
+                maxValue.set(value)
+            }
+            if(minValue.get() > value) {
+                minValue.set(value)
+            }
+        }
+
+    var useToggle = false
+    var useSliders = true
+
+    @SerializeData
+    val toggleValue = ImBoolean(true)
 
     @SerializeData
     val minValue = ImInt(min)
     @SerializeData
     val maxValue = ImInt(max)
 
+    private var prevToggle: Boolean? = null
     private var prevMin: Int? = null
     private var prevMax: Int? = null
 
-    private val minId by PaperVision.miscIds.nextId()
-    private val maxId by PaperVision.miscIds.nextId()
+    private val toggleId by Misc.newMiscId()
+    private val minId by Misc.newMiscId()
+    private val maxId by Misc.newMiscId()
 
     override fun drawAttribute() {
         super.drawAttribute()
 
+        if(useToggle && !toggleValue.get()) return
+
         if(!hasLink) {
             sameLineIfNeeded()
 
-            ExtraWidgets.rangeSliders(
-                min, max,
-                minValue, maxValue,
-                minId, maxId,
-                width = 95f
-            )
+            if(useSliders) {
+                ExtraWidgets.rangeSliders(
+                    min, max,
+                    minValue, maxValue,
+                    minId, maxId,
+                    width = 95f
+                )
+            } else {
+                ExtraWidgets.rangeTextInputs(
+                    min, max,
+                    minValue, maxValue,
+                    minId, maxId,
+                    width = 95f
+                )
+            }
 
             val mn = minValue.get()
             val mx = maxValue.get()
@@ -78,13 +125,39 @@ class RangeAttribute(
         }
     }
 
-    override fun thisGet() = arrayOf(minValue.get().toDouble(), maxValue.get().toDouble())
+    override fun drawAfterText() {
+        if(mode == AttributeMode.INPUT && !hasLink && useToggle) {
+            ImGui.sameLine()
 
-    override fun value(current: CodeGen.Current) = value(
+            ImGui.checkbox("###$toggleId", toggleValue)
+
+            if(prevToggle == null || prevToggle != toggleValue.get()) {
+                changed()
+
+                if(usesToggleChanged) {
+                    onToggleChange()
+                }
+            }
+            prevToggle = toggleValue.get()
+        }
+    }
+
+    override fun readEditorValue() = arrayOf(valueMutator(minValue.get()), valueMutator(maxValue.get()))
+
+    override fun genValue(current: CodeGen.Current) = readGenValue(
         current, "a Range", GenValue.Range(
-            GenValue.Double(minValue.get().toDouble().resolved()),
-            GenValue.Double(maxValue.get().toDouble().resolved())
+            GenValue.Double(valueMutator(minValue.get()).resolved()),
+            GenValue.Double(valueMutator(maxValue.get()).resolved())
         )
     ) { it is GenValue.Range }
 
+}
+
+
+fun RangeAttribute.rebuildOnToggleChange() = apply {
+    onToggleChange {
+        if(idElementContainer[id] != null) {
+            rebuildPreviz()
+        }
+    }
 }

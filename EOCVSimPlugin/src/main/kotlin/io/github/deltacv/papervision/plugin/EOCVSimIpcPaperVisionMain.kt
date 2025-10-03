@@ -22,11 +22,9 @@ import imgui.ImGui
 import imgui.app.Application
 import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
-import io.github.deltacv.papervision.engine.message.OnResponseCallback
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.Option
-import io.github.deltacv.papervision.gui.util.Popup
 import io.github.deltacv.papervision.gui.util.TooltipPopup
 import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
 import io.github.deltacv.papervision.plugin.gui.imgui.CloseConfirmWindow
@@ -36,10 +34,9 @@ import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMe
 import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
 import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentProjectMessage
 import io.github.deltacv.papervision.plugin.ipc.message.SaveCurrentProjectMessage
-import io.github.deltacv.papervision.plugin.ipc.stream.ThreadedMjpegByteReceiver
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer.deserializeAndApply
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer.serializeToTree
-import org.slf4j.LoggerFactory
+import io.github.deltacv.papervision.util.loggerForThis
 import picocli.CommandLine
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
@@ -48,40 +45,38 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
     @CommandLine.Option(names = ["-i", "--ipcport"], description = ["Engine IPC server port"])
     var ipcPort: Int = 0
 
-    @CommandLine.Option(names = ["-j", "--jpegport"], description = ["JPEG stream server port"])
-    var jpegPort: Int = 0
-
     @CommandLine.Option(names = ["-q", "--queryproject"], description = ["Asks the engine for the current project"])
     var queryProject: Boolean = false
 
     private lateinit var app: PaperVisionApp
 
-    private val logger = LoggerFactory.getLogger(this::class.java)
+    private val logger by loggerForThis()
 
     override fun call(): Int {
-        logger.info("IPC port {}, JPEG port {}", ipcPort, jpegPort)
+        logger.info("IPC port {}", ipcPort)
 
         val bridge = EOCVSimIpcEngineBridge(ipcPort)
 
-        app = PaperVisionApp(bridge, false, ::paperVisionUserCloseListener) {
-            ThreadedMjpegByteReceiver({app.paperVision.previzManager.previzName!!}, "http://127.0.0.1:${jpegPort}/")
-        }
+        app = PaperVisionApp(bridge, false, ::paperVisionUserCloseListener)
 
-        app.paperVision.onUpdate.doOnce  {
+        app.paperVision.onUpdate.doOnce {
             if (queryProject) {
-                app.paperVision.engineClient.sendMessage(GetCurrentProjectMessage().onResponse { response ->
-                    if (response is JsonElementResponse) {
-                        val json = response.value
+                app.paperVision.engineClient.sendMessage(GetCurrentProjectMessage().onResponseWith<JsonElementResponse> { response ->
+                    val json = response.value
 
-                        app.paperVision.onUpdate.doOnce {
-                            deserializeAndApply(json, app.paperVision)
+                    app.paperVision.onUpdate.doOnce {
+                        deserializeAndApply(json, app.paperVision)
 
-                            app.paperVision.nodeEditor.onEditorChange {
-                                app.paperVision.onUpdate.doOnce {
-                                    app.paperVision.engineClient.sendMessage(EditorChangeMessage(
-                                        serializeToTree(app.paperVision.nodes.inmutable, app.paperVision.links.inmutable)
-                                    ))
-                                }
+                        app.paperVision.nodeEditor.onEditorChange {
+                            app.paperVision.onUpdate.doOnce {
+                                app.paperVision.engineClient.sendMessage(
+                                    EditorChangeMessage(
+                                        serializeToTree(
+                                            app.paperVision.nodes.inmutable,
+                                            app.paperVision.links.inmutable
+                                        )
+                                    )
+                                )
                             }
                         }
                     }
@@ -142,11 +137,11 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
                         serializeToTree(
                             app.paperVision.nodes.inmutable, app.paperVision.links.inmutable
                         )
-                    ).onResponse(OnResponseCallback { response: PaperVisionEngineMessageResponse? ->
+                    ).onResponse { response: PaperVisionEngineMessageResponse? ->
                         if (response is OkResponse) {
                             exitProcess(0)
                         }
-                    })
+                    }
                 )
 
                 CloseConfirmWindow.Action.NO -> app.paperVision.engineClient.sendMessage(

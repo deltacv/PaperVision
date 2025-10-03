@@ -37,19 +37,56 @@ open class LanguageBase(
     )
 
     override val sourceFileExtension = "java"
+    override val excludedImports get() = mutableExcludedImports.toList()
 
-    override val excludedImports = mutableExcludedImports as List<Type>
+    override fun int(value: Value): Value {
+        try {
+            val i = value.value!!.toInt()
+            return int(i)
+        } catch (e: Exception) {
+            return castValue(value, language.IntType)
+        }
+    }
+    override fun long(value: Value): Value {
+        try {
+            val l = value.value!!.replace("l", "", ignoreCase = true).toLong()
+            return long(l)
+        } catch (e: NumberFormatException) {
+            return castValue(value, language.LongType)
+        }
+    }
+    override fun long(value: Long) = ConValue(LongType, "${value}L")
+
+    override fun float(value: Value): Value {
+        try {
+            val f = value.value!!.replace("f", "", ignoreCase = true).toFloat()
+            return float(f)
+        } catch (e: NumberFormatException) {
+            return castValue(value, language.FloatType)
+        }
+    }
+    override fun float(value: Float) = ConValue(FloatType, "${value}f")
+
+    override fun double(value: Value): Value {
+        try {
+            val d = value.value!!.replace("d", "", ignoreCase = true).toDouble()
+            return double(d)
+        } catch (e: NumberFormatException) {
+            return castValue(value, language.DoubleType)
+        }
+    }
+    override fun double(value: Double) = ConValue(DoubleType, value.toString())
 
     override fun nullVal(type: Type) = ConValue(type, "null")
 
     override fun arrayOf(type: Type): Type {
         var originalType = type
 
-        while(originalType.actualImport != null) {
-            originalType = originalType.actualImport!!
+        while(originalType.overridenImport != null) {
+            originalType = originalType.overridenImport!!
         }
 
-        return Type("${type.className}[]", type.packagePath, type.generics, isArray = true, actualImport = originalType)
+        return Type("${type.className}[]", type.packagePath, type.generics, isArray = true, overridenImport = originalType)
     }
 
     override fun newArrayOf(type: Type, size: Value) = ConValue(
@@ -61,7 +98,7 @@ open class LanguageBase(
         return ConValue(arrayType, "new ${type.className}${if(type.hasGenerics) "<>" else ""}[] { ${values.csv()} }")
     }
 
-    override val newImportBuilder: () -> Language.ImportBuilder = { BaseImportBuilder(this) }
+    override fun newImportBuilder(): Language.ImportBuilder = BaseImportBuilder(this)
 
     override val Parameter.string get() = "${type.shortNameWithGenerics} $name"
 
@@ -295,7 +332,7 @@ open class LanguageBase(
         private val imports = mutableMapOf<String, MutableList<String>>()
 
         override fun import(type: Type) {
-            val actualType = type.actualImport ?: type
+            val actualType = type.overridenImport ?: type
 
             if(lang.isImportExcluded(actualType)) return
             if(type.packagePath.isBlank()) return

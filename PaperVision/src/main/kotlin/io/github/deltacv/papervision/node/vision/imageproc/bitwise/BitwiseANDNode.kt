@@ -59,8 +59,8 @@ class BitwiseANDNode : DrawNode<BitwiseANDNode.Session>() {
         generatorFor(JavaLanguage) {
             val session = Session()
 
-            val firstValue = first.value(current)
-            val secondValue = second.value(current)
+            val firstValue = first.genValue(current)
+            val secondValue = second.genValue(current)
 
             Resolvable.DoubleDependentPlaceholder(firstValue.isBinary.value, secondValue.isBinary.value) { first, second ->
                 first == second
@@ -76,7 +76,7 @@ class BitwiseANDNode : DrawNode<BitwiseANDNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     outputMat("release")
                     JvmOpenCvTypes.Core("bitwise_and", firstValue.value.v, secondValue.value.v, outputMat)
@@ -97,8 +97,8 @@ class BitwiseANDNode : DrawNode<BitwiseANDNode.Session>() {
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            val firstValue = first.value(current)
-            val secondValue = second.value(current)
+            val firstValue = first.genValue(current)
+            val secondValue = second.genValue(current)
 
             Resolvable.DoubleDependentPlaceholder(firstValue.isBinary.value, secondValue.isBinary.value) { first, second ->
                 first == second
@@ -111,7 +111,7 @@ class BitwiseANDNode : DrawNode<BitwiseANDNode.Session>() {
                 val variable = uniqueVariable("bitwiseANDMat", value)
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
                     local(variable)
                 }
 
@@ -127,7 +127,7 @@ class BitwiseANDNode : DrawNode<BitwiseANDNode.Session>() {
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         genCodeIfNecessary(current)
 
         if(attrib == output) {

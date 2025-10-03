@@ -1,7 +1,6 @@
 package io.github.deltacv.papervision.node.vision.classification
 
 import io.github.deltacv.papervision.attribute.Attribute
-import io.github.deltacv.papervision.attribute.math.DoubleAttribute
 import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
@@ -13,7 +12,6 @@ import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.v
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -51,14 +49,14 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
         generatorFor(JavaLanguage) {
             val session = Session()
 
-            val contours = input.value(current)
+            val contours = input.genValue(current)
 
             if(contours !is GenValue.GList.RuntimeListOf<*>) {
                 raise("Input contours must be a runtime list") // TODO: support other types
             }
 
-            val minAreaVal = minArea.value(current)
-            val maxAreaVal = maxArea.value(current)
+            val minAreaVal = minArea.genValue(current)
+            val maxAreaVal = maxArea.genValue(current)
 
             current {
                 val minAreaVar = uniqueVariable("minArea", minAreaVal.value.v)
@@ -74,7 +72,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     contoursVar("clear")
 
@@ -88,7 +86,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                     }
                 }
 
-                session.output = GenValue.GList.RuntimeListOf(contoursVar.resolved(), GenValue.GPoints.RuntimePoints::class.resolved())
+                session.output = GenValue.GList.RuntimeListOf<GenValue.GPoints.RuntimePoints>(contoursVar.resolved())
             }
 
             session
@@ -97,15 +95,15 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            val contours = input.value(current)
+            val contours = input.genValue(current)
 
             if(contours !is GenValue.GList.RuntimeListOf<*>) {
                 raise("Input contours must be a runtime list") // TODO: support other types
             }
 
             current {
-                val minArea = minArea.value(current).value.v
-                val maxArea = maxArea.value(current).value.v
+                val minArea = minArea.genValue(current).value.v
+                val maxArea = maxArea.genValue(current).value.v
 
                 val contoursVar = uniqueVariable("by_area_contours", CPythonLanguage.newArrayOf(CPythonLanguage.NoType))
 
@@ -129,7 +127,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when(attrib) {
             output -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.output }
             else -> noValue(attrib)

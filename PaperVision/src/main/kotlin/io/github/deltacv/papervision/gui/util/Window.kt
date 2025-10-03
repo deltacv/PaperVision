@@ -24,10 +24,10 @@ import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImBoolean
 import imgui.type.ImString
 import io.github.deltacv.mai18n.tr
-import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.gui.Font
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.Misc
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
 import java.awt.Toolkit
@@ -37,7 +37,7 @@ abstract class Window(
     override val requestedId: Int? = null,
 ) : DrawableIdElementBase<Window>() {
 
-    override val idElementContainer = IdElementContainerStack.threadStack.peekNonNull<Window>()
+    override val idElementContainer = IdElementContainerStack.localStack.peekNonNull<Window>()
 
     var isVisible: Boolean = false
         private set
@@ -46,6 +46,8 @@ abstract class Window(
     abstract val windowFlags: Int
 
     open val isModal: Boolean = false
+
+    private var modalIsClosing = false
 
     private var nextPosition: ImVec2? = null
     private var internalPosition = ImVec2()
@@ -85,14 +87,6 @@ abstract class Window(
     private var firstDraw = true
 
     override fun enable() {
-        if(isModal) {
-            for(window in idElementContainer.inmutable) {
-                if(window.isModal) {
-                    window.delete()
-                }
-            }
-        }
-
         super.enable()
         firstDraw = true
     }
@@ -112,11 +106,19 @@ abstract class Window(
         }
 
         if(isModal) {
-            if(firstDraw)
+            if(firstDraw) {
+                ImGui.closeCurrentPopup()
                 ImGui.openPopup(titleId)
+            }
 
             if(ImGui.beginPopupModal(titleId, modalPOpen, windowFlags)) {
                 contents()
+
+                if(modalIsClosing) {
+                    ImGui.closeCurrentPopup()
+                    super.delete() // bye bye finally
+                }
+
                 ImGui.endPopup()
             }
 
@@ -152,6 +154,13 @@ abstract class Window(
         position = ImVec2((displaySize.x - size.x) / 2, (displaySize.y - size.y) / 2)
     }
 
+    override fun delete() {
+        if(isModal && !modalIsClosing) {
+            modalIsClosing = true
+        } else {
+            super.delete()
+        }
+    }
 }
 
 abstract class FrameWidthWindow : Window() {
@@ -173,7 +182,7 @@ class DialogMessageWindow(
         ImGuiWindowFlags.NoScrollWithMouse
     )
 
-    val textAreaId by PaperVision.miscIds.nextId()
+    val textAreaId by Misc.newMiscId()
 
     override val isModal = true
 

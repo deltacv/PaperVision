@@ -57,7 +57,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
             current {
                 val session = Session()
 
-                val rectsList = input.value(current)
+                val rectsList = input.genValue(current)
 
                 val biggestRect = uniqueVariable("biggestRect", JvmOpenCvTypes.Rect.nullVal)
 
@@ -66,7 +66,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     biggestRect instanceSet biggestRect.nullVal
 
@@ -124,12 +124,12 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
             current {
                 val session = Session()
 
-                val rectsList = input.value(current)
+                val rectsList = input.genValue(current)
 
                 val biggestRect = uniqueVariable("biggest_rect", CPythonLanguage.nullValue)
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     local(biggestRect)
 
@@ -190,7 +190,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         genCodeIfNecessary(current)
 
         if(attrib == output) {

@@ -99,6 +99,8 @@ class PaperVisionProjectTree(val rootPath: Path) {
 
         rootPath.fileSystem.provider().newDirectoryStream(path) { true }.use { stream ->
             for (entry in stream) {
+                if(entry.name.startsWith(".")) continue // skip hidden files and folders
+
                 if (entry.isDirectory()) {
                     tree.add(scanDeep(entry))
                 } else {

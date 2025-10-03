@@ -67,16 +67,16 @@ open class ListAttribute(
     val listAttributes = mutableListOf<TypedAttribute>()
     val deleteQueue = mutableListOf<TypedAttribute>()
 
-    private var beforeHasLink = false
+    private var lastHasLink = false
 
-    private var previousLength: Int? = 0
+    private var lastLength: Int? = 0
     var fixedLength = length
         set(value) {
             field = value
             onEnable()
         }
 
-    private val allowAod get() = allowAddOrDelete && fixedLength == null
+    private val allowMutation get() = allowAddOrDelete && fixedLength == null
 
     private var serializationData: Data? = null
 
@@ -94,13 +94,13 @@ open class ListAttribute(
             serializationData = null
         } else {
             // oh god... (it's been only 10 minutes and i have already forgotten how this works)
-            if (previousLength != fixedLength) {
-                if (fixedLength != null && (previousLength == null || previousLength == 0)) {
+            if (lastLength != fixedLength) {
+                if (fixedLength != null && (lastLength == null || lastLength == 0)) {
                     repeat(fixedLength!!) {
                         createElement()
                     }
-                } else if (previousLength != null) {
-                    val delta = (fixedLength ?: 0) - (previousLength ?: 0)
+                } else if (lastLength != null) {
+                    val delta = (fixedLength ?: 0) - (lastLength ?: 0)
 
                     if (delta < 0) {
                         repeat(-delta) {
@@ -131,7 +131,7 @@ open class ListAttribute(
             }
         }
 
-        previousLength = fixedLength
+        lastLength = fixedLength
     }
 
     override fun delete() {
@@ -154,13 +154,13 @@ open class ListAttribute(
         var ignoreNewLink = false
 
         // accepts links of elementAttributeType to redirect them into a list element
-        if (mode == AttributeMode.INPUT && beforeHasLink != hasLink && hasLink && enabledLinkedAttribute() !is ListAttribute) {
-            val linkedAttribute = enabledLinkedAttribute()!!
+        if (mode == AttributeMode.INPUT && lastHasLink != hasLink && hasLink && availableLinkedAttribute !is ListAttribute) {
+            val linkedAttribute = availableLinkedAttribute!!
 
             // the user might be crazy and try to link an attribute that is already linked to one of our elements
             // this caused a funny bug during testing, so, please don't do that (not that you can do it anymore)
             val alreadyLinkedAttribute = listAttributes.find {
-                it.enabledLinkedAttribute() == linkedAttribute
+                it.availableLinkedAttribute == linkedAttribute
             }
             if(alreadyLinkedAttribute == null) {
                 createElement(linkTo = linkedAttribute, relatedLink = linkedAttribute.links.last())
@@ -175,7 +175,7 @@ open class ListAttribute(
         }
 
         for ((i, attrib) in listAttributes.withIndex()) {
-            if (beforeHasLink != hasLink && !ignoreNewLink) {
+            if (lastHasLink != hasLink && !ignoreNewLink) {
                 if (hasLink) {
                     // delete attributes if a link has been created
                     attrib.delete()
@@ -187,10 +187,10 @@ open class ListAttribute(
             }
 
             if (!hasLink) { // only draw attributes if there's not a link attached
-                isDrawAttributeTextOverriden = true
-                drawAttributeText(i, attrib)
+                val isDrawAttributeTextOverridden =
+                    drawAttributeText(i, attrib)
 
-                if (isDrawAttributeTextOverriden) {
+                if (isDrawAttributeTextOverridden) {
                     ImGui.sameLine()
                 } else {
                     attrib.inputSameLine = true
@@ -200,29 +200,27 @@ open class ListAttribute(
             }
         }
 
-        beforeHasLink = hasLink
+        lastHasLink = hasLink
     }
-
-    private var isDrawAttributeTextOverriden = false
 
     // accept either another ListAttribute with the same element type or a TypedAttribute with the same type as the element type
-    override fun acceptLink(other: Attribute) = (other is ListAttribute && other.elementAttributeType == elementAttributeType) || (other is TypedAttribute && other.attributeType == elementAttributeType)
+    override fun acceptLink(other: Attribute) =
+        (other is ListAttribute && other.elementAttributeType == elementAttributeType) ||
+                (other is TypedAttribute && other.attributeType == elementAttributeType)
 
-    open fun drawAttributeText(index: Int, attrib: Attribute) {
-        isDrawAttributeTextOverriden = false
-    }
+    open fun drawAttributeText(index: Int, attrib: Attribute): Boolean = false
 
-    override fun value(current: CodeGen.Current): GenValue.GList {
+    override fun genValue(current: CodeGen.Current): GenValue.GList {
         return if (mode == AttributeMode.INPUT) {
             if (hasLink) {
-                val linkedAttrib = enabledLinkedAttribute()
+                val linkedAttrib = availableLinkedAttribute
 
                 raiseAssert(
                     linkedAttrib != null,
                     "List attribute must have another attribute attached"
                 )
 
-                val value = linkedAttrib!!.value(current)
+                val value = linkedAttrib!!.genValue(current)
                 raiseAssert(
                     value is GenValue.GList.ListOf<*> || value is GenValue.GList.RuntimeListOf<*>,
                     "Attribute attached is not a list"
@@ -232,11 +230,11 @@ open class ListAttribute(
             } else {
                 // get the values of all the attributes and return a
                 // GenValue.List with the attribute values in an array
-                GenValue.GList.List(listAttributes.map { it.value(current) }.toTypedArray())
+                GenValue.GList.List(listAttributes.map { it.genValue(current) }.toTypedArray())
             }
         } else {
             parentNode.genCodeIfNecessary(current)
-            val value = getOutputValue(current)
+            val value = getGenValueFromNode(current)
             raiseAssert(
                 value is GenValue.GList,
                 "Value returned from the node is not a list"
@@ -249,7 +247,7 @@ open class ListAttribute(
     override fun drawAttribute() {
         super.drawAttribute()
 
-        if (!hasLink && elementAttributeType.allowsNew && allowAod && mode == AttributeMode.INPUT) {
+        if (!hasLink && elementAttributeType.allowsNew && allowMutation && mode == AttributeMode.INPUT) {
             // idk wat the frame height is, i just stole it from
             // https://github.com/ocornut/imgui/blob/7b8bc864e9af6c6c9a22125d65595d526ba674c5/imgui_widgets.cpp#L3439
 
@@ -292,11 +290,11 @@ open class ListAttribute(
         }
     }
 
-    override fun thisGet(): Array<Any?> {
+    override fun readEditorValue(): Array<Any?> {
         val list = mutableListOf<Any?>()
 
         for(attribute in listAttributes) {
-            list.add(attribute.get())
+            list.add(attribute.editorValue)
         }
 
         return list.toTypedArray()
@@ -360,7 +358,7 @@ open class ListAttribute(
         return Data(objects)
     }
 
-    override fun takeDeserializationData(data: AttributeSerializationData) {
+    override fun takeSerializationData(data: AttributeSerializationData) {
         if (data is Data)
             serializationData = data
     }

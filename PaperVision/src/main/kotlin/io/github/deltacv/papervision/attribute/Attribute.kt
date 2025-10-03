@@ -24,7 +24,6 @@ import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.exception.AttributeGenException
-import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.node.Link
@@ -35,7 +34,6 @@ import io.github.deltacv.papervision.serialization.BasicAttribData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 enum class AttributeMode { INPUT, OUTPUT }
@@ -56,20 +54,18 @@ class EmptyInputAttribute(
 
     override fun acceptLink(other: Attribute) = true
 
-    override fun value(current: CodeGen.Current): GenValue {
+    override fun genValue(current: CodeGen.Current): GenValue {
         throw NotImplementedError("value() is not implemented for EmptyInputAttribute")
     }
 }
 
 abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<AttributeSerializationData> {
 
-    override val idElementContainer get() = IdElementContainerStack.threadStack.peekNonNull<Attribute>()
+    override val idElementContainer get() = IdElementContainerStack.localStack.peekNonNull<Attribute>()
 
     override val requestedId get() = if(forgetSerializedId || (hasParentNode && parentNode.forgetSerializedId))
         null
     else serializedId
-
-    @Transient private var getThisSupplier: (() -> Any)? = null
 
     private var serializedId: Int? = null
 
@@ -112,7 +108,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     val position = ImVec2()
     val editorPosition = ImVec2()
 
-    internal val changeQueue = ArrayBlockingQueue<Boolean>(50)
+    internal val changeQueue = ArrayBlockingQueue<Boolean>(5)
 
     abstract fun drawAttribute()
 
@@ -180,9 +176,9 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         }
     }
 
-    fun enabledLinkedAttribute(): Attribute? {
+    val availableLinkedAttribute: Attribute? get() {
         if(!isInput) {
-            raise("Output attributes might have more than one link, call linkedAttributes() instead")
+            raise("Output attributes might have more than one link, use linkedAttributes instead")
         }
 
         if(!hasLink) {
@@ -196,13 +192,13 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         } else link.aAttrib
     }
 
-    fun linkedAttributes() = enabledLinks.map {
+    val allLinkedAttributes get() = enabledLinks.map {
         if(it.aAttrib == this) {
             it.bAttrib
         } else it.aAttrib
     }
 
-    fun enabledLinkedAttributes() = enabledLinks.map {
+    val availableLinkedAttributes get() = enabledLinks.map {
         if(it.aAttrib == this) {
             it.bAttrib
         } else it.aAttrib
@@ -216,7 +212,12 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
     fun requireAttachedAttribute() = raiseAssert(hasLink, "err_musthave_attachedattrib")
 
+    @OptIn(ExperimentalContracts::class)
     fun raiseAssert(condition: Boolean, message: String) {
+        contract {
+            returns() implies condition
+        }
+
         if(!condition) {
             raise(message)
         }
@@ -230,32 +231,14 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
     abstract fun acceptLink(other: Attribute): Boolean
 
-    abstract fun value(current: CodeGen.Current): GenValue
+    abstract fun genValue(current: CodeGen.Current): GenValue
 
-    fun thisGetTo(supplier: () -> Any) {
-        getThisSupplier = supplier
-    }
+    internal open fun readEditorValue(): Any? = null
 
-    open fun thisGet(): Any? = throw IllegalStateException("This attribute can't return a get() value")
-
-    fun get(): Any? = when {
-        mode == AttributeMode.INPUT -> thisGet()
-        hasLink -> enabledLinkedAttribute()!!.get()
-        else -> (getThisSupplier ?: throw IllegalStateException("This attribute can't return a get() value")).invoke()
-    }
-
-    @OptIn(ExperimentalContracts::class)
-    fun getIfPossible(orElse: () -> Unit): Any? {
-        contract {
-            callsInPlace(orElse, InvocationKind.AT_MOST_ONCE)
-        }
-
-        return try {
-            get()
-        } catch (_: IllegalStateException) {
-            orElse()
-            null
-        }
+    val editorValue get() = when {
+        mode == AttributeMode.INPUT -> readEditorValue()
+        hasLink -> availableLinkedAttribute!!.readEditorValue()
+        else -> null
     }
 
     fun rebuildPreviz() {
@@ -267,18 +250,17 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         }
     }
 
-    protected fun getOutputValue(current: CodeGen.Current) = parentNode.getOutputValueOf(current, this)
+    fun getGenValueFromNode(current: CodeGen.Current) = parentNode.getGenValueOf(current, this)
 
     open fun makeSerializationData(): AttributeSerializationData = BasicAttribData(id)
-    open fun takeDeserializationData(data: AttributeSerializationData) { /* do nothing */ }
+    open fun takeSerializationData(data: AttributeSerializationData) { /* do nothing */ }
 
     /**
      * Call before enable()
      */
     final override fun deserialize(data: AttributeSerializationData) {
         serializedId = data.id
-
-        takeDeserializationData(data)
+        takeSerializationData(data)
     }
 
     final override fun serialize(): AttributeSerializationData {

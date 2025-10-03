@@ -62,13 +62,13 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
             val session = Session()
 
             current {
-                val lineColorValue = lineColor.value(current)
+                val lineColorValue = lineColor.genValue(current)
 
                 val lineColorVar = uniqueVariable("lineColor", JvmOpenCvTypes.Scalar.new(
                     lineColorValue.a.value.v, lineColorValue.b.value.v, lineColorValue.c.value.v, lineColorValue.d.value.v
                 ))
 
-                val lineThicknessVar = uniqueVariable("lineThickness", lineThickness.value(current).value.v)
+                val lineThicknessVar = uniqueVariable("lineThickness", lineThickness.genValue(current).value.v)
 
                 group {
                     public(lineColorVar, lineColor.label())
@@ -85,15 +85,15 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
             val session = Session()
 
             session.lineParameters = GenValue.LineParameters.Line(
-                lineColor.value(current),
-                lineThickness.value(current)
+                lineColor.genValue(current),
+                lineThickness.genValue(current)
             )
 
             session
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when(attrib) {
             output -> current.nonNullSessionOf(this).lineParameters
             else -> noValue(attrib)

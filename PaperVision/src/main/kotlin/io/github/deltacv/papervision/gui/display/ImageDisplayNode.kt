@@ -16,17 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.gui.eocvsim
+package io.github.deltacv.papervision.gui.display
 
 import imgui.ImGui
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.flag.ImNodesCol
-import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.EmptyInputAttribute
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.NoSession
-import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode

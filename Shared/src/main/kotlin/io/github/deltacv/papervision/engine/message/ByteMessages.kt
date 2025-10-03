@@ -103,4 +103,7 @@ object ByteMessages {
         return buffer.array()
     }
 
+    fun messageLengthFromBytes(it: ByteArray) = it.size - messageOffsetFromBytes(it)
+
+    fun messageOffsetFromBytes(it: ByteArray) = 4 + tagFromBytes(it).size + 4
 }

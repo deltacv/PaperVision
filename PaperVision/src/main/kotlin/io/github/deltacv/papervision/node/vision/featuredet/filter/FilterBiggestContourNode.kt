@@ -25,7 +25,6 @@ import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.Condition
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
@@ -58,7 +57,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
             current {
                 val session = Session()
 
-                val contoursList = input.value(current)
+                val contoursList = input.genValue(current)
 
                 val biggestContour = uniqueVariable("biggestContour", JvmOpenCvTypes.MatOfPoint.nullVal) // TODO: huh???
 
@@ -67,7 +66,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     biggestContour instanceSet biggestContour.nullVal
 
@@ -116,10 +115,10 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
             current {
                 val session = Session()
 
-                val inputValue = input.value(current)
+                val inputValue = input.genValue(current)
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     val contoursList = if(inputValue is GenValue.GList.RuntimeListOf<*>) {
                         inputValue.value.v
@@ -143,7 +142,10 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                     }
 
                     val biggestContour = uniqueVariable(
-                        "biggest_contour", CPythonOpenCvTypes.np.callValue("array", CPythonLanguage.NoType, CPythonLanguage.newArrayOf(CPythonLanguage.NoType, 0.v))
+                        "biggest_contour",
+                        CPythonOpenCvTypes.np.callValue("array",
+                            CPythonLanguage.NoType, CPythonLanguage.newArrayOf(CPythonLanguage.NoType, 0.v)
+                        )
                     )
 
                     local(biggestContour)
@@ -164,7 +166,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         genCodeIfNecessary(current)
 
         if(attrib == output) {

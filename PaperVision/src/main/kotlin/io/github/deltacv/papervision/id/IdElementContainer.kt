@@ -62,7 +62,7 @@ open class IdElementContainer<T : IdElement> : Iterable<T> {
         private set
 
     @Suppress("UNCHECKED_CAST")
-    private fun reallocateArray() {
+    private fun reallocateInmutable() {
         inmutable = elements.clone() as List<T>
     }
 
@@ -85,7 +85,7 @@ open class IdElementContainer<T : IdElement> : Iterable<T> {
         movePointerToLast()
 
         elements.add(element)
-        reallocateArray()
+        reallocateInmutable()
 
        id
     }
@@ -102,7 +102,7 @@ open class IdElementContainer<T : IdElement> : Iterable<T> {
         e.add(id, null)
         movePointerToLast()
 
-        reallocateArray()
+        reallocateInmutable()
 
         return id
     }
@@ -119,7 +119,7 @@ open class IdElementContainer<T : IdElement> : Iterable<T> {
         e.add(element)
 
         elements.add(element)
-        reallocateArray()
+        reallocateInmutable()
         movePointerToLast()
 
         e.lastIndexOf(element)
@@ -128,7 +128,7 @@ open class IdElementContainer<T : IdElement> : Iterable<T> {
     fun nextId() = lazy {
         e.add(null)
 
-        reallocateArray()
+        reallocateInmutable()
         movePointerToLast()
 
         e.lastIndexOf(null)
@@ -136,7 +136,7 @@ open class IdElementContainer<T : IdElement> : Iterable<T> {
 
     fun removeId(id: Int) {
         elements.remove(e[id])
-        reallocateArray()
+        reallocateInmutable()
         e[id] = null
     }
 
@@ -186,9 +186,14 @@ open class IdElementContainer<T : IdElement> : Iterable<T> {
     fun pop() = removeId(max(stackPointer - 1, 0))
 
     /**
-     * Forks the container, creating a new container with the same elements
-     * up to the current stack pointer, discarding everything after the pointer
-     * This function does nothing if the stack pointer is at the end of the list.
+     * Creates a new "forked" state of the container by truncating it at the current stack pointer.
+     *
+     * All elements after the stack pointer are discarded, while the elements before (and including)
+     * the pointer are preserved. If the stack pointer is already at the end of the list, this
+     * operation is a no-op.
+     *
+     * After truncation, the internal list of elements and the immutable view are rebuilt
+     * to reflect the new state.
      */
     fun fork() {
         if(stackPointer == e.size) return
@@ -207,7 +212,7 @@ open class IdElementContainer<T : IdElement> : Iterable<T> {
         elements.clear()
         elements.addAll(e.filterNotNull())
 
-        reallocateArray()
+        reallocateInmutable()
 
         stackPointerFollowing = true
     }
@@ -216,11 +221,14 @@ open class IdElementContainer<T : IdElement> : Iterable<T> {
         requestId(element, id).value
     }
 
+    /**
+     * Clears the container, removing all elements and resetting the stack pointer.
+     */
     fun clear() {
         e.clear()
         elements.clear()
-        reallocateArray()
+        reallocateInmutable()
     }
 
-    override fun iterator() = elements.listIterator()
+    override fun iterator() = inmutable.listIterator()
 }

@@ -65,7 +65,7 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
             current {
                 val session = Session()
 
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireNonBinary(inputMat)
 
                 input.color.letOrDefer {
@@ -76,10 +76,10 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
 
                 val output = uniqueVariable("${input.value.value!!}Canny", Mat.new())
 
-                val firstThresholdValue = firstThreshold.value(current).value.v
+                val firstThresholdValue = firstThreshold.genValue(current).value.v
                 val firstThresholdVariable = uniqueVariable("cannyFirstThreshold", int(firstThresholdValue))
 
-                val secondThresholdValue = secondThreshold.value(current).value.v
+                val secondThresholdValue = secondThreshold.genValue(current).value.v
                 val secondThresholdVariable = uniqueVariable("cannySecondThreshold", int(firstThresholdValue))
 
                 group {
@@ -90,7 +90,7 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     JvmOpenCvTypes.Imgproc("Canny", input.value.v, output, firstThresholdVariable, secondThresholdVariable)
                     outputMat.streamIfEnabled(output, input.color)
@@ -106,7 +106,7 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
             current {
                 val session = Session()
 
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireNonBinary(inputMat)
 
                 input.color.letOrDefer {
@@ -116,10 +116,10 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     val output = uniqueVariable("${input.value}_canny",
-                        cv2.callValue("Canny", CPythonLanguage.NoType, input.value.v, firstThreshold.value(current).value.v, secondThreshold.value(current).value.v)
+                        cv2.callValue("Canny", CPythonLanguage.NoType, input.value.v, firstThreshold.genValue(current).value.v, secondThreshold.genValue(current).value.v)
                     )
 
                     session.outputMat = GenValue.Mat(output.resolved(), input.color)
@@ -130,7 +130,7 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         genCodeIfNecessary(current)
 
         if(attrib == outputMat) {

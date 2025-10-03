@@ -48,10 +48,18 @@ sealed class GenValue {
         }
     }
 
+    data class RuntimeKeyPoints(val value: Resolvable<Value>) : GenValue() {
+        companion object {
+            fun defer(genValueResolver: () -> RuntimeKeyPoints?) = RuntimeKeyPoints(
+                Resolvable.fromResolvable { genValueResolver()?.value }
+            )
+        }
+    }
+
     data class Point(val x: Resolvable<Double>, val y: Resolvable<Double>) : GenValue()
 
     sealed class GPoints : GenValue() {
-        class Points(val points: Resolvable<Array<Point>>) : GPoints()
+        data class Points(val points: Resolvable<Array<Point>>) : GPoints()
         data class RuntimePoints(val value: Resolvable<Value>) : GPoints() {
             companion object {
                 fun defer(genValueResolver: () -> RuntimePoints?) = RuntimePoints(
@@ -236,6 +244,11 @@ sealed class GenValue {
     }
 
     sealed class GList : GenValue() {
+        companion object {
+            inline fun <reified T : GenValue> RuntimeListOf(value: Resolvable<Value>): RuntimeListOf<T> =
+                RuntimeListOf(value, Resolvable.Now(T::class))
+        }
+
         open class ListOf<T : GenValue>(val elements: Array<T>) : GList()
         class List(elements: Array<GenValue>) : ListOf<GenValue>(elements)
 

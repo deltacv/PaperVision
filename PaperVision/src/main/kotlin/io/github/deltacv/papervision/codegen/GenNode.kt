@@ -22,7 +22,6 @@ import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.build.Scope
 import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.util.loggerForThis
-import java.util.logging.Logger
 
 interface GenNode<S: CodeGenSession> : Generator<S> {
 
@@ -51,7 +50,7 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
 
         if(genOptions.genAtTheEnd && codeGen.stage != CodeGen.Stage.END_GEN) {
             if(!codeGen.endingNodes.contains(this)) {
-                logger.info("Marked node $this as an ending node")
+                logger.debug("Marked $this as an ending node")
                 codeGen.endingNodes.add(this)
             }
 
@@ -85,15 +84,15 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
         }
     }
 
-    fun Scope.writeNameComment() {
+    fun Scope.nameComment() {
         val name = genNodeName
         if(name != null) {
             comment("\"$name\"")
         }
     }
 
-    fun ScopeContext.writeNameComment() = scope.writeNameComment()
+    fun ScopeContext.nameComment() = scope.nameComment()
 
-    fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue
+    fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue
 
 }

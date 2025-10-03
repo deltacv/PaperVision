@@ -22,6 +22,7 @@ import imgui.ImGui
 import imgui.ImVec2
 import imgui.internal.ImRect
 import io.github.deltacv.papervision.PaperVision
+import io.github.deltacv.papervision.id.Misc
 
 // this is an extremely hacky "dummy" table which uses the columns api.
 // mostly used for the nodes list, because nodes don't respect any sort of
@@ -49,7 +50,7 @@ class Table(val maxColumns: Int = 4, val drawCallback: ((Int, ImVec2) -> Unit)? 
     private val _currentRects = mutableMapOf<Int, ImRect>()
     val currentRects = _currentRects as Map<Int, ImRect>
 
-    private val columnsId by PaperVision.miscIds.nextId()
+    private val columnsId by Misc.newMiscId()
 
     /**
      * Adds a dummy rectangle to the table with the specified size.

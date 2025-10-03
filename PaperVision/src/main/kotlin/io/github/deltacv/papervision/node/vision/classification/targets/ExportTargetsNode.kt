@@ -52,13 +52,13 @@ class ExportTargetsNode : DrawNode<NoSession>() {
     override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
             current {
-                val targetsValue = inputTargets.value(current)
+                val targetsValue = inputTargets.genValue(current)
 
                 if(targetsValue !is GenValue.GList.RuntimeListOf<*>) {
                     raise("") // TODO: Handle non-runtime lists
                 }
 
-                val labelValue = label.value(current).value
+                val labelValue = label.genValue(current).value
 
                 labelValue.letOrDefer {
                     if(it.isEmpty()) {
@@ -105,13 +105,13 @@ class ExportRotTargetsNode : DrawNode<NoSession>() {
     override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
             current {
-                val targetsValue = inputTargets.value(current)
+                val targetsValue = inputTargets.genValue(current)
 
                 if(targetsValue !is GenValue.GList.RuntimeListOf<*>) {
                     raise("") // TODO: Handle non-runtime lists
                 }
 
-                val labelValue = label.value(current).value
+                val labelValue = label.genValue(current).value
                 labelValue.letOrDefer {
                     if(it.isEmpty()) {
                         label.raise("err_emptylabel")

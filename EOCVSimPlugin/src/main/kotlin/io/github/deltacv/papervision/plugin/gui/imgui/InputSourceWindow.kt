@@ -22,6 +22,7 @@ import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiWindowFlags
+import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.gui.Font
@@ -89,6 +90,7 @@ class InputSourceWindow(
                     InputSourceType.IMAGE -> FontAwesomeIcons.Image
                     InputSourceType.CAMERA -> FontAwesomeIcons.Camera
                     InputSourceType.VIDEO -> FontAwesomeIcons.Film
+                    InputSourceType.HTTP -> FontAwesomeIcons.Globe
                 }
 
                 ImGui.text(type)
@@ -141,6 +143,11 @@ class CreateInputSourceWindow(
             client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.CAMERA))
             delete()
         }
+        if(ImGui.isItemHovered()) {
+            ImGui.popFont()
+            ImGui.setTooltip(tr("mis_camerasource"))
+            ImGui.pushFont(fontAwesome.imfont)
+        }
 
         ImGui.sameLine()
         ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
@@ -149,6 +156,11 @@ class CreateInputSourceWindow(
             client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.IMAGE))
             delete()
         }
+        if(ImGui.isItemHovered()) {
+            ImGui.popFont()
+            ImGui.setTooltip(tr("mis_imagesource"))
+            ImGui.pushFont(fontAwesome.imfont)
+        }
 
         ImGui.sameLine()
         ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
@@ -156,6 +168,24 @@ class CreateInputSourceWindow(
         if(ImGui.button(FontAwesomeIcons.Film)){
             client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.VIDEO))
             delete()
+        }
+        if(ImGui.isItemHovered()) {
+            ImGui.popFont()
+            ImGui.setTooltip(tr("mis_videosource"))
+            ImGui.pushFont(fontAwesome.imfont)
+        }
+
+        ImGui.sameLine()
+        ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+
+        if(ImGui.button(FontAwesomeIcons.Globe)){
+            client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.HTTP))
+            delete()
+        }
+        if(ImGui.isItemHovered()) {
+            ImGui.popFont()
+            ImGui.setTooltip(tr("mis_httpsource"))
+            ImGui.pushFont(fontAwesome.imfont)
         }
 
         ImGui.popFont()

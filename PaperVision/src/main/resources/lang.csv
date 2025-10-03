@@ -37,6 +37,8 @@ nod_groupcontours_byarea,Filter Contours by Area,Filtrar Contornos por Area
 nod_groupcontours_byratio,Filter Contours by Ratio,Filtrar Contornos por Ratio
 nod_grouprects_byratio,Filter Rectangles by Ratio,Filtrar Rectangulos por Ratio
 nod_cannyedge,Canny Edge,Canny Edge
+nod_blobdetector,Simple Blob Detector,Detector de Blobs
+nod_keypointsto_rects,Key Points to Rectangles,Puntos Clave a Rectangulos
 nod_exportrect_target,Export Rectangle,Exportar Rectangulo
 nod_exportrot_recttarget,Export Rotated Rectangle,Exportar Rectangulo Rotado
 nod_exportrect_targets,Export Rectangles,Exportar Rectangulos
@@ -49,6 +51,7 @@ nod_drawcontours_onimage,Draw Contours on Image,Dibujar Contornos en Imagen
 nod_drawrects,Draw Rectangles,Dibujar Rectangulos
 nod_drawrects_onimage,Draw Rectangles on Image,Dibujar Rectangulos en Imagen
 nod_drawrotated_rects,Draw Rotated Rectangles,Dibujar Rectangulos Rotados
+nod_drawkeypoints,Draw Key Points,Dibujar Puntos Clave
 nod_crosshair,Crosshair,Crosshair
 nod_lineparameters,Line Parameters,Parametros de Linea
 nod_vector2,Vector in 2D,Vector en 2D
@@ -100,6 +103,11 @@ att_sides,Sides,Lados
 att_accuracy,Accuracy,Precision
 att_erode,Erode,Erosion
 att_dilate,Dilate,Dilatacion
+att_area,Area,Area
+att_circularity,Circularity,Circularidad
+att_convexity,Convexity,Convexidad
+att_inertia,Inertia,Inercia
+att_keypoints,Key Points,Puntos Clave
 att_source,Source,Fuente
 att_boundingmode,Bounding Mode,Modo de Delimitacion
 att_areaorientation,Area Orientation,Orientacion de Area
@@ -123,17 +131,17 @@ des_filterbiggest_rect,Finds the biggest rectangle from a list of rectangles.,En
 des_filterbiggest_rotrect,Finds the biggest rotated rectangle<br>from a list of rotated rectangles.,Encuentra el rectángulo rotado más grande<br>de una lista de rectángulos rotados.
 des_filterbiggest_contour,Finds the biggest contour from a list of contours.,Encuentra el contorno más grande<br>de una lista de contornos.
 des_crosshair,Selects only the contours that are<br>inside an adjustable crosshair.,Selecciona solo los contornos que están<br>dentro de un crosshair ajustable.
-des_boundingrotated_rect,Calculates the bounding rotated rectangles<br>of a given list of points.,Calcula los rectángulos delimitadores rotados<br>de una lista de puntos dada.
+des_boundingrotated_rect,Calculates the bounding rotated rectangles<br>of a given list of points.,Calcula los rectángulos delimitadores<br>rotados de una lista de puntos dada.
 des_boundingrect,Calculates the bounding rectangles<br>of a given list of points.,Calcula los rectángulos delimitadores<br>de una lista de puntos dada.
 des_findcontours,Finds all the contours (list of points)<br>of a given binary image.,Encuentra todos los contornos (lista de puntos)<br>de una imagen binaria dada.
-des_blur,Blurs the input image using the specified algorithm.,Difumina la imagen de entrada con el algoritmo especificado.
-des_bitwiseor,Performs a bitwise OR operation on two binary images.,Realiza una operación OR a nivel de bits en dos imágenes binarias.
-des_bitwiseand,Performs a bitwise AND operation on two binary images.,Realiza una operación AND a nivel de bits en dos imágenes binarias.
-des_bitwisexor,Performs a bitwise XOR operation on two binary images.,Realiza una operación XOR a nivel de bits en dos imágenes binarias.
-des_bitwisenot,Performs a bitwise NOT operation on a binary image.,Realiza una operación NOT a nivel de bits en una imagen binaria.
+des_blur,Blurs the input image<br>using the specified algorithm.,Difumina la imagen de entrada<br>con el algoritmo especificado.
+des_bitwiseor,Performs a bitwise OR operation<br>on two binary images.,Realiza una operación OR a nivel<br>de bits en dos imágenes binarias.
+des_bitwiseand,Performs a bitwise AND operation<br>on two binary images.,Realiza una operación AND a nivel<br>de bits en dos imágenes binarias.
+des_bitwisexor,Performs a bitwise XOR operation<br>on two binary images.,Realiza una operación XOR a nivel<br>de bits en dos imágenes binarias.
+des_bitwisenot,Performs a bitwise NOT operation<br>on a binary image.,Realiza una operación NOT a nivel<br>de bits en una imagen binaria.
 des_cvtcolor,"Converts a Mat from its current color space<br>to the specified color space. If the mat is already<br>in the specified color space, no conversion is made.","Convierte un Mat de su espacio de color actual<br>al espacio de color especificado. Si el Mat ya está<br>en el espacio de color especificado,<br>no se realiza ninguna conversión."
-des_erodedilate,Erodes and dilates the areas of a given binary image.,Erosiona y dilata las áreas de una imagen binaria dada.
-des_binarymask,"Takes a normal image and performs a mask<br>based on a binary image, discards or includes areas<br>from the normal image based on the binary image.","Toma una imagen normal y aplica una máscara<br>basada en una imagen binaria, descartando o incluyendo áreas<br>de la imagen normal según la imagen binaria."
+des_erodedilate,Erodes and dilates the areas<br>of a given binary image.,Erosiona y dilata las áreas<br>de una imagen binaria dada.
+des_binarymask,"Takes a normal image and performs a mask<br>based on a binary image, discards or includes areas<br>from the normal image based on the binary image.","Toma una imagen normal y aplica una máscara basada<br>en una imagen binaria, descartando o incluyendo áreas<br>de la imagen normal según la imagen binaria."
 des_colorthresh,"Performs a threshold in the input image<br>and returns a binary image, discarding<br>the pixels that were outside the range.","Realiza un umbral en la imagen de entrada<br>y devuelve una imagen binaria, descartando<br>los píxeles que estaban fuera del rango."
 des_drawrects,Draws the rectangles on a copy of the<br>given image and outputs the result.,Dibuja los rectangulos en una copia de la<br>imagen dada y devuelve el resultado.
 des_drawrotated_rects,Draws the rotated rectangles on a copy<br>of the given image and outputs the result.,Dibuja los rectangulos rotados en una copia de la<br>imagen dada y devuelve el resultado.
@@ -141,7 +149,10 @@ des_lineparameters,Specify the visual properties for<br>a node that will draw li
 des_drawrects_onimage,Draws the rectangles in the passed image.,Dibuja los rectangulos en la imagen de entrada
 des_drawcontours,Draws the contours on a copy of the<br>given image and outputs the result.,Dibuja los contornos en una copia de la<br>imagen dada y devuelve el resultado.
 des_drawcontours_onimage,Draws the contours on the input image,Dibuja los contornos en la imagen de entrada.
-des_cannyedge,Filters edges in the input image using the Canny algorithm.,Filters bordes en la imagen de entrada usando el algoritmo Canny.
+des_drawkeypoints,Draws the key points on a copy of the<br>given image and outputs the result.,Dibuja los puntos clave en una copia de la<br>imagen dada y devuelve el resultado.
+des_cannyedge,Filters edges in the input<br>image using the Canny algorithm.,Filtra bordes en la imagen de<br>entrada usando el algoritmo Canny.
+des_blobdetector,Detects blobs in an image<br>using OpenCV's Simple Blob Detector.,Detecta blobs en una imagen<br>usando el Detector de Blobs Simple de OpenCV.
+des_keypointsto_rects,Converts key points to<br>bounding rectangles.,Convierte puntos clave a<br>rectángulos delimitadores.
 des_vector2,Composes a Vector in two dimensions,Compone un Vector en dos dimensiones
 err_bitwiseor_binary,"Both inputs must be of the same type, binary or not","Ambas entradas deben ser del mismo tipo, binario o no"
 err_grayscale_required,"Grayscale image required","Se requiere una imagen en escala de grises"
@@ -168,6 +179,10 @@ mis_dontshow_again,Don't Show Again,No Mostrar de Nuevo
 mis_next,Next,Siguiente
 mis_close,Close,Cerrar
 mis_cancel,Cancel,Cancelar
+mis_camerasource,Camera Source,Camara
+mis_videosource,Video File Source,Archivo de Video
+mis_imagesource,Image File Source,Archivo de Imagen
+mis_httpsource,HTTP Stream Source,Video HTTP
 mis_guidedtour,Guided Tour,Visita Guiada
 mis_guidedtour_1,Welcome to the guided tour!,¡Bienvenido al recorrido guiado!
 mis_guidedtour_2,This will help you get started with PaperVision.<br>Read each step carefully !,Esto te ayudará a comenzar con PaperVision.<br>¡Lee cada paso con cuidado!
@@ -210,6 +225,7 @@ mis_guidedtour_notavailable_1,"This guided tour is not available for existing pr
 mis_guidedtour_notavailable_2,"Please create a new project and try again.","Por favor, crea un nuevo proyecto e intenta de nuevo."
 mis_loading,Loading...,Cargando...
 mis_runningok,Running OK,Estatus OK
+mis_runningok_atfps,OK at $[0] FPS,OK a $[0] FPS
 mis_savebefore_exit,Do you wanna save before exiting?,¿Quieres guardar antes de salir?
 mis_save,Save,Guardar
 mis_discard,Discard,Descartar

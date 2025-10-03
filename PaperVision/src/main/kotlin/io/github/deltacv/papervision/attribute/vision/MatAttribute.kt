@@ -26,7 +26,7 @@ import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
-import io.github.deltacv.papervision.gui.eocvsim.ImageDisplayNode
+import io.github.deltacv.papervision.gui.display.ImageDisplayNode
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
 import io.github.deltacv.papervision.serialization.data.SerializeIgnore
@@ -103,7 +103,7 @@ class MatAttribute(
         prevIsPrevizEnabled = isPrevizEnabled
     }
 
-    override fun value(current: CodeGen.Current) = value<GenValue.Mat>(
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Mat>(
         current, "a Mat"
     ) { it is GenValue.Mat }
 

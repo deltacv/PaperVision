@@ -59,10 +59,10 @@ class MaskNode : DrawNode<MaskNode.Session>(){
             current {
                 val session = Session()
 
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireNonBinary(inputMat)
 
-                val mask = maskMat.value(current)
+                val mask = maskMat.genValue(current)
                 mask.requireBinary(maskMat)
 
                 val output = uniqueVariable("${input.value}Mask", Mat.new())
@@ -72,7 +72,7 @@ class MaskNode : DrawNode<MaskNode.Session>(){
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     output("release")
                     Core("bitwise_and", input.value.v, input.value.v, output, mask.value.v)
@@ -89,14 +89,14 @@ class MaskNode : DrawNode<MaskNode.Session>(){
             current {
                 val session = Session()
 
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireNonBinary(inputMat)
 
-                val mask = maskMat.value(current)
+                val mask = maskMat.genValue(current)
                 mask.requireBinary(maskMat)
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     val output = uniqueVariable("${input.value}_mask",
                         cv2.callValue("bitwise_and", CPythonLanguage.NoType, input.value.v, input.value.v, CPythonLanguage.namedArgument("mask", mask.value.v))
@@ -111,7 +111,7 @@ class MaskNode : DrawNode<MaskNode.Session>(){
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         genCodeIfNecessary(current)
 
         if(attrib == outputMat) {

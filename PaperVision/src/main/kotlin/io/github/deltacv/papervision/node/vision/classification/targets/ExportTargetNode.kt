@@ -22,7 +22,6 @@ import io.github.deltacv.papervision.attribute.misc.StringAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.RotatedRectAttribute
 import io.github.deltacv.papervision.codegen.NoSession
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.dsl.targets
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
@@ -51,7 +50,7 @@ class ExportTargetNode : DrawNode<NoSession>() {
         generatorFor(JavaLanguage) {
             current.targets {
                 current.scope {
-                    addRectTarget(string(label.value(current).value.v), inputTarget.value(current).value.v)
+                    addRectTarget(string(label.genValue(current).value.v), inputTarget.genValue(current).value.v)
                 }
             }
 
@@ -86,7 +85,7 @@ class ExportRotTarget : DrawNode<NoSession>() {
         generatorFor(JavaLanguage) {
             current.targets {
                 current.scope {
-                    addRotRectTarget(string(label.value(current).value.v), inputTarget.value(current).value.v)
+                    addRotRectTarget(string(label.genValue(current).value.v), inputTarget.genValue(current).value.v)
                 }
             }
 

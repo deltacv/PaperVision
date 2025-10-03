@@ -27,11 +27,9 @@ import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.ColorSpace
 import io.github.deltacv.papervision.util.Range2i
-import io.github.deltacv.papervision.util.hexString
 
 class ScalarAttribute(
     mode: AttributeMode,
@@ -47,7 +45,7 @@ class ScalarAttribute(
 
     override var icon = FontAwesomeIcons.GripHorizontal
 
-    override fun drawAttributeText(index: Int, attrib: Attribute) {
+    override fun drawAttributeText(index: Int, attrib: Attribute): Boolean {
         if(index < color.channelNames.size) {
             val name = color.channelNames[index]
             val elementName = name + if(name.length == 1) " " else ""
@@ -60,7 +58,11 @@ class ScalarAttribute(
             ImGui.pushFont(PaperVision.defaultImGuiFont.imfont)
             ImGui.text(elementName)
             ImGui.popFont()
+
+            return true
         }
+
+        return false
     }
 
     override fun onElementCreation(element: Attribute) {
@@ -69,8 +71,8 @@ class ScalarAttribute(
         }
     }
 
-    override fun value(current: CodeGen.Current): GenValue.Scalar {
-        val values = (super.value(current) as GenValue.GList.List).elements
+    override fun genValue(current: CodeGen.Current): GenValue.Scalar {
+        val values = (super.genValue(current) as GenValue.GList.List).elements
 
         val value = GenValue.Scalar(
             GenValue.Double((values.getOr(0, GenValue.Int.ZERO) as GenValue.Int).value.convertTo { it?.toDouble() }),
@@ -79,7 +81,7 @@ class ScalarAttribute(
             GenValue.Double((values.getOr(3, GenValue.Int.ZERO) as GenValue.Int).value.convertTo { it?.toDouble() }),
         )
 
-        return value(
+        return readGenValue(
             current, "a Scalar", value
         ) { it is GenValue.Scalar }
     }

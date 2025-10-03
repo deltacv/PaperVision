@@ -20,52 +20,42 @@ package io.github.deltacv.papervision.io
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
-import io.github.deltacv.papervision.io.turbojpeg.TJLoader
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.PlatformTextureFactory
+import io.github.deltacv.papervision.util.ReusableBufferPool
+import io.github.deltacv.papervision.util.ReusableBufferPool.MemoryBehavior
 import io.github.deltacv.papervision.util.loggerFor
-import org.libjpegturbo.turbojpeg.TJ
-import org.libjpegturbo.turbojpeg.TJDecompressor
+import org.deltacv.mackjpeg.MackJPEG
+import org.deltacv.mackjpeg.PixelFormat
 import java.nio.ByteBuffer
 import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class TextureProcessorQueue(
     val textureFactory: PlatformTextureFactory
 ) : DrawableIdElementBase<TextureProcessorQueue>() {
 
-    enum class MemoryBehavior {
-        ALLOCATE_WHEN_EXHAUSTED,
-        DISCARD_WHEN_EXHAUSTED,
-        EXCEPTION_WHEN_EXHAUSTED
-    }
-
     companion object {
         const val REUSABLE_BUFFER_QUEUE_SIZE = 15
 
         val logger by loggerFor<TextureProcessorQueue>()
-
-        init {
-            try {
-                TJLoader.load()
-            } catch (e: Exception) {
-                logger.warn("Failed to load TurboJPEG, there will be reduced performance", e)
-            }
-        }
     }
 
-    val jpegWorkers = Executors.newFixedThreadPool(5)
+    val jpegWorkers: ExecutorService = Executors.newFixedThreadPool(5) {
+        val thread = Thread(it)
+        thread.isDaemon = true
+        thread.name = "JPEG-Decomp-Worker-${thread.id}"
 
-    private val reusableBuffers = ConcurrentHashMap<Int, ArrayBlockingQueue<ByteArray>>()
+        thread
+    }
+
+    private val bufferPool = ReusableBufferPool(REUSABLE_BUFFER_QUEUE_SIZE)
 
     private val queuedTextures = ArrayBlockingQueue<FutureTexture>(REUSABLE_BUFFER_QUEUE_SIZE)
     private val textures = mutableMapOf<Int, PlatformTexture>()
 
-    val idCache = mutableMapOf<PlatformTexture, Int>()
-
-    @Synchronized
     override fun draw() {
         val currentQueueSize = queuedTextures.size
 
@@ -113,29 +103,56 @@ class TextureProcessorQueue(
         id: Int, width: Int, height: Int, data: ByteArray,
         memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
     ) =
-        offer(id, width, height, data, jpeg = true)
+        offer(id, width, height, data, jpeg = true, memoryBehavior = memoryBehavior)
 
     fun offerJpeg(
         id: Int, width: Int, height: Int, data: ByteBuffer,
         memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
     ) =
-        offer(id, width, height, data, jpeg = true)
+        offer(id, width, height, data, jpeg = true, memoryBehavior = memoryBehavior)
 
     fun offerJpegAsync(
-        id: Int, width: Int, height: Int, data: ByteArray,
+        id: Int, width: Int, height: Int, data: ByteArray, dataOffset: Int = 0,
         memoryBehavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
     ) {
-        if (TJLoader.isLoaded) {
+        if (MackJPEG.getSupportedBackend() != null) {
             jpegWorkers.submit {
-                val buffer = getOrCreateReusableBuffer(width * height * 3, memoryBehavior) ?: return@submit
-                val decompressor = TJDecompressor()
+                val decompressor = MackJPEG.getSupportedBackend()?.makeDecompressor() ?: return@submit
 
-                decompressor.setJPEGImage(data, data.size)
-                decompressor.decompress(buffer, width, 0, height, TJ.PF_RGB, TJ.FLAG_FASTDCT)
+                decompressor.use {
+                    val offsetData = if(dataOffset != 0) {
+                        // round in 5k intervals
+                        val roundedLength = ((data.size - dataOffset) / 4096 + 1) * 4096
 
-                offerBuffer(id, width, height, buffer, ColorSpace.RGB, jpeg = false)
+                        val offsetArray = getOrCreateReusableBuffer(roundedLength, memoryBehavior) ?: return@submit
+                        System.arraycopy(data, dataOffset, offsetArray, 0, data.size - dataOffset)
 
-                decompressor.close()
+                        offsetArray
+                    } else data
+
+                    try {
+                        decompressor.setJPEG(offsetData, offsetData.size)
+
+                        val buffer = getOrCreateReusableBuffer(
+                            decompressor.decodedWidth * decompressor.decodedHeight * 3,
+                            memoryBehavior
+                        ) ?: return@submit
+
+                        try {
+                            decompressor.decompress(buffer, PixelFormat.RGB)
+                        } catch (e: Exception) {
+                            logger.warn("Failed to decompress JPEG #$id", e)
+                            returnReusableBuffer(buffer)
+                            return@use
+                        }
+
+                        offerBuffer(id, decompressor.decodedWidth, decompressor.decodedHeight, buffer, ColorSpace.RGB, jpeg = false)
+                    } finally {
+                        if(dataOffset != 0) {
+                            returnReusableBuffer(offsetData)
+                        }
+                    }
+                }
             }
         } else {
             // fallback to offerJpeg
@@ -193,53 +210,11 @@ class TextureProcessorQueue(
     }
 
     private fun returnReusableBuffer(buffer: ByteArray) {
-        synchronized(reusableBuffers) {
-            reusableBuffers[buffer.size]?.offer(buffer)
-                ?: logger.warn("Buffer pool for size ${buffer.size} is null")
-        }
+        bufferPool.returnBuffer(buffer)
     }
 
-    private fun getOrCreateReusableBuffer(size: Int, memoryBehavior: MemoryBehavior): ByteArray? {
-        synchronized(reusableBuffers) {
-            if (reusableBuffers[size] == null) {
-                val queue = ArrayBlockingQueue<ByteArray>(REUSABLE_BUFFER_QUEUE_SIZE)
-
-                repeat(REUSABLE_BUFFER_QUEUE_SIZE) {
-                    queue.offer(ByteArray(size))
-                }
-
-                reusableBuffers[size] = queue
-            }
-
-            val queue = reusableBuffers[size]!!
-            return queue.poll() ?: run {
-                when (memoryBehavior) {
-                    MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED -> ByteArray(size)
-                    MemoryBehavior.DISCARD_WHEN_EXHAUSTED -> null
-                    MemoryBehavior.EXCEPTION_WHEN_EXHAUSTED -> throw IllegalStateException("Buffer pool for size $size is empty")
-                }
-            }
-        }
-    }
-
-    fun getQIdOf(texture: PlatformTexture) = idCache[texture]?.also { return it }
-        ?: textures.entries.firstOrNull { it.value == texture }?.key?.also { idCache[texture] = it }
-
-    /**
-     * Assigns an ID to a texture. This is used to keep track of textures that are not initially part of this queue.
-     * @param texture The texture to assign the ID to
-     * @param id The ID to assign to the texture. Must be negative to avoid conflicts with existing textures.
-     */
-    fun assignQIdTo(texture: PlatformTexture): Int {
-        if (getQIdOf(texture) != null) throw IllegalArgumentException("Texture already has a qID assigned")
-
-        textures[-texture.id] = texture
-        idCache[texture] = -texture.id - 1
-
-        logger.info("Assigned qID ${-texture.id - 1} to texture $texture")
-
-        return -texture.id - 1
-    }
+    private fun getOrCreateReusableBuffer(size: Int, memoryBehavior: MemoryBehavior) =
+        bufferPool.getOrCreate(size, memoryBehavior)
 
     operator fun get(id: Int) = textures[id]
 
@@ -247,16 +222,13 @@ class TextureProcessorQueue(
         queuedTextures.clear()
         textures.values.forEach { it.delete() }
         textures.clear()
-
-        synchronized(reusableBuffers) {
-            reusableBuffers.values.forEach { it.clear() }
-        }
+        bufferPool.clear()
     }
 
     override val idElementContainer: IdElementContainer<TextureProcessorQueue>
-        get() = IdElementContainerStack.threadStack.peekNonNull()
+        get() = IdElementContainerStack.localStack.peekNonNull()
 
-    data class FutureTexture(
+    class FutureTexture(
         val id: Int,
         val width: Int,
         val height: Int,

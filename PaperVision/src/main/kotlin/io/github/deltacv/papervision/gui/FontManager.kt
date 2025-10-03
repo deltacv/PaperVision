@@ -40,9 +40,7 @@ class FontManager {
         }
 
         val inputStream = FontManager::class.java.getResourceAsStream(ttfPath)
-        if(inputStream == null) {
-            throw IllegalArgumentException("Font file $ttfPath not found in resources")
-        }
+            ?: throw IllegalArgumentException("Font file $ttfPath not found in resources")
 
         inputStream.use {
             val imguiFont = if (glyphRanges != null) {

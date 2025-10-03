@@ -54,7 +54,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
         generatorFor(JavaLanguage) {
             val session = Session()
 
-            val firstValue = input.value(current)
+            val firstValue = input.genValue(current)
 
             current {
                 val outputMat = uniqueVariable("bitwiseNOTMat", Mat.new())
@@ -64,7 +64,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     outputMat("release")
                     JvmOpenCvTypes.Core("bitwise_not", firstValue.value.v, outputMat)
@@ -81,14 +81,14 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            val firstValue = input.value(current)
+            val firstValue = input.genValue(current)
 
             current {
                 val value = CPythonOpenCvTypes.cv2.callValue("bitwise_not", CPythonLanguage.NoType, firstValue.value.v)
                 val variable = uniqueVariable("bitwiseNOTMat", value)
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
                     local(variable)
                 }
 
@@ -99,7 +99,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         genCodeIfNecessary(current)
 
         if(attrib == output) {

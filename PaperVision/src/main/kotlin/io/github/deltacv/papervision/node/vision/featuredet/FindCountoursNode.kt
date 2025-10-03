@@ -59,7 +59,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
             current {
                 val session = Session()
 
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireBinary(inputMat)
 
                 val list = uniqueVariable("contours", JavaTypes.ArrayList(MatOfPoint).new())
@@ -71,7 +71,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     list("clear")
                     hierarchyMat("release")
@@ -89,11 +89,11 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
             current {
                 val session = Session()
 
-                val input = inputMat.value(current)
+                val input = inputMat.genValue(current)
                 input.requireBinary(inputMat)
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     val contours = tryName("contours")
                     val hierarchy = tryName("hierarchy")
@@ -116,7 +116,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         genCodeIfNecessary(current)
 
         if(attrib == outputPoints) {

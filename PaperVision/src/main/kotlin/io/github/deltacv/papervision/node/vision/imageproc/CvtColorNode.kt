@@ -62,10 +62,10 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
             current {
                 val session = Session()
 
-                val inputMat = input.value(current)
+                val inputMat = input.genValue(current)
                 inputMat.requireNonBinary(input)
 
-                val targetColor = convertTo.value(current).value
+                val targetColor = convertTo.genValue(current).value
                 val matColor = inputMat.color
 
                 val matColorResolved = matColor.resolve()
@@ -79,7 +79,7 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
                     }
 
                     current.scope { // add a cvtColor step in processFrame
-                        writeNameComment()
+                        nameComment()
 
                         deferredBlock(Resolvable.DependentPlaceholder(matColor) {
                             {
@@ -110,15 +110,15 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
             val session = Session()
 
             current {
-                val inputMat = input.value(current)
+                val inputMat = input.genValue(current)
                 inputMat.requireNonBinary(input)
 
-                val targetColor = convertTo.value(current).value
+                val targetColor = convertTo.genValue(current).value
                 val matColor = inputMat.color
                 val matColorResolved = matColor.resolve()
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     if (matColorResolved == null || matColorResolved != targetColor) {
                         val value = Resolvable.DependentPlaceholder(matColor) {
@@ -146,7 +146,7 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         genCodeIfNecessary(current)
 
         if(attrib == output) {

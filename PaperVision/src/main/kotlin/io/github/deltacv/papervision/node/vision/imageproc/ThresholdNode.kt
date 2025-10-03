@@ -100,9 +100,9 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
             current {
                 val session = Session()
 
-                val range = scalar.value(current)
+                val range = scalar.genValue(current)
 
-                var inputMat = input.value(current)
+                var inputMat = input.genValue(current)
                 inputMat.requireNonBinary(input)
 
                 val matColor = inputMat.color
@@ -142,7 +142,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     deferredBlock(Resolvable.DependentPlaceholder(matColor) {
                         {
@@ -168,16 +168,16 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
             val session = Session()
 
             current {
-                val range = scalar.value(current)
+                val range = scalar.genValue(current)
 
-                var inputMat = input.value(current)
+                var inputMat = input.genValue(current)
                 inputMat.requireNonBinary(input)
 
                 val matColor = inputMat.color
                 val targetColor = lastColor
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     val target = uniqueVariable("thresholdTargetMat", inputMat.value.v)
                     local(target)
@@ -207,11 +207,11 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return current.sessionOf(this)!!.outputMat
+            return GenValue.Mat.defer { current.sessionOf(this)?.outputMat }
         }
 
         noValue(attrib)

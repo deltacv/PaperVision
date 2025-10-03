@@ -16,26 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.gui.eocvsim
+package io.github.deltacv.papervision.gui.display
 
 import imgui.ImGui
 import io.github.deltacv.papervision.id.IdElement
 import io.github.deltacv.papervision.id.IdElementContainerStack
-import io.github.deltacv.papervision.engine.previz.PipelineStream
+import io.github.deltacv.papervision.engine.previz.ClientPrevizStream
 
 class ImageDisplay(
-    var pipelineStream: PipelineStream
+    var clientPrevizStream: ClientPrevizStream
 ) : IdElement {
-    override val id by IdElementContainerStack.threadStack.peekNonNull<ImageDisplay>().nextId(this)
+    override val id by IdElementContainerStack.localStack.peekNonNull<ImageDisplay>().nextId(this)
 
     fun drawStream() {
-        pipelineStream.textureOf(id)?.draw()
+        clientPrevizStream.textureOf(id)?.draw()
 
         if (ImGui.isItemHovered() && ImGui.isMouseDoubleClicked(0)) {
-            if(pipelineStream.status == PipelineStream.Status.MINIMIZED) {
-                pipelineStream.maximize()
+            if(clientPrevizStream.sizing == ClientPrevizStream.Sizing.MINIMIZED) {
+                clientPrevizStream.maximize()
             } else {
-                pipelineStream.minimize()
+                clientPrevizStream.minimize()
             }
         }
     }

@@ -75,10 +75,10 @@ open class DrawRectanglesNode
             current {
                 val session = Session()
 
-                val lineParams = (lineParams.value(current) as GenValue.LineParameters).ensureRuntimeLineJava(current)
+                val lineParams = (lineParams.genValue(current) as GenValue.LineParameters).ensureRuntimeLineJava(current)
 
-                val input = inputMat.value(current)
-                val rectanglesList = rectangles.value(current)
+                val input = inputMat.genValue(current)
+                val rectanglesList = rectangles.genValue(current)
                 val output = uniqueVariable("${input.value.value}Rects", Mat.new())
 
                 var drawMat = input.value.v
@@ -90,7 +90,7 @@ open class DrawRectanglesNode
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     if (!isDrawOnInput) {
                         drawMat = output
@@ -151,16 +151,16 @@ open class DrawRectanglesNode
             val session = Session()
 
             current {
-                val input = inputMat.value(current)
-                val rectanglesList = rectangles.value(current)
+                val input = inputMat.genValue(current)
+                val rectanglesList = rectangles.genValue(current)
 
-                val lineParams = lineParams.value(current)
+                val lineParams = lineParams.genValue(current)
                 if (lineParams !is GenValue.LineParameters.Line) {
                     raise("Line parameters must not be runtime")
                 }
 
                 current.scope {
-                    writeNameComment()
+                    nameComment()
 
                     val target = if (isDrawOnInput) {
                         input.value.v
@@ -233,7 +233,7 @@ open class DrawRectanglesNode
         }
     }
 
-    override fun getOutputValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         if (attrib == outputMat) {
             return GenValue.Mat.defer { current.sessionOf(this)?.outputMat }
         }

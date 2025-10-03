@@ -19,11 +19,10 @@
 package io.github.deltacv.papervision.plugin.project
 
 import com.github.serivesmejia.eocvsim.EOCVSim
+import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.SysUtil
-import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import com.github.serivesmejia.eocvsim.util.extension.plus
 import com.github.serivesmejia.eocvsim.util.extension.removeFromEnd
-import com.github.serivesmejia.eocvsim.util.io.EOCVSimFolder
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -31,7 +30,9 @@ import io.github.deltacv.eocvsim.plugin.loader.PluginManager
 import io.github.deltacv.eocvsim.sandbox.nio.SandboxFileSystem
 import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
+import io.github.deltacv.papervision.plugin.PaperVisionEOCVSimPlugin
 import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
+import io.github.deltacv.papervision.plugin.eocvsim.SinglePipelineCompiler
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngine
 import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMessage
@@ -43,29 +44,30 @@ import io.github.deltacv.papervision.plugin.project.recovery.RecoveryDaemonProce
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.hexString
-import java.awt.Component
+import io.github.deltacv.papervision.util.toValidIdentifier
+import org.openftc.easyopencv.OpenCvPipeline
 import java.awt.Window
 import java.io.File
 import java.io.FileNotFoundException
+import java.lang.ref.WeakReference
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.time.Instant
-import javax.swing.JComponent
 import javax.swing.JFileChooser
-import javax.swing.JFrame
 import javax.swing.JOptionPane
-import javax.swing.JPanel
 import javax.swing.SwingUtilities
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.io.path.exists
 import kotlin.io.path.pathString
+import kotlin.io.path.readText
 
 class PaperVisionProjectManager(
     val classpath: String,
     val fileSystem: SandboxFileSystem,
     val engine: EOCVSimIpcEngine,
+    val plugin: PaperVisionEOCVSimPlugin,
     val eocvSim: EOCVSim,
-    val streamerServerPortProvider: () -> Int
 ) {
 
     companion object {
@@ -74,6 +76,8 @@ class PaperVisionProjectManager(
     }
 
     val root = fileSystem.getPath("")
+
+    val latestSourceFolder = root.resolve(".latest_source")
 
     val onMainUpdate = eocvSim.onMainUpdate
 
@@ -88,6 +92,8 @@ class PaperVisionProjectManager(
 
     var currentPaperVisionProject: PaperVisionProject? = null
         private set
+
+    val previewPipelines = mutableListOf<WeakReference<Class<out OpenCvPipeline>>>()
 
     fun paperVisionProjectFrom(
         project: PaperVisionProjectTree.ProjectTreeNode.Project,
@@ -346,6 +352,56 @@ class PaperVisionProjectManager(
         }
     }
 
+    fun requestPreviewLatestPipeline(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
+        onMainUpdate.doOnce {
+            val path = (findProjectFolderPath(project)?.pathString ?: "").replace("/", "_")
+            val name = project.name.removeFromEnd(".paperproj")
+
+            try {
+                val source = latestSourceFolder.resolve("${path}_$name.java").readText()
+
+                val clazz = SinglePipelineCompiler.compilePipeline(source)
+
+                clearPreviewPipelines()
+
+                previewPipelines.add(WeakReference(clazz))
+
+                eocvSim.pipelineManager.addPipelineClass(
+                    clazz,
+                    PipelineSource.COMPILED_ON_RUNTIME
+                )
+
+                plugin.isRunningPreviewPipeline = true
+
+                eocvSim.pipelineManager.forceChangePipeline(
+                    eocvSim.pipelineManager.getIndexOf(
+                        clazz,
+                        PipelineSource.COMPILED_ON_RUNTIME
+                    )
+                )
+            } catch (e: Exception) {
+                logger.warn("Failed to show pipeline preview for project ${project.name}", e)
+
+                plugin.isRunningPreviewPipeline = false
+                plugin.changeToPaperVisionPipelineIfNecessary()
+                return@doOnce
+            }
+        }
+    }
+
+    fun clearPreviewPipelines() {
+        for (ref in previewPipelines) {
+            val refClazz = ref.get()
+            if (refClazz != null) {
+                eocvSim.pipelineManager.pipelines.removeIf { it.clazz == refClazz }
+            }
+
+            ref.clear()
+        }
+
+        eocvSim.pipelineManager.refreshGuiPipelineList()
+    }
+
     fun openProject(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
         logger.info("Opening ${project.name}")
 
@@ -361,7 +417,7 @@ class PaperVisionProjectManager(
             }
         }
 
-        PaperVisionProcessRunner.execPaperVision(classpath, streamerServerPortProvider())
+        PaperVisionProcessRunner.execPaperVision(classpath)
 
         currentProject = project
     }
@@ -452,8 +508,6 @@ class PaperVisionProjectManager(
         val projectPath = findProjectPath(projectNode)?.pathString ?: return
         val hex = projectPath.hexString
 
-        logger.debug("Sending recovery for {}", projectPath)
-
         recoveryDaemonProcessManager.sendRecoveryData(
             RecoveryData(
                 recoveryFolder.path,
@@ -495,6 +549,20 @@ class PaperVisionProjectManager(
         logger.info("Recovered project ${recoveredProject.originalProjectPath} from ${recoveredProject.date}")
 
         refresh()
+    }
+
+    fun saveLatestSource(source: String, project: PaperVisionProjectTree.ProjectTreeNode.Project? = currentProject) {
+        fileSystem.createDirectories(latestSourceFolder)
+
+        val path = (if (project == null) "" else findProjectFolderPath(project)?.pathString ?: "").replace("/", "_")
+        val name = project?.name?.removeFromEnd(".paperproj") ?: "unsaved_project_${System.currentTimeMillis()}"
+
+        val sourceFile = latestSourceFolder.resolve("${path}_$name.java")
+        if (!sourceFile.exists()) {
+            fileSystem.createFile(sourceFile)
+        }
+
+        fileSystem.write(sourceFile, source.toByteArray(StandardCharsets.UTF_8), StandardOpenOption.WRITE)
     }
 
     fun closeCurrentProject() {

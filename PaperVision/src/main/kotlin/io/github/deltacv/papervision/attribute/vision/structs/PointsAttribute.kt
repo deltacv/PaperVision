@@ -24,7 +24,6 @@ import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
-import io.github.deltacv.papervision.gui.style.hexColor
 import io.github.deltacv.papervision.gui.style.rgbaColor
 
 class PointsAttribute (
@@ -44,7 +43,7 @@ class PointsAttribute (
         override fun new(mode: AttributeMode, variableName: String) = PointsAttribute(mode, variableName)
     }
 
-    override fun value(current: CodeGen.Current) = value<GenValue.GPoints.RuntimePoints>(
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.GPoints.RuntimePoints>(
         current, "a Points"
     ) { it is GenValue.GPoints.RuntimePoints }
 

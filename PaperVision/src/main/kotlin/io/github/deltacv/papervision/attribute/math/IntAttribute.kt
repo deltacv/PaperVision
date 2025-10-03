@@ -21,7 +21,6 @@ package io.github.deltacv.papervision.attribute.math
 import imgui.ImGui
 import imgui.flag.ImGuiInputTextFlags
 import imgui.type.ImInt
-import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
@@ -31,7 +30,6 @@ import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.FontAwesomeIcons
 import io.github.deltacv.papervision.serialization.AttributeSerializationData
 import io.github.deltacv.papervision.util.Range2i
-import io.github.deltacv.papervision.util.hexString
 
 class IntAttribute(
     override val mode: AttributeMode,
@@ -96,15 +94,15 @@ class IntAttribute(
         sliders = false
     }
 
-    override fun thisGet() = value.get()
+    override fun readEditorValue() = value.get()
 
-    override fun value(current: CodeGen.Current) = value(
+    override fun genValue(current: CodeGen.Current) = readGenValue(
         current, "an Int", GenValue.Int(value.get().resolved())
     ) { it is GenValue.Int }
 
     override fun makeSerializationData() = Data(value.get())
 
-    override fun takeDeserializationData(data: AttributeSerializationData) {
+    override fun takeSerializationData(data: AttributeSerializationData) {
         if(data is Data) {
             nextValue = data.value
         }
