@@ -211,7 +211,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         genCodeIfNecessary(current)
 
         if(attrib == output) {
-            return current.sessionOf(this)!!.outputMat
+            return GenValue.Mat.defer { current.sessionOf(this)?.outputMat }
         }
 
         noValue(attrib)

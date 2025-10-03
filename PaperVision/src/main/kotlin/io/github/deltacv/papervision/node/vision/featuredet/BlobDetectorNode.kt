@@ -91,8 +91,6 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
             val session = Session()
 
             current {
-                input.requireAttachedAttribute()
-
                 val inputValue = input.genValue(current).value
 
                 val areaRangeValue = area.genValue(current)
@@ -206,7 +204,6 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
             val session = Session()
 
             current {
-                input.requireAttachedAttribute()
                 val inputValue = input.genValue(current).value
 
                 val thresholdRangeValue = threshold.genValue(current)
@@ -274,6 +271,8 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+        genCodeIfNecessary(current)
+
         return when(attrib) {
             output -> GenValue.RuntimeKeyPoints.defer { current.sessionOf(this)?.output }
             else -> noValue(attrib)

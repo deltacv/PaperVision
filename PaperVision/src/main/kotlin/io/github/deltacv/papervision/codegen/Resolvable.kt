@@ -49,6 +49,7 @@ sealed class Resolvable<T> {
         val resolveLast: Boolean,
         private val resolver: () -> T?
     ) : Resolvable<T>(), IdElement {
+
         val placeholder get() = String.format(CodeGen.RESOLVER_TEMPLATE, id)
 
         private var usingOnResolve = false // to avoid creating the event handler if not necessary
@@ -57,17 +58,23 @@ sealed class Resolvable<T> {
             PaperVisionEventHandler("Placeholder-$placeholder-OnResolve", catchExceptions = false) 
         }
 
+        private var resolving = false
+
         private var cachedValue: T? = null
 
         constructor(resolver: () -> T?) : this(resolveLast = false, resolver = resolver)
 
         override fun resolve(): T? {
+            if (resolving) return cachedValue
+            resolving = true
+
             val value = cachedValue ?: resolver()
             if (value != null && usingOnResolve) {
                 onResolve()
             }
 
             cachedValue = value
+            resolving = false
             return value
         }
 
@@ -77,7 +84,13 @@ sealed class Resolvable<T> {
                 block(value)
             } else {
                 onResolve.doOnce {
-                    block(resolve() ?: throw IllegalStateException("Placeholder $placeholder could not be resolved"))
+                    val resolved = cachedValue ?: resolver()
+                    if (resolved != null) {
+                        cachedValue = resolved
+                        block(resolved)
+                    } else {
+                        throw IllegalStateException("Placeholder $placeholder could not be resolved")
+                    }
                 }
             }
         }

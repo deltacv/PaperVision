@@ -182,8 +182,6 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
                     tr("err_musthave_attachedattrib")
                 )
 
-                linkedAttrib.parentNode.genCodeIfNecessary(current)
-
                 val value = linkedAttrib.genValue(current)
                 raiseAssert(checkConsumer(value), tr("err_attachedattrib_isnot", name))
 
