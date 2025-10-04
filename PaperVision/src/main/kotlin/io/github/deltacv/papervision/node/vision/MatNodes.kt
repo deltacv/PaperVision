@@ -203,7 +203,7 @@ class OutputMatNode @JvmOverloads constructor(
                     if (crosshair.allLinkedAttributes.isNotEmpty()) {
                         val crosshairValue = crosshair.genValue(current)
 
-                        ifCondition((crosshairValue.value.v notEqualsTo nullVal)) {
+                        ifCondition((crosshairValue.value.v notEqualsTo nullValue)) {
                             val boundingRect = uniqueVariable("boundingRect", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, crosshairValue.value.v))
                             local(boundingRect)
 
@@ -299,6 +299,12 @@ class OutputMatNode @JvmOverloads constructor(
                     local(llpython)
 
                     separate()
+
+                    val crosshairValueV = if (crosshair.allLinkedAttributes.isNotEmpty()) {
+                        crosshair.genValue(current).value.v
+                    } else {
+                        nullValue
+                    }
 
                     returnMethod(CPythonLanguage.tuple(crosshairValue.value.v, inputValue.value.v, llpython))
                     appendWhiteline = false

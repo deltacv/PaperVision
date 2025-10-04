@@ -50,10 +50,10 @@ open class LanguageContext(val language: Language) {
 
     val VoidType get() = language.VoidType
 
-    val nullVal = language.nullValue
+    val nullValue = language.nullValue
 
-    val Type.nullVal get() = language.nullVal(this)
-    val Value.nullVal get() = type.nullVal
+    val Type.nullValue get() = language.nullVal(this)
+    val Value.nullValue get() = type.nullValue
 
     infix fun Value.lessThan(right: Value) = language.lessThan(this, right)
     infix fun Value.lessOrEqualThan(right: Value) = language.lessOrEqualThan(this, right)

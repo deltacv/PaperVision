@@ -59,7 +59,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
 
                 val contoursList = input.genValue(current)
 
-                val biggestContour = uniqueVariable("biggestContour", JvmOpenCvTypes.MatOfPoint.nullVal) // TODO: huh???
+                val biggestContour = uniqueVariable("biggestContour", JvmOpenCvTypes.MatOfPoint.nullValue) // TODO: huh???
 
                 group {
                     private(biggestContour)
@@ -68,7 +68,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                 current.scope {
                     nameComment()
 
-                    biggestContour instanceSet biggestContour.nullVal
+                    biggestContour instanceSet biggestContour.nullValue
 
                     if(contoursList is GenValue.GList.RuntimeListOf<*>) {
                         foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), contoursList.value.v) { contour ->
@@ -76,7 +76,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                             val biggestContourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, biggestContour)
 
                             ifCondition(
-                                biggestContour equalsTo biggestContour.nullVal or (contourArea greaterThan biggestContourArea)
+                                biggestContour equalsTo biggestContour.nullValue or (contourArea greaterThan biggestContourArea)
                             ) {
                                 biggestContour instanceSet contour
                             }
@@ -96,7 +96,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                                 val biggestContourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, biggestContour)
 
                                 ifCondition(
-                                    biggestContour equalsTo biggestContour.nullVal or (contourArea greaterThan biggestContourArea)
+                                    biggestContour equalsTo biggestContour.nullValue or (contourArea greaterThan biggestContourArea)
                                 ) {
                                     biggestContour instanceSet contour
                                 }

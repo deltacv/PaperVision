@@ -152,10 +152,11 @@ object CPythonLanguage : LanguageBase(
         type, "${from.value}[${index.value}]"
     )
 
-    override fun block(start: String, body: Scope, tabs: String): String {
-        val bodyStr = body.get()
+    override fun block(start: String, body: Scope, indent: Int): String {
+        val bodyStr = body.get().trimIndent().prependIndent("\t".repeat(indent + 1))
+        val startIndent = "\t".repeat(indent)
 
-        return "$tabs${start.trim()}:\n$bodyStr"
+        return "$startIndent${start.trim()}:\n$bodyStr"
     }
 
     override fun importDeclaration(importPath: String, className: String) =
@@ -169,7 +170,7 @@ object CPythonLanguage : LanguageBase(
 
     override fun gen(codeGen: CodeGen): String = codeGen.run {
         val mainScope = Scope(0, language, importScope)
-        val classBodyScope = Scope(1, language, importScope)
+        val classBodyScope = Scope(0, language, importScope)
 
         val start = classStartScope.get()
         if(start.isNotBlank()) {
@@ -179,7 +180,7 @@ object CPythonLanguage : LanguageBase(
 
         val init = initScope.get()
         if(init.isNotBlank()) {
-            classBodyScope.scope(initScope)
+            classBodyScope.scope(initScope, indentOverride = 0)
             classBodyScope.newStatement()
         }
 
@@ -196,7 +197,7 @@ object CPythonLanguage : LanguageBase(
         mainScope.write(importScopePlaceholder.placeholder)
         mainScope.newStatement()
 
-        mainScope.scope(classBodyScope, trimIndent = true)
+        mainScope.scope(classBodyScope, indentOverride = 0)
 
         mainScope.get()
     }

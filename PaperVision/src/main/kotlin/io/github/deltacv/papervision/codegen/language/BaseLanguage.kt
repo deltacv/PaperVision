@@ -214,11 +214,13 @@ open class LanguageBase(
 
     override fun enumClassDeclaration(name: String, vararg values: String) = "enum $name { ${values.csv() } "
 
-    override fun block(start: String, body: Scope, tabs: String): String {
-        val bodyStr = body.get()
+    override fun block(start: String, body: Scope, indent: Int): String {
+        val bodyStr = body.get().trimIndent().prependIndent("\t".repeat(indent + 1))
         val endWhitespaceLine = if(!bodyStr.endsWith("\n")) "\n" else ""
 
-        return "$tabs${start.trim()} {\n$bodyStr$endWhitespaceLine$tabs}"
+        val startIndent = "\t".repeat(indent)
+
+        return "$startIndent${start.trim()} {\n$bodyStr$endWhitespaceLine$startIndent}"
     }
 
     open fun importDeclaration(importPath: String, className: String) = "import ${importPath}.${className}${semicolonIfNecessary()}"
@@ -317,7 +319,7 @@ open class LanguageBase(
         if(genInClass) {
             mainScope.clazz(Visibility.PUBLIC, className.toValidIdentifier(), classBodyScope, extends = pipelineClass)
         } else {
-            mainScope.scope(classBodyScope, trimIndent = true)
+            mainScope.scope(classBodyScope, indentOverride = 0)
         }
 
         mainScope.get()

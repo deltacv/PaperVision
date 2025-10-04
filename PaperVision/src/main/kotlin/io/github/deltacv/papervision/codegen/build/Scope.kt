@@ -181,14 +181,15 @@ class Scope(
             importType(parameter.type)
         }
 
-        builder.append(language.block(language.constructorDeclaration(vis, className, *parameters), body, tabs))
+        builder.append(language.block(language.constructorDeclaration(vis, className, *parameters), body, tabsCount))
     }
 
     fun method(
         vis: Visibility, returnType: Type, name: String, body: Scope,
         vararg parameters: Parameter,
         isStatic: Boolean = false, isFinal: Boolean = false,
-        isSynchronized: Boolean = false, isOverride: Boolean = false
+        isSynchronized: Boolean = false, isOverride: Boolean = false,
+        indentOverride: Int? = null
     ) {
         newLineIfNotBlank()
 
@@ -207,7 +208,7 @@ class Scope(
             }
         }
 
-        builder.append(language.block(methodDeclaration.second, body, tabs))
+        builder.append(language.block(methodDeclaration.second, body, indentOverride ?: tabsCount))
     }
 
     fun beforeReturning(block: (Scope) -> Unit) {
@@ -237,7 +238,7 @@ class Scope(
 
         builder.append(language.block(
             language.classDeclaration(vis, name, body, extends, *implements, isStatic = isStatic, isFinal = isFinal),
-            body, tabs
+            body, tabsCount
         ))
     }
 
@@ -249,7 +250,7 @@ class Scope(
 
     private fun block(block: String, scope: Scope) {
         newStatement()
-        builder.append(language.block(block, scope, tabs))
+        builder.append(language.block(block, scope, tabsCount))
     }
 
     fun ifCondition(condition: Condition, scope: Scope) = block(language.ifStatementDeclaration(condition), scope)
@@ -271,12 +272,12 @@ class Scope(
         block(language.forLoopDeclaration(variable, start, max, step), scope)
     }
 
-    fun scope(scope: Scope, trimIndent: Boolean = false) {
+    fun scope(scope: Scope, indentOverride: Int? = null) {
         newLineIfNotBlank()
 
         builder.append(
-            if(trimIndent)
-                scope.toString().trimIndent()
+            if(indentOverride != null && indentOverride >= 0)
+                scope.toString().trimIndent().prependIndent("\t".repeat(indentOverride))
             else scope.toString()
         )
     }

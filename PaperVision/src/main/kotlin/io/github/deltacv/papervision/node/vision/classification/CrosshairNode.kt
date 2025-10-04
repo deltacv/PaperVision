@@ -195,7 +195,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                     }
 
                     val closestContour = if(detectionMode.genValue(current).value == DetectionMode.Nearest) {
-                        uniqueVariable("closestContour", JvmOpenCvTypes.MatOfPoint.nullVal)
+                        uniqueVariable("closestContour", JvmOpenCvTypes.MatOfPoint.nullValue)
                     } else {
                         null
                     }
@@ -241,7 +241,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                                 local(distance)
 
-                                ifCondition((closestContour!! equalsTo JvmOpenCvTypes.MatOfPoint.nullVal) or (JavaTypes.Math.callValue("abs", DoubleType, distance) lessOrEqualThan currDist!!)) {
+                                ifCondition((closestContour!! equalsTo JvmOpenCvTypes.MatOfPoint.nullValue) or (JavaTypes.Math.callValue("abs", DoubleType, distance) lessOrEqualThan currDist!!)) {
                                     currDist set JavaTypes.Math.callValue("abs", DoubleType, distance)
                                     closestContour set it
                                 }
@@ -250,7 +250,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                     }
 
                     if(DetectionMode.Nearest == detectionMode.genValue(current).value) {
-                        ifCondition(closestContour!! notEqualsTo JvmOpenCvTypes.MatOfPoint.nullVal) {
+                        ifCondition(closestContour!! notEqualsTo JvmOpenCvTypes.MatOfPoint.nullValue) {
                             crosshair("add", closestContour)
                         }
                     }

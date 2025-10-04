@@ -59,7 +59,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
 
                 val rectsList = input.genValue(current)
 
-                val biggestRect = uniqueVariable("biggestRect", JvmOpenCvTypes.Rect.nullVal)
+                val biggestRect = uniqueVariable("biggestRect", JvmOpenCvTypes.Rect.nullValue)
 
                 group {
                     private(biggestRect)
@@ -68,12 +68,12 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                 current.scope {
                     nameComment()
 
-                    biggestRect instanceSet biggestRect.nullVal
+                    biggestRect instanceSet biggestRect.nullValue
 
                     fun ScopeContext.withRuntimeRect(rect: Value) {
                         ifCondition(rect notEqualsTo language.nullValue) {
                             ifCondition(
-                                biggestRect equalsTo biggestRect.nullVal or
+                                biggestRect equalsTo biggestRect.nullValue or
                                         (rect.callValue("area", DoubleType) greaterThan biggestRect.callValue("area", DoubleType))
                             ) {
                                 biggestRect instanceSet rect
@@ -102,7 +102,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                                 local(rect)
 
                                 ifCondition(
-                                    biggestRect equalsTo biggestRect.nullVal or (rect.callValue("area", DoubleType) greaterThan biggestRect.callValue("area", DoubleType))
+                                    biggestRect equalsTo biggestRect.nullValue or (rect.callValue("area", DoubleType) greaterThan biggestRect.callValue("area", DoubleType))
                                 ) {
                                     biggestRect instanceSet rect
                                 }

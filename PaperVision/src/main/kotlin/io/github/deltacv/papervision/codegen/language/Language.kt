@@ -107,7 +107,7 @@ interface Language : ValueBuilder {
 
     fun comment(text: String): String
 
-    fun block(start: String, body: Scope, tabs: String): String
+    fun block(start: String, body: Scope, indent: Int): String
 
     fun gen(codeGen: CodeGen): String
 
