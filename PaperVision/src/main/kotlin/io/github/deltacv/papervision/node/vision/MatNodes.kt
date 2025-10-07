@@ -274,7 +274,6 @@ class OutputMatNode @JvmOverloads constructor(
         generatorFor(CPythonLanguage) {
             current {
                 val inputValue = input.genValue(current)
-                val crosshairValue = crosshair.genValue(current)
                 val dataValue = exportedData.genValue(current)
 
                 current.scope {
@@ -306,7 +305,7 @@ class OutputMatNode @JvmOverloads constructor(
                         nullValue
                     }
 
-                    returnMethod(CPythonLanguage.tuple(crosshairValue.value.v, inputValue.value.v, llpython))
+                    returnMethod(CPythonLanguage.tuple(crosshairValueV, inputValue.value.v, llpython))
                     appendWhiteline = false
                 }
 
