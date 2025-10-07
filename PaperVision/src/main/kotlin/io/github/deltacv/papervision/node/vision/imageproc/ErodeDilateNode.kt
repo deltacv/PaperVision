@@ -77,7 +77,7 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                 val dilateVal = erodeValue.genValue(current)
                 val dilateValVariable = uniqueVariable("dilateValue", int(dilateVal.value.v))
 
-                val element = uniqueVariable("element", JvmOpenCvTypes.Mat.nullVal)
+                val element = uniqueVariable("element", JvmOpenCvTypes.Mat.nullValue)
 
                 val output = uniqueVariable("${input.value}ErodedDilated", JvmOpenCvTypes.Mat.new())
 

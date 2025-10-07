@@ -102,7 +102,7 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
                 val params = uniqueVariable("blobDetectorParams", JvmOpenCvTypes.SimpleBlobDetector.Params.new())
 
                 val detector = uniqueVariable("detector",
-                    JvmOpenCvTypes.SimpleBlobDetector.nullVal
+                    JvmOpenCvTypes.SimpleBlobDetector.nullValue
                 )
                 val keyPoints = uniqueVariable("keyPoints",
                     JvmOpenCvTypes.MatOfKeyPoint.new()

@@ -137,10 +137,11 @@ object JythonLanguage : LanguageBase(
 
     override fun arraySize(array: Value) = ConValue(IntType, "len(${array.value})")
 
-    override fun block(start: String, body: Scope, tabs: String): String {
-        val bodyStr = body.get()
+    override fun block(start: String, body: Scope, indent: Int): String {
+        val bodyStr = body.get().trimIndent().prependIndent("\t".repeat(indent + 1))
+        val startIndent = "\t".repeat(indent)
 
-        return "$tabs${start.trim()}:\n$bodyStr"
+        return "$startIndent${start.trim()}:\n$bodyStr"
     }
 
     override fun importDeclaration(importPath: String, className: String) =

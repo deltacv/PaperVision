@@ -137,10 +137,11 @@ object LuaLanguage : LanguageBase(
 
     override fun arraySize(array: Value) = ConValue(IntType, "#${array.value}")
 
-    override fun block(start: String, body: Scope, tabs: String): String {
-        val bodyStr = body.get()
+    override fun block(start: String, body: Scope, indent: Int): String {
+        val bodyStr = body.get().trimIndent().prependIndent("\t".repeat(indent + 1))
+        val startIndent = "\t".repeat(indent)
 
-        return "$tabs$start\n$bodyStr\n${tabs}end"
+        return "$startIndent$start\n$bodyStr\n${startIndent}end"
     }
 
     override fun importDeclaration(importPath: String, className: String) =
