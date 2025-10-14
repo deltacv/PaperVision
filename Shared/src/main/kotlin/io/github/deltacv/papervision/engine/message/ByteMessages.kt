@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.engine.message
 
 import java.nio.ByteBuffer
 
-open class ByteMessageTag(val tag: ByteArray) {
+open class ByteMessageTag(val content: ByteArray) {
     companion object {
         fun fromString(tag: String) = ByteMessageTag(tag.toByteArray(Charsets.UTF_8))
     }
@@ -31,12 +31,12 @@ open class ByteMessageTag(val tag: ByteArray) {
 
         other as ByteMessageTag
 
-        return tag.contentEquals(other.tag)
+        return content.contentEquals(other.content)
     }
 
-    override fun toString() = tag.toString(Charsets.UTF_8)
+    override fun toString() = content.toString(Charsets.UTF_8)
 
-    override fun hashCode() = tag.contentHashCode()
+    override fun hashCode() = content.contentHashCode()
 }
 
 /**

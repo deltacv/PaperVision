@@ -17,7 +17,7 @@ buildscript {
         logback_classic_version = "1.5.8"
 
         Penv = findProperty('env')
-        if(Penv != null && (Penv != 'dev' && Penv != 'release')) {
+        if(Penv != null && (Penv != 'dev' && Penv != 'release')) {\
             throw new GradleException("Invalid env property, must be 'dev' or 'release'")
         }
 
