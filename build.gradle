@@ -39,7 +39,7 @@ buildscript {
 
 allprojects {
     group 'org.deltacv.PaperVision'
-    version '1.0.9'
+    version '1.0.10'
 
     ext {
         standardVersion = version

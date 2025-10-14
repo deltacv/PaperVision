@@ -38,6 +38,7 @@ import org.openftc.easyopencv.MatRecycler
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import java.util.concurrent.RejectedExecutionException
+import kotlin.concurrent.getOrSet
 import kotlin.math.roundToInt
 
 class EOCVSimEngineImageStreamer(
@@ -58,6 +59,8 @@ class EOCVSimEngineImageStreamer(
             }
         }
     }
+
+    private val fallbackMatOfByte = ThreadLocal<MatOfByte>()
 
     private val ids = mutableMapOf<Int, Long>()
 
@@ -152,8 +155,9 @@ class EOCVSimEngineImageStreamer(
                     ) ?: return@submit
 
                     try {
-                        try {
+                        val jpegSize = try {
                             compressor.compress(jpegBuffer)
+                            compressor.compressedSize // jpegSize
                         } catch (e: JPEGException) {
                             // only report once, to avoid spamming the logs
                             // report every 5 seconds that "the issue is still present"
@@ -165,16 +169,16 @@ class EOCVSimEngineImageStreamer(
                             }
 
                             // fallback to opencv !?
-                            val bytes = MatOfByte()
+                            val bytes = fallbackMatOfByte.getOrSet { MatOfByte() }
 
                             Imgcodecs.imencode(".jpg", targetImage, bytes)
                             bytes.get(0, 0, jpegBuffer)
 
-                            bytes.release()
+                            fallbackMatOfByte.get()?.total()?.toInt() ?: 0 // jpegSize
                         }
 
                         // offset jpeg data to leave space for the header
-                        System.arraycopy(jpegBuffer, 0, jpegBuffer, 4 + tag.content.size + 4, compressor.compressedSize)
+                        System.arraycopy(jpegBuffer, 0, jpegBuffer, 4 + tag.content.size + 4, jpegSize)
 
                         // append header to jpegBuffer, uses a ByteBuffer for convenience
                         val byteMessageBuffer = ByteBuffer.wrap(jpegBuffer)
