@@ -157,6 +157,7 @@ class EOCVSimEngineImageStreamer(
                     try {
                         val jpegSize = try {
                             compressor.compress(jpegBuffer)
+
                             compressor.compressedSize // jpegSize
                         } catch (e: JPEGException) {
                             // only report once, to avoid spamming the logs
@@ -171,6 +172,7 @@ class EOCVSimEngineImageStreamer(
                             // fallback to opencv !?
                             val bytes = fallbackMatOfByte.getOrSet { MatOfByte() }
 
+                            Imgproc.cvtColor(targetImage, targetImage, Imgproc.COLOR_RGB2BGR)
                             Imgcodecs.imencode(".jpg", targetImage, bytes)
                             bytes.get(0, 0, jpegBuffer)
 
