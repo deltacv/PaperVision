@@ -30,6 +30,7 @@ import io.github.deltacv.vision.external.util.extension.clipTo
 import org.deltacv.mackjpeg.MackJPEG
 import org.deltacv.mackjpeg.PixelFormat
 import org.deltacv.mackjpeg.exception.JPEGException
+import org.libjpegturbo.turbojpeg.TJ
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
@@ -37,8 +38,8 @@ import org.openftc.easyopencv.MatRecycler
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 import java.util.concurrent.RejectedExecutionException
+import kotlin.concurrent.getOrSet
 import kotlin.math.roundToInt
-import kotlin.text.startsWith
 
 class EOCVSimEngineImageStreamer(
     val previzNameProvider: () -> String,
@@ -59,6 +60,8 @@ class EOCVSimEngineImageStreamer(
         }
     }
 
+    private val fallbackMatOfByte = ThreadLocal<MatOfByte>()
+
     private val ids = mutableMapOf<Int, Long>()
 
     private val latestMatMap = mutableMapOf<Int, Mat>()
@@ -73,6 +76,9 @@ class EOCVSimEngineImageStreamer(
 
     private val bufferPool = ReusableBufferPool(5)
     private val matRecycler = MatRecycler(10)
+
+    private val reportedJpegExceptions = mutableSetOf<String>()
+    private val reportedJpegExceptionsCleanup = ElapsedTime()
 
     val tag by lazy { ByteMessageTag.fromString(previzNameProvider()) }
 
@@ -144,33 +150,43 @@ class EOCVSimEngineImageStreamer(
                     compressor.setQuality(streamQualityFormula(id).coerceIn(1, 100))
 
                     val jpegBuffer = bufferPool.getOrCreate(
-                        width * height * 3 / 4, // rough rounded estimate of max jpeg size
+                        TJ.bufSize(width, height, TJ.SAMP_420), // hope this is enough
                         ReusableBufferPool.MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
                     ) ?: return@submit
 
                     try {
-                        try {
+                        val jpegSize = try {
                             compressor.compress(jpegBuffer)
-                        } catch (e: JPEGException) {
-                            // fallback to opencv !?
-                            val bytes = MatOfByte()
 
+                            compressor.compressedSize // jpegSize
+                        } catch (e: JPEGException) {
+                            // only report once, to avoid spamming the logs
+                            // report every 5 seconds that "the issue is still present"
+                            if (reportedJpegExceptions.add(e.message ?: "unknown")) {
+                                logger.error("MackJPEG compression error, falling back to OpenCV for id=$id: ${e.message}", e)
+                            } else if (reportedJpegExceptionsCleanup.seconds() >= 5.0) {
+                                reportedJpegExceptionsCleanup.reset()
+                                logger.warn("MackJPEG compression error still present for id=$id: ${e.message}")
+                            }
+
+                            // fallback to opencv !?
+                            val bytes = fallbackMatOfByte.getOrSet { MatOfByte() }
+
+                            Imgproc.cvtColor(targetImage, targetImage, Imgproc.COLOR_RGB2BGR)
                             Imgcodecs.imencode(".jpg", targetImage, bytes)
                             bytes.get(0, 0, jpegBuffer)
 
-                            bytes.release()
-
-                            return@submit
+                            fallbackMatOfByte.get()?.total()?.toInt() ?: 0 // jpegSize
                         }
 
                         // offset jpeg data to leave space for the header
-                        System.arraycopy(jpegBuffer, 0, jpegBuffer, 4 + tag.tag.size + 4, compressor.compressedSize)
+                        System.arraycopy(jpegBuffer, 0, jpegBuffer, 4 + tag.content.size + 4, jpegSize)
 
                         // append header to jpegBuffer, uses a ByteBuffer for convenience
                         val byteMessageBuffer = ByteBuffer.wrap(jpegBuffer)
 
-                        byteMessageBuffer.putInt(tag.tag.size) // tag size
-                        byteMessageBuffer.put(tag.tag) // tag
+                        byteMessageBuffer.putInt(tag.content.size) // tag size
+                        byteMessageBuffer.put(tag.content) // tag
                         byteMessageBuffer.putInt(id) // id
                         // data is already in place thanks to the System.arraycopy above
 
