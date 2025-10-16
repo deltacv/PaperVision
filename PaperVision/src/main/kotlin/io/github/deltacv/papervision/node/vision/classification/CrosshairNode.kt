@@ -20,7 +20,6 @@ package io.github.deltacv.papervision.node.vision.classification
 
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.math.IntAttribute
-import io.github.deltacv.papervision.attribute.misc.EnumAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
