@@ -4,7 +4,7 @@ import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.mai18n.tr
-import io.github.deltacv.papervision.gui.util.Window
+import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.flags
 

@@ -18,7 +18,7 @@
 
 package io.github.deltacv.papervision.node
 
-import io.github.deltacv.papervision.gui.CategorizedNodes
+import io.github.deltacv.papervision.gui.editor.CategorizedNodes
 import io.github.deltacv.papervision.util.hasSuperclass
 
 @Suppress("UNCHECKED_CAST")

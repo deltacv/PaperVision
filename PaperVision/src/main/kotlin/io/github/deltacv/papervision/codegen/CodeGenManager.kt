@@ -27,9 +27,10 @@ import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.exception.AttributeGenException
 import io.github.deltacv.papervision.exception.NodeGenException
 import io.github.deltacv.papervision.gui.ToastWindow
-import io.github.deltacv.papervision.gui.util.DialogMessageWindow
-import io.github.deltacv.papervision.gui.util.Popup
-import io.github.deltacv.papervision.gui.util.TooltipPopup
+import io.github.deltacv.papervision.gui.DialogMessageWindow
+import io.github.deltacv.papervision.gui.Popup
+import io.github.deltacv.papervision.gui.TooltipPopup
+import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.node.DrawNode
@@ -112,7 +113,7 @@ class CodeGenManager(val paperVision: PaperVision) {
                 tr("win_codegen_error"),
                 tr("mis_codegen_error"),
                 ex.stackTraceToString(),
-                font = paperVision.defaultFontBig
+                font = Font.find("calcutta-big")
             ).enable()
 
             logger.error("Code gen stopped due to unknown exception", ex)
@@ -142,7 +143,7 @@ class CodeGenManager(val paperVision: PaperVision) {
             tr("mis_codegen_errortoast")
         }
 
-        ToastWindow(toast, 5.0, font = paperVision.defaultFontBig).enable()
+        ToastWindow(toast, 5.0, font = Font.find("calcutta-big")).enable()
     }
 
 }

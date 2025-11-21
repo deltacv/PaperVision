@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.gui
+package io.github.deltacv.papervision.gui.editor
 
 import imgui.ImGui
 import imgui.ImVec2
@@ -25,9 +25,9 @@ import imgui.extension.texteditor.TextEditorLanguageDefinition
 import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.codegen.language.Language
-import io.github.deltacv.papervision.gui.util.TooltipPopup
-import io.github.deltacv.papervision.gui.util.Window
-import io.github.deltacv.papervision.platform.PlatformFileChooserResult
+import io.github.deltacv.papervision.gui.ToastWindow
+import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.platform.PlatformFileFilter
 import io.github.deltacv.papervision.platform.PlatformWindow
 import io.github.deltacv.papervision.util.flags
@@ -39,11 +39,12 @@ class CodeDisplayWindow(
     val name: String,
     val codeGenLanguage: Language,
     val editorLanguage: TextEditorLanguageDefinition,
-    val platformWindow: PlatformWindow,
-    val codeFont: Font? = null,
-    val buttonsFont: Font? = null
+    val platformWindow: PlatformWindow
 ) : Window() {
     override var title = "Code"
+
+    val codeFont = Font.find("jetbrains-mono")
+    val buttonsFont = Font.find("calcutta-big")
 
     override val windowFlags = flags(
         ImGuiWindowFlags.NoResize,
@@ -69,7 +70,7 @@ class CodeDisplayWindow(
     }
 
     override fun drawContents() {
-        codeFont?.let {
+        codeFont.let {
             ImGui.pushFont(it.imfont)
         }
 
@@ -82,11 +83,11 @@ class CodeDisplayWindow(
 
         ImGui.endChild()
 
-        codeFont?.let {
+        codeFont.let {
             ImGui.popFont()
         }
 
-        buttonsFont?.let {
+        buttonsFont.let {
             ImGui.pushFont(it.imfont)
         }
 
@@ -111,7 +112,7 @@ class CodeDisplayWindow(
             )
         }
 
-        buttonsFont?.let {
+        buttonsFont.let {
             ImGui.popFont()
         }
     }

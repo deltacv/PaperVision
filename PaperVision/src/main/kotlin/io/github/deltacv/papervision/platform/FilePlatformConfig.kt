@@ -9,15 +9,15 @@ open class FilePlatformConfig(
     val path: String
 ) : PlatformConfig() {
 
-    val gson = GsonBuilder().setPrettyPrinting().create()
+    private val gson = GsonBuilder().setPrettyPrinting().create()
     val file = File(path)
 
     val logger by loggerForThis()
 
     init {
-        Runtime.getRuntime().addShutdownHook(Thread {
+        Runtime.getRuntime().addShutdownHook(Thread({
             save()
-        })
+        }, "PlatformConfig-ShutdownHook"))
     }
 
     override fun load() {

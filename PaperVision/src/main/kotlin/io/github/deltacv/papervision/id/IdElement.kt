@@ -22,20 +22,99 @@ interface IdElement {
     val id: Int
 }
 
-interface DrawableIdElement : IdElement {
-
-    fun draw()
-
-    fun delete()
-
-    fun restore()
-
-    fun onEnable() { }
-
+interface StatedIdElement : IdElement {
     fun enable()
+    fun delete()
+    fun restore()
+    fun onEnable() { }
+}
 
+// Internal helper class to encapsulate the common logic
+internal class IdElementState<T: IdElement>(
+    private val idElementContainer: IdElementContainer<T>,
+    private val requestedId: Int?,
+    private val self: T,
+    private val onEnableCallback: () -> Unit
+) {
+    var hasEnabled = false
+        private set
+
+    private var internalId: Int? = null
+
+    val id: Int
+        get() {
+            if (internalId == null) {
+                enable()
+            }
+            return internalId!!
+        }
+
+    val isEnabled: Boolean
+        get() = internalId?.let { idElementContainer.has(it, self) } ?: false
+
+    fun enable() {
+        if (internalId == null) {
+            internalId = provideId()
+            onEnableCallback()
+            hasEnabled = true
+        } else if (!idElementContainer.has(internalId!!, self)) {
+            onEnableCallback()
+            hasEnabled = true
+        }
+    }
+
+    private fun provideId() =
+        if (requestedId == null) {
+            idElementContainer.nextId(self).value
+        } else {
+            idElementContainer.requestId(self, requestedId).value
+        }
+
+    fun delete() {
+        internalId?.let { idElementContainer.removeId(it) }
+    }
+
+    fun restore() {
+        internalId?.let { idElementContainer[it] = self }
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+abstract class StatedIdElementBase<T : StatedIdElementBase<T>> : StatedIdElement {
+
+    abstract val idElementContainer: IdElementContainer<T>
+
+    open val requestedId: Int? = null
+
+    private val state by lazy {
+        IdElementState(
+            idElementContainer,
+            requestedId,
+            this as T,
+            ::onEnable
+        )
+    }
+
+    var hasEnabled: Boolean
+        get() = state.hasEnabled
+        private set(_) {}
+
+    val isEnabled: Boolean
+        get() = state.isEnabled
+
+    override val id: Int
+        get() = state.id
+
+    override fun enable() = state.enable()
+
+    override fun delete() = state.delete()
+
+    override fun restore() = state.restore()
+}
+
+interface DrawableIdElement : StatedIdElement {
+    fun draw()
     fun pollChange(): Boolean
-
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -43,46 +122,34 @@ abstract class DrawableIdElementBase<T : DrawableIdElementBase<T>> : DrawableIdE
 
     abstract val idElementContainer: IdElementContainer<T>
 
-    var hasEnabled = false
-        private set
-
-    val isEnabled get() = idElementContainer.has(id, this as T)
-
     open val requestedId: Int? = null
 
-    private var internalId: Int? = null
-
-    override val id: Int get() {
-        if(internalId == null) {
-            enable()
-        }
-
-        return internalId!!
+    private val state by lazy {
+        IdElementState(
+            idElementContainer,
+            requestedId,
+            this as T,
+            ::onEnable
+        )
     }
 
-    override fun enable() {
-        if(internalId == null || !idElementContainer.has(id, this as T)) {
-            internalId = provideId()
-            onEnable()
-            hasEnabled = true
-        }
-    }
+    var hasEnabled: Boolean
+        get() = state.hasEnabled
+        private set(_) {}
 
-    protected open fun provideId() =
-        if(requestedId == null) {
-            idElementContainer.nextId(this as T).value
-        } else idElementContainer.requestId(this as T, requestedId!!).value
+    val isEnabled: Boolean
+        get() = state.isEnabled
 
-    override fun delete() {
-        idElementContainer.removeId(id)
-    }
+    override val id: Int
+        get() = state.id
 
-    override fun restore() {
-        idElementContainer[id] = this as T
-    }
+    override fun enable() = state.enable()
+
+    override fun delete() = state.delete()
+
+    override fun restore() = state.restore()
 
     override fun pollChange() = false
-
 }
 
 object Misc : IdElement {

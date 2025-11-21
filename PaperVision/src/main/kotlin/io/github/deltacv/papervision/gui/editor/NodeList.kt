@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.gui
+package io.github.deltacv.papervision.gui.editor
 
 import imgui.*
 import imgui.extension.imnodes.ImNodes
@@ -26,10 +26,12 @@ import imgui.flag.*
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.Attribute
+import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.opacity
-import io.github.deltacv.papervision.gui.util.FrameWidthWindow
-import io.github.deltacv.papervision.gui.util.Table
-import io.github.deltacv.papervision.gui.util.Window
+import io.github.deltacv.papervision.gui.FrameWidthWindow
+import io.github.deltacv.papervision.gui.Table
+import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.id.IdElementContainer
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.io.KeyManager
@@ -39,6 +41,7 @@ import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
 import io.github.deltacv.papervision.util.loggerForThis
+import kotlin.collections.iterator
 
 typealias CategorizedNodes = Map<Category, MutableList<Class<out Node<*>>>>
 
@@ -98,6 +101,8 @@ class NodeList(
         ImGuiWindowFlags.NoDecoration
     )
 
+    private val defaultFontBig = Font.find("calcutta-big")
+
     override fun onEnable() {
         paperVision.onUpdate {
             if (isCompletelyDeleted) {
@@ -108,7 +113,7 @@ class NodeList(
         }
 
         floatingButton =
-            FloatingButton(this, paperVision.window, paperVision.defaultFontBig, paperVision.fontAwesomeBig)
+            FloatingButton(this, paperVision.window)
         floatingButton.enable()
 
         floatingButton.onPressed {
@@ -122,7 +127,7 @@ class NodeList(
         IdElementContainerStack.local.push(listNodes)
         IdElementContainerStack.local.push(listAttributes)
 
-        headers = Headers(keyManager, paperVision.defaultFontBig) { nodes }
+        headers = Headers(keyManager, defaultFontBig) { nodes }
 
         IdElementContainerStack.local.pop<Node<*>>()
         IdElementContainerStack.local.pop<Attribute>()
@@ -202,7 +207,7 @@ class NodeList(
 
                         if (highlighted) {
                             if (node.description != null && hoveredNode == node.id) {
-                                ImGui.pushFont(paperVision.defaultFontBig.imfont)
+                                ImGui.pushFont(defaultFontBig.imfont)
 
                                 ImGui.beginTooltip()
                                 ImGui.textUnformatted(tr(node.description!!))
@@ -242,7 +247,6 @@ class NodeList(
                             imGuiPushColorCount++
                         }
 
-                        node.fontAwesome = paperVision.fontAwesome
                         node.draw()
 
                         if (!drawnNodes.contains(node.id)) {
@@ -440,8 +444,6 @@ class NodeList(
     class FloatingButton(
         val nodeList: NodeList,
         val window: PlatformWindow,
-        val defaultFontBig: Font,
-        val fontAwesome: Font,
     ) : FrameWidthWindow() {
 
         override var title = "floating"
@@ -450,6 +452,9 @@ class NodeList(
             ImGuiWindowFlags.NoDecoration, ImGuiWindowFlags.NoMove,
             ImGuiWindowFlags.AlwaysAutoResize
         )
+
+        val defaultFontBig = Font.find("calcutta-big")
+        val fontAwesome = Font.find("font-awesome-big")
 
         private var lastButton = false
         private val hoveringPlusTime = ElapsedTime()
@@ -473,7 +478,6 @@ class NodeList(
 
             val button =
                 ImGui.button(if (nodeList.isNodesListOpen) "x" else FontAwesomeIcons.Plus, frameWidth, frameWidth)
-
             ImGui.popFont()
 
             if (ImGui.isItemHovered()) {

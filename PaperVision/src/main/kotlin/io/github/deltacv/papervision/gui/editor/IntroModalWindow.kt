@@ -1,20 +1,18 @@
-package io.github.deltacv.papervision.gui
+package io.github.deltacv.papervision.gui.editor
 
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.mai18n.tr
-import io.github.deltacv.papervision.gui.util.Window
-import io.github.deltacv.papervision.gui.util.alignForWidth
-import io.github.deltacv.papervision.gui.util.centeredText
+import io.github.deltacv.papervision.gui.Window
+import io.github.deltacv.papervision.gui.alignForWidth
+import io.github.deltacv.papervision.gui.centeredText
+import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.io.resourceToString
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
 
 class IntroModalWindow(
-    val imguiFont: Font,
-    val monoFont: Font,
-    val defaultFontBig: Font,
     val nodeEditor: NodeEditor,
     chooseLanguage: Boolean = nodeEditor.paperVision.setup.config.fields.shouldAskForLang
 ) : Window() {
@@ -27,6 +25,9 @@ class IntroModalWindow(
         ImGuiWindowFlags.NoCollapse,
         ImGuiWindowFlags.HorizontalScrollbar
     )
+
+    private val imguiFont = Font.find("default-12")
+    private val monoFont = Font.find("jetbrains-mono")
 
     override val isModal = true
 
@@ -126,7 +127,7 @@ class IntroModalWindow(
             ImGui.sameLine()
 
             if (ImGui.button(tr("mis_guidedtour"))) {
-                GuidedTourWindow(defaultFontBig, nodeEditor).enable()
+                GuidedTourWindow(nodeEditor).enable()
                 delete()
             }
 

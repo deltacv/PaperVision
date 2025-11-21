@@ -25,9 +25,9 @@ import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.client.response.StringResponse
-import io.github.deltacv.papervision.gui.Font
-import io.github.deltacv.papervision.gui.FontAwesomeIcons
-import io.github.deltacv.papervision.gui.util.Window
+import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentInputSourceMessage
 import io.github.deltacv.papervision.plugin.ipc.message.GetInputSourcesMessage
 import io.github.deltacv.papervision.plugin.ipc.message.InputSourceData

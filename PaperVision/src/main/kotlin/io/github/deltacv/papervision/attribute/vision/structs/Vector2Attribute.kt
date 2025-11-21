@@ -26,7 +26,8 @@ import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.gui.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.math.Vector2Node
 
@@ -41,11 +42,13 @@ class Vector2Attribute (
         override fun new(mode: AttributeMode, variableName: String) = Vector2Attribute(mode, variableName)
     }
 
+    private val fontAwesome = Font.find("font-awesome")
+
     override fun drawAfterText() {
         if(mode == AttributeMode.INPUT) {
             ImGui.sameLine()
 
-            ImGui.pushFont(parentNode.fontAwesome.imfont)
+            ImGui.pushFont(fontAwesome.imfont)
 
             if(!hasLink && ImGui.button(FontAwesomeIcons.PencilAlt)) {
                 val node = parentNode.editor.addNode(Vector2Node::class.java)

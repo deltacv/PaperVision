@@ -22,13 +22,16 @@ import imgui.ImGui
 import io.github.deltacv.papervision.id.IdElement
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.engine.previz.ClientPrevizStream
+import io.github.deltacv.papervision.id.DrawableIdElementBase
+import io.github.deltacv.papervision.id.IdElementContainer
 
 class ImageDisplay(
     var clientPrevizStream: ClientPrevizStream
-) : IdElement {
-    override val id by IdElementContainerStack.local.peekNonNull<ImageDisplay>().nextId(this)
+) : DrawableIdElementBase<ImageDisplay>() {
 
-    fun drawStream() {
+    override val idElementContainer get() = IdElementContainerStack.local.peekNonNull<ImageDisplay>()
+
+    override fun draw() {
         clientPrevizStream.textureOf(id)?.draw()
 
         if (ImGui.isItemHovered() && ImGui.isMouseDoubleClicked(0)) {

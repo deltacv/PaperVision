@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.gui.util
+package io.github.deltacv.papervision.gui
 
 import imgui.ImGui
 import imgui.ImVec2
@@ -24,7 +24,7 @@ import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImBoolean
 import imgui.type.ImString
 import io.github.deltacv.mai18n.tr
-import io.github.deltacv.papervision.gui.Font
+import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.id.Misc

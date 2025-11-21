@@ -16,19 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.gui
+package io.github.deltacv.papervision.gui.util
 
 import imgui.ImFont
 import imgui.ImFontConfig
 import imgui.ImGui
-import io.github.deltacv.papervision.io.copyToTempFile
-import java.io.File
+import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.StatedIdElementBase
 
 class FontManager {
 
     val fonts = mutableMapOf<String, Font>()
 
     fun makeFont(
+        name: String,
         ttfPath: String,
         fontConfig: ImFontConfig,
         glyphRanges: ShortArray? = null
@@ -57,29 +58,34 @@ class FontManager {
             val font = Font(
                 imguiFont,
                 fontConfig,
+                name,
                 ttfPath,
                 fontConfig.sizePixels
             )
             fonts[hashName] = font
 
+            font.enable()
+
             return font
         }
     }
 
-    fun makeDefaultFont(size: Float): Font {
-        val name = "def-$size"
-        if(fonts.containsKey(name)) {
-            return fonts[name]!!
+    fun makeDefaultFont(size: Int): Font {
+        val key = "def-$size"
+        if(fonts.containsKey(key)) {
+            return fonts[key]!!
         }
 
         val fontConfig = ImFontConfig()
-        fontConfig.sizePixels = size
+        fontConfig.sizePixels = size.toFloat()
         fontConfig.oversampleH = 1
         fontConfig.oversampleV = 1
         fontConfig.pixelSnapH = false
 
-        val font = Font(ImGui.getIO().fonts.addFontDefault(fontConfig), fontConfig, null, size)
-        fonts[name] = font
+        val font = Font(ImGui.getIO().fonts.addFontDefault(fontConfig), fontConfig, "default-$size", null, size.toFloat())
+        fonts[key] = font
+
+        font.enable()
 
         return font
     }
@@ -89,9 +95,23 @@ class FontManager {
 class Font internal constructor(
     val imfont: ImFont,
     val fontConfig: ImFontConfig,
+    val name: String,
     val ttfPath: String?,
     val size: Float
-)
+) : StatedIdElementBase<Font>() {
+    override val idElementContainer get() = IdElementContainerStack.local.peekNonNull<Font>()
+    override val requestedId = name.hashCode()
+
+    companion object {
+        fun find(name: String): Font {
+            if(!IdElementContainerStack.local.peekNonNull<Font>().has(name)) {
+                throw IllegalArgumentException("Font $name not found")
+            }
+
+            return IdElementContainerStack.local.peekNonNull<Font>()[name]
+        }
+    }
+}
 
 fun defaultFontConfig(size: Float) = ImFontConfig().apply {
     oversampleH = 2

@@ -27,8 +27,8 @@ import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.*
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.exception.NodeGenException
-import io.github.deltacv.papervision.gui.Font
-import io.github.deltacv.papervision.gui.NodeEditor
+import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.editor.NodeEditor
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.node.vision.OutputMatNode
@@ -70,10 +70,6 @@ abstract class Node<S: CodeGenSession>(
 
     // will be set on NodeEditor#draw
     lateinit var editor: NodeEditor
-        internal set
-
-    // will be set on NodeEditor#draw or NodeList#draw
-    lateinit var fontAwesome: Font
         internal set
 
     val isOnEditor get() = ::editor.isInitialized && idElementContainer.contains(this)

@@ -23,9 +23,9 @@ import imgui.app.Application
 import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
-import io.github.deltacv.papervision.gui.FontAwesomeIcons
-import io.github.deltacv.papervision.gui.Option
-import io.github.deltacv.papervision.gui.util.TooltipPopup
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.editor.Option
+import io.github.deltacv.papervision.gui.TooltipPopup
 import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
 import io.github.deltacv.papervision.plugin.gui.imgui.CloseConfirmWindow
 import io.github.deltacv.papervision.plugin.gui.imgui.InputSourceWindow

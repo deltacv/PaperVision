@@ -40,6 +40,7 @@ import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguag
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.util.ExtraWidgets
+import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -67,7 +68,9 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
     @SerializeData
     private var colorValue = ImInt()
 
-    private var lastColor = ColorSpace.values()[0]
+    private var lastColor = ColorSpace.entries.first()
+
+    private val fontAwesome = Font.find("font-awesome")
 
     override fun drawNode() {
         input.drawHere()

@@ -33,10 +33,17 @@ import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
 import io.github.deltacv.papervision.gui.*
 import io.github.deltacv.papervision.gui.display.ImageDisplay
+import io.github.deltacv.papervision.gui.editor.IntroModalWindow
+import io.github.deltacv.papervision.gui.editor.NodeEditor
+import io.github.deltacv.papervision.gui.editor.NodeList
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
-import io.github.deltacv.papervision.gui.util.Popup
-import io.github.deltacv.papervision.gui.util.Window
+import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.util.FontManager
+import io.github.deltacv.papervision.gui.Popup
+import io.github.deltacv.papervision.gui.Window
+import io.github.deltacv.papervision.gui.util.defaultFontConfig
 import io.github.deltacv.papervision.id.*
 import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.io.TextureProcessorQueue
@@ -48,7 +55,6 @@ import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 import java.awt.Taskbar
 import java.awt.Toolkit
-import java.io.File
 
 class PaperVision(
     private val setupCall: PlatformSetupCallback
@@ -60,12 +66,6 @@ class PaperVision(
                 CurrentStyles.imnodesStyle = value
             }
             get() = CurrentStyles.imnodesStyle
-
-        lateinit var defaultImGuiFont: Font
-            private set
-        lateinit var defaultImGuiFontSmall: Font
-            private set
-
         init {
             imnodesStyle = ImNodesDarkStyle
         }
@@ -104,35 +104,22 @@ class PaperVision(
     val windows = IdElementContainer<Window>()
     val textures = IdElementContainer<PlatformTexture>()
     val textureProcessorQueues = SingleIdElementContainer<TextureProcessorQueue>()
+    val fonts = IdElementContainer<Font>()
     val streamDisplays = IdElementContainer<ImageDisplay>()
     val actions = IdElementContainer<Action>()
     val misc = IdElementContainer<Misc>()
     val popups = IdElementContainer<Popup>()
 
     val isModalWindowOpen get() = windows.inmutable.any { it.isModal && it.isVisible }
-    val isPopupOpen get() = popups.inmutable.any { it.isVisible }
 
     lateinit var engineClient: PaperVisionEngineClient
     lateinit var previzManager: ClientPrevizManager
 
     lateinit var defaultFont: Font
-        private set
-    lateinit var defaultFontBig: Font
-        private set
-    lateinit var codeFont: Font
-        private set
-    lateinit var fontAwesome: Font
-        private set
-    lateinit var fontAwesomeBig: Font
-        private set
-    lateinit var fontAwesomeBrands: Font
-        private set
-    lateinit var fontAwesomeBrandsBig: Font
-        private set
 
     /** Helper to simplify font creation */
-    private fun font(path: String, size: Float) =
-        fontManager.makeFont(path, defaultFontConfig(size))
+    private fun font(name: String, path: String, size: Float) =
+        fontManager.makeFont(name, path, defaultFontConfig(size))
 
     /** Executes a block with all containers pushed/popped safely */
     private inline fun withStacks(block: () -> Unit) {
@@ -142,6 +129,7 @@ class PaperVision(
         IdElementContainerStack.local.push(windows)
         IdElementContainerStack.local.push(textures)
         IdElementContainerStack.local.push(textureProcessorQueues)
+        IdElementContainerStack.local.push(fonts)
         IdElementContainerStack.local.push(streamDisplays)
         IdElementContainerStack.local.push(actions)
         IdElementContainerStack.local.push(popups)
@@ -156,6 +144,7 @@ class PaperVision(
             IdElementContainerStack.local.pop<Window>()
             IdElementContainerStack.local.pop<PlatformTexture>()
             IdElementContainerStack.local.pop<TextureProcessorQueue>()
+            IdElementContainerStack.local.pop<Font>()
             IdElementContainerStack.local.pop<ImageDisplay>()
             IdElementContainerStack.local.pop<Action>()
             IdElementContainerStack.local.pop<Popup>()
@@ -217,11 +206,13 @@ class PaperVision(
     }
 
     private fun initFonts() {
-        defaultFont = font("/fonts/Calcutta-SemiBold.otf", 20f)
-        defaultFontBig = font("/fonts/Calcutta-SemiBold.otf", 28f)
-        codeFont = font("/fonts/JetBrainsMono-Regular.ttf", 28f)
-        defaultImGuiFont = fontManager.makeDefaultFont(20f)
-        defaultImGuiFontSmall = fontManager.makeDefaultFont(12f)
+        defaultFont = font("calcutta", "/fonts/Calcutta-SemiBold.otf", 20f)
+
+        font("calcutta-big", "/fonts/Calcutta-SemiBold.otf", 28f)
+        font("jetbrains-mono", "/fonts/JetBrainsMono-Regular.ttf", 28f)
+
+        fontManager.makeDefaultFont(20)
+        fontManager.makeDefaultFont(12)
 
         val rangesBuilder = ImFontGlyphRangesBuilder().apply {
             addRanges(ImGui.getIO().fonts.glyphRangesDefault)
@@ -230,14 +221,10 @@ class PaperVision(
         val ranges = rangesBuilder.buildRanges()
 
         // Pass the ranges to the icon fonts so FontAwesome glyphs are available
-        fontAwesome =
-            fontManager.makeFont("/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(16f), ranges)
-        fontAwesomeBig =
-            fontManager.makeFont("/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(52f), ranges)
-        fontAwesomeBrands =
-            fontManager.makeFont("/fonts/icons/FontAwesome6-Brands-Regular-400.otf", defaultFontConfig(16f), ranges)
-        fontAwesomeBrandsBig =
-            fontManager.makeFont("/fonts/icons/FontAwesome6-Brands-Regular-400.otf", defaultFontConfig(80f), ranges)
+        fontManager.makeFont("font-awesome", "/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(16f), ranges)
+        fontManager.makeFont("font-awesome-big", "/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(52f), ranges)
+        fontManager.makeFont("font-awesome-brands", "/fonts/icons/FontAwesome6-Brands-Regular-400.otf", defaultFontConfig(16f), ranges)
+        fontManager.makeFont("font-awesome-brands-big", "/fonts/icons/FontAwesome6-Brands-Regular-400.otf", defaultFontConfig(80f), ranges)
     }
 
     private fun initUI() {
@@ -296,7 +283,7 @@ class PaperVision(
 
     fun showWelcome(askLanguage: Boolean = setup.config.fields.shouldAskForLang) {
         IntroModalWindow(
-            defaultImGuiFontSmall, codeFont, defaultFontBig, nodeEditor, chooseLanguage = askLanguage
+            nodeEditor, chooseLanguage = askLanguage
         ).apply {
             onDontShowAgain {
                 nodeEditor.flags["showWelcome"] = false
@@ -326,7 +313,21 @@ class PaperVision(
         previzManager.update()
     }
 
-    fun destroy() = nodeEditor.destroy()
+    fun destroy() {
+        logger.info("Shutting down PaperVision...")
+
+        config.save()
+
+        engineClient.disconnect()
+
+        textureProcessorQueue.delete()
+
+        windows.inmutable.reversed().forEach { it.delete() }
+        popups.inmutable.reversed().forEach { it.delete() }
+
+        nodeEditor.delete()
+        nodeList.delete()
+    }
 
     fun startPrevizWithEngine() {
         engineClient.sendMessage(PrevizAskNameMessage().onResponseWith<StringResponse> { response ->

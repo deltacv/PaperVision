@@ -1,10 +1,11 @@
-package io.github.deltacv.papervision.gui
+package io.github.deltacv.papervision.gui.editor
 
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.mai18n.tr
-import io.github.deltacv.papervision.gui.util.Window
+import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.node.vision.featuredet.FindContoursNode
 import io.github.deltacv.papervision.node.vision.imageproc.ThresholdNode
 import io.github.deltacv.papervision.node.vision.overlay.DrawContoursNode
@@ -347,9 +348,10 @@ val Stage14: Stage = {
 }
 
 class GuidedTourWindow(
-    val font: Font,
     val nodeEditor: NodeEditor
 ) : Window() {
+
+    val font = Font.find("calcutta-big")
 
     override var title = "$[mis_guidedtour]"
 

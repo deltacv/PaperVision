@@ -16,12 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.gui.util
+package io.github.deltacv.papervision.gui
 
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.internal.ImRect
-import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.id.Misc
 
 // this is an extremely hacky "dummy" table which uses the columns api.
@@ -41,7 +40,7 @@ import io.github.deltacv.papervision.id.Misc
 // the nodes in their corresponding positions without this bad hack, but hey if imgui can do it for us
 // why not use it instead?
 //
-// ...i hate this so much
+// ...i hate this so
 class Table(val maxColumns: Int = 4, val drawCallback: ((Int, ImVec2) -> Unit)? = null) {
 
     private val rects = mutableListOf<Pair<Int, ImVec2>>()
@@ -131,4 +130,10 @@ class Table(val maxColumns: Int = 4, val drawCallback: ((Int, ImVec2) -> Unit)? 
      */
     fun getPos(id: Int) = currentPositions[id]
 
+    // Struct holding per-cell info
+    private data class TableCell(
+        val id: Int,
+        var size: ImVec2,
+        var rect: ImRect? = null,
+    )
 }

@@ -22,7 +22,7 @@ import imgui.ImGui
 import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.engine.previz.ClientPrevizStream
-import io.github.deltacv.papervision.gui.util.Window
+import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.util.flags
 
 class ImageDisplayWindow(
@@ -36,7 +36,7 @@ class ImageDisplayWindow(
     )
 
     override fun drawContents() {
-        imageDisplay.drawStream()
+        imageDisplay.draw()
 
         val pipelineStream = imageDisplay.clientPrevizStream
 

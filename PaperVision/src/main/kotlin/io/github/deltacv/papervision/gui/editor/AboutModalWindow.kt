@@ -1,4 +1,4 @@
-package io.github.deltacv.papervision.gui
+package io.github.deltacv.papervision.gui.editor
 
 import imgui.ImGui
 import imgui.ImVec2
@@ -6,19 +6,20 @@ import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.Build
 import io.github.deltacv.papervision.gui.util.ARCH
+import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.OS
-import io.github.deltacv.papervision.gui.util.Window
+import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.util.getMemoryUsageMB
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.io.resourceToString
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
 
-class AboutModalWindow(
-    val imguiFont: Font,
-    val monoFont: Font
-) : Window() {
+class AboutModalWindow : Window() {
     override var title = "win_welcome"
+
+    val imguiFont = Font.find("default-12")
+    val monoFont = Font.find("jetbrains-mono")
 
     override val windowFlags = flags(
         ImGuiWindowFlags.NoResize,
