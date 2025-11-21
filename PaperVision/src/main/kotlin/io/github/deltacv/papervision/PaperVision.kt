@@ -314,9 +314,12 @@ class PaperVision(
         ImGui.setNextWindowSize(size.x, size.y, ImGuiCond.Always)
 
         ImGui.pushFont(defaultFont.imfont)
+
         windows.inmutable.forEach { it.draw() }
         popups.inmutable.forEach { it.draw() }
+
         textureProcessorQueues.inmutable.forEach { it.draw() }
+
         ImGui.popFont()
 
         keyManager.update()

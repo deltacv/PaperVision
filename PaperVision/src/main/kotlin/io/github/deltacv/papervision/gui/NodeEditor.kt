@@ -301,7 +301,11 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         if (ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
             if (rightClickMenuPopupTimer.millis <= 200 && (!paperVision.nodeList.isNodesListOpen && !paperVision.isModalWindowOpen && justDeletedLinkTimer.millis >= 200)) {
                 val popup = RightClickMenuPopup(paperVision.nodeList, ::undo, ::redo, ::cut, ::copy, ::paste, popupSelection)
+                popup.open()
+
                 currentRightClickMenuPopup = popup
+
+                logger.debug("Opening right click menu popup")
             }
         }
 
