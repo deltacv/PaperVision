@@ -26,9 +26,9 @@ import java.nio.ByteBuffer
 
 abstract class PlatformTexture : DrawableIdElementBase<PlatformTexture>() {
 
-    override val idElementContainer = IdElementContainerStack.localStack.peekNonNull<PlatformTexture>()
+    override val idElementContainer = IdElementContainerStack.local.peekNonNull<PlatformTexture>()
 
-    val textureProcessorQueue = IdElementContainerStack.localStack.peekSingleNonNull<TextureProcessorQueue>()
+    val textureProcessorQueue = IdElementContainerStack.local.peekSingleNonNull<TextureProcessorQueue>()
 
     abstract val width: Int
     abstract val height: Int

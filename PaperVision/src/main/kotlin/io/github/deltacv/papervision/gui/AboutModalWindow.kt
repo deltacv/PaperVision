@@ -66,7 +66,7 @@ class AboutModalWindow(
         val OS_VERSION = System.getProperty("os.version")
 
         var elementCount = 0
-        for(container in IdElementContainerStack.localStack.all()) {
+        for(container in IdElementContainerStack.local.all()) {
             elementCount += container.elements.size
         }
 

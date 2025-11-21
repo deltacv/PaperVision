@@ -37,7 +37,7 @@ abstract class Window(
     override val requestedId: Int? = null,
 ) : DrawableIdElementBase<Window>() {
 
-    override val idElementContainer = IdElementContainerStack.localStack.peekNonNull<Window>()
+    override val idElementContainer = IdElementContainerStack.local.peekNonNull<Window>()
 
     var isVisible: Boolean = false
         private set

@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.engine.client.response
 
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 
-open class OkResponse(val info: String = "") : PaperVisionEngineMessageResponse() {
+open class OkResponse(val info: String = "OK") : PaperVisionEngineMessageResponse() {
     override val status = true
 
     override fun toString() = "OkResponse(type=\"${this::class.java.typeName}\", info=\"$info\")"

@@ -47,13 +47,13 @@ class CodeGenManager(val paperVision: PaperVision) {
     ): String? {
         val placeholders = IdElementContainer<Resolvable.Placeholder<*>>()
 
-        IdElementContainerStack.localStack.push(placeholders)
+        IdElementContainerStack.local.push(placeholders) // all placeholders created during code gen will be caught here
 
         val timestamp = System.currentTimeMillis()
 
         logger.info("Starting code gen at $timestamp")
 
-        for(popup in IdElementContainerStack.localStack.peekNonNull<Popup>().inmutable) {
+        for(popup in IdElementContainerStack.local.peekNonNull<Popup>().inmutable) {
             if(popup.label == "Gen-Error") {
                 popup.delete()
             }
@@ -67,7 +67,7 @@ class CodeGenManager(val paperVision: PaperVision) {
         try {
             codeGen.stage = CodeGen.Stage.INITIAL_GEN
 
-            paperVision.nodeEditor.outputNode.input.requireAttachedAttribute()
+            paperVision.nodeEditor.outputNode.input.requireAttachedAttribute() // output always needs to be connected
 
             paperVision.nodeEditor.inputNode.startGen(current)
 
@@ -125,7 +125,7 @@ class CodeGenManager(val paperVision: PaperVision) {
 
         logger.info("Code gen $timestamp OK")
 
-        IdElementContainerStack.localStack.pop<Resolvable.Placeholder<*>>()
+        IdElementContainerStack.local.pop<Resolvable.Placeholder<*>>() // we're done with placeholders
 
         return result.trim()
     }

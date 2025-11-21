@@ -5,24 +5,16 @@ import io.github.deltacv.papervision.codegen.build.Type
 import io.github.deltacv.papervision.id.IdElement
 import io.github.deltacv.papervision.id.IdElementContainerStack
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import kotlin.getValue
 
 sealed class Resolvable<T> {
 
     companion object {
-        fun <T> from(resolver: () -> T?): Resolvable<T> {
-            val value = resolver()
-            return if (value != null) {
-                Now(value)
-            } else {
-                Placeholder(resolver = resolver)
-            }
-        }
+        const val RESOLVER_PREFIX = "<mack!"
+        const val RESOLVER_SUFFIX = ">"
 
-        fun <T> fromResolvable(resolver: () -> Resolvable<T>?) = from {
-            val resolved = resolver()
-            val value = resolved?.resolve()
-            value
-        }
+        // %s is the ID of the placeholder
+        const val RESOLVER_TEMPLATE = "$RESOLVER_PREFIX%d$RESOLVER_SUFFIX"
     }
 
     /* -- abstract Resolvable members -- */
@@ -50,7 +42,7 @@ sealed class Resolvable<T> {
         private val resolver: () -> T?
     ) : Resolvable<T>(), IdElement {
 
-        val placeholder get() = String.format(CodeGen.RESOLVER_TEMPLATE, id)
+        val placeholder get() = String.format(RESOLVER_TEMPLATE, id)
 
         private var usingOnResolve = false // to avoid creating the event handler if not necessary
         val onResolve by lazy {
@@ -107,7 +99,7 @@ sealed class Resolvable<T> {
 
         override fun toString() = placeholder
 
-        override val id by IdElementContainerStack.localStack.peekNonNull<Placeholder<*>>().nextId(this)
+        override val id by IdElementContainerStack.local.peekNonNull<Placeholder<*>>().nextId(this)
     }
 
     data class DependentPlaceholder<P, T>(val dependency: Resolvable<P>, val resolver: (P) -> T?) : Placeholder<T>(resolver = {

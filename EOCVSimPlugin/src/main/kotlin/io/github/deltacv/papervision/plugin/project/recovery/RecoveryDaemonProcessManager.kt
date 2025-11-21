@@ -51,7 +51,7 @@ class RecoveryDaemonProcessManager(
                 RecoveryDaemonClientMain::class.java,
                 SLF4JIOReceiver(logger),
                 classpath,
-                listOf("-Dlog4j.configurationFile=log4j2_nofile_pv.xml"),
+                listOf("-Dlogback.configurationFile=logback-nofile.xml"),
                 listOf(port.toString())
             )
 

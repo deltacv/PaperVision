@@ -75,7 +75,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         const val PASTE_COUNT_OFFSET = 50f
     }
 
-    var context = ImNodes.editorContextCreate()
+    var context = ImNodes.editorContextCreate()!!
         private set
     var isNodeFocused = false
         private set
@@ -155,7 +155,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     val attributes get() = paperVision.attributes
     val links get() = paperVision.links
 
-    val Keys get() = keyManager.keys
+    val keys get() = keyManager.keys
 
     override fun onEnable() {
         ImNodes.createContext()
@@ -311,7 +311,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         } else if (
             ImGui.isMouseDown(ImGuiMouseButton.Middle) ||
             (ImGui.isMouseDown(ImGuiMouseButton.Right) && rightClickMenuPopupTimer.millis >= 100 &&
-                    (!rightClickedWhileHoveringNode || keyManager.pressing(Keys.LeftControl))
+                    (!rightClickedWhileHoveringNode || keyManager.pressing(keys.LeftControl))
             )
         ) {
             editorPanning.x += (ImGui.getMousePosX() - prevMouseX)
@@ -320,18 +320,18 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             var doingKeys = false
 
             // scrolling
-            if (keyManager.pressing(Keys.ArrowLeft)) {
+            if (keyManager.pressing(keys.ArrowLeft)) {
                 editorPanning.x += KEY_PAN_CONSTANT
                 doingKeys = true
-            } else if (keyManager.pressing(Keys.ArrowRight)) {
+            } else if (keyManager.pressing(keys.ArrowRight)) {
                 editorPanning.x -= KEY_PAN_CONSTANT
                 doingKeys = true
             }
 
-            if (keyManager.pressing(Keys.ArrowUp)) {
+            if (keyManager.pressing(keys.ArrowUp)) {
                 editorPanning.y += KEY_PAN_CONSTANT
                 doingKeys = true
-            } else if (keyManager.pressing(Keys.ArrowDown)) {
+            } else if (keyManager.pressing(keys.ArrowDown)) {
                 editorPanning.y -= KEY_PAN_CONSTANT
                 doingKeys = true
             }
@@ -346,7 +346,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                     scrollTimer.reset()
                 }
 
-                if (keyManager.pressing(Keys.LeftShift) || keyManager.pressing(Keys.RightShift)) {
+                if (keyManager.pressing(keys.LeftShift) || keyManager.pressing(keys.RightShift)) {
                     editorPanning.x += plusPan
                     editorPanning.y += plusPanX
                 } else {
@@ -410,7 +410,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         val selectedNodesList = try {
             overrideSelection ?: selectedNodes.map { nodes[it]!! }.filter { it.allowDelete }
-        } catch(e: IndexOutOfBoundsException) {
+        } catch(_: IndexOutOfBoundsException) {
             return
         }
 
@@ -431,7 +431,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         val selectedNodesList = try {
             overrideSelection ?: selectedNodes.map { nodes[it]!! }.filter { it.allowDelete }
-        } catch(e: IndexOutOfBoundsException) {
+        } catch(_: IndexOutOfBoundsException) {
             return
         }
 
@@ -663,7 +663,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     }
 
     private fun handleDeleteSelection() {
-        if (keyManager.released(Keys.Delete)) {
+        if (keyManager.released(keys.Delete)) {
             if (ImNodes.numSelectedNodes() > 0) {
                 val selectedNodes = IntArray(ImNodes.numSelectedNodes())
                 ImNodes.getSelectedNodes(selectedNodes)

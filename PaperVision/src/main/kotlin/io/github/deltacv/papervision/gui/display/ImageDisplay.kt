@@ -26,7 +26,7 @@ import io.github.deltacv.papervision.engine.previz.ClientPrevizStream
 class ImageDisplay(
     var clientPrevizStream: ClientPrevizStream
 ) : IdElement {
-    override val id by IdElementContainerStack.localStack.peekNonNull<ImageDisplay>().nextId(this)
+    override val id by IdElementContainerStack.local.peekNonNull<ImageDisplay>().nextId(this)
 
     fun drawStream() {
         clientPrevizStream.textureOf(id)?.draw()

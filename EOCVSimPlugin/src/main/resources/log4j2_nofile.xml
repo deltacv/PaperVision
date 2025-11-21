@@ -16,7 +16,7 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="INFO">
+        <Root level="TRACE">
             <AppenderRef ref="stdout" level="INFO"/>
             <AppenderRef ref="stderr" level="INFO"/>
         </Root>

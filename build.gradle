@@ -14,7 +14,7 @@ buildscript {
 
         slf4j_version = "2.0.16"
         log4j_version = "2.24.1"
-        logback_classic_version = "1.5.8"
+        logback_classic_version = "1.5.13"
 
         Penv = findProperty('env')
         if(Penv != null && (Penv != 'dev' && Penv != 'release')) {\

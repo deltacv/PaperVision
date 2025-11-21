@@ -61,7 +61,7 @@ class EmptyInputAttribute(
 
 abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<AttributeSerializationData> {
 
-    override val idElementContainer get() = IdElementContainerStack.localStack.peekNonNull<Attribute>()
+    override val idElementContainer get() = IdElementContainerStack.local.peekNonNull<Attribute>()
 
     override val requestedId get() = if(forgetSerializedId || (hasParentNode && parentNode.forgetSerializedId))
         null

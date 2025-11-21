@@ -25,7 +25,7 @@ class IdElementContainerStack {
         private val threadLocalStack = ThreadLocal.withInitial { IdElementContainerStack() }
 
         // Accessor for the current thread's stack
-        val localStack: IdElementContainerStack
+        val local: IdElementContainerStack
             get() = threadLocalStack.get()
     }
 
@@ -53,10 +53,7 @@ class IdElementContainerStack {
     inline fun <reified T: IdElement> peekNonNull() = peek(T::class.java) ?: throw NullPointerException("No IdElementContainer was found for ${T::class.java.typeName} in the stack")
 
     inline fun <reified T: IdElement> peekSingle(): T? {
-        val container = peek<T>()
-
-        if(container == null)
-            return null
+        val container = peek<T>() ?: return null
 
         if(container is SingleIdElementContainer) {
             return container.get()

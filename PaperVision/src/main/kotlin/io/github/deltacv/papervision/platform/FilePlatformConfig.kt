@@ -40,6 +40,6 @@ val defaultConfigPath = System.getProperty("user.home") + File.separator + ".pap
 
 class DefaultFilePlatformConfig : FilePlatformConfig(defaultConfigPath) {
     init {
-        File(defaultConfigPath).parentFile.mkdirs()
+        File(defaultConfigPath).parentFile.mkdirs() // mkdir .papervision
     }
 }

@@ -57,7 +57,7 @@ class NodeList(
 
     val logger by loggerForThis()
 
-    val Keys = keyManager.keys
+    val keys = keyManager.keys
 
     var isNodesListOpen = false
         private set
@@ -102,7 +102,7 @@ class NodeList(
         paperVision.onUpdate {
             if (isCompletelyDeleted) {
                 it.removeThis()
-            } else if (!paperVision.nodeEditor.isNodeFocused && keyManager.released(Keys.Spacebar) && !paperVision.isModalWindowOpen) {
+            } else if (!paperVision.nodeEditor.isNodeFocused && keyManager.released(this@NodeList.keys.Spacebar) && !paperVision.isModalWindowOpen) {
                 showList() // open the list when the spacebar is pressed
             }
         }
@@ -119,13 +119,13 @@ class NodeList(
             }
         }
 
-        IdElementContainerStack.localStack.push(listNodes)
-        IdElementContainerStack.localStack.push(listAttributes)
+        IdElementContainerStack.local.push(listNodes)
+        IdElementContainerStack.local.push(listAttributes)
 
         headers = Headers(keyManager, paperVision.defaultFontBig) { nodes }
 
-        IdElementContainerStack.localStack.pop<Node<*>>()
-        IdElementContainerStack.localStack.pop<Attribute>()
+        IdElementContainerStack.local.pop<Node<*>>()
+        IdElementContainerStack.local.pop<Attribute>()
     }
 
     override fun preDrawContents() {
@@ -147,12 +147,12 @@ class NodeList(
             return
         }
 
-        IdElementContainerStack.localStack.push(listNodes)
-        IdElementContainerStack.localStack.push(listAttributes)
+        IdElementContainerStack.local.push(listNodes)
+        IdElementContainerStack.local.push(listAttributes)
 
         val size = paperVision.window.size
 
-        if (keyManager.released(Keys.Escape)) {
+        if (keyManager.released(this@NodeList.keys.Escape)) {
             closeList()
         }
 
@@ -173,7 +173,7 @@ class NodeList(
             highlightTimer.reset()
         }
 
-        for (category in Category.values()) {
+        for (category in Category.entries) {
             if (nodes.containsKey(category)) {
                 val table = headers.categoryTables[category] ?: continue
 
@@ -333,8 +333,8 @@ class NodeList(
 
         headers.size = size
 
-        IdElementContainerStack.localStack.pop<Node<*>>()
-        IdElementContainerStack.localStack.pop<Attribute>()
+        IdElementContainerStack.local.pop<Node<*>>()
+        IdElementContainerStack.local.pop<Attribute>()
 
         handleClick(!headers.isHeaderHovered)
     }
@@ -349,8 +349,8 @@ class NodeList(
                 if (instance is DrawNode<*>) {
                     val mousePos = ImGui.getMousePos()
 
-                    val newPosX = mousePos.x - hoveredNodePos!!.x
-                    val newPosY = mousePos.y - hoveredNodePos!!.y
+                    val newPosX = mousePos.x - hoveredNodePos.x
+                    val newPosY = mousePos.y - hoveredNodePos.y
 
                     instance.nextNodePosition = ImVec2(newPosX, newPosY)
                     instance.pinToMouse = true
@@ -399,13 +399,6 @@ class NodeList(
         floatingButton.focus = false
 
         delete()
-    }
-
-    fun completelyDelete() {
-        isCompletelyDeleted = true
-
-        delete()
-        floatingButton.delete()
     }
 
     val nodes by lazy {
@@ -533,7 +526,7 @@ class NodeList(
         var isHeaderHovered = false
             private set
 
-        val Keys = keyManager.keys
+        val keys = keyManager.keys
 
         override fun preDrawContents() {
             ImGui.setNextWindowPos(0f, 0f)
@@ -542,11 +535,11 @@ class NodeList(
 
         override fun drawContents() {
             val scrollValue = when {
-                keyManager.pressing(Keys.ArrowUp) -> {
+                keyManager.pressing(keys.ArrowUp) -> {
                     -0.8f
                 }
 
-                keyManager.pressing(Keys.ArrowDown) -> {
+                keyManager.pressing(keys.ArrowDown) -> {
                     0.8f
                 }
 
@@ -559,7 +552,7 @@ class NodeList(
 
             isHeaderHovered = false
 
-            for (category in Category.values()) {
+            for (category in Category.entries) {
                 if (nodesSupplier().containsKey(category)) {
                     if (!categoryTables.containsKey(category)) {
                         categoryTables[category] = Table()

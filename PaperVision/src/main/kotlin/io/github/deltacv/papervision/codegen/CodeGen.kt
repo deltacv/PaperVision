@@ -36,12 +36,6 @@ class CodeGen(
 ) {
 
     companion object {
-        val RESOLVER_PREFIX = "<mack!"
-        val RESOLVER_SUFFIX = ">"
-
-        // %s is the ID of the placeholder
-        val RESOLVER_TEMPLATE = "$RESOLVER_PREFIX%d$RESOLVER_SUFFIX"
-
         val logger by loggerFor<CodeGen>()
     }
 
@@ -80,7 +74,7 @@ class CodeGen(
     private fun resolveAllPlaceholders(preprocessed: String): String {
         var resolved = preprocessed
 
-        val placeholders = IdElementContainerStack.localStack
+        val placeholders = IdElementContainerStack.local
             .peekNonNull<Resolvable.Placeholder<*>>()
 
         logger.info("Resolving active placeholders: ${placeholders.inmutable.size}")
@@ -101,14 +95,14 @@ class CodeGen(
                 currentPlaceholdersProvider().forEach { it.resolve() }
 
                 while (i < resolved.length) {
-                    val start = resolved.indexOf(RESOLVER_PREFIX, i)
+                    val start = resolved.indexOf(Resolvable.RESOLVER_PREFIX, i)
                     if (start == -1) {
                         // No more placeholders
                         sb.append(resolved, i, resolved.length)
                         break
                     }
 
-                    val end = resolved.indexOf(RESOLVER_SUFFIX, start)
+                    val end = resolved.indexOf(Resolvable.RESOLVER_SUFFIX, start)
                     if (end == -1) {
                         // No closing '>', append rest as-is
                         sb.append(resolved, i, resolved.length)
@@ -147,7 +141,7 @@ class CodeGen(
                 }
 
                 resolved = sb.toString()
-            } while (changed)
+            } while (changed) // Repeat until no changes, meaning all placeholders were resolved
         }
 
         resolve { placeholders.inmutable.filter { !it.resolveLast } } // Resolve non-last placeholders first

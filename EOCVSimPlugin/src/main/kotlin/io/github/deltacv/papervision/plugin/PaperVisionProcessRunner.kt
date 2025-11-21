@@ -64,15 +64,12 @@ object PaperVisionProcessRunner {
         currentJob = pool.submit {
             logger.info("Starting PaperVision process...")
 
-            val jvmArgs = mutableListOf("-Dlog4j.configurationFile=log4j2_nofile_pv.xml")
-
             val programParams = listOf("-q", "-i=${paperVisionEngine.server.port}")
 
             val exitCode = if(SysUtil.OS == SysUtil.OperatingSystem.MACOS) {
                 logger.info("Running on macOS, adding platform-specific flags")
 
-                jvmArgs.add("-XstartOnFirstThread")
-                jvmArgs.add("-Djava.awt.headless=true")
+                val jvmArgs = listOf("-XstartOnFirstThread", "-Djava.awt.headless=true")
 
                 JavaProcess.execClasspath(
                     EOCVSimIpcPaperVisionMain::class.java,
@@ -86,7 +83,7 @@ object PaperVisionProcessRunner {
                     EOCVSimIpcPaperVisionMain::class.java,
                     SLF4JIOReceiver(logger),
                     classpath,
-                    jvmArgs, programParams,
+                    listOf(), programParams,
                 )
             }
 

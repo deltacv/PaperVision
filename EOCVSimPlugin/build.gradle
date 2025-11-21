@@ -146,9 +146,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation project(":LwjglPlatform")
 
-    implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-slf4j2-impl:$log4j_version"
+    implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 
     compileOnly('org.deltacv.EOCV-Sim:EOCV-Sim:4.0.2') { transitive = false }
     compileOnly('org.deltacv.EOCV-Sim:Common:4.0.2') { transitive = false }
