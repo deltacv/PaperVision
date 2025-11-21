@@ -43,81 +43,63 @@ import io.github.deltacv.papervision.id.Misc
 // ...i hate this so
 class Table(val maxColumns: Int = 4, val drawCallback: ((Int, ImVec2) -> Unit)? = null) {
 
-    private val rects = mutableListOf<Pair<Int, ImVec2>>()
-    private val currentPositions = mutableMapOf<Int, ImVec2>()
 
-    private val _currentRects = mutableMapOf<Int, ImRect>()
-    val currentRects = _currentRects as Map<Int, ImRect>
+    private val cells = mutableListOf<TableCell>()
+
+    // Results of layout
+    private val cellRects = mutableMapOf<Int, ImRect>()
+    val currentRects: Map<Int, ImRect> get() = cellRects
 
     private val columnsId by Misc.newMiscId()
 
-    /**
-     * Adds a dummy rectangle to the table with the specified size.
-     */
     fun add(id: Int, size: ImVec2) {
-        rects.add(Pair(id, size))
+        cells += TableCell(id, size)
     }
 
     fun contains(id: Int): Boolean {
-        for((rectId, _) in rects) {
-            if(rectId == id) {
-                return true
-            }
-        }
-
-        return false
+        return cells.any { it.id == id }
     }
 
     fun setSize(id: Int, size: ImVec2) {
-        for((index, pair) in rects.toTypedArray().withIndex()) {
-            if(pair.first == id) {
-                rects[index] = Pair(pair.first, size)
-                break
-            }
-        }
+        cells.find { it.id == id }?.size = size
+    }
+
+    /**
+     * Convert the flat list into a 2D structure of rows.
+     */
+    private fun chunkedRows(): List<List<TableCell>> {
+        if (cells.isEmpty()) return emptyList()
+        val columns = minOf(maxColumns, cells.size)
+        return cells.chunked(columns)
     }
 
     fun draw() {
-        if(rects.isEmpty()) return
+        if (cells.isEmpty()) return
 
-        val columns = if(rects.size >= maxColumns) maxColumns else rects.size
+        val rows = chunkedRows()
+        val columns = minOf(maxColumns, cells.size)
 
-        var index = 0
-        var currentColumn: Int
+        // Clear previous rect cache
+        cellRects.clear()
 
-        if(ImGui.beginTable("###$columnsId", columns)) {
-            rowLoop@ while(index < rects.size) {
-                currentColumn = 0
+        if (ImGui.beginTable("###$columnsId", columns)) {
+            for (row in rows) {
                 ImGui.tableNextRow()
+                var colIndex = 0
 
-                while(currentColumn < columns) {
-                    if(index >= rects.size) break@rowLoop
+                for (cell in row) {
+                    ImGui.tableSetColumnIndex(colIndex)
 
-                    ImGui.tableSetColumnIndex(currentColumn)
+                    // Dummy element for layout
+                    ImGui.invisibleButton("###${cell.id}", cell.size.x, cell.size.y)
 
-                    val id = rects[index].first
-                    val size = rects[index].second
+                    val rect = ImRect(ImGui.getItemRectMin(), ImGui.getItemRectMax())
+                    cell.rect = rect
+                    cellRects[cell.id] = rect
 
-                    // our dummy element, it's an invisible button because
-                    // i couldn't find anything better with an adjustable
-                    // rectangle shape.
-                    ImGui.invisibleButton("###$id", size.x, size.y)
-                    if(!currentPositions.containsKey(id)) {
-                        currentPositions[id] = ImVec2()
-                    }
+                    drawCallback?.invoke(cell.id, rect.min)
 
-                    val pos = ImGui.getItemRectMin()
-
-                    // store the invisible button position
-                    currentPositions[id] = pos
-
-                    _currentRects[id] = ImRect(ImGui.getItemRectMin(), ImGui.getItemRectMax())
-
-                    // call the callback if there's one
-                    drawCallback?.invoke(id, pos)
-
-                    index++
-                    currentColumn++
+                    colIndex++
                 }
             }
 
@@ -125,10 +107,7 @@ class Table(val maxColumns: Int = 4, val drawCallback: ((Int, ImVec2) -> Unit)? 
         }
     }
 
-    /**
-     * Gets the absolute position of a dummy rectangle with the specified id
-     */
-    fun getPos(id: Int) = currentPositions[id]
+    fun getPos(id: Int): ImVec2? = cellRects[id]?.min
 
     // Struct holding per-cell info
     private data class TableCell(

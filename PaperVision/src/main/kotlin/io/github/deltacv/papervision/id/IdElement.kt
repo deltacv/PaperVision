@@ -53,29 +53,25 @@ internal class IdElementState<T: IdElement>(
         get() = internalId?.let { idElementContainer.has(it, self) } ?: false
 
     fun enable() {
-        if (internalId == null) {
+        if(internalId == null || !idElementContainer.has(id, self)) {
             internalId = provideId()
-            onEnableCallback()
-            hasEnabled = true
-        } else if (!idElementContainer.has(internalId!!, self)) {
             onEnableCallback()
             hasEnabled = true
         }
     }
 
     private fun provideId() =
-        if (requestedId == null) {
+        if(requestedId == null) {
             idElementContainer.nextId(self).value
-        } else {
-            idElementContainer.requestId(self, requestedId).value
-        }
+        } else idElementContainer.requestId(self, requestedId).value
+
 
     fun delete() {
-        internalId?.let { idElementContainer.removeId(it) }
+        idElementContainer.removeId(id)
     }
 
     fun restore() {
-        internalId?.let { idElementContainer[it] = self }
+        idElementContainer[id] = self
     }
 }
 

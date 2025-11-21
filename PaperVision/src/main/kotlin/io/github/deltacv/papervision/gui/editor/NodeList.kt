@@ -127,7 +127,7 @@ class NodeList(
         IdElementContainerStack.local.push(listNodes)
         IdElementContainerStack.local.push(listAttributes)
 
-        headers = Headers(keyManager, defaultFontBig) { nodes }
+        headers = Headers(keyManager) { nodes }
 
         IdElementContainerStack.local.pop<Node<*>>()
         IdElementContainerStack.local.pop<Attribute>()
@@ -508,7 +508,6 @@ class NodeList(
 
     class Headers(
         val keyManager: KeyManager,
-        val headerFont: Font,
         val nodesSupplier: () -> Map<Category, List<Node<*>>>
     ) : Window() {
 
@@ -531,6 +530,8 @@ class NodeList(
             private set
 
         val keys = keyManager.keys
+
+        val headerFont = Font.find("calcutta-big")
 
         override fun preDrawContents() {
             ImGui.setNextWindowPos(0f, 0f)
