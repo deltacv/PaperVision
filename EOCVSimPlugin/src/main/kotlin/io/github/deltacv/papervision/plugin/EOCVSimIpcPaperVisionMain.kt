@@ -86,8 +86,6 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
 
         app.paperVision.onInit.doOnce {
             val inputSourceWindow = InputSourceWindow(
-                app.paperVision.fontAwesome,
-                app.paperVision.fontAwesomeBig,
                 app.paperVision.engineClient
             )
 

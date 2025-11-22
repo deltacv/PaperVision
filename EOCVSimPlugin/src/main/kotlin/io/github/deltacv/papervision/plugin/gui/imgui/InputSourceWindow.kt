@@ -39,8 +39,6 @@ import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesLis
 import io.github.deltacv.papervision.util.flags
 
 class InputSourceWindow(
-    val fontAwesome: Font,
-    val fontAwesomeBig: Font,
     val client: PaperVisionEngineClient
 ) : Window(){
     var inputSources = arrayOf<InputSourceData>()
@@ -55,6 +53,9 @@ class InputSourceWindow(
     )
 
     private var initialPosition: ImVec2? = null
+
+    private val fontAwesome = Font.find("font-awesome")
+    private val fontAwesomeBig = Font.find("font-awesome-big")
 
     init {
         client.sendMessage(GetInputSourcesMessage().onResponseWith<InputSourcesListResponse> {
@@ -123,7 +124,7 @@ class CreateInputSourceWindow(
     val fontAwesome: Font
 ) : Window() {
     companion object {
-        val separationMultiplier = 1.5f
+        const val SEPARATION_MULTIPLIER = 1.5f
     }
 
     override var title = "$[win_createinput_sources]"
@@ -150,7 +151,7 @@ class CreateInputSourceWindow(
         }
 
         ImGui.sameLine()
-        ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+        ImGui.indent(ImGui.getItemRectSizeX() * SEPARATION_MULTIPLIER)
 
         if(ImGui.button(FontAwesomeIcons.Image)){
             client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.IMAGE))
@@ -163,7 +164,7 @@ class CreateInputSourceWindow(
         }
 
         ImGui.sameLine()
-        ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+        ImGui.indent(ImGui.getItemRectSizeX() * SEPARATION_MULTIPLIER)
 
         if(ImGui.button(FontAwesomeIcons.Film)){
             client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.VIDEO))
@@ -176,7 +177,7 @@ class CreateInputSourceWindow(
         }
 
         ImGui.sameLine()
-        ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+        ImGui.indent(ImGui.getItemRectSizeX() * SEPARATION_MULTIPLIER)
 
         if(ImGui.button(FontAwesomeIcons.Globe)){
             client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.HTTP))
