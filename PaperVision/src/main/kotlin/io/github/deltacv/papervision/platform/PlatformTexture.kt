@@ -20,15 +20,15 @@ package io.github.deltacv.papervision.platform
 
 import imgui.ImGui
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.IdContainerStacks
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import java.nio.ByteBuffer
 
 abstract class PlatformTexture : DrawableIdElementBase<PlatformTexture>() {
 
-    override val idElementContainer = IdElementContainerStack.local.peekNonNull<PlatformTexture>()
+    override val idContainer = IdContainerStacks.local.peekNonNull<PlatformTexture>()
 
-    val textureProcessorQueue = IdElementContainerStack.local.peekSingleNonNull<TextureProcessorQueue>()
+    val textureProcessorQueue = IdContainerStacks.local.peekSingleNonNull<TextureProcessorQueue>()
 
     abstract val width: Int
     abstract val height: Int

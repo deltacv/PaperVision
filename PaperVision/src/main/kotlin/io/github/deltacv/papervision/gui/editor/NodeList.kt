@@ -32,8 +32,8 @@ import io.github.deltacv.papervision.gui.style.opacity
 import io.github.deltacv.papervision.gui.FrameWidthWindow
 import io.github.deltacv.papervision.gui.Table
 import io.github.deltacv.papervision.gui.Window
-import io.github.deltacv.papervision.id.IdElementContainer
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.IdContainer
+import io.github.deltacv.papervision.id.IdContainerStacks
 import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.node.*
 import io.github.deltacv.papervision.platform.PlatformWindow
@@ -55,16 +55,15 @@ class NodeList(
         const val PLUS_FONT_SIZE = 60f
     }
 
-    val listNodes = IdElementContainer<Node<*>>()
-    val listAttributes = IdElementContainer<Attribute>()
+    val listNodes = IdContainer<Node<*>>()
+    val listAttributes = IdContainer<Attribute>()
 
-    val logger by loggerForThis()
+    private val logger by loggerForThis()
 
-    val keys = keyManager.keys
+    private val keys = keyManager.keys
 
     var isNodesListOpen = false
         private set
-    private var isCompletelyDeleted = false
 
     private val openButtonTimeout = ElapsedTime()
 
@@ -105,15 +104,15 @@ class NodeList(
 
     override fun onEnable() {
         paperVision.onUpdate {
-            if (isCompletelyDeleted) {
-                it.removeThis()
-            } else if (!paperVision.nodeEditor.isNodeFocused && keyManager.released(this@NodeList.keys.Spacebar) && !paperVision.isModalWindowOpen) {
+            if (!paperVision.nodeEditor.isNodeFocused &&
+                keyManager.released(keys.Spacebar) &&
+                !paperVision.isModalWindowOpen
+            ) {
                 showList() // open the list when the spacebar is pressed
             }
         }
 
-        floatingButton =
-            FloatingButton(this, paperVision.window)
+        floatingButton = FloatingButton(this, paperVision.window)
         floatingButton.enable()
 
         floatingButton.onPressed {
@@ -124,13 +123,14 @@ class NodeList(
             }
         }
 
-        IdElementContainerStack.local.push(listNodes)
-        IdElementContainerStack.local.push(listAttributes)
+        // use different id stacks for the node list, we dont want these nodes on the actual editor
+        IdContainerStacks.local.push(listNodes)
+        IdContainerStacks.local.push(listAttributes)
 
         headers = Headers(keyManager) { nodes }
 
-        IdElementContainerStack.local.pop<Node<*>>()
-        IdElementContainerStack.local.pop<Attribute>()
+        IdContainerStacks.local.pop<Node<*>>()
+        IdContainerStacks.local.pop<Attribute>()
     }
 
     override fun preDrawContents() {
@@ -143,7 +143,7 @@ class NodeList(
         ImGui.setNextWindowPos(0f, 0f)
         ImGui.setNextWindowSize(size.x, size.y, ImGuiCond.Always)
 
-        ImGui.pushStyleColor(ImGuiCol.WindowBg, 0f, 0f, 0f, 0.70f) // transparent dark nodes list window
+        ImGui.pushStyleColor(ImGuiCol.WindowBg, 0f, 0f, 0f, 0.70f) // transparent dark window background
     }
 
     override fun drawContents() {
@@ -152,8 +152,8 @@ class NodeList(
             return
         }
 
-        IdElementContainerStack.local.push(listNodes)
-        IdElementContainerStack.local.push(listAttributes)
+        IdContainerStacks.local.push(listNodes)
+        IdContainerStacks.local.push(listAttributes)
 
         val size = paperVision.window.size
 
@@ -337,8 +337,8 @@ class NodeList(
 
         headers.size = size
 
-        IdElementContainerStack.local.pop<Node<*>>()
-        IdElementContainerStack.local.pop<Attribute>()
+        IdContainerStacks.local.pop<Node<*>>()
+        IdContainerStacks.local.pop<Attribute>()
 
         handleClick(!headers.isHeaderHovered)
     }

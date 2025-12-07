@@ -44,7 +44,7 @@ class ScalarRangeAttribute(
             field = value
         }
 
-    private val defaultImGuiFont = Font.find("default-12")
+    private val defaultImGuiFont by Font.findLazy("default-20")
 
     override var icon = FontAwesomeIcons.GripVertical
 

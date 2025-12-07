@@ -59,7 +59,7 @@ object PaperVisionProcessRunner {
 
         isRunning = true
 
-        onPaperVisionStart.run()
+        onPaperVisionStart()
 
         currentJob = pool.submit {
             logger.info("Starting PaperVision process...")
@@ -87,10 +87,10 @@ object PaperVisionProcessRunner {
                 )
             }
 
-            onPaperVisionExit.run()
+            onPaperVisionExit()
 
             if(exitCode != 0) {
-                onPaperVisionExitError.run()
+                onPaperVisionExitError()
             }
 
             logger.warn("PaperVision process has exited with exit code $exitCode")

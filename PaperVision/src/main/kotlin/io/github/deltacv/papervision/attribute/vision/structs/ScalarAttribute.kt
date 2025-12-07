@@ -46,7 +46,7 @@ class ScalarAttribute(
 
     override var icon = FontAwesomeIcons.GripHorizontal
 
-    private val defaultImGuiFont = Font.find("default-12")
+    private val defaultImGuiFont by Font.findLazy("default-20")
 
     override fun drawAttributeText(index: Int, attrib: Attribute): Boolean {
         if(index < color.channelNames.size) {

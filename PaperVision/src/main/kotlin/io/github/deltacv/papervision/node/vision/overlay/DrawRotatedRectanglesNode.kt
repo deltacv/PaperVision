@@ -82,7 +82,7 @@ open class DrawRotatedRectanglesNode
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)
 
-                val output = uniqueVariable("${input.value.value}RotRects", Mat.new())
+                val output = uniqueVariable("${input.value.v}RotRects", Mat.new())
 
                 var drawMat = input.value.v
 
@@ -173,7 +173,7 @@ open class DrawRotatedRectanglesNode
                         input.value.v
                     } else {
                         val output = uniqueVariable(
-                            "${input.value.value}_rot_rects",
+                            "${input.value.v}_rot_rects",
                             input.value.v.callValue("copy", CPythonLanguage.NoType)
                         )
                         local(output)

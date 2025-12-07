@@ -16,21 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.codegen.vision
+package io.github.deltacv.papervision.codegen.language.vision
 
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.Visibility
-import io.github.deltacv.papervision.codegen.build.ConValue
 import io.github.deltacv.papervision.codegen.build.Parameter
 import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.dsl.targets
-import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.dsl.javaTargets
 
-fun CodeGen.Current.enableTargets() = this {
+fun CodeGen.Current.enableJavaTargets() = this {
     if(!codeGen.hasFlag("targetsEnabled")) {
-        targets(enableTargetsIfNeeded = false) {
+        javaTargets(enableTargetsIfNeeded = false) {
             scope {
                 clearTargets()
             }

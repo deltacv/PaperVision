@@ -1,9 +1,7 @@
 package io.github.deltacv.papervision.codegen
 
-import io.github.deltacv.papervision.codegen.build.ConValue
-import io.github.deltacv.papervision.codegen.build.Type
 import io.github.deltacv.papervision.id.IdElement
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.IdContainerStacks
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import kotlin.getValue
 
@@ -18,8 +16,6 @@ sealed class Resolvable<T> {
     }
 
     /* -- abstract Resolvable members -- */
-
-    val value get() = ConValue(Type.NONE, toString())
 
     abstract fun letOrDefer(block: (T) -> Unit)
     abstract fun <R> tryReturn(success: (T) -> R, fail: (String) -> R): R
@@ -99,7 +95,7 @@ sealed class Resolvable<T> {
 
         override fun toString() = placeholder
 
-        override val id by IdElementContainerStack.local.peekNonNull<Placeholder<*>>().nextId(this)
+        override val id by IdContainerStacks.local.peekNonNull<Placeholder<*>>().nextIdLazy(this)
     }
 
     data class DependentPlaceholder<P, T>(val dependency: Resolvable<P>, val resolver: (P) -> T?) : Placeholder<T>(resolver = {

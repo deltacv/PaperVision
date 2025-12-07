@@ -16,15 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.node.vision.imageproc
+package io.github.deltacv.papervision.node.vision.overlay
 
 import io.github.deltacv.papervision.attribute.Attribute
-import io.github.deltacv.papervision.attribute.math.IntAttribute
+import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.CircleAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.Variable
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
@@ -38,26 +42,27 @@ import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.vision.ColorSpace
 
 @PaperNode(
-    name = "nod_cannyedge",
-    category = Category.IMAGE_PROC,
-    description = "des_cannyedge"
+    name = "nod_drawcircles",
+    category = Category.OVERLAY,
+    description = "des_drawcircles"
 )
-class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
+open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")
+    val circles = ListAttribute(INPUT, CircleAttribute, "$[att_circles]")
 
-    val firstThreshold = IntAttribute(INPUT, "$[att_lowerthreshold]")
-    val secondThreshold = IntAttribute(INPUT, "$[att_upperthreshold]")
+    val lineColor = ScalarAttribute(INPUT, ColorSpace.RGB, "$[att_linecolor]")
 
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
-        + inputMat.rebuildOnChange()
+        +inputMat.rebuildOnChange()
 
-        + firstThreshold
-        + secondThreshold
+        +lineColor
 
-        + outputMat.rebuildOnChange().enablePrevizButton()
+        +circles.rebuildOnChange()
+
+        +outputMat.enablePrevizButton().rebuildOnChange()
     }
 
     override val generators = generatorsBuilder {
@@ -65,75 +70,85 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
             current {
                 val session = Session()
 
+                val color = lineColor.genValue(current)
+
                 val input = inputMat.genValue(current)
-                input.requireNonBinary(inputMat)
+                val circlesValue = circles.genValue(current) as? GenValue.GList.RuntimeListOf<*>
+                    ?: raise("") // TODO: handle non-runtime lists
 
-                input.color.letOrDefer {
-                    if(it != ColorSpace.GRAY) {
-                        inputMat.raise("err_grayscale_required")
-                    }
-                }
+                val output = uniqueVariable("${input.value.v}Circles", Mat.new())
 
-                val output = uniqueVariable("${input.value.v!!}Canny", Mat.new())
-
-                val firstThresholdValue = firstThreshold.genValue(current).value.v
-                val firstThresholdVariable = uniqueVariable("cannyFirstThreshold", int(firstThresholdValue))
-
-                val secondThresholdValue = secondThreshold.genValue(current).value.v
-                val secondThresholdVariable = uniqueVariable("cannySecondThreshold", int(firstThresholdValue))
+                val colorScalar = uniqueVariable(
+                    "circleColor",
+                    JvmOpenCvTypes.Scalar.new(
+                        color.a.value.v,
+                        color.b.value.v,
+                        color.c.value.v,
+                        color.d.value.v
+                    )
+                )
 
                 group {
                     private(output)
-
-                    public(firstThresholdVariable, firstThreshold.label())
-                    public(secondThresholdVariable, secondThreshold.label())
+                    public(colorScalar, lineColor.label())
                 }
 
                 current.scope {
                     nameComment()
 
-                    JvmOpenCvTypes.Imgproc("Canny", input.value.v, output, firstThresholdVariable, secondThresholdVariable)
+                    input.value.v("copyTo", output)
+
+                    foreach(Variable(JvmOpenCvTypes.KeyPoint, "circle"), circlesValue.value.v) {
+                        JvmOpenCvTypes.Imgproc(
+                            "circle",
+                            output,
+                            it.propertyValue("pt", JvmOpenCvTypes.Point),
+                            int(it.propertyValue("size", FloatType)),
+                            colorScalar
+                        )
+                    }
+
                     outputMat.streamIfEnabled(output, input.color)
                 }
 
-                session.outputMat = GenValue.Mat(output.resolved(), input.color)
+                session.outputMat = GenValue.Mat(output.resolved(), input.color, input.isBinary)
 
                 session
             }
         }
 
         generatorFor(CPythonLanguage) {
+            val session = Session()
+
             current {
-                val session = Session()
+                val color = lineColor.genValue(current)
 
                 val input = inputMat.genValue(current)
-                input.requireNonBinary(inputMat)
-
-                input.color.letOrDefer {
-                    if(it != ColorSpace.GRAY) {
-                        inputMat.raise("err_grayscale_required")
-                    }
-                }
+                val circlesValue = circles.genValue(current) as? GenValue.GList.RuntimeListOf<*>
+                    ?: raise("") // TODO: handle non-runtime lists
 
                 current.scope {
                     nameComment()
 
-                    val output = uniqueVariable("${input.value}_canny",
-                        cv2.callValue("Canny", CPythonLanguage.NoType, input.value.v, firstThreshold.genValue(current).value.v, secondThreshold.genValue(current).value.v)
+                    val output = uniqueVariable(
+                        "${input.value.v}_keypoints",
+                        input.value.v.callValue("copy", CPythonLanguage.NoType)
                     )
 
-                    session.outputMat = GenValue.Mat(output.resolved(), input.color)
-                }
+                    local(output)
 
-                session
+                    foreach(Variable(CPythonLanguage.NoType, "circle"), circlesValue.value.v) {
+
+                    }
+                }
             }
+
+            session
         }
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        genCodeIfNecessary(current)
-
-        if(attrib == outputMat) {
+        if (attrib == outputMat) {
             return GenValue.Mat.defer { current.sessionOf(this)?.outputMat }
         }
 

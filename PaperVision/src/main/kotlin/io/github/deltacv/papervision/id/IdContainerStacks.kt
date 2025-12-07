@@ -18,20 +18,20 @@
 
 package io.github.deltacv.papervision.id
 
-class IdElementContainerStack {
+class IdContainerStacks {
 
     companion object {
-        // Thread-local instance of IdElementContainerStack
-        private val threadLocalStack = ThreadLocal.withInitial { IdElementContainerStack() }
+        // Thread-local instance of IdContainerStack
+        private val threadLocalStack = ThreadLocal.withInitial { IdContainerStacks() }
 
         // Accessor for the current thread's stack
-        val local: IdElementContainerStack
+        val local: IdContainerStacks
             get() = threadLocalStack.get()
     }
 
-    private val stacks = mutableMapOf<Class<out IdElement>, ArrayDeque<IdElementContainer<*>>>()
+    private val stacks = mutableMapOf<Class<out IdElement>, ArrayDeque<IdContainer<*>>>()
 
-    fun <T: IdElement> push(clazz: Class<T>, container: IdElementContainer<out T>) {
+    fun <T: IdElement> push(clazz: Class<T>, container: IdContainer<out T>) {
         val stack = stacks[clazz] ?: ArrayDeque()
 
         stack.addLast(container)
@@ -39,12 +39,11 @@ class IdElementContainerStack {
         stacks[clazz] = stack
     }
 
-    inline fun <reified T: IdElement> push(container: IdElementContainer<out T>) = push(T::class.java, container)
+    inline fun <reified T: IdElement> push(container: IdContainer<out T>) = push(T::class.java, container)
 
-    @Suppress("UNCHECKED_CAST")
-    fun <T: IdElement> peek(clazz: Class<T>): IdElementContainer<T>? {
+    fun <T: IdElement> peek(clazz: Class<T>): IdContainer<T>? {
         return if(stacks.containsKey(clazz)) {
-            stacks[clazz]!!.last() as IdElementContainer<T> // uhhhh.... this is fine lol
+            stacks[clazz]!!.last() as IdContainer<T> // uhhhh.... this is fine lol
         } else null
     }
 
@@ -55,7 +54,7 @@ class IdElementContainerStack {
     inline fun <reified T: IdElement> peekSingle(): T? {
         val container = peek<T>() ?: return null
 
-        if(container is SingleIdElementContainer) {
+        if(container is SingleIdContainer) {
             return container.get()
         } else {
             throw ClassCastException("The container for ${T::class.java.typeName} is not a SingleIdElementContainer")
@@ -68,8 +67,8 @@ class IdElementContainerStack {
 
     inline fun <reified T: IdElement> pop() = pop(T::class.java)
 
-    fun all(): List<IdElementContainer<*>> {
-        val all = mutableListOf<IdElementContainer<*>>()
+    fun all(): List<IdContainer<*>> {
+        val all = mutableListOf<IdContainer<*>>()
 
         stacks.forEach { (_, stack) ->
             all.addAll(stack)

@@ -22,7 +22,7 @@ import io.github.deltacv.papervision.codegen.build.Scope
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.dsl.CodeGenContext
 import io.github.deltacv.papervision.codegen.language.Language
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.IdContainerStacks
 import io.github.deltacv.papervision.util.loggerFor
 
 enum class Visibility {
@@ -74,7 +74,7 @@ class CodeGen(
     private fun resolveAllPlaceholders(preprocessed: String): String {
         var resolved = preprocessed
 
-        val placeholders = IdElementContainerStack.local
+        val placeholders = IdContainerStacks.local
             .peekNonNull<Resolvable.Placeholder<*>>()
 
         logger.info("Resolving active placeholders: ${placeholders.inmutable.size}")

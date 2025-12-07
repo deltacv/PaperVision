@@ -24,5 +24,5 @@ interface IdElement {
 
 object Misc : IdElement {
     override val id = 0xDAFC
-    fun newMiscId() = IdElementContainerStack.local.peekNonNull<Misc>().nextId()
+    fun newMiscId() = IdContainerStacks.local.peekNonNull<Misc>().nextIdLazy()
 }

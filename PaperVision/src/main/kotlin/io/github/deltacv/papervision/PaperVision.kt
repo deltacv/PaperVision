@@ -82,33 +82,34 @@ class PaperVision(
     lateinit var config: PlatformConfig
         private set
 
-    val onInit = PaperVisionEventHandler("PaperVision-OnInit")
-    val onUpdate = PaperVisionEventHandler("PaperVision-OnUpdate")
+    val onInit            = PaperVisionEventHandler("PaperVision-OnInit")
+    val onUpdate          = PaperVisionEventHandler("PaperVision-OnUpdate")
     val onDeserialization = PaperVisionEventHandler("PaperVision-OnDeserialization")
 
+    // these depend on PlatformSetup so they are initialized later
     lateinit var textureProcessorQueue: TextureProcessorQueue
         private set
     lateinit var keyManager: KeyManager
         private set
 
     val codeGenManager = CodeGenManager(this)
-    val fontManager = FontManager()
-    val langManager = Language("/lang_pv.csv", "en").makeTr()
+    val fontManager    = FontManager()
+    val langManager    = Language("/lang_pv.csv", "en").makeTr()
 
     val nodeEditor by lazy { NodeEditor(this, keyManager) }
-    val nodeList by lazy { NodeList(this, keyManager, NodeRegistry.nodes) }
+    val nodeList   by lazy { NodeList(this, keyManager, NodeRegistry.nodes) }
 
-    val nodes = IdElementContainer<Node<*>>()
-    val attributes = IdElementContainer<Attribute>()
-    val links = IdElementContainer<Link>()
-    val windows = IdElementContainer<Window>()
-    val textures = IdElementContainer<PlatformTexture>()
-    val textureProcessorQueues = SingleIdElementContainer<TextureProcessorQueue>()
-    val fonts = IdElementContainer<Font>()
-    val streamDisplays = IdElementContainer<ImageDisplay>()
-    val actions = IdElementContainer<Action>()
-    val misc = IdElementContainer<Misc>()
-    val popups = IdElementContainer<Popup>()
+    val nodes                  = IdContainer<Node<*>>()
+    val attributes             = IdContainer<Attribute>()
+    val links                  = IdContainer<Link>()
+    val windows                = IdContainer<Window>()
+    val textures               = IdContainer<PlatformTexture>()
+    val textureProcessorQueues = SingleIdContainer<TextureProcessorQueue>()
+    val fonts                  = IdContainer<Font>()
+    val streamDisplays         = IdContainer<ImageDisplay>()
+    val actions                = IdContainer<Action>()
+    val misc                   = IdContainer<Misc>()
+    val popups                 = IdContainer<Popup>()
 
     val isModalWindowOpen get() = windows.inmutable.any { it.isModal && it.isVisible }
 
@@ -121,34 +122,34 @@ class PaperVision(
     private fun font(name: String, path: String, size: Float) =
         fontManager.makeFont(name, path, defaultFontConfig(size))
 
-    /** Executes a block with all containers pushed/popped safely */
+    /** Executes a block of code with all containers pushed/popped safely */
     private inline fun withStacks(block: () -> Unit) {
-        IdElementContainerStack.local.push(nodes)
-        IdElementContainerStack.local.push(attributes)
-        IdElementContainerStack.local.push(links)
-        IdElementContainerStack.local.push(windows)
-        IdElementContainerStack.local.push(textures)
-        IdElementContainerStack.local.push(textureProcessorQueues)
-        IdElementContainerStack.local.push(fonts)
-        IdElementContainerStack.local.push(streamDisplays)
-        IdElementContainerStack.local.push(actions)
-        IdElementContainerStack.local.push(popups)
-        IdElementContainerStack.local.push(misc)
+        IdContainerStacks.local.push(nodes)
+        IdContainerStacks.local.push(attributes)
+        IdContainerStacks.local.push(links)
+        IdContainerStacks.local.push(windows)
+        IdContainerStacks.local.push(textures)
+        IdContainerStacks.local.push(textureProcessorQueues)
+        IdContainerStacks.local.push(fonts)
+        IdContainerStacks.local.push(streamDisplays)
+        IdContainerStacks.local.push(actions)
+        IdContainerStacks.local.push(popups)
+        IdContainerStacks.local.push(misc)
 
         try {
             block()
         } finally {
-            IdElementContainerStack.local.pop<Node<*>>()
-            IdElementContainerStack.local.pop<Attribute>()
-            IdElementContainerStack.local.pop<Link>()
-            IdElementContainerStack.local.pop<Window>()
-            IdElementContainerStack.local.pop<PlatformTexture>()
-            IdElementContainerStack.local.pop<TextureProcessorQueue>()
-            IdElementContainerStack.local.pop<Font>()
-            IdElementContainerStack.local.pop<ImageDisplay>()
-            IdElementContainerStack.local.pop<Action>()
-            IdElementContainerStack.local.pop<Popup>()
-            IdElementContainerStack.local.pop<Misc>()
+            IdContainerStacks.local.pop<Node<*>>()
+            IdContainerStacks.local.pop<Attribute>()
+            IdContainerStacks.local.pop<Link>()
+            IdContainerStacks.local.pop<Window>()
+            IdContainerStacks.local.pop<PlatformTexture>()
+            IdContainerStacks.local.pop<TextureProcessorQueue>()
+            IdContainerStacks.local.pop<Font>()
+            IdContainerStacks.local.pop<ImageDisplay>()
+            IdContainerStacks.local.pop<Action>()
+            IdContainerStacks.local.pop<Popup>()
+            IdContainerStacks.local.pop<Misc>()
         }
     }
 
@@ -206,19 +207,18 @@ class PaperVision(
     }
 
     private fun initFonts() {
-        defaultFont = font("calcutta", "/fonts/Calcutta-SemiBold.otf", 20f)
-
-        font("calcutta-big", "/fonts/Calcutta-SemiBold.otf", 28f)
-        font("jetbrains-mono", "/fonts/JetBrainsMono-Regular.ttf", 28f)
-
-        fontManager.makeDefaultFont(20)
-        fontManager.makeDefaultFont(12)
-
         val rangesBuilder = ImFontGlyphRangesBuilder().apply {
             addRanges(ImGui.getIO().fonts.glyphRangesDefault)
             addRanges(FontAwesomeIcons._IconRange)
         }
         val ranges = rangesBuilder.buildRanges()
+
+        defaultFont = font("calcutta", "/fonts/Calcutta-SemiBold.otf", 20f)
+        font("calcutta-big", "/fonts/Calcutta-SemiBold.otf", 28f)
+        font("jetbrains-mono", "/fonts/JetBrainsMono-Regular.ttf", 28f)
+
+        fontManager.makeDefaultFont(20) // "default-20"
+        fontManager.makeDefaultFont(12) // "default-12"
 
         // Pass the ranges to the icon fonts so FontAwesome glyphs are available
         fontManager.makeFont("font-awesome", "/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(16f), ranges)

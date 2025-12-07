@@ -62,7 +62,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                 val minAreaVar = uniqueVariable("minArea", minAreaVal.value.v)
                 val maxAreaVar = uniqueVariable("maxArea", maxAreaVal.value.v)
 
-                val contoursVar = uniqueVariable("${contours.value.value}ByArea", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
+                val contoursVar = uniqueVariable("${contours.value.v}ByArea", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
 
                 group {
                     public(minAreaVar, minArea.label())

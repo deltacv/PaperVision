@@ -27,10 +27,9 @@ import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.*
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.exception.NodeGenException
-import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.editor.NodeEditor
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.IdContainerStacks
 import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.BasicNodeData
@@ -50,7 +49,7 @@ abstract class Node<S: CodeGenSession>(
     val joinActionStack: Boolean = true
 ) : DrawableIdElementBase<Node<*>>(), GeneratorsGenNode<S>, DataSerializable<NodeSerializationData> {
 
-    override val idElementContainer = IdElementContainerStack.local.peekNonNull<Node<*>>()
+    override val idContainer = IdContainerStacks.local.peekNonNull<Node<*>>()
     override val requestedId get() = if(forgetSerializedId) null else serializedId
 
     private var beforeDeletingPosition = ImVec2()
@@ -72,7 +71,7 @@ abstract class Node<S: CodeGenSession>(
     lateinit var editor: NodeEditor
         internal set
 
-    val isOnEditor get() = ::editor.isInitialized && idElementContainer.contains(this)
+    val isOnEditor get() = ::editor.isInitialized && idContainer.contains(this)
 
     // it is the responsibility of the inheriting class to set this value in draw()
     val screenPosition = ImVec2()
@@ -122,7 +121,7 @@ abstract class Node<S: CodeGenSession>(
             attribute.delete()
         }
 
-        idElementContainer.removeId(id)
+        idContainer.removeId(id)
         onDelete.run()
     }
 
@@ -137,7 +136,7 @@ abstract class Node<S: CodeGenSession>(
             attribute.restore()
         }
 
-        idElementContainer[id] = this
+        idContainer[id] = this
 
         if(this is DrawNode<*>) {
             nextNodePosition = beforeDeletingPosition

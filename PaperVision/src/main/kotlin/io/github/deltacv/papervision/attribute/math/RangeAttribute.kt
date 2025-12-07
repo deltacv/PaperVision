@@ -156,7 +156,7 @@ class RangeAttribute(
 
 fun RangeAttribute.rebuildOnToggleChange() = apply {
     onToggleChange {
-        if(idElementContainer[id] != null) {
+        if(idContainer[id] != null) {
             rebuildPreviz()
         }
     }

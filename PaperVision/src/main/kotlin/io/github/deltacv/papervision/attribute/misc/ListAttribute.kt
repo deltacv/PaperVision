@@ -327,7 +327,7 @@ open class ListAttribute(
                         // that created the original link (hopefully he got the chance to say goodbye to his family)
                         // this avoids glitches when the user tries to undo/redo the creation of this new link
                         // otherwise, the stack would try to address the original link, which doesn't exist anymore
-                        associatedAction.idElementContainer[associatedAction.id] = action
+                        associatedAction.idContainer[associatedAction.id] = action
                     }
                 }
 

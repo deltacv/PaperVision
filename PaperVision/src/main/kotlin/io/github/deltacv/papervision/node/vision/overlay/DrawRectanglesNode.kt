@@ -79,7 +79,7 @@ open class DrawRectanglesNode
 
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)
-                val output = uniqueVariable("${input.value.value}Rects", Mat.new())
+                val output = uniqueVariable("${input.value.v}Rects", Mat.new())
 
                 var drawMat = input.value.v
 
@@ -166,7 +166,7 @@ open class DrawRectanglesNode
                         input.value.v
                     } else {
                         val output = uniqueVariable(
-                            "${input.value.value}_rects",
+                            "${input.value.v}_rects",
                             input.value.v.callValue("copy", CPythonLanguage.NoType)
                         )
                         local(output)

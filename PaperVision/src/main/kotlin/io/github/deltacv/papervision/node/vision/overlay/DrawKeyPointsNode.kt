@@ -77,7 +77,7 @@ open class DrawKeyPointsNode
 
                 val input = inputMat.genValue(current)
                 val keypointsValue = keypoints.genValue(current)
-                val output = uniqueVariable("${input.value.value}KeyPoints", Mat.new())
+                val output = uniqueVariable("${input.value.v}KeyPoints", Mat.new())
 
                 var drawMat = if (!isDrawOnInput) {
                     output
@@ -130,7 +130,7 @@ open class DrawKeyPointsNode
                 current.scope {
                     nameComment()
 
-                    val output = uniqueVariable("${input.value.value}_keypoints",
+                    val output = uniqueVariable("${input.value.v}_keypoints",
                         cv2.callValue("drawKeypoints",
                             CPythonLanguage.NoType,
                             input.value.v,

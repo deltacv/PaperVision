@@ -69,6 +69,18 @@ sealed class GenValue {
         }
     }
 
+    sealed class GCircle : GenValue() {
+        data class Circle(val x: Double, val y: Double,  val r: Double) : GCircle()
+
+        data class RuntimeCircle(val value: Resolvable<Value>) : GCircle() {
+            companion object {
+                fun defer(genValueResolver: () -> RuntimeCircle?) = RuntimeCircle(
+                    Resolvable.fromResolvable { genValueResolver()?.value }
+                )
+            }
+        }
+    }
+
     sealed class GRect : GenValue() {
         data class Rect(val x: Double, val y: Double, val w: Double, val h: Double) : GRect()
 

@@ -1,19 +1,152 @@
+/*
+ * PaperVision
+ * Copyright (C) 2025 Sebastian Erives, deltacv
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package io.github.deltacv.papervision.node.vision.featuredet
 
+import io.github.deltacv.papervision.attribute.Attribute
+import io.github.deltacv.papervision.attribute.math.DoubleAttribute
+import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.CircleAttribute
+import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
+import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.Variable
+import io.github.deltacv.papervision.codegen.build.type.JavaTypes
+import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolved
+import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
+import io.github.deltacv.papervision.node.PaperNode
 
+@PaperNode(
+    name = "nod_houghcircles",
+    category = Category.FEATURE_DET,
+    description = "des_houghcircles"
+)
 class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
 
     val input = MatAttribute(INPUT, "$[att_input]")
 
+    val minDistance = DoubleAttribute(INPUT, "$[att_mindistance]")
+    val downscale = DoubleAttribute(INPUT, "$[att_downscale]")
+
+    val output = ListAttribute(OUTPUT, CircleAttribute, "$[att_calccircles]")
+
     override fun onEnable() {
         + input.rebuildOnChange()
+
+        + minDistance
+        minDistance.value.set(10.0)
+        + downscale
+
+        + output.rebuildOnChange()
+    }
+
+    override val generators = generatorsBuilder {
+        generatorFor(JavaLanguage) {
+            val session = Session()
+
+            val inputValue = input.genValue(current).value
+
+            val minDistanceValue = minDistance.genValue(current).value
+            val downscaleValue = downscale.genValue(current).value
+
+            current {
+                val circlesMatVar = uniqueVariable("houghCirclesMat", JvmOpenCvTypes.Mat.new())
+                val circlesListVar = uniqueVariable("houghCirclesList",
+                    JavaTypes.ArrayList(JvmOpenCvTypes.KeyPoint).new()
+                )
+
+                group {
+                    private(circlesMatVar)
+                    private(circlesListVar)
+                }
+
+                current.scope {
+                    nameComment()
+
+                    circlesMatVar("release")
+                    circlesListVar("clear")
+
+                    separate()
+
+                    JvmOpenCvTypes.Imgproc("HoughCircles",
+                        inputValue.v,
+                        circlesMatVar,
+                        JvmOpenCvTypes.Imgproc.HOUGH_GRADIENT,
+                        downscaleValue.v,
+                        minDistanceValue.v
+                    )
+
+                    separate()
+
+                    // Convert Mat to List<KeyPoint>
+                    forLoop(Variable(IntType, "i"), 0.v, circlesMatVar.callValue("rows", IntType)) {
+                        val c = Variable("c", circlesMatVar.callValue("get", DoubleType.arrayType(), 0.v, it))
+                        local(c)
+
+                        separate()
+
+                        circlesListVar("add", JvmOpenCvTypes.KeyPoint.new(
+                            int(c[0.v, DoubleType])),
+                            int(c[1.v, DoubleType]),
+                            int(c[2.v, DoubleType])
+                        )
+                    }
+                }
+
+                session.circles = GenValue.GList.RuntimeListOf(circlesListVar.resolved(), GenValue.GCircle.RuntimeCircle::class.resolved())
+            }
+
+            session
+        }
+
+        generatorFor(CPythonLanguage) {
+            val session = Session()
+
+            val minDistanceValue = minDistance.genValue(current)
+            val downscaleValue = downscale.genValue(current)
+
+            current {
+                group {
+                }
+
+                current.scope {
+                }
+            }
+
+            session
+        }
+    }
+
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+        return when (attrib) {
+            output -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.circles }
+            else -> noValue(attrib)
+        }
     }
 
     class Session : CodeGenSession {
-
+        lateinit var circles: GenValue.GList.RuntimeListOf<GenValue.GCircle.RuntimeCircle>
     }
 }

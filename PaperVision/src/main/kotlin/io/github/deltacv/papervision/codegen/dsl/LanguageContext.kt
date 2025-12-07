@@ -32,7 +32,6 @@ open class LanguageContext(val language: Language) {
     val Double.v get() = ConValue(language.DoubleType, toString())
     val String.v get() = ConValue(Type.NONE, this)
 
-
     val Resolvable<Double>.v @JvmName("vRDouble") get() = tryReturn({ it.v }, { it.v })
     val Resolvable<Int>.v @JvmName("vRInt") get() = tryReturn({ it.v }, { it.v })
     val Resolvable<Value>.v @JvmName("vRValue") get() = tryReturn({ it }, { it.v })

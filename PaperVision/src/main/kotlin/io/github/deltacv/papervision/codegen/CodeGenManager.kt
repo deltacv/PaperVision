@@ -31,8 +31,8 @@ import io.github.deltacv.papervision.gui.DialogMessageWindow
 import io.github.deltacv.papervision.gui.Popup
 import io.github.deltacv.papervision.gui.TooltipPopup
 import io.github.deltacv.papervision.gui.util.Font
-import io.github.deltacv.papervision.id.IdElementContainer
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.IdContainer
+import io.github.deltacv.papervision.id.IdContainerStacks
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.util.loggerForThis
@@ -46,15 +46,15 @@ class CodeGenManager(val paperVision: PaperVision) {
         language: Language = JavaLanguage,
         isForPreviz: Boolean = false
     ): String? {
-        val placeholders = IdElementContainer<Resolvable.Placeholder<*>>()
+        val placeholders = IdContainer<Resolvable.Placeholder<*>>()
 
-        IdElementContainerStack.local.push(placeholders) // all placeholders created during code gen will be caught here
+        IdContainerStacks.local.push(placeholders) // all placeholders created during code gen will be caught here
 
         val timestamp = System.currentTimeMillis()
 
         logger.info("Starting code gen at $timestamp")
 
-        for(popup in IdElementContainerStack.local.peekNonNull<Popup>().inmutable) {
+        for(popup in IdContainerStacks.local.peekNonNull<Popup>().inmutable) {
             if(popup.label == "Gen-Error") {
                 popup.delete()
             }
@@ -126,7 +126,7 @@ class CodeGenManager(val paperVision: PaperVision) {
 
         logger.info("Code gen $timestamp OK")
 
-        IdElementContainerStack.local.pop<Resolvable.Placeholder<*>>() // we're done with placeholders
+        IdContainerStacks.local.pop<Resolvable.Placeholder<*>>() // we're done with placeholders
 
         return result.trim()
     }

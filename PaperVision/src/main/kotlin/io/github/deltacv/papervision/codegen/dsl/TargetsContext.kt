@@ -19,12 +19,11 @@
 package io.github.deltacv.papervision.codegen.dsl
 
 import io.github.deltacv.papervision.codegen.CodeGen
-import io.github.deltacv.papervision.codegen.build.Type
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.Variable
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.vision.enableTargets
+import io.github.deltacv.papervision.codegen.language.vision.enableJavaTargets
 
 class TargetsContext(context: LanguageContext) {
     val rectTargets = context.run {
@@ -47,9 +46,9 @@ class TargetsContext(context: LanguageContext) {
     }
 }
 
-fun <T> CodeGen.Current.targets(enableTargetsIfNeeded: Boolean = true, block: TargetsContext.() -> T): T {
+fun <T> CodeGen.Current.javaTargets(enableTargetsIfNeeded: Boolean = true, block: TargetsContext.() -> T): T {
     if(enableTargetsIfNeeded) {
-        enableTargets()
+        enableJavaTargets()
     }
 
     return block(TargetsContext(codeGen.context))

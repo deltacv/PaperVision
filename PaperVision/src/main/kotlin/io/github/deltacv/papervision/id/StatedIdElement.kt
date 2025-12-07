@@ -28,13 +28,13 @@ interface StatedIdElement : IdElement {
 @Suppress("UNCHECKED_CAST")
 abstract class StatedIdElementBase<T : StatedIdElementBase<T>> : StatedIdElement {
 
-    abstract val idElementContainer: IdElementContainer<T>
+    abstract val idContainer: IdContainer<T>
 
     open val requestedId: Int? = null
 
     private val state by lazy {
         IdElementState(
-            idElementContainer,
+            idContainer,
             requestedId,
             this as T,
             ::onEnable

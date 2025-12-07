@@ -24,7 +24,7 @@ import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImBoolean
 import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.IdContainerStacks
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.flags
 
@@ -37,7 +37,7 @@ class TooltipPopup(
 
     companion object {
         fun warning(text: String) {
-            for(popup in IdElementContainerStack.local.peekNonNull<Popup>().inmutable) {
+            for(popup in IdContainerStacks.local.peekNonNull<Popup>().inmutable) {
                 if(popup is TooltipPopup && popup.label == "Warning") {
                     popup.delete()
                 }
@@ -84,7 +84,7 @@ class TooltipPopup(
 abstract class Popup(
     val label: String = ""
 ) : DrawableIdElementBase<Popup>() {
-    override val idElementContainer = IdElementContainerStack.local.peekNonNull<Popup>()
+    override val idContainer = IdContainerStacks.local.peekNonNull<Popup>()
 
     abstract val title: String
     abstract val flags: Int

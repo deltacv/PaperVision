@@ -10,7 +10,7 @@ import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.OS
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.util.getMemoryUsageMB
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.IdContainerStacks
 import io.github.deltacv.papervision.io.resourceToString
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
@@ -67,7 +67,7 @@ class AboutModalWindow : Window() {
         val OS_VERSION = System.getProperty("os.version")
 
         var elementCount = 0
-        for(container in IdElementContainerStack.local.all()) {
+        for(container in IdContainerStacks.local.all()) {
             elementCount += container.elements.size
         }
 

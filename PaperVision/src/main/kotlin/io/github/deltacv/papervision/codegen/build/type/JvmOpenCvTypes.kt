@@ -42,6 +42,10 @@ object JvmOpenCvTypes {
         val MORPH_RECT = ConValue(StandardTypes.cint, "Imgproc.MORPH_RECT").apply {
             additionalImports(this)
         }
+
+        val HOUGH_GRADIENT = ConValue(StandardTypes.cint, "Imgproc.HOUGH_GRADIENT").apply {
+            additionalImports(this)
+        }
     }
 
     val Features2d = Type("Features2d", "org.opencv.features2d")

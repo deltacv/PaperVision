@@ -171,7 +171,7 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T : GenValue> readGenValue(
+    protected inline fun <reified T : GenValue> readGenValue(
         current: CodeGen.Current,
         name: String,
         inputFieldValue: T? = null,

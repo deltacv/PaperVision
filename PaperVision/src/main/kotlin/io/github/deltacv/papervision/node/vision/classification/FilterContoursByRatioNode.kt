@@ -74,9 +74,9 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
                 val minRatioVar = uniqueVariable("minRatio", minRatioVal.value.v)
                 val maxRatioVar = uniqueVariable("maxRatio", maxRatioVal.value.v)
 
-                val contoursVar = uniqueVariable("${contours.value.value}ByRatio", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
+                val contoursVar = uniqueVariable("${contours.value.v}ByRatio", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
 
-                val points2f = uniqueVariable("${contours.value.value ?: "points"}2f", JvmOpenCvTypes.MatOfPoint2f.new())
+                val points2f = uniqueVariable("${contours.value.v ?: "points"}2f", JvmOpenCvTypes.MatOfPoint2f.new())
 
                 group {
                     public(minRatioVar, minRatio.label())
@@ -157,7 +157,7 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
             val maxRatioVal = maxRatio.genValue(current)
 
             current {
-                val contoursVar = uniqueVariable("${contours.value.value}_by_ratio", CPythonLanguage.newArrayOf(CPythonLanguage.NoType))
+                val contoursVar = uniqueVariable("${contours.value.v}_by_ratio", CPythonLanguage.newArrayOf(CPythonLanguage.NoType))
 
                 current.scope {
                     local(contoursVar)

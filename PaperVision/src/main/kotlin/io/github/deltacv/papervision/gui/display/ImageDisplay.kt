@@ -19,17 +19,15 @@
 package io.github.deltacv.papervision.gui.display
 
 import imgui.ImGui
-import io.github.deltacv.papervision.id.IdElement
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.IdContainerStacks
 import io.github.deltacv.papervision.engine.previz.ClientPrevizStream
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.IdElementContainer
 
 class ImageDisplay(
     var clientPrevizStream: ClientPrevizStream
 ) : DrawableIdElementBase<ImageDisplay>() {
 
-    override val idElementContainer get() = IdElementContainerStack.local.peekNonNull<ImageDisplay>()
+    override val idContainer get() = IdContainerStacks.local.peekNonNull<ImageDisplay>()
 
     override fun draw() {
         clientPrevizStream.textureOf(id)?.draw()

@@ -28,7 +28,7 @@ class ToastWindow(
         super.onEnable()
         timer.reset()
 
-        for(window in idElementContainer.inmutable) {
+        for(window in idContainer.inmutable) {
             if(window is ToastWindow && window != this) {
                 window.delete()
             }

@@ -26,13 +26,13 @@ interface DrawableIdElement : StatedIdElement {
 @Suppress("UNCHECKED_CAST")
 abstract class DrawableIdElementBase<T : DrawableIdElementBase<T>> : DrawableIdElement {
 
-    abstract val idElementContainer: IdElementContainer<T>
+    abstract val idContainer: IdContainer<T>
 
     open val requestedId: Int? = null
 
     private val state by lazy {
         IdElementState(
-            idElementContainer,
+            idContainer,
             requestedId,
             this as T,
             ::onEnable

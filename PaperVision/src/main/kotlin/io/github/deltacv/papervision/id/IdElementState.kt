@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.id
 
 // Internal helper class to encapsulate the common logic
 internal class IdElementState<T: IdElement>(
-    private val idElementContainer: IdElementContainer<T>,
+    private val idContainer: IdContainer<T>,
     private val requestedId: Int?,
     private val self: T,
     private val onEnableCallback: () -> Unit
@@ -39,10 +39,10 @@ internal class IdElementState<T: IdElement>(
         }
 
     val isEnabled: Boolean
-        get() = internalId?.let { idElementContainer.has(it, self) } ?: false
+        get() = internalId?.let { idContainer.has(it, self) } ?: false
 
     fun enable() {
-        if(internalId == null || !idElementContainer.has(id, self)) {
+        if(internalId == null || !idContainer.has(id, self)) {
             internalId = provideId()
             onEnableCallback()
             hasEnabled = true
@@ -51,15 +51,15 @@ internal class IdElementState<T: IdElement>(
 
     private fun provideId() =
         if(requestedId == null) {
-            idElementContainer.nextId(self).value
-        } else idElementContainer.requestId(self, requestedId).value
+            idContainer.nextIdLazy(self).value
+        } else idContainer.requestIdLazy(self, requestedId).value
 
 
     fun delete() {
-        idElementContainer.removeId(id)
+        idContainer.removeId(id)
     }
 
     fun restore() {
-        idElementContainer[id] = self
+        idContainer[id] = self
     }
 }
