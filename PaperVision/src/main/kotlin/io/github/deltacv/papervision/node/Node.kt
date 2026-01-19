@@ -206,9 +206,9 @@ abstract class Node<S: CodeGenSession>(
         for(linkedNode in linkedNodes) {
             if(linkedNode.hasDeadEnd()) {
                 deadEndNodes.add(linkedNode)
-                logger.debug("Dead end: $linkedNode")
+                logger.debug("Dead end: {}", linkedNode)
             } else {
-                logger.debug("Complete path: $linkedNode")
+                logger.debug("Complete path: {}", linkedNode)
                 completePathNodes.add(linkedNode)
             }
         }
@@ -266,6 +266,10 @@ abstract class Node<S: CodeGenSession>(
         }
     }
 
+    fun forgetSerializedId() {
+        forgetSerializedId = true
+    }
+
     override fun toString() = "Node(${this::class.java.typeName}, id=$id)"
 
     companion object {
@@ -284,7 +288,7 @@ abstract class Node<S: CodeGenSession>(
             null
         }
 
-        fun checkRecursion(from: Node<*>, to: Node<*>): Boolean {
+        fun checkSimpleRecursion(from: Node<*>, to: Node<*>): Boolean {
             val linksBetween = Link.getLinksBetween(from, to)
 
             var hasOutputToInput = false
@@ -308,10 +312,6 @@ abstract class Node<S: CodeGenSession>(
 
             return false
         }
-    }
-
-    fun forgetSerializedId() {
-        forgetSerializedId = true
     }
 
 }

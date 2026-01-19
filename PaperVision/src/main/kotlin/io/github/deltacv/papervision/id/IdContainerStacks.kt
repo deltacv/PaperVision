@@ -41,6 +41,7 @@ class IdContainerStacks {
 
     inline fun <reified T: IdElement> push(container: IdContainer<out T>) = push(T::class.java, container)
 
+    @Suppress("UNCHECKED_CAST")
     fun <T: IdElement> peek(clazz: Class<T>): IdContainer<T>? {
         return if(stacks.containsKey(clazz)) {
             stacks[clazz]!!.last() as IdContainer<T> // uhhhh.... this is fine lol

@@ -82,31 +82,31 @@ class EnumAttribute<T: Enum<T>>(
                     "Enum attribute must have another attribute attached"
                 )
 
-                val value = linkedAttrib!!.genValue(current)
+                val value = linkedAttrib.genValue(current)
                 raiseAssert(value is GenValue.Enum<*>, "Attribute attached is not a valid Enum")
 
-                val valueEnum = value as GenValue.Enum<*>
-
                 raiseAssert(
-                    value.clazz == expectedClass,
-                    "Enum attribute attached (${value.clazz}) is not the expected type of enum ($expectedClass)"
+                    value.value::class.java == expectedClass,
+                    "Enum attribute attached (${value::class.java.simpleName}) is not the expected type of enum ($expectedClass)"
                 )
 
-                return valueEnum as GenValue.Enum<T>
+                return value as GenValue.Enum<T>
             } else {
                 val value = values[currentIndex.get()]
 
-                return GenValue.Enum(value, value::class.java)
+                raiseAssert(
+                    value::class.java == expectedClass,
+                    "Enum attribute attached (${value::class.java.simpleName}) is not the expected type of enum ($expectedClass)"
+                )
+
+                return GenValue.Enum(value)
             }
         } else {
             val value = getGenValueFromNode(current)
             raiseAssert(value is GenValue.Enum<*>, "Value returned from the node is not an enum")
 
+
             val valueEnum = value as GenValue.Enum<T>
-            raiseAssert(
-                value.clazz == expectedClass,
-                "Enum attribute returned from the node (${value.clazz}) is not the expected type of enum ($expectedClass)"
-            )
 
             return valueEnum
         }

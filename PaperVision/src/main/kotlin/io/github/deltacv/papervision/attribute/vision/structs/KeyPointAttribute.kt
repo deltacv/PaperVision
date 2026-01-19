@@ -8,9 +8,9 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.rgbaColor
 
-class KeyPointsAttribute(override val mode: AttributeMode,
-                         override var variableName: String? = null
-) : TypedAttribute(KeyPointsAttribute) {
+class KeyPointAttribute(override val mode: AttributeMode,
+                        override var variableName: String? = null
+) : TypedAttribute(Companion) {
 
     companion object : AttributeType {
         override val icon = FontAwesomeIcons.PlusCircle
@@ -21,11 +21,11 @@ class KeyPointsAttribute(override val mode: AttributeMode,
         override val listStyleColor = rgbaColor(253, 216, 53, 140)
         override val listStyleHoveredColor = rgbaColor(253, 216, 53, 255)
 
-        override fun new(mode: AttributeMode, variableName: String) = KeyPointsAttribute(mode, variableName)
+        override fun new(mode: AttributeMode, variableName: String) = KeyPointAttribute(mode, variableName)
     }
 
-    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.RuntimeKeyPoints>(
-        current, "a KeyPoints"
-    ) { it is GenValue.RuntimeKeyPoints }
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.GKeyPoint.RuntimeKeyPoint>(
+        current, "a KeyPoint"
+    ) { it is GenValue.GKeyPoint.RuntimeKeyPoint }
 
 }

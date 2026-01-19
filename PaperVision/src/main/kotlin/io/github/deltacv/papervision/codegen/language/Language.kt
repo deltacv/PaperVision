@@ -69,14 +69,14 @@ interface Language : ValueBuilder {
     fun double(value: Double) = ConValue(DoubleType, value.toString())
 
     fun instanceVariableDeclaration(
-        vis: Visibility, variable: Variable, label: String? = null,
+        vis: Visibility, variable: DeclarableVariable, label: String? = null,
         isStatic: Boolean = false, isFinal: Boolean = false): Pair<String?, String>
 
-    fun localVariableDeclaration(variable: Variable, isFinal: Boolean = false): String
+    fun localVariableDeclaration(variable: DeclarableVariable, isFinal: Boolean = false): String
 
-    fun variableSetDeclaration(variable: Variable, v: Value): String
-    fun arrayVariableSetDeclaration(variable: Variable, index: Value, v: Value): String
-    fun instanceVariableSetDeclaration(variable: Variable, v: Value): String
+    fun variableSetDeclaration(variable: DeclarableVariable, v: Value): String
+    fun arrayVariableSetDeclaration(variable: DeclarableVariable, index: Value, v: Value): String
+    fun instanceVariableSetDeclaration(variable: DeclarableVariable, v: Value): String
     fun methodCallDeclaration(className: Type, methodName: String, vararg parameters: Value): String
     fun methodCallDeclaration(callee: Value, methodName: String, vararg parameters: Value): String
 

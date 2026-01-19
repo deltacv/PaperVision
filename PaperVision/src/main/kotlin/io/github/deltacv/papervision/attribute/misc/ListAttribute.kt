@@ -220,13 +220,13 @@ open class ListAttribute(
                     "List attribute must have another attribute attached"
                 )
 
-                val value = linkedAttrib!!.genValue(current)
+                val value = linkedAttrib.genValue(current)
                 raiseAssert(
                     value is GenValue.GList.ListOf<*> || value is GenValue.GList.RuntimeListOf<*>,
                     "Attribute attached is not a list"
                 )
 
-                value as GenValue.GList
+                value
             } else {
                 // get the values of all the attributes and return a
                 // GenValue.List with the attribute values in an array
@@ -240,7 +240,7 @@ open class ListAttribute(
                 "Value returned from the node is not a list"
             )
 
-            value as GenValue.GList
+            value
         }
     }
 

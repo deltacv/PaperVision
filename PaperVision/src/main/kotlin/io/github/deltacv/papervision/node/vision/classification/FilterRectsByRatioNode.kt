@@ -8,7 +8,8 @@ import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.Variable
+import io.github.deltacv.papervision.codegen.build.AccessorVariable
+import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
@@ -76,7 +77,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
 
                     rectsVar("clear")
 
-                    foreach(Variable(JvmOpenCvTypes.Rect, "rect"), rects.value.v) { rect ->
+                    foreach(AccessorVariable(JvmOpenCvTypes.Rect, "rect"), rects.value.v) { rect ->
                         val ratioVar = uniqueVariable("ratio", rect.propertyValue("height", IntType).castTo(DoubleType) / rect.propertyValue("width", IntType).castTo(DoubleType))
                         local(ratioVar)
 
@@ -114,7 +115,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
 
                     separate()
 
-                    foreach(Variable(CPythonLanguage.NoType, "rect"), rects.value.v) { rect ->
+                    foreach(DeclarableVariable(CPythonLanguage.NoType, "rect"), rects.value.v) { rect ->
                         val ratioVar = uniqueVariable("ratio", (rect[2.v, IntType] / rect[3.v, IntType]))
                         local(ratioVar)
 

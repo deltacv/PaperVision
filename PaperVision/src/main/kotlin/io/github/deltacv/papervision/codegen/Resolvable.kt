@@ -107,6 +107,11 @@ sealed class Resolvable<T> {
         }
     })
 
+    data class NullableDependentPlaceholder<P, T>(val dependency: Resolvable<P>, val resolver: (P?) -> T?) : Placeholder<T>(resolver = {
+        val depValue = dependency.resolve()
+        resolver(depValue)
+    })
+
     data class DoubleDependentPlaceholder<P1, P2, T>(
         val dependency1: Resolvable<P1>,
         val dependency2: Resolvable<P2>,

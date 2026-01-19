@@ -46,7 +46,7 @@ object KotlinLanguage : LanguageBase(usesSemicolon = false) {
 
     override fun instanceVariableDeclaration(
         vis: Visibility,
-        variable: Variable,
+        variable: DeclarableVariable,
         label: String?,
         isStatic: Boolean,
         isFinal: Boolean
@@ -67,7 +67,7 @@ object KotlinLanguage : LanguageBase(usesSemicolon = false) {
         )
     }
 
-    override fun localVariableDeclaration(variable: Variable, isFinal: Boolean): String {
+    override fun localVariableDeclaration(variable: DeclarableVariable, isFinal: Boolean): String {
         val ending = if(variable.variableValue.value != null) " = ${variable.variableValue.value}" else ""
 
         return "${if(isFinal) "val" else "var"} ${variable.name}: ${variable.type.shortNameWithGenerics}$ending"

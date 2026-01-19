@@ -27,7 +27,8 @@ import io.github.deltacv.papervision.attribute.vision.structs.CircleAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.Variable
+import io.github.deltacv.papervision.codegen.build.AccessorVariable
+import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
@@ -64,6 +65,9 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
 
     override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
+            // Circle type needs to be lazily evaluated to gen its inner class
+            val Circle = JvmOpenCvTypes.getCircleType(current)
+
             val session = Session()
 
             val inputValue = input.genValue(current).value
@@ -74,7 +78,7 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
             current {
                 val circlesMatVar = uniqueVariable("houghCirclesMat", JvmOpenCvTypes.Mat.new())
                 val circlesListVar = uniqueVariable("houghCirclesList",
-                    JavaTypes.ArrayList(JvmOpenCvTypes.KeyPoint).new()
+                    JavaTypes.ArrayList(Circle).new()
                 )
 
                 group {
@@ -100,18 +104,27 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
 
                     separate()
 
-                    // Convert Mat to List<KeyPoint>
-                    forLoop(Variable(IntType, "i"), 0.v, circlesMatVar.callValue("rows", IntType)) {
-                        val c = Variable("c", circlesMatVar.callValue("get", DoubleType.arrayType(), 0.v, it))
+                    // Convert Mat to List<Circle>
+                    forLoop(AccessorVariable(IntType, "x"), 0.v, circlesMatVar.callValue("cols", IntType)) {
+                        val circle = DeclarableVariable("circle", circlesMatVar.callValue("get", DoubleType.arrayType(), 0.v, it))
+                        local(circle)
+
+                        separate()
+
+                        val p = DeclarableVariable("p",
+                            JvmOpenCvTypes.Point.new(
+                                int(circle[0.v, DoubleType]),
+                                int(circle[1.v, DoubleType])
+                            )
+                        )
+                        local(p)
+
+                        val c = DeclarableVariable("c", int(circle[2.v, DoubleType]))
                         local(c)
 
                         separate()
 
-                        circlesListVar("add", JvmOpenCvTypes.KeyPoint.new(
-                            int(c[0.v, DoubleType])),
-                            int(c[1.v, DoubleType]),
-                            int(c[2.v, DoubleType])
-                        )
+                        circlesListVar("add", Circle.new(p, c))
                     }
                 }
 

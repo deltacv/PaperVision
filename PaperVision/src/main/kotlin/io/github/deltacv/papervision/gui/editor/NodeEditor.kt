@@ -573,7 +573,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     fun addNode(nodeClazz: Class<out Node<*>>): Node<*> {
         val instance = Node.instantiateNode(nodeClazz)
             ?: throw IllegalArgumentException(
-                "Node class $nodeClazz could not be instantiated, is it a valid Node subclass?"
+                "Node $nodeClazz could not be instantiated, is it a valid Node subclass?"
             )
 
         val action = CreateNodesAction(instance)
@@ -699,7 +699,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         val link = Link(input, output)
         CreateLinkAction(link).enable()
 
-        if (Node.checkRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
+        if (Node.checkSimpleRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
             TooltipPopup.warning("err_couldntlink_recursion")
             link.delete()
         } else {

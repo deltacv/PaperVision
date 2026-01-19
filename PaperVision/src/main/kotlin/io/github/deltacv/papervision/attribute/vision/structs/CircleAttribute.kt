@@ -22,7 +22,7 @@ class CircleAttribute(
         override val listStyleColor = rgbaColor(253, 216, 53, 140)
         override val listStyleHoveredColor = rgbaColor(253, 216, 53, 255)
 
-        override fun new(mode: AttributeMode, variableName: String) = KeyPointsAttribute(mode, variableName)
+        override fun new(mode: AttributeMode, variableName: String) = KeyPointAttribute(mode, variableName)
     }
 
     override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.GCircle>(

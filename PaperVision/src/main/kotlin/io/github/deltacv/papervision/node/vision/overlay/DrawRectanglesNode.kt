@@ -75,7 +75,7 @@ open class DrawRectanglesNode
             current {
                 val session = Session()
 
-                val lineParams = (lineParams.genValue(current) as GenValue.LineParameters).ensureRuntimeLineJava(current)
+                val lineParams = lineParams.genValue(current).ensureRuntimeLineJava(current)
 
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)

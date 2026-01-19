@@ -30,8 +30,9 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenOptions
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.NoSession
+import io.github.deltacv.papervision.codegen.build.AccessorVariable
 import io.github.deltacv.papervision.codegen.build.Value
-import io.github.deltacv.papervision.codegen.build.Variable
+import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorFor
@@ -117,8 +118,8 @@ class InputMatNode @JvmOverloads constructor(
     override fun getGenValueOf(current: CodeGen.Current,
                                attrib: Attribute
     ) = when(current.language) {
-        is CPythonLanguage -> GenValue.Mat(Variable(CPythonLanguage.NoType, "input").resolved(), ColorSpace.RGBA.resolved())
-        else -> GenValue.Mat(Variable(JvmOpenCvTypes.Mat, "input").resolved(), ColorSpace.RGBA.resolved())
+        is CPythonLanguage -> GenValue.Mat(AccessorVariable(CPythonLanguage.NoType, "input").resolved(), ColorSpace.RGBA.resolved())
+        else -> GenValue.Mat(AccessorVariable(JvmOpenCvTypes.Mat, "input").resolved(), ColorSpace.RGBA.resolved())
     }
 }
 

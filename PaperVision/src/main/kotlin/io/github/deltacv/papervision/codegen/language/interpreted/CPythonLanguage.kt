@@ -55,7 +55,7 @@ object CPythonLanguage : LanguageBase(
 
     override fun instanceVariableDeclaration(
         vis: Visibility,
-        variable: Variable,
+        variable: DeclarableVariable,
         label: String?,
         isStatic: Boolean,
         isFinal: Boolean
@@ -65,11 +65,11 @@ object CPythonLanguage : LanguageBase(
     )
 
     override fun localVariableDeclaration(
-        variable: Variable,
+        variable: DeclarableVariable,
         isFinal: Boolean
     ) = instanceVariableDeclaration(Visibility.PUBLIC, variable).second
 
-    override fun instanceVariableSetDeclaration(variable: Variable, v: Value) = "${variable.name} = ${v.value!!}" + semicolonIfNecessary()
+    override fun instanceVariableSetDeclaration(variable: DeclarableVariable, v: Value) = "${variable.name} = ${v.value!!}" + semicolonIfNecessary()
 
     override fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value) =
         throw UnsupportedOperationException("streamMatCallDeclaration is not supported in Python")
@@ -204,7 +204,7 @@ object CPythonLanguage : LanguageBase(
 
     fun conditionOfValue(value: Value) = Condition(BooleanType, value.value!!)
 
-    class TupleVariable(value: Value, vararg names: String) : Variable(names.csv(), value) {
+    class TupleVariable(value: Value, vararg names: String) : DeclarableVariable(names.csv(), value) {
         val names = names.toSet()
 
         fun get(name: String): Value {

@@ -23,8 +23,6 @@ import io.github.deltacv.papervision.codegen.build.*
 
 class CodeGenContext(val codeGen: CodeGen) : LanguageContext(codeGen.language) {
 
-    val isForPreviz get() = codeGen.isForPreviz
-
     fun enum(name: String, vararg values: String) {
         codeGen.classStartScope.enumClass(name, *values)
     }
@@ -41,17 +39,16 @@ class CodeGenContext(val codeGen: CodeGen) : LanguageContext(codeGen.language) {
         codeGen.viewportTappedScope(block)
     }
 
-    fun public(variable: Variable, label: String? = null) =
+    fun public(variable: DeclarableVariable, label: String? = null) =
         codeGen.classStartScope.instanceVariable(Visibility.PUBLIC, variable, label)
 
-    fun private(variable: Variable) =
+    fun private(variable: DeclarableVariable) =
         codeGen.classStartScope.instanceVariable(Visibility.PRIVATE, variable, null)
 
-    fun protected(variable: Variable) =
+    fun protected(variable: DeclarableVariable) =
         codeGen.classStartScope.instanceVariable(Visibility.PROTECTED, variable, null)
 
     private var isFirstGroup = true
-
     fun group(scope: Scope = codeGen.classStartScope, block: () -> Unit) {
         if(!isFirstGroup) {
             scope.newLineIfNotBlank()

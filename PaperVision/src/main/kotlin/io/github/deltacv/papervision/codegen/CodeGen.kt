@@ -26,7 +26,7 @@ import io.github.deltacv.papervision.id.IdContainerStacks
 import io.github.deltacv.papervision.util.loggerFor
 
 enum class Visibility {
-    PUBLIC, PRIVATE, PROTECTED
+    PUBLIC, PRIVATE, PROTECTED, PACKAGE_PRIVATE
 }
 
 class CodeGen(

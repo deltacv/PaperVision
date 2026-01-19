@@ -112,7 +112,7 @@ interface ValueBuilder {
     fun callValue(callee: Value, methodName: String, returnType: Type, vararg parameters: Value): Value
 
     fun propertyValue(from: Value, property: String, type: Type): Value
-    fun propertyVariable(from: Value, property: String, type: Type): Variable
+    fun propertyVariable(from: Value, property: String, type: Type): DeclarableVariable
 
     fun arrayValue(from: Value, index: Value, type: Type): Value
 

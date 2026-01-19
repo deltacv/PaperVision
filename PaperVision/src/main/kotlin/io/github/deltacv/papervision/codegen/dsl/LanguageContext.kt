@@ -159,6 +159,6 @@ open class LanguageContext(val language: Language) {
 
     fun cvTypeValue(cvType: String) = language.cvTypeValue(cvType)
 
-    fun variable(name: String, value: Value) = Variable(name, value)
-    fun variable(type: Type, name: String) = Variable(type, name)
+    fun variable(name: String, value: Value) = DeclarableVariable(name, value)
+    fun variable(type: Type, name: String) = DeclarableVariable(type, name)
 }

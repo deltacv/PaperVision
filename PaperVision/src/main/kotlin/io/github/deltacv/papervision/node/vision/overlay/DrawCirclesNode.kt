@@ -27,9 +27,8 @@ import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.Variable
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
+import io.github.deltacv.papervision.codegen.build.AccessorVariable
+import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
@@ -98,7 +97,7 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
 
                     input.value.v("copyTo", output)
 
-                    foreach(Variable(JvmOpenCvTypes.KeyPoint, "circle"), circlesValue.value.v) {
+                    foreach(AccessorVariable(JvmOpenCvTypes.KeyPoint, "circle"), circlesValue.value.v) {
                         JvmOpenCvTypes.Imgproc(
                             "circle",
                             output,
@@ -137,7 +136,7 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
 
                     local(output)
 
-                    foreach(Variable(CPythonLanguage.NoType, "circle"), circlesValue.value.v) {
+                    foreach(AccessorVariable(CPythonLanguage.NoType, "circle"), circlesValue.value.v) {
 
                     }
                 }

@@ -16,21 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.codegen.dsl
+package io.github.deltacv.papervision.codegen.dsl.jvm
 
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.build.Value
-import io.github.deltacv.papervision.codegen.build.Variable
+import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.language.vision.enableJavaTargets
+import io.github.deltacv.papervision.codegen.build.type.enableJavaTargets
+import io.github.deltacv.papervision.codegen.dsl.LanguageContext
+import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 
-class TargetsContext(context: LanguageContext) {
+class JvmTargetsContext(context: LanguageContext) {
     val rectTargets = context.run {
-        Variable("rectTargets", JavaTypes.HashMap(JavaTypes.String, JvmOpenCvTypes.Rect).new())
+        DeclarableVariable("rectTargets", JavaTypes.HashMap(JavaTypes.String, JvmOpenCvTypes.Rect).new())
     }
     val rotRectTargets = context.run {
-        Variable("rotRectTarget", JavaTypes.HashMap(JavaTypes.String, JvmOpenCvTypes.RotatedRect).new())
+        DeclarableVariable("rotRectTarget", JavaTypes.HashMap(JavaTypes.String, JvmOpenCvTypes.RotatedRect).new())
     }
 
     fun ScopeContext.addRectTarget(label: Value, rect: Value) {
@@ -46,10 +48,10 @@ class TargetsContext(context: LanguageContext) {
     }
 }
 
-fun <T> CodeGen.Current.javaTargets(enableTargetsIfNeeded: Boolean = true, block: TargetsContext.() -> T): T {
+fun <T> CodeGen.Current.jvmTargets(enableTargetsIfNeeded: Boolean = true, block: JvmTargetsContext.() -> T): T {
     if(enableTargetsIfNeeded) {
         enableJavaTargets()
     }
 
-    return block(TargetsContext(codeGen.context))
+    return block(JvmTargetsContext(codeGen.context))
 }

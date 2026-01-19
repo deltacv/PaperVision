@@ -63,10 +63,10 @@ class BooleanAttribute(
                     "Boolean attribute must have another attribute attached"
                 )
 
-                val value = linkedAttrib!!.genValue(current)
+                val value = linkedAttrib.genValue(current)
                 raiseAssert(value is GenValue.Boolean, "Attribute attached is not a Boolean")
 
-                return value as GenValue.Boolean
+                return value
             } else {
                 return if (value.get()) {
                     GenValue.Boolean.TRUE
@@ -76,7 +76,7 @@ class BooleanAttribute(
             val value = getGenValueFromNode(current)
             raiseAssert(value is GenValue.Boolean, "Value returned from the node is not a Boolean")
 
-            return value as GenValue.Boolean
+            return value
         }
     }
 

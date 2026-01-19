@@ -26,7 +26,7 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.Value
-import io.github.deltacv.papervision.codegen.build.Variable
+import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
@@ -91,7 +91,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                         for (element in (rectsList as GenValue.GList.ListOf<*>).elements) {
                             if (element is GenValue.GRect.Rotated.RotatedRect) {
                                 separate()
-                                val rect = Variable(
+                                val rect = DeclarableVariable(
                                     "rect",
                                     JvmOpenCvTypes.RotatedRect.new(
                                         JvmOpenCvTypes.Point.new(element.x.value.v, element.y.value.v),
