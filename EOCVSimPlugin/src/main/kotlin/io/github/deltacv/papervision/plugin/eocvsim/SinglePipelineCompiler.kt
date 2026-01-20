@@ -39,12 +39,17 @@ object SinglePipelineCompiler {
         // Set the source code
         compiler.cook(pipelineSource)
 
-        val clazz = compiler.classLoader.loadClass(compiler.classFiles.firstOrNull()?.thisClassName ?: throw IllegalStateException("No class found in compiled source"))
-
-        require(ReflectUtil.hasSuperclass(clazz, OpenCvPipeline::class.java)) {
-            "Pipeline class must extend OpenCvPipeline"
+        if(compiler.classFiles.isEmpty()) {
+            throw IllegalStateException("No class files were generated from the provided source code.")
         }
 
-        return clazz as Class<out OpenCvPipeline>
+        for(classFile in compiler.classFiles) {
+            val clazz = compiler.classLoader.loadClass(classFile.thisClassName)
+            if(ReflectUtil.hasSuperclass(clazz, OpenCvPipeline::class.java)) {
+                return clazz as Class<out OpenCvPipeline>
+            }
+        }
+
+        throw IllegalStateException("No OpenCvPipeline subclass found in the provided source code.")
     }
 }

@@ -95,7 +95,7 @@ class EnumAttribute<T: Enum<T>>(
                 val value = values[currentIndex.get()]
 
                 raiseAssert(
-                    value::class.java == expectedClass,
+                    value::class.java == expectedClass.java,
                     "Enum attribute attached (${value::class.java.simpleName}) is not the expected type of enum ($expectedClass)"
                 )
 

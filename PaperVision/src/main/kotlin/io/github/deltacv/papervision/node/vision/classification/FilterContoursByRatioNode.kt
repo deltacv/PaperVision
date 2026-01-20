@@ -168,7 +168,7 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
                     separate()
 
                     foreach(DeclarableVariable(CPythonLanguage.NoType, "contour"), contours.value.v) { contour ->
-                        val rectangle = CPythonLanguage.tupleVariables(
+                        val rectangle = CPythonLanguage.declaredTupleVariable(
                             CPythonOpenCvTypes.cv2.callValue("boundingRect", CPythonLanguage.NoType, contour), // "rect" is a tuple of 4 values:
                             "x", "y", "w", "h"
                         )

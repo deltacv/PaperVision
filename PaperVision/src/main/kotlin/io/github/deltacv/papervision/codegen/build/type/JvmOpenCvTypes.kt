@@ -103,7 +103,7 @@ object JvmOpenCvTypes {
                         separate()
 
                         val centerParameter = Parameter(Point, "center")
-                        val radiusParameter = Parameter(DoubleType, "radius")
+                        val radiusParameter = Parameter(FloatType, "radius")
 
                         constructor(Visibility.PACKAGE_PRIVATE, circleType, centerParameter, radiusParameter) {
                             centerVariable instanceSet centerParameter

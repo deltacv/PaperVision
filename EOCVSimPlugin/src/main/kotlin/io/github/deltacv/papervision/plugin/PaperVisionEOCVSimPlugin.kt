@@ -207,7 +207,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                         InputSourceType.CAMERA -> SourceType.CAMERA
                         InputSourceType.VIDEO -> SourceType.VIDEO
                         InputSourceType.HTTP -> SourceType.HTTP
-                        else -> return@doOnce
                     }
                 )
                 respond(OkResponse())
@@ -246,7 +245,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             eocvSim.onMainUpdate.doOnce {
                 if (currentPrevizSession != null) {
                     logger.warn("Stopping current previz session ${currentPrevizSession?.sessionName} to start new one")
-                    logger.warn("Please make sure to stop the previz session before starting a new one")
+                    logger.warn("It was not stopped beforehand, make sure to stop previz sessions timely")
 
                     currentPrevizSession?.stopPreviz()
                 }
@@ -392,7 +391,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         val tunableFieldClass = eocvSim.tunerManager.getTunableFieldOf(field)
 
         val tunableField = tunableFieldClass.getConstructor(
-            Object::class.java,
+            Any::class.java,
             VirtualField::class.java,
             EOCVSim::class.java
         ).newInstance(

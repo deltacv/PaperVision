@@ -72,7 +72,7 @@ class EmptyConValue(type: Type) : ConValue(type, null)
 class Condition(booleanType: Type, condition: String) : ConValue(booleanType, condition)
 class Operation(numberType: Type, operation: String) : ConValue(numberType, operation)
 
-class AccessorVariable(type: Type, name: String) : DeclarableVariable(name, ConValue(type, name))
+open class AccessorVariable(type: Type, name: String) : DeclarableVariable(name, ConValue(type, name))
 
 open class DeclarableVariable(val name: String, val variableValue: Value) : ConValue(variableValue.type, name) {
 

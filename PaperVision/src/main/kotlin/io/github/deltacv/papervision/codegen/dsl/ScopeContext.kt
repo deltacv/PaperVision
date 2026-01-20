@@ -102,7 +102,7 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         scope.ifCondition(condition, ifScope)
     }
 
-    fun foreach(variable: Value, list: Value, block: ScopeContext.(Value) -> Unit) {
+    fun <T: Value> foreach(variable: T, list: Value, block: ScopeContext.(T) -> Unit) {
         val loopScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
         block(loopScope.context, variable)
 

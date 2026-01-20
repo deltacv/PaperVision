@@ -75,7 +75,7 @@ open class DrawRectanglesNode
             current {
                 val session = Session()
 
-                val lineParams = lineParams.genValue(current).ensureRuntimeLineJava(current)
+                val lineParams = lineParams.genValue(current).ensureRuntimeLineJvm(current)
 
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)
@@ -181,7 +181,7 @@ open class DrawRectanglesNode
 
                     fun ScopeContext.runtimeRect(rectValue: Value) {
                         ifCondition(rectValue notEqualsTo language.nullValue) {
-                            val rectangle = CPythonLanguage.tupleVariables(
+                            val rectangle = CPythonLanguage.declaredTupleVariable(
                                 rectValue,
                                 "x", "y", "w", "h"
                             )

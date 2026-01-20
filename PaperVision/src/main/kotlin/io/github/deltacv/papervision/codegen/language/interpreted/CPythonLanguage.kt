@@ -48,6 +48,9 @@ object CPythonLanguage : LanguageBase(
 
     override fun newImportBuilder() = PythonImportBuilder(this)
 
+    fun valueIs(value: Value, type: Type) = condition("${value.value} is ${type.className}")
+    fun valueIsNot(value: Value, type: Type) = condition("${value.value} is not ${type.className}")
+
     override fun and(left: Condition, right: Condition) = condition("(${left.value}) and (${right.value})")
     override fun or(left: Condition, right: Condition) = condition("(${left.value}) or (${right.value})")
 
@@ -202,14 +205,24 @@ object CPythonLanguage : LanguageBase(
         mainScope.get()
     }
 
-    fun conditionOfValue(value: Value) = Condition(BooleanType, value.value!!)
-
-    class TupleVariable(value: Value, vararg names: String) : DeclarableVariable(names.csv(), value) {
+    class AccessorTupleVariable(vararg names: String) : AccessorVariable(NoType, "(${names.csv()})") {
         val names = names.toSet()
 
         fun get(name: String): Value {
             if(name !in names) {
-                throw IllegalArgumentException("Name $name is not in the tuple variable")
+                throw IllegalArgumentException("$name is not in the tuple variable")
+            }
+
+            return ConValue(NoType, name);
+        }
+    }
+
+    class DeclarableTupleVariable(value: Value, vararg names: String) : DeclarableVariable(names.csv(), value) {
+        val names = names.toSet()
+
+        fun get(name: String): Value {
+            if(name !in names) {
+                throw IllegalArgumentException("$name is not in the tuple variable")
             }
 
             return ConValue(NoType, name);
@@ -237,7 +250,8 @@ object CPythonLanguage : LanguageBase(
     override fun double(value: Value) = callValue("float", language.IntType, value)
     override fun double(value: Double) = double(value.toString().v)
 
-    fun tupleVariables(value: Value, vararg names: String) = TupleVariable(value, *names)
+    fun accessorTupleVariable(vararg names: String) = AccessorTupleVariable(*names)
+    fun declaredTupleVariable(value: Value, vararg names: String) = DeclarableTupleVariable(value, *names)
 
     fun tuple(vararg value: Value) = ConValue(NoType, "(${value.csv()})")
 

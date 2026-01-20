@@ -77,7 +77,7 @@ open class DrawRotatedRectanglesNode
             current {
                 val session = Session()
 
-                val lineParams = lineParams.genValue(current).ensureRuntimeLineJava(current)
+                val lineParams = lineParams.genValue(current).ensureRuntimeLineJvm(current)
 
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)

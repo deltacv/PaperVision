@@ -161,6 +161,8 @@ open class DrawKeyPointsNode
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+        genCodeIfNecessary(current)
+
         if (attrib == outputMat) {
             return GenValue.Mat.defer { current.sessionOf(this)?.outputMat }
         }

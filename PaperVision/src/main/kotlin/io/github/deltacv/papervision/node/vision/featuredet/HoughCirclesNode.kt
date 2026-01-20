@@ -29,6 +29,7 @@ import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.AccessorVariable
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
@@ -81,9 +82,15 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
                     JavaTypes.ArrayList(Circle).new()
                 )
 
+                val downscaleVar = uniqueVariable("houghCirclesDownscale", downscaleValue.v)
+                val minDistanceVar = uniqueVariable("houghCirclesMinDistance", minDistanceValue.v)
+
                 group {
                     private(circlesMatVar)
                     private(circlesListVar)
+
+                    public(downscaleVar, downscale.label())
+                    public(minDistanceVar, minDistance.label())
                 }
 
                 current.scope {
@@ -98,8 +105,8 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
                         inputValue.v,
                         circlesMatVar,
                         JvmOpenCvTypes.Imgproc.HOUGH_GRADIENT,
-                        downscaleValue.v,
-                        minDistanceValue.v
+                        downscaleVar,
+                        minDistanceVar
                     )
 
                     separate()
@@ -137,14 +144,25 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            val minDistanceValue = minDistance.genValue(current)
-            val downscaleValue = downscale.genValue(current)
+            val input = input.genValue(current).value
+            val minDistanceValue = minDistance.genValue(current).value
+            val downscaleValue = downscale.genValue(current).value
 
             current {
-                group {
-                }
-
                 current.scope {
+                    val circles = uniqueVariable("hough_circles",
+                        CPythonOpenCvTypes.cv2.callValue("HoughCircles",
+                            CPythonLanguage.NoType,
+                            input.v,
+                            CPythonOpenCvTypes.cv2.HOUGH_GRADIENT,
+                            downscaleValue.v,
+                            minDistanceValue.v
+                        )
+                    )
+
+                    local(circles)
+
+                    session.circles = GenValue.GList.RuntimeListOf(circles.resolved(), GenValue.GCircle.RuntimeCircle::class.resolved())
                 }
             }
 

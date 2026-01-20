@@ -167,7 +167,7 @@ sealed class GenValue {
             }
         }
 
-        fun ensureRuntimeLineJava(current: CodeGen.Current): RuntimeLine {
+        fun ensureRuntimeLineJvm(current: CodeGen.Current): RuntimeLine {
             return current {
                 when (val lineParams = this@LineParameters) {
                     is Line -> {

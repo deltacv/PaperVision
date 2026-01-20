@@ -23,12 +23,12 @@ import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.CircleAttribute
-import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.LineParametersAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.AccessorVariable
-import io.github.deltacv.papervision.codegen.build.DeclarableVariable
+import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
@@ -38,7 +38,6 @@ import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
-import io.github.deltacv.papervision.node.vision.ColorSpace
 
 @PaperNode(
     name = "nod_drawcircles",
@@ -50,14 +49,14 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
     val inputMat = MatAttribute(INPUT, "$[att_input]")
     val circles = ListAttribute(INPUT, CircleAttribute, "$[att_circles]")
 
-    val lineColor = ScalarAttribute(INPUT, ColorSpace.RGB, "$[att_linecolor]")
+    val line = LineParametersAttribute(INPUT, "$[att_params]")
 
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
         +inputMat.rebuildOnChange()
 
-        +lineColor
+        +line
 
         +circles.rebuildOnChange()
 
@@ -67,9 +66,11 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
     override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
             current {
+                val Circle = JvmOpenCvTypes.getCircleType(current)
+
                 val session = Session()
 
-                val color = lineColor.genValue(current)
+                val line = line.genValue(current).ensureRuntimeLineJvm(current)
 
                 val input = inputMat.genValue(current)
                 val circlesValue = circles.genValue(current) as? GenValue.GList.RuntimeListOf<*>
@@ -77,19 +78,8 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
 
                 val output = uniqueVariable("${input.value.v}Circles", Mat.new())
 
-                val colorScalar = uniqueVariable(
-                    "circleColor",
-                    JvmOpenCvTypes.Scalar.new(
-                        color.a.value.v,
-                        color.b.value.v,
-                        color.c.value.v,
-                        color.d.value.v
-                    )
-                )
-
                 group {
                     private(output)
-                    public(colorScalar, lineColor.label())
                 }
 
                 current.scope {
@@ -97,13 +87,14 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
 
                     input.value.v("copyTo", output)
 
-                    foreach(AccessorVariable(JvmOpenCvTypes.KeyPoint, "circle"), circlesValue.value.v) {
+                    foreach(AccessorVariable(Circle, "circle"), circlesValue.value.v) {
                         JvmOpenCvTypes.Imgproc(
                             "circle",
                             output,
-                            it.propertyValue("pt", JvmOpenCvTypes.Point),
-                            int(it.propertyValue("size", FloatType)),
-                            colorScalar
+                            it.propertyValue("center", JvmOpenCvTypes.Point),
+                            int(it.propertyValue("radius", FloatType)),
+                            line.colorScalarValue.v,
+                            line.thicknessValue.v
                         )
                     }
 
@@ -120,25 +111,40 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
             val session = Session()
 
             current {
-                val color = lineColor.genValue(current)
-
                 val input = inputMat.genValue(current)
                 val circlesValue = circles.genValue(current) as? GenValue.GList.RuntimeListOf<*>
                     ?: raise("") // TODO: handle non-runtime lists
 
+                val line = line.genValue(current)
+                if (line !is GenValue.LineParameters.Line) {
+                    raise("Line parameters must not be runtime")
+                }
+
                 current.scope {
                     nameComment()
 
-                    val output = uniqueVariable(
-                        "${input.value.v}_keypoints",
+                    val output = uniqueVariable("${input.value.v}_circles",
                         input.value.v.callValue("copy", CPythonLanguage.NoType)
                     )
-
                     local(output)
 
-                    foreach(AccessorVariable(CPythonLanguage.NoType, "circle"), circlesValue.value.v) {
-
+                    ifCondition(CPythonLanguage.valueIsNot(circlesValue.value.v, CPythonLanguage.NoType)) {
+                        foreach(CPythonLanguage.accessorTupleVariable("x", "y", "r"), circlesValue.value.v) {
+                            CPythonOpenCvTypes.cv2(
+                                "circle",
+                                CPythonLanguage.tuple(int(it.get("x")), int(it.get("y"))),
+                                int(it.get("r")),
+                                CPythonLanguage.tuple(
+                                    line.color.a.value.v,
+                                    line.color.b.value.v,
+                                    line.color.c.value.v
+                                ),
+                                line.thickness.value.v
+                            )
+                        }
                     }
+
+                    session.outputMat = GenValue.Mat(output.resolved(), input.color, input.isBinary)
                 }
             }
 
@@ -147,6 +153,8 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+        genCodeIfNecessary(current)
+
         if (attrib == outputMat) {
             return GenValue.Mat.defer { current.sessionOf(this)?.outputMat }
         }
