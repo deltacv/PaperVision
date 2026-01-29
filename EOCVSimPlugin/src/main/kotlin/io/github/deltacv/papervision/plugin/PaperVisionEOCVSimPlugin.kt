@@ -23,6 +23,7 @@ import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
 import io.github.deltacv.eocvsim.plugin.api.InputSourceApi
 import io.github.deltacv.eocvsim.plugin.api.PipelineManagerApi
 import io.github.deltacv.eocvsim.plugin.api.TunableFieldApi
+import io.github.deltacv.eocvsim.plugin.loader.FilePluginLoader
 import io.github.deltacv.eocvsim.plugin.loader.PluginSource
 import io.github.deltacv.eocvsim.virtualreflect.VirtualField
 import io.github.deltacv.papervision.engine.client.message.*
@@ -46,7 +47,6 @@ import java.util.*
 import javax.swing.JMenu
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
-import kotlin.properties.Delegates
 
 /**
  * Main entry point for the PaperVision plugin.
@@ -69,8 +69,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
      * If the plugin comes from Maven, we will use the classpath of all the transitive dependencies.
      */
     val fullClasspath by lazy {
-        if (pluginSource == PluginSource.FILE) {
-            context.loader.pluginFile.absolutePath
+        if (pluginSource == PluginSource.FILE && context.loader is FilePluginLoader) {
+            (context.loader as FilePluginLoader).pluginFile.absolutePath
         } else {
             classpath.joinToString(File.pathSeparator).trim(File.pathSeparatorChar)
         } + File.pathSeparator
@@ -318,7 +318,14 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         )
     }.toTypedArray().apply { sortBy { it.timestamp } }
 
-    override fun onDisable() { }
+    override fun onDisable() {
+        PaperVisionProcessRunner.stopPaperVision()
+
+        currentPrevizSession?.stopPreviz()
+        currentPrevizSession = null
+
+        paperVisionProjectManager.closeCurrentProject()
+    }
 
     private fun recoverProjects() {
         if (paperVisionProjectManager.recoveredProjects.isNotEmpty()) {

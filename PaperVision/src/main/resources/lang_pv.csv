@@ -136,6 +136,8 @@ des_grouprects_byratio,Finds rectangles that have a specific aspect ratio.,Encue
 des_filterbiggest_rect,Finds the biggest rectangle from a list of rectangles.,Encuentra el rectángulo más grande<br>de una lista de rectángulos.
 des_filterbiggest_rotrect,Finds the biggest rotated rectangle<br>from a list of rotated rectangles.,Encuentra el rectángulo rotado más grande<br>de una lista de rectángulos rotados.
 des_filterbiggest_contour,Finds the biggest contour from a list of contours.,Encuentra el contorno más grande<br>de una lista de contornos.
+des_houghcircles,Detects circles in a grayscale image<br>using the Hough Transform.,Detecta círculos en una imagen en escala<br>de grises usando la Transformada de Hough.
+des_drawcircles,Draws the circles on a copy of the<br>given image and outputs the result.,Dibuja los círculos en una copia de la<br>imagen dada y devuelve el resultado.
 des_crosshair,Selects only the contours that are<br>inside an adjustable crosshair.,Selecciona solo los contornos que están<br>dentro de un crosshair ajustable.
 des_boundingrotated_rect,Calculates the bounding rotated rectangles<br>of a given list of points.,Calcula los rectángulos delimitadores<br>rotados de una lista de puntos dada.
 des_boundingrect,Calculates the bounding rectangles<br>of a given list of points.,Calcula los rectángulos delimitadores<br>de una lista de puntos dada.

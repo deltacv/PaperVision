@@ -148,7 +148,6 @@ dependencies {
 
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 
-    compileOnly("org.deltacv.EOCV-Sim:EOCV-Sim:$eocvsim_version") { transitive = false }
     compileOnly("org.deltacv.EOCV-Sim:Common:$eocvsim_version") { transitive = false }
     compileOnly("org.deltacv.EOCV-Sim:Vision:$eocvsim_version")
 

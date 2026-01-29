@@ -115,7 +115,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
 
                     separate()
 
-                    foreach(DeclarableVariable(CPythonLanguage.NoType, "rect"), rects.value.v) { rect ->
+                    foreach(AccessorVariable(CPythonLanguage.NoType, "rect"), rects.value.v) { rect ->
                         val ratioVar = uniqueVariable("ratio", (rect[2.v, IntType] / rect[3.v, IntType]))
                         local(ratioVar)
 

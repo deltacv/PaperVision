@@ -63,8 +63,8 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
 
                     foreach(AccessorVariable(JvmOpenCvTypes.KeyPoint, "kp"), keypoints.value.v.callValue("toArray", JvmOpenCvTypes.KeyPoint.arrayType())) {
                         rects("add", JvmOpenCvTypes.Rect.new(
-                            it.propertyValue("pt", JvmOpenCvTypes.Point),
-                            JvmOpenCvTypes.Size.new(it.propertyValue("size", FloatType), it.propertyValue("size", FloatType))
+                            it.propertyValue("center", JvmOpenCvTypes.Point),
+                            JvmOpenCvTypes.Size.new(it.propertyValue("rad", FloatType), it.propertyValue("size", FloatType))
                         ))
                     }
 

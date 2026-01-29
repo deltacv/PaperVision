@@ -22,7 +22,7 @@ import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.Generator
 import io.github.deltacv.papervision.codegen.language.Language
 
-class GeneratorsContext<S: CodeGenSession> {
+class GeneratorsBuilderContext<S: CodeGenSession> {
     val generators = mutableMapOf<Language, Generator<S>>()
 
     fun generatorFor(language: Language, init: GeneratorContext<S>.() -> S) = generatorFor<S>(language, init).apply { generators[first] = second }
@@ -32,7 +32,7 @@ class GeneratorsContext<S: CodeGenSession> {
     fun generatorFor(vararg languages: Language, generator: Generator<S>) = languages.forEach { generators[it] = generator }
 }
 
-inline fun <S: CodeGenSession> generatorsBuilder(init: GeneratorsContext<S>.() -> Unit) = GeneratorsContext<S>().run {
+inline fun <S: CodeGenSession> generatorsBuilder(init: GeneratorsBuilderContext<S>.() -> Unit) = GeneratorsBuilderContext<S>().run {
     init()
     generators
 }
