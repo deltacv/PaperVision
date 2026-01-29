@@ -20,18 +20,12 @@ package io.github.deltacv.papervision.plugin.gui.eocvsim
 
 import com.formdev.flatlaf.demo.HintManager
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
-import com.github.serivesmejia.eocvsim.gui.component.PopupX.Companion.popUpXOnThis
-import com.github.serivesmejia.eocvsim.gui.util.Corner
-import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
-import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectTree
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
 import javax.swing.JButton
-import javax.swing.JFrame
-import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.SwingUtilities

@@ -12,6 +12,8 @@ buildscript {
         lwjgl_version = "3.3.2"
         mackjpeg_version = "1.0.5"
 
+        eocvsim_version = '4.1.0-dev-260128-2124'
+
         slf4j_version = "2.0.16"
         log4j_version = "2.24.1"
         logback_classic_version = "1.5.13"
@@ -47,6 +49,7 @@ allprojects {
 
     repositories {
         mavenCentral()
+        mavenLocal()
         google()
         maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
         maven { url 'https://artifacts.openmicroscopy.org/artifactory/ome.releases/' }

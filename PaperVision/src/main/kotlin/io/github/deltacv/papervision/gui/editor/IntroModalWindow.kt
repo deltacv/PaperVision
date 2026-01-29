@@ -3,7 +3,7 @@ package io.github.deltacv.papervision.gui.editor
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
-import io.github.deltacv.mai18n.tr
+import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.alignForWidth
 import io.github.deltacv.papervision.gui.centeredText
@@ -63,18 +63,18 @@ class IntroModalWindow(
             val alignment = alignForWidth(width, 0.5f)
 
             if(ImGui.button(tr("lan_en"))) {
-                nodeEditor.paperVision.langManager.lang = "en"
+                nodeEditor.paperVision.changeLanguage("en")
                 choosingLanguage = false
             }
 
             ImGui.sameLine(alignment + 30f + ImGui.calcTextSize(tr("lan_en")).x)
 
             if(ImGui.button(tr("lan_es"))) {
-                nodeEditor.paperVision.langManager.lang = "es"
+                nodeEditor.paperVision.changeLanguage("es")
                 choosingLanguage = false
             }
 
-            nodeEditor.paperVision.config.fields.lang = nodeEditor.paperVision.langManager.lang
+            nodeEditor.paperVision.config.fields.lang = nodeEditor.paperVision.currentLanguage.lang
             nodeEditor.paperVision.config.fields.shouldAskForLang = false
 
             ImGui.popFont()

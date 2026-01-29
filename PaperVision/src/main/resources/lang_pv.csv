@@ -46,6 +46,8 @@ nod_exportrot_recttargets,Export Rotated Rectangles,Exportar Rectangulos Rotados
 nod_filterbiggest_rotrect,Find Biggest Rotated Rectangle,Encontrar Rectangulo Rotado Mas Grande
 nod_filterbiggest_rect,Find Biggest Rectangle,Encontrar Rectangulo Mas Grande
 nod_filterbiggest_contour,Find Biggest Contour,Encontrar Contorno Mas Grande
+nod_houghcircles,Hough Circles,Circulos Hough
+nod_drawcircles,Draw Circles,Dibujar Circulos
 nod_drawcontours,Draw Contours,Dibujar Contornos
 nod_drawcontours_onimage,Draw Contours on Image,Dibujar Contornos en Imagen
 nod_drawrects,Draw Rectangles,Dibujar Rectangulos
@@ -90,7 +92,11 @@ att_colorspace,Color Space,Espacio de Color
 att_drawon_image,Overlay Input,Entrada para Overlay
 att_linecolor,Line Color,Color de Linea
 att_linethickness,Line Thickness,Grosor de Linea
+att_calccircles,Calculated Circles,Circulos Calculados
 att_numbers,Numbers,Numeros
+att_circles,Circles,Circulos
+att_downscale,Downscale,Reduccion de Escala
+att_mindistance,Min Distance,Distancia Minima
 att_minarea,Min Area,Area Minima
 att_maxarea,Max Area,Area Maxima
 att_minratio,Min Ratio,Ratio Minimo

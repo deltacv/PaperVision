@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.gui.display
 
 import imgui.ImGui
 import imgui.flag.ImGuiWindowFlags
-import io.github.deltacv.mai18n.tr
+import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.engine.previz.ClientPrevizStream
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.util.flags

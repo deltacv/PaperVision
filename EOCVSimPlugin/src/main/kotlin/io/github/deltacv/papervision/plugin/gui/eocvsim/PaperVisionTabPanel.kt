@@ -19,35 +19,34 @@
 package io.github.deltacv.papervision.plugin.gui.eocvsim
 
 import com.formdev.flatlaf.demo.HintManager
-import com.github.serivesmejia.eocvsim.EOCVSim
+import io.github.deltacv.eocvsim.plugin.api.EOCVSimApi
+import io.github.deltacv.eocvsim.plugin.api.VisualizerSidebarApi
+import io.github.deltacv.papervision.plugin.PaperVisionEOCVSimPlugin
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectTree
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JTabbedPane
-import javax.swing.JTree
-import javax.swing.SwingConstants
-import javax.swing.SwingUtilities
+import javax.swing.*
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 
 class PaperVisionTabPanel(
+    owner: PaperVisionEOCVSimPlugin,
+    val eocvSimApi: EOCVSimApi,
     val projectManager: PaperVisionProjectManager,
-    val eocvSim: EOCVSim,
-    val switchablePanel: JTabbedPane
-) : JPanel() {
+) : VisualizerSidebarApi.Tab(owner) {
 
     val root = DefaultMutableTreeNode("Projects")
 
     private var previousSelectedProjectNode: PaperVisionProjectTree.ProjectTreeNode.Project? = null
     val projectList = JTree(root)
 
-    init {
-        layout = GridBagLayout()
+    val buttonsPanel = PaperVisionTabButtonsPanel(projectList, projectManager)
+
+    override fun create(target: JPanel) {
+        target.layout = GridBagLayout()
 
         projectList.apply {
             addMouseListener(object : MouseAdapter() {
@@ -62,7 +61,7 @@ class PaperVisionTabPanel(
                             previousSelectedProjectNode = nodeObject
                             projectManager.requestOpenProject(nodeObject)
                         }
-                    } else if(e.clickCount == 1 && previousSelectedProjectNode != nodeObject) {
+                    } else if (e.clickCount == 1 && previousSelectedProjectNode != nodeObject) {
                         if (nodeObject is PaperVisionProjectTree.ProjectTreeNode.Project) {
                             previousSelectedProjectNode = nodeObject
                             projectManager.requestPreviewLatestPipeline(nodeObject)
@@ -82,7 +81,7 @@ class PaperVisionTabPanel(
             refreshProjectTree()
         }
 
-        add(projectListScroll, GridBagConstraints().apply {
+        target.add(projectListScroll, GridBagConstraints().apply {
             gridy = 0
 
             weightx = 0.5
@@ -93,36 +92,10 @@ class PaperVisionTabPanel(
             ipady = 20
         })
 
-        val buttonsPanel = PaperVisionTabButtonsPanel(projectList, projectManager)
-
-        add(buttonsPanel, GridBagConstraints().apply {
+        target.add(buttonsPanel, GridBagConstraints().apply {
             gridy = 1
             ipady = 20
         })
-
-        switchablePanel.addChangeListener {
-            eocvSim.onMainUpdate.doOnce {
-                SwingUtilities.invokeLater {
-                    if (switchablePanel.selectedComponent == this) {
-                        val hasShownPaperVisionHint = eocvSim.config.flags.getOrElse("hasShownPaperVisionHint") { false }
-
-                        if(!hasShownPaperVisionHint) {
-                            val hint = HintManager.Hint(
-                                "Create a new PaperVision project here",
-                                buttonsPanel.newProjectBtt,
-                                SwingConstants.TOP, null
-                            )
-
-                            HintManager.showHint(hint)
-
-                            eocvSim.config.flags["hasShownPaperVisionHint"] = true
-                        }
-                    } else {
-                        HintManager.hideAllHints()
-                    }
-                }
-            }
-        }
 
         refreshProjectTree()
     }
@@ -163,6 +136,30 @@ class PaperVisionTabPanel(
 
             (projectList.model as DefaultTreeModel).reload()
             projectList.revalidate()
+        }
+    }
+
+    override val title = "PaperVision"
+
+    override fun onActivated() {
+        SwingUtilities.invokeLater {
+            if(!eocvSimApi.configApi.hasFlag("hasShownPaperVisionHint")) {
+                val hint = HintManager.Hint(
+                    "Create a new PaperVision project here",
+                    buttonsPanel.newProjectBtt,
+                    SwingConstants.TOP, null
+                )
+
+                HintManager.showHint(hint)
+
+                eocvSimApi.configApi.putFlag("hasShownPaperVisionHint")
+            }
+        }
+    }
+
+    override fun onDeactivated() {
+        SwingUtilities.invokeLater {
+            HintManager.hideAllHints()
         }
     }
 }

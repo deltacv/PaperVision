@@ -72,7 +72,7 @@ object PaperVisionProcessRunner {
                 val jvmArgs = listOf("-XstartOnFirstThread", "-Djava.awt.headless=true")
 
                 JavaProcess.execClasspath(
-                    EOCVSimIpcPaperVisionMain::class.java,
+                    IpcPaperVisionMain::class.java,
                     SLF4JIOReceiver(logger),
                     classpath,
                     jvmArgs,
@@ -80,7 +80,7 @@ object PaperVisionProcessRunner {
                 )
             } else {
                 JavaProcess.execClasspath(
-                    EOCVSimIpcPaperVisionMain::class.java,
+                    IpcPaperVisionMain::class.java,
                     SLF4JIOReceiver(logger),
                     classpath,
                     listOf(), programParams,

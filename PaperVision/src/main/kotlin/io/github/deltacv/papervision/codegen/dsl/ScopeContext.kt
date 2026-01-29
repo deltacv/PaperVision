@@ -109,14 +109,14 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         scope.foreachLoop(variable, list, loopScope)
     }
 
-    fun forLoop(variable: Value, start: Value, max: Value, step: Value?, block: ScopeContext.(Value) -> Unit) {
+    fun <T: Value> forLoop(variable: T, start: Value, max: Value, step: Value?, block: ScopeContext.(T) -> Unit) {
         val loopScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
         block(loopScope.context, variable)
 
         scope.forLoop(variable, start, max, step, loopScope)
     }
 
-    fun forLoop(variable: Value, start: Value, max: Value, block: ScopeContext.(Value) -> Unit) =
+    fun <T: Value> forLoop(variable: T, start: Value, max: Value, block: ScopeContext.(T) -> Unit) =
         forLoop(variable, start, max, null, block)
 
     fun constructor(

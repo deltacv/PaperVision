@@ -18,14 +18,14 @@
 
 package io.github.deltacv.papervision.plugin.project
 
-import com.github.serivesmejia.eocvsim.EOCVSim
-import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.extension.plus
 import com.github.serivesmejia.eocvsim.util.extension.removeFromEnd
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import io.github.deltacv.eocvsim.plugin.api.EOCVSimApi
+import io.github.deltacv.eocvsim.plugin.api.PipelineManagerApi
 import io.github.deltacv.eocvsim.plugin.loader.PluginManager
 import io.github.deltacv.eocvsim.sandbox.nio.SandboxFileSystem
 import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
@@ -44,7 +44,6 @@ import io.github.deltacv.papervision.plugin.project.recovery.RecoveryDaemonProce
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.hexString
-import io.github.deltacv.papervision.util.toValidIdentifier
 import org.openftc.easyopencv.OpenCvPipeline
 import java.awt.Window
 import java.io.File
@@ -67,7 +66,7 @@ class PaperVisionProjectManager(
     val fileSystem: SandboxFileSystem,
     val engine: EOCVSimIpcEngine,
     val plugin: PaperVisionEOCVSimPlugin,
-    val eocvSim: EOCVSim,
+    val eocvSim: EOCVSimApi,
 ) {
 
     companion object {
@@ -79,7 +78,7 @@ class PaperVisionProjectManager(
 
     val latestSourceFolder = root.resolve(".latest_source")
 
-    val onMainUpdate = eocvSim.onMainUpdate
+    val onMainUpdate = eocvSim.mainLoopHook
 
     var projectTree = PaperVisionProjectTree(root)
         private set
@@ -347,13 +346,13 @@ class PaperVisionProjectManager(
         )
 
     fun requestOpenProject(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
-        onMainUpdate.doOnce {
+        onMainUpdate.once {
             openProject(project)
         }
     }
 
     fun requestPreviewLatestPipeline(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
-        onMainUpdate.doOnce {
+        onMainUpdate.once {
             val path = (findProjectFolderPath(project)?.pathString ?: "").replace("/", "_")
             val name = project.name.removeFromEnd(".paperproj")
 
@@ -362,44 +361,19 @@ class PaperVisionProjectManager(
 
                 val clazz = SinglePipelineCompiler.compilePipeline(source)
 
-                clearPreviewPipelines()
-
                 previewPipelines.add(WeakReference(clazz))
-
-                eocvSim.pipelineManager.addPipelineClass(
-                    clazz,
-                    PipelineSource.COMPILED_ON_RUNTIME
-                )
 
                 plugin.isRunningPreviewPipeline = true
 
-                eocvSim.pipelineManager.forceChangePipeline(
-                    eocvSim.pipelineManager.getIndexOf(
-                        clazz,
-                        PipelineSource.COMPILED_ON_RUNTIME
-                    )
-                )
+                eocvSim.pipelineManagerApi.changePipelineAnonymous(clazz, force = true)
             } catch (e: Exception) {
                 logger.warn("Failed to show pipeline preview for project ${project.name}", e)
 
                 plugin.isRunningPreviewPipeline = false
-                plugin.changeToPaperVisionPipelineIfNecessary()
-                return@doOnce
+                plugin.switchToNecessaryPipeline()
+                return@once
             }
         }
-    }
-
-    fun clearPreviewPipelines() {
-        for (ref in previewPipelines) {
-            val refClazz = ref.get()
-            if (refClazz != null) {
-                eocvSim.pipelineManager.pipelines.removeIf { it.clazz == refClazz }
-            }
-
-            ref.clear()
-        }
-
-        eocvSim.pipelineManager.refreshGuiPipelineList()
     }
 
     fun openProject(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
@@ -408,12 +382,12 @@ class PaperVisionProjectManager(
         currentPaperVisionProject = PaperVisionProject.fromJson(readProjectFile(project))
 
         SwingUtilities.invokeLater {
-            eocvSim.visualizer.frame.isVisible = false
+            eocvSim.visualizerApi.frame!!.isVisible = false
         }
 
         PaperVisionProcessRunner.onPaperVisionExit.doOnce {
             SwingUtilities.invokeLater {
-                eocvSim.visualizer.frame.isVisible = true
+                eocvSim.visualizerApi.frame!!.isVisible = true
             }
         }
 

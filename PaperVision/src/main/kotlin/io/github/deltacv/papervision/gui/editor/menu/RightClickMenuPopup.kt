@@ -3,7 +3,7 @@ package io.github.deltacv.papervision.gui.editor.menu
 import imgui.ImGui
 import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiWindowFlags
-import io.github.deltacv.mai18n.tr
+import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.action.editor.DeleteLinksAction
 import io.github.deltacv.papervision.action.editor.DeleteNodesAction
 import io.github.deltacv.papervision.gui.Popup

@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.codegen
 
 import imgui.ImGui
 import imgui.ImVec2
-import io.github.deltacv.mai18n.tr
+import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage

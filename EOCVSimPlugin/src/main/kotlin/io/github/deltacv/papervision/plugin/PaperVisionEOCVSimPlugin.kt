@@ -18,13 +18,11 @@
 
 package io.github.deltacv.papervision.plugin
 
-import com.github.serivesmejia.eocvsim.EOCVSim
-import com.github.serivesmejia.eocvsim.gui.DialogFactory
-import com.github.serivesmejia.eocvsim.input.SourceType
-import com.github.serivesmejia.eocvsim.pipeline.PipelineSource
-import com.github.serivesmejia.eocvsim.tuner.TunableField
 import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
+import io.github.deltacv.eocvsim.plugin.api.InputSourceApi
+import io.github.deltacv.eocvsim.plugin.api.PipelineManagerApi
+import io.github.deltacv.eocvsim.plugin.api.TunableFieldApi
 import io.github.deltacv.eocvsim.plugin.loader.PluginSource
 import io.github.deltacv.eocvsim.virtualreflect.VirtualField
 import io.github.deltacv.papervision.engine.client.message.*
@@ -48,7 +46,7 @@ import java.util.*
 import javax.swing.JMenu
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
-import kotlin.collections.set
+import kotlin.properties.Delegates
 
 /**
  * Main entry point for the PaperVision plugin.
@@ -64,7 +62,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     var currentPrevizSession: EOCVSimPrevizSession? = null
 
-    private val tunableFieldCache = WeakHashMap<VirtualField, TunableField<*>>()
+    private val tunableFieldCache = WeakHashMap<VirtualField, TunableFieldApi>()
 
     /**
      * If the plugin comes from a file, we will just use the file classpath, since it's a single fat jar.
@@ -78,67 +76,69 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         } + File.pathSeparator
     }
 
-    val paperVisionProjectManager = PaperVisionProjectManager(
-        fullClasspath, fileSystem, engine, this, eocvSim
-    )
+    val paperVisionProjectManager by lazy {
+        PaperVisionProjectManager(
+            fullClasspath, fileSystem, engine, this, eocvSimApi
+        )
+    }
+
+    val paperVisionTabPanel by lazy {
+        PaperVisionTabPanel(this, eocvSimApi, paperVisionProjectManager)
+    }
 
     override fun onLoad() {
         paperVisionProjectManager.init()
 
-        eocvSim.visualizer.onPluginGuiAttachment.doOnce {
-            val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
+        eocvSimApi.visualizerApi.creationHook.once {
+            val switchablePanel = eocvSimApi.visualizerApi.sidebarApi
 
-            switchablePanel.addTab(
-                "PaperVision",
-                PaperVisionTabPanel(paperVisionProjectManager, eocvSim, switchablePanel)
-            )
+            switchablePanel.addTab(paperVisionTabPanel)
 
-            switchablePanel.addChangeListener {
+            switchablePanel.tabChangeHook {
                 isRunningPreviewPipeline = false
-                changeToPaperVisionPipelineIfNecessary()
-
-                eocvSim.onMainUpdate.doOnce {
-                    paperVisionProjectManager.clearPreviewPipelines()
-                }
+                switchToNecessaryPipeline()
             }
 
-            val fileNewMenu = eocvSim.visualizer.menuBar.mFileMenu.getMenuComponent(0) as JMenu
-            fileNewMenu.addSeparator()
+            val fileNewMenu = eocvSimApi.visualizerApi.topMenuBarApi.fileMenuApi.findSubMenuByTitle("New")
+            fileNewMenu?.addSeparator()
 
             val fileNewPaperVisionMenu = JMenu("PaperVision")
 
             val fileNewPaperVisionProject = JMenuItem("New Project")
             fileNewPaperVisionProject.addActionListener {
-                paperVisionProjectManager.newProjectAsk(eocvSim.visualizer.frame)
+                paperVisionProjectManager.newProjectAsk(eocvSimApi.visualizerApi.frame!!)
             }
 
             fileNewPaperVisionMenu.add(fileNewPaperVisionProject)
 
             val filePaperVisionImport = JMenuItem("Import...")
             filePaperVisionImport.addActionListener {
-                paperVisionProjectManager.importProjectAsk(eocvSim.visualizer.frame)
+                paperVisionProjectManager.importProjectAsk(eocvSimApi.visualizerApi.frame!!)
             }
 
             fileNewPaperVisionMenu.add(filePaperVisionImport)
 
-            fileNewMenu.add(fileNewPaperVisionMenu)
+            fileNewMenu?.addMenuItem(fileNewPaperVisionMenu)
         }
 
-        eocvSim.onMainUpdate.doOnce(this::recoverProjects)
+        eocvSimApi.mainLoopHook.once(this::recoverProjects)
         PaperVisionProcessRunner.onPaperVisionExitError.doOnce(this::recoverProjects)
 
-        eocvSim.pipelineManager.onPipelineChange {
-            changeToPaperVisionPipelineIfNecessary()
+        eocvSimApi.pipelineManagerApi.onPipelineChangeHook {
+            switchToNecessaryPipeline()
         }
 
         PaperVisionProcessRunner.onPaperVisionStart {
             // abort papervision pipeline
-            changeToPaperVisionPipelineIfNecessary()
-            eocvSim.pipelineManager.requestForceChangePipeline(0);
+            switchToNecessaryPipeline()
+
+            eocvSimApi.mainLoopHook.once {
+                eocvSimApi.pipelineManagerApi.changePipeline(0, force = true)
+            }
         }
 
         PaperVisionProcessRunner.onPaperVisionExit {
-            changeToPaperVisionPipelineIfNecessary()
+            switchToNecessaryPipeline()
 
             currentPrevizSession?.stopPreviz()
             currentPrevizSession = null
@@ -146,14 +146,20 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     }
 
     override fun onEnable() {
+        eocvSimApi.pipelineManagerApi.addPipelineClass(
+            PaperVisionDefaultPipeline::class.java,
+            PipelineManagerApi.PipelineSource.CLASSPATH,
+            hidden = true
+        )
+
         engine.setMessageHandlerOf<TunerChangeValueMessage> {
-            eocvSim.onMainUpdate.doOnce {
+            eocvSimApi.mainLoopHook.once {
                 val field = currentPrevizSession?.latestVirtualReflect?.getLabeledField(message.label)
 
                 if (field != null) {
                     val tunableField = tunableFieldOf(field)
 
-                    tunableField.setFieldValue(0, message.value)
+                    tunableField?.setFieldValue(0, message.value)
                 }
 
                 respond(OkResponse())
@@ -161,14 +167,14 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<TunerChangeValuesMessage> {
-            eocvSim.onMainUpdate.doOnce {
+            eocvSimApi.mainLoopHook.once {
                 val field = currentPrevizSession?.latestVirtualReflect?.getLabeledField(message.label)
 
                 if (field != null) {
                     val tunableField = tunableFieldOf(field)
 
                     for (i in message.values.indices) {
-                        tunableField.setFieldValue(i, message.values[i])
+                        tunableField?.setFieldValue(i, message.values[i]!!)
                     }
                 }
 
@@ -177,47 +183,39 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<GetInputSourcesMessage> {
-            eocvSim.onMainUpdate.doOnce {
+            eocvSimApi.mainLoopHook.once {
                 respond(
-                    InputSourcesListResponse(
-                        inputSourcesToData()
-                    )
+                    InputSourcesListResponse(inputSourcesToData())
                 )
             }
         }
 
         engine.setMessageHandlerOf<GetCurrentInputSourceMessage> {
-            eocvSim.onMainUpdate.doOnce {
-                respond(StringResponse(eocvSim.inputSourceManager.currentInputSource?.name ?: ""))
+            eocvSimApi.mainLoopHook.once {
+                respond(StringResponse(eocvSimApi.inputSourceManagerApi.currentSource?.name ?: ""))
             }
         }
 
         engine.setMessageHandlerOf<SetInputSourceMessage> {
-            eocvSim.onMainUpdate.doOnce {
-                eocvSim.inputSourceManager.requestSetInputSource(message.inputSource)
+            eocvSimApi.mainLoopHook.once {
+                eocvSimApi.inputSourceManagerApi.setInputSource(message.inputSource)
                 respond(OkResponse())
             }
         }
 
         engine.setMessageHandlerOf<OpenCreateInputSourceMessage> {
-            eocvSim.onMainUpdate.doOnce {
-                DialogFactory.createSourceDialog(
-                    eocvSim, when (message.sourceType) {
-                        InputSourceType.IMAGE -> SourceType.IMAGE
-                        InputSourceType.CAMERA -> SourceType.CAMERA
-                        InputSourceType.VIDEO -> SourceType.VIDEO
-                        InputSourceType.HTTP -> SourceType.HTTP
-                    }
-                )
+            eocvSimApi.mainLoopHook.once {
+                eocvSimApi.visualizerApi.dialogFactoryApi.createSourceDialog(message.sourceType.toApi())
+
                 respond(OkResponse())
             }
         }
 
         engine.setMessageHandlerOf<InputSourceListChangeListenerMessage> {
-            val currentSourceAmount = eocvSim.inputSourceManager.sources.size
+            val currentSourceAmount = eocvSimApi.inputSourceManagerApi.allSources.size
 
-            eocvSim.onMainUpdate {
-                if (eocvSim.inputSourceManager.sources.size > currentSourceAmount) {
+            eocvSimApi.mainLoopHook.once {
+                if (eocvSimApi.inputSourceManagerApi.allSources.size > currentSourceAmount) {
                     respond(InputSourcesListResponse(inputSourcesToData()))
                 }
             }
@@ -242,7 +240,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<PrevizStartMessage> {
-            eocvSim.onMainUpdate.doOnce {
+            eocvSimApi.mainLoopHook.once {
                 if (currentPrevizSession != null) {
                     logger.warn("Stopping current previz session ${currentPrevizSession?.sessionName} to start new one")
                     logger.warn("It was not stopped beforehand, make sure to stop previz sessions timely")
@@ -261,7 +259,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
                 currentPrevizSession = EOCVSimPrevizSession(
                     message.previzName,
-                    eocvSim, paperVisionProjectManager,
+                    eocvSimApi,
+                    paperVisionProjectManager,
                     streamer,
                     message.sourceCode
                 )
@@ -273,21 +272,21 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<PrevizPingMessage> {
-            eocvSim.onMainUpdate.doOnce {
+            eocvSimApi.mainLoopHook.once {
                 if (currentPrevizSession == null || currentPrevizSession?.sessionName != message.previzName) {
                     respond(ErrorResponse("Previz is not running"))
                 } else {
                     currentPrevizSession?.handlePrevizPing()
 
-                    val stats = eocvSim.pipelineManager.pipelineStatisticsCalculator
+                    val stats = eocvSimApi.pipelineManagerApi.pollStatistics()
 
-                    respond(PrevizStatisticsResponse(stats.avgFps, stats.avgPipelineTime.toLong()))
+                    respond(PrevizStatisticsResponse(stats.avgFps.toFloat(), stats.avgPipelineTimeMs.toLong()))
                 }
             }
         }
 
         engine.setMessageHandlerOf<PrevizStopMessage> {
-            eocvSim.onMainUpdate.doOnce {
+            eocvSimApi.mainLoopHook.once {
                 if (currentPrevizSession?.sessionName == message.previzName) {
                     currentPrevizSession?.stopPreviz()
                     currentPrevizSession = null
@@ -298,7 +297,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         engine.setMessageHandlerOf<PrevizSourceCodeMessage> {
-            eocvSim.onMainUpdate.doOnce {
+            eocvSimApi.mainLoopHook.once {
                 if (currentPrevizSession?.sessionName == message.previzName) {
                     currentPrevizSession!!.refreshPreviz(message.sourceCode)
                     logger.debug("Received source code\n{}", message.sourceCode)
@@ -311,26 +310,20 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
     }
 
-    private fun inputSourcesToData() = eocvSim.inputSourceManager.sources.map {
-        InputSourceData(
-            it.key,
-            when (eocvSim.inputSourceManager.getSourceType(it.key)) {
-                SourceType.CAMERA -> InputSourceType.CAMERA
-                SourceType.VIDEO -> InputSourceType.VIDEO
-                SourceType.HTTP -> InputSourceType.HTTP
-                else -> InputSourceType.IMAGE
-            },
-            it.value.creationTime
+    private fun inputSourcesToData() = eocvSimApi.inputSourceManagerApi.allSources.map {
+        IpcInputSourceData(
+            it.name,
+            it.data.type.toIpc(),
+            it.creationTime
         )
     }.toTypedArray().apply { sortBy { it.timestamp } }
 
-    override fun onDisable() {
-    }
+    override fun onDisable() { }
 
     private fun recoverProjects() {
         if (paperVisionProjectManager.recoveredProjects.isNotEmpty()) {
             PaperVisionDialogFactory.displayProjectRecoveryDialog(
-                eocvSim.visualizer.frame, paperVisionProjectManager.recoveredProjects
+                eocvSimApi.visualizerApi.frame!!, paperVisionProjectManager.recoveredProjects
             ) {
                 for (recoveredProject in it) {
                     paperVisionProjectManager.recoverProject(recoveredProject)
@@ -338,7 +331,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
                 if (it.isNotEmpty()) {
                     JOptionPane.showMessageDialog(
-                        eocvSim.visualizer.frame,
+                        eocvSimApi.visualizerApi.frame!!,
                         "Successfully recovered ${it.size} unsaved project(s)",
                         "PaperVision Project Recovery",
                         JOptionPane.INFORMATION_MESSAGE
@@ -350,57 +343,48 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
     }
 
-    internal fun changeToPaperVisionPipelineIfNecessary() {
-        val switchablePanel = eocvSim.visualizer.pipelineOpModeSwitchablePanel
-
+    internal fun switchToNecessaryPipeline() {
         if (isRunningPreviewPipeline) return
 
-        if (switchablePanel.selectedIndex == switchablePanel.indexOfTab("PaperVision")) {
+        if (eocvSimApi.visualizerApi.sidebarApi.isActive(paperVisionTabPanel)) {
             if (currentPrevizSession?.previzRunning != true || !PaperVisionProcessRunner.isRunning) {
-                isRunningPreviewPipeline = false
+                isRunningPreviewPipeline = true
 
-                eocvSim.pipelineManager.requestAddPipelineClass(
-                    PaperVisionDefaultPipeline::class.java,
-                    PipelineSource.CLASSPATH
-                )
-
-                eocvSim.pipelineManager.onUpdate.doOnce {
-                    eocvSim.pipelineManager.changePipeline(
-                        eocvSim.pipelineManager.getIndexOf(
+                eocvSimApi.mainLoopHook.once {
+                    eocvSimApi.pipelineManagerApi.changePipeline(
+                        eocvSimApi.pipelineManagerApi.getIndexOf(
                             PaperVisionDefaultPipeline::class.java,
-                            PipelineSource.CLASSPATH
-                        )!!
+                            PipelineManagerApi.PipelineSource.CLASSPATH
+                        ) ?: 0
                     )
-
-                    eocvSim.visualizer.viewport.renderer.setFpsMeterEnabled(false)
                 }
             }
         } else {
-            eocvSim.visualizer.viewport.renderer.setFpsMeterEnabled(true)
-
-            eocvSim.pipelineManager.pipelines.removeAll { it.clazz == PaperVisionDefaultPipeline::class.java }
-            eocvSim.pipelineManager.refreshGuiPipelineList()
+            // eocvSim.visualizer.viewport.renderer.setFpsMeterEnabled(true)
+            isRunningPreviewPipeline = false
         }
     }
 
-    private fun tunableFieldOf(field: VirtualField): TunableField<*> {
+    private fun tunableFieldOf(field: VirtualField): TunableFieldApi? {
         if (tunableFieldCache.containsKey(field)) {
             return tunableFieldCache[field]!!
         }
-
-        val tunableFieldClass = eocvSim.tunerManager.getTunableFieldOf(field)
-
-        val tunableField = tunableFieldClass.getConstructor(
-            Any::class.java,
-            VirtualField::class.java,
-            EOCVSim::class.java
-        ).newInstance(
-            currentPrevizSession!!.latestPipeline,
-            field,
-            eocvSim
-        )
+        val tunableField = eocvSimApi.variableTunerApi.newTunableFieldInstanceOf(field, currentPrevizSession!!.latestPipeline!!)
 
         tunableFieldCache[field] = tunableField
         return tunableField
     }
+}
+
+fun IpcInputSourceType.toApi() = when(this) {
+    IpcInputSourceType.IMAGE -> InputSourceApi.Type.IMAGE
+    IpcInputSourceType.VIDEO -> InputSourceApi.Type.VIDEO
+    IpcInputSourceType.CAMERA -> InputSourceApi.Type.CAMERA
+    IpcInputSourceType.HTTP -> InputSourceApi.Type.HTTP
+}
+fun InputSourceApi.Type.toIpc() = when(this) {
+    InputSourceApi.Type.IMAGE -> IpcInputSourceType.IMAGE
+    InputSourceApi.Type.VIDEO -> IpcInputSourceType.VIDEO
+    InputSourceApi.Type.CAMERA -> IpcInputSourceType.CAMERA
+    InputSourceApi.Type.HTTP -> IpcInputSourceType.HTTP
 }

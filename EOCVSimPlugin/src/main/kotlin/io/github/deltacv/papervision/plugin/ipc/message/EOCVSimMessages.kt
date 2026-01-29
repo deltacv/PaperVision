@@ -20,13 +20,14 @@ package io.github.deltacv.papervision.plugin.ipc.message
 
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageBase
 
-data class InputSourceData(
+data class IpcInputSourceData(
     var name: String,
-    var type: InputSourceType,
+    var type: IpcInputSourceType,
     var timestamp: Long
 )
-enum class InputSourceType {
-    IMAGE, CAMERA, VIDEO, HTTP
+
+enum class IpcInputSourceType {
+    IMAGE, VIDEO, CAMERA, HTTP
 }
 
 class GetInputSourcesMessage : PaperVisionEngineMessageBase()
@@ -38,5 +39,5 @@ class SetInputSourceMessage(
 ) : PaperVisionEngineMessageBase()
 
 class OpenCreateInputSourceMessage(
-    var sourceType: InputSourceType
+    var sourceType: IpcInputSourceType
 ) : PaperVisionEngineMessageBase()

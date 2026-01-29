@@ -21,7 +21,6 @@ package io.github.deltacv.papervision
 import imgui.ImFontGlyphRangesBuilder
 import imgui.ImGui
 import imgui.flag.ImGuiCond
-import io.github.deltacv.mai18n.Language
 import io.github.deltacv.papervision.action.Action
 import io.github.deltacv.papervision.action.RootAction
 import io.github.deltacv.papervision.attribute.Attribute
@@ -53,6 +52,8 @@ import io.github.deltacv.papervision.node.NodeRegistry
 import io.github.deltacv.papervision.platform.*
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
+import org.deltacv.mai18n.Language
+import org.deltacv.mai18n.makeThreadTr
 import java.awt.Taskbar
 import java.awt.Toolkit
 
@@ -92,9 +93,10 @@ class PaperVision(
     lateinit var keyManager: KeyManager
         private set
 
-    val codeGenManager = CodeGenManager(this)
-    val fontManager    = FontManager()
-    val langManager    = Language("/lang_pv.csv", "en").makeTr()
+    val codeGenManager  = CodeGenManager(this)
+    val fontManager     = FontManager()
+    lateinit var currentLanguage: Language
+        private set
 
     val nodeEditor by lazy { NodeEditor(this, keyManager) }
     val nodeList   by lazy { NodeList(this, keyManager, NodeRegistry.nodes) }
@@ -183,7 +185,7 @@ class PaperVision(
 
     private fun initLanguage() {
         try {
-            langManager.lang = config.fields.lang
+            changeLanguage(config.fields.lang)
         } catch (_: Exception) {
             logger.warn("Configured language ${config.fields.lang} is not available, defaulting")
         }
@@ -229,7 +231,6 @@ class PaperVision(
 
     private fun initUI() {
         nodeEditor.enable()
-        langManager.loadIfNeeded()
         nodeList.enable()
     }
 
@@ -327,6 +328,10 @@ class PaperVision(
 
         nodeEditor.delete()
         nodeList.delete()
+    }
+
+    fun changeLanguage(langCode: String) {
+        currentLanguage = Language("/lang_pv.csv", langCode).apply { makeThreadTr() }
     }
 
     fun startPrevizWithEngine() {

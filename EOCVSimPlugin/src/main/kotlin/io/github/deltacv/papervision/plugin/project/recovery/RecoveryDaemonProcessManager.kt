@@ -33,7 +33,7 @@ class RecoveryDaemonProcessManager(
     val classpath: String
 ) {
 
-    val executor = Executors.newFixedThreadPool(2)
+    val executor = Executors.newFixedThreadPool(2)!!
 
     private val server = WsServer(this)
 

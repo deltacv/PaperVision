@@ -41,11 +41,11 @@ import picocli.CommandLine
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
-class EOCVSimIpcPaperVisionMain : Callable<Int?> {
+class IpcPaperVisionMain : Callable<Int?> {
     @CommandLine.Option(names = ["-i", "--ipcport"], description = ["Engine IPC server port"])
     var ipcPort: Int = 0
 
-    @CommandLine.Option(names = ["-q", "--queryproject"], description = ["Asks the engine for the current project"])
+    @CommandLine.Option(names = ["-q", "--queryproject"], description = ["Asks the engine for the current project on startup"])
     var queryProject: Boolean = false
 
     private lateinit var app: PaperVisionApp
@@ -158,7 +158,7 @@ class EOCVSimIpcPaperVisionMain : Callable<Int?> {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val exitCode = CommandLine(EOCVSimIpcPaperVisionMain()).execute(*args)
+            val exitCode = CommandLine(IpcPaperVisionMain()).execute(*args)
             exitProcess(exitCode)
         }
     }

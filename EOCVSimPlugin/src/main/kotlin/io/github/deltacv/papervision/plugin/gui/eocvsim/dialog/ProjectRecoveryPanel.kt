@@ -48,7 +48,7 @@ class ProjectRecoveryPanel(
         // Create the table with the custom model
         val table = object: JTable(model) {
             override fun getColumnClass(column: Int) = when (column) {
-                2 -> java.lang.Boolean::class.java
+                2 -> Boolean::class.java
                 else -> String::class.java
             }
 

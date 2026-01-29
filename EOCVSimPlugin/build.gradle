@@ -148,9 +148,9 @@ dependencies {
 
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 
-    compileOnly('org.deltacv.EOCV-Sim:EOCV-Sim:4.0.2') { transitive = false }
-    compileOnly('org.deltacv.EOCV-Sim:Common:4.0.2') { transitive = false }
-    compileOnly('org.deltacv.EOCV-Sim:Vision:4.0.2')
+    compileOnly("org.deltacv.EOCV-Sim:EOCV-Sim:$eocvsim_version") { transitive = false }
+    compileOnly("org.deltacv.EOCV-Sim:Common:$eocvsim_version") { transitive = false }
+    compileOnly("org.deltacv.EOCV-Sim:Vision:$eocvsim_version")
 
     implementation 'org.codehaus.janino:janino:3.1.12'
     implementation "com.google.code.gson:gson:$gson_version"

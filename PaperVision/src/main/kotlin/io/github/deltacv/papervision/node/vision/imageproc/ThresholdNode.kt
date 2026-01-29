@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.node.vision.imageproc
 
 import imgui.ImGui
 import imgui.type.ImInt
-import io.github.deltacv.mai18n.tr
+import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.misc.EnumAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange

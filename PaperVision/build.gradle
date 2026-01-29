@@ -20,7 +20,7 @@ dependencies {
 
     api "org.slf4j:slf4j-api:$slf4j_version"
 
-    api 'org.deltacv:mai18n:1.1.5'
+    api 'org.deltacv:mai18n:1.2.0'
 
     implementation "org.java-websocket:Java-WebSocket:1.5.2"
 

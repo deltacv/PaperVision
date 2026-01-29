@@ -39,6 +39,7 @@ import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.util.Range2d
 
 @PaperNode(
     name = "nod_houghcircles",
@@ -52,14 +53,16 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
     val minDistance = DoubleAttribute(INPUT, "$[att_mindistance]")
     val downscale = DoubleAttribute(INPUT, "$[att_downscale]")
 
-    val output = ListAttribute(OUTPUT, CircleAttribute, "$[att_calccircles]")
+    val output = ListAttribute(OUTPUT, CircleAttribute, "$[att_circles]")
 
     override fun onEnable() {
         + input.rebuildOnChange()
 
         + minDistance
-        minDistance.value.set(10.0)
+        minDistance.fieldMode(Range2d(0.1, Double.MAX_VALUE))
+
         + downscale
+        downscale.fieldMode(Range2d(0.1, Double.MAX_VALUE))
 
         + output.rebuildOnChange()
     }

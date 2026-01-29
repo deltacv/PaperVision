@@ -23,7 +23,7 @@ import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.ImNodesEditorContext
 import imgui.extension.imnodes.flag.ImNodesCol
 import imgui.flag.*
-import io.github.deltacv.mai18n.tr
+import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.gui.util.Font

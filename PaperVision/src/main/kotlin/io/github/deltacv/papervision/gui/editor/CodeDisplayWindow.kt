@@ -23,7 +23,7 @@ import imgui.ImVec2
 import imgui.extension.texteditor.TextEditor
 import imgui.extension.texteditor.TextEditorLanguageDefinition
 import imgui.flag.ImGuiWindowFlags
-import io.github.deltacv.mai18n.tr
+import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.gui.ToastWindow
 import io.github.deltacv.papervision.gui.util.Font
