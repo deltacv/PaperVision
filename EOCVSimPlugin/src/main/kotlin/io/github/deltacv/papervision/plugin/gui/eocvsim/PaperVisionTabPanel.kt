@@ -45,7 +45,7 @@ class PaperVisionTabPanel(
 
     val buttonsPanel = PaperVisionTabButtonsPanel(projectList, projectManager)
 
-    override fun create(target: JPanel) {
+    override fun create(target: JPanel) = apiImpl {
         target.layout = GridBagLayout()
 
         projectList.apply {
@@ -141,7 +141,7 @@ class PaperVisionTabPanel(
 
     override val title = "PaperVision"
 
-    override fun onActivated() {
+    override fun onActivated() = apiImpl {
         SwingUtilities.invokeLater {
             if(!eocvSimApi.configApi.hasFlag("hasShownPaperVisionHint")) {
                 val hint = HintManager.Hint(
@@ -157,7 +157,7 @@ class PaperVisionTabPanel(
         }
     }
 
-    override fun onDeactivated() {
+    override fun onDeactivated() = apiImpl {
         SwingUtilities.invokeLater {
             HintManager.hideAllHints()
         }

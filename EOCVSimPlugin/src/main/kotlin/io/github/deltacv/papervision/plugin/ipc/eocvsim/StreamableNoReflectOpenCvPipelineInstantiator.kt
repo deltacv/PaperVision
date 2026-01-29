@@ -16,16 +16,17 @@ class StreamableNoReflectOpenCvPipelineInstantiator(
 
     val logger by loggerForThis()
 
-    override fun instantiatePipeline(pipelineClass: Class<*>, telemetry: Telemetry) =
+    override fun instantiatePipeline(pipelineClass: Class<*>, telemetry: Telemetry) = apiImpl {
         DefaultPipelineInstantiator.instantiate(pipelineClass, telemetry).apply {
-            if(this is StreamableOpenCvPipeline) {
+            if (this is StreamableOpenCvPipeline) {
                 this.streamer = imageStreamer
             }
         }
+    }
 
-    override fun virtualReflectionFor(pipeline: OpenCvPipeline) = JvmVirtualReflection
+    override fun virtualReflectionFor(pipeline: OpenCvPipeline) = apiImpl { JvmVirtualReflection }
 
-    override fun variableTunerTargetFor(pipeline: OpenCvPipeline) = Any()
+    override fun variableTunerTargetFor(pipeline: OpenCvPipeline) = apiImpl { Any() }
 
     override fun disableApi() { }
 }
