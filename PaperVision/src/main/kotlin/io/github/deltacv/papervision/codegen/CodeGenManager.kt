@@ -63,7 +63,7 @@ class CodeGenManager(val paperVision: PaperVision) {
 
         val codeGen = CodeGen(name, language, isForPreviz)
 
-        val current = codeGen.currScopeProcessFrame
+        val current = codeGen.currProcessFrame
 
         try {
             codeGen.stage = CodeGen.Stage.INITIAL_GEN

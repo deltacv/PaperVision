@@ -22,6 +22,7 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
 import io.github.deltacv.papervision.codegen.build.type.CPythonType
+import io.github.deltacv.papervision.codegen.build.type.StandardTypes
 import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.LanguageBase
@@ -40,6 +41,11 @@ object CPythonLanguage : LanguageBase(
     val NoType = object: CPythonType("None", "None") {
         override val shouldImport = false
     }
+
+    override val IntType get() = NoType
+    override val LongType get() = NoType
+    override val FloatType get() = NoType
+    override val DoubleType get() = NoType
 
     override val trueValue = ConValue(BooleanType, "True")
     override val falseValue = ConValue(BooleanType, "False")
@@ -139,6 +145,23 @@ object CPythonLanguage : LanguageBase(
 
     override fun castValue(value: Value, castTo: Type) = ConValue(castTo, value.value)
 
+    fun sliceValue(start: Value? = null, end: Value? = null, step: Value? = null) : ConValue {
+        val sliceStr = buildString {
+            if(start != null) {
+                append(start.value)
+            }
+            append(":")
+            if(end != null) {
+                append(end.value)
+            }
+            if(step != null) {
+                append(":${step.value}")
+            }
+        }
+
+        return ConValue(NoType, sliceStr)
+    }
+
     override fun arrayOf(type: Type) = type
 
     override fun newArrayOf(type: Type, size: Value): ConValue {
@@ -177,7 +200,7 @@ object CPythonLanguage : LanguageBase(
 
         val start = classStartScope.get()
         if(start.isNotBlank()) {
-            classBodyScope.scope(classStartScope)
+            classBodyScope.scope(classStartScope, indentOverride = 0)
             classBodyScope.newStatement()
         }
 

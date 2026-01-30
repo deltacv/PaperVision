@@ -31,8 +31,8 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
     val output = ListAttribute(OUTPUT, RectAttribute, "$[att_rects]")
 
     override fun onEnable() {
-        + circles.rebuildOnChange()
-        + output.rebuildOnChange()
+        +circles.rebuildOnChange()
+        +output.rebuildOnChange()
     }
 
     override val generators = generatorsBuilder {
@@ -43,7 +43,7 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
                 val Circle = JvmOpenCvTypes.getCircleType(current)
 
                 val circles = circles.genValue(current)
-                if(circles !is GenValue.GList.RuntimeListOf<*>) {
+                if (circles !is GenValue.GList.RuntimeListOf<*>) {
                     raise("Only runtime lists are supported for now")
                 }
 
@@ -57,16 +57,25 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
                     nameComment()
 
                     foreach(AccessorVariable(Circle, "circle"), circles.value.v) {
-                        rects("add", JvmOpenCvTypes.Rect.new(
-                            int(it.propertyValue("center", JvmOpenCvTypes.Point).propertyValue("x", DoubleType) - it.propertyValue("radius", DoubleType)),
-                            int(it.propertyValue("center", JvmOpenCvTypes.Point).propertyValue("y", DoubleType) - it.propertyValue("radius", DoubleType)),
-                            int(it.propertyValue("radius", DoubleType) * 2.v),
-                            int(it.propertyValue("radius", DoubleType) * 2.v)
-                        ))
+                        val center = it.propertyValue("center", JvmOpenCvTypes.Point)
+                        val x = center.propertyValue("x", DoubleType)
+                        val y = center.propertyValue("y", DoubleType)
+
+                        val radius = it.propertyValue("radius", DoubleType)
+
+                        rects("add",
+                            JvmOpenCvTypes.Rect.new(
+                                int(x - it.propertyValue("radius", DoubleType)),
+                                int(y - it.propertyValue("radius", DoubleType)),
+                                int(radius * 2.v),
+                                int(radius * 2.v)
+                            )
+                        )
                     }
                 }
 
-                session.outputRects = GenValue.GList.RuntimeListOf(rects.resolved(), GenValue.GRect.RuntimeRect::class.resolved())
+                session.outputRects =
+                    GenValue.GList.RuntimeListOf(rects.resolved(), GenValue.GRect.RuntimeRect::class.resolved())
             }
 
             session
@@ -77,7 +86,7 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
 
             current {
                 val circles = circles.genValue(current)
-                if(circles !is GenValue.GList.RuntimeListOf<*>) {
+                if (circles !is GenValue.GList.RuntimeListOf<*>) {
                     raise("Only runtime lists are supported for now")
                 }
 
@@ -89,16 +98,21 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
 
                     separate()
 
-                    foreach(CPythonLanguage.accessorTupleVariable("x", "y", "r"), circles.value.v) {
-                        rects("append", CPythonLanguage.tuple(
-                            int(it.get("x") - it.get("r")),
-                            int(it.get("y") - it.get("r")),
-                            int(it.get("r") * 2.v),
-                            int(it.get("r") * 2.v)
-                        ))
+                    ifCondition(CPythonLanguage.valueIsNot(circles.value.v, CPythonLanguage.NoType)) {
+                        foreach(CPythonLanguage.accessorTupleVariable("x", "y", "r"), circles.value.v) {
+                            rects("append",
+                                CPythonLanguage.tuple(
+                                    int(it.get("x") - it.get("r")),
+                                    int(it.get("y") - it.get("r")),
+                                    int(it.get("r") * 2.v),
+                                    int(it.get("r") * 2.v)
+                                )
+                            )
+                        }
                     }
 
-                    session.outputRects = GenValue.GList.RuntimeListOf(rects.resolved(), GenValue.GRect.RuntimeRect::class.resolved())
+                    session.outputRects =
+                        GenValue.GList.RuntimeListOf(rects.resolved(), GenValue.GRect.RuntimeRect::class.resolved())
                 }
             }
 
@@ -109,7 +123,7 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         genCodeIfNecessary(current)
 
-        if( attrib == output) {
+        if (attrib == output) {
             return GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.outputRects }
         }
 

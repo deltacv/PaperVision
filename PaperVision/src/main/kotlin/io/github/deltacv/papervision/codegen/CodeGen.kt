@@ -39,7 +39,7 @@ class CodeGen(
         val logger by loggerFor<CodeGen>()
     }
 
-    val importScope            = Scope(0, language)
+    val importScope = Scope(0, language)
     val importScopePlaceholder = Resolvable.Placeholder(resolveLast = true) {
         importScope
     }
@@ -47,14 +47,14 @@ class CodeGen(
     val classStartScope = Scope(1, language, importScope, isForPreviz)
     val classEndScope   = Scope(1, language, importScope, isForPreviz)
 
-    val initScope     = Scope(2, language, importScope, isForPreviz)
-    val currScopeInit = Current(this, initScope, isForPreviz)
+    val initScope = Scope(2, language, importScope, isForPreviz)
+    val currInit  = Current(this, initScope, isForPreviz)
 
-    val processFrameScope     = Scope(2, language, importScope, isForPreviz)
-    val currScopeProcessFrame = Current(this, processFrameScope, isForPreviz)
+    val processFrameScope = Scope(2, language, importScope, isForPreviz)
+    val currProcessFrame  = Current(this, processFrameScope, isForPreviz)
 
-    val viewportTappedScope     = Scope(2, language, importScope, isForPreviz)
-    val currScopeViewportTapped = Current(this, viewportTappedScope, isForPreviz)
+    val viewportTappedScope = Scope(2, language, importScope, isForPreviz)
+    val currViewportTapped  = Current(this, viewportTappedScope, isForPreviz)
 
     val sessions = mutableMapOf<GenNode<*>, CodeGenSession>()
     val busyNodes = mutableListOf<GenNode<*>>()
@@ -74,8 +74,7 @@ class CodeGen(
     private fun resolveAllPlaceholders(preprocessed: String): String {
         var resolved = preprocessed
 
-        val placeholders = IdContainerStacks.local
-            .peekNonNull<Resolvable.Placeholder<*>>()
+        val placeholders = IdContainerStacks.local.peekNonNull<Resolvable.Placeholder<*>>()
 
         logger.info("Resolving active placeholders: ${placeholders.inmutable.size}")
 
@@ -178,5 +177,4 @@ class CodeGen(
 data class CodeGenOptions(var genAtTheEnd: Boolean = false)
 
 interface CodeGenSession
-
 object NoSession : CodeGenSession

@@ -130,8 +130,8 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
 
                     ifCondition(CPythonLanguage.valueIsNot(circlesValue.value.v, CPythonLanguage.NoType)) {
                         foreach(CPythonLanguage.accessorTupleVariable("x", "y", "r"), circlesValue.value.v) {
-                            CPythonOpenCvTypes.cv2(
-                                "circle",
+                            CPythonOpenCvTypes.cv2("circle",
+                                output,
                                 CPythonLanguage.tuple(int(it.get("x")), int(it.get("y"))),
                                 int(it.get("r")),
                                 CPythonLanguage.tuple(

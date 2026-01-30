@@ -32,6 +32,7 @@ import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -164,6 +165,10 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
                     )
 
                     local(circles)
+
+                    ifCondition(CPythonLanguage.valueIsNot(circles, CPythonLanguage.NoType)) {
+                        circles set circles[csv(0.v, CPythonLanguage.sliceValue()), CPythonLanguage.NoType] // "[0, :]"
+                    }
 
                     session.circles = GenValue.GList.RuntimeListOf(circles.resolved(), GenValue.GCircle.RuntimeCircle::class.resolved())
                 }

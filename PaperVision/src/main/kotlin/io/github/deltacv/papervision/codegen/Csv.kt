@@ -18,6 +18,7 @@
 
 package io.github.deltacv.papervision.codegen
 
+import io.github.deltacv.papervision.codegen.build.ConValue
 import io.github.deltacv.papervision.codegen.build.Type
 import io.github.deltacv.papervision.codegen.build.Value
 
@@ -43,4 +44,19 @@ fun Array<out Value>.csv(): String {
 fun Array<out Type>.csv(): String {
     val stringArray = this.map { it.shortNameWithGenerics }.toTypedArray()
     return stringArray.csv()
+}
+
+fun csv(vararg value: Value): Value {
+    if(value.isEmpty()) return ConValue(Type.NONE, "")
+
+    val type = value[0].type
+
+    // ensure all values are of the same type
+    for(v in value) {
+        if(v.type != type) {
+            throw IllegalArgumentException("All values must be of the same type to create a CSV Value.")
+        }
+    }
+
+    return ConValue(type, value.csv())
 }
