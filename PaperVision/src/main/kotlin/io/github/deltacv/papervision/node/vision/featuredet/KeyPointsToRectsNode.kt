@@ -63,8 +63,10 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
 
                     foreach(AccessorVariable(JvmOpenCvTypes.KeyPoint, "kp"), keypoints.value.v.callValue("toArray", JvmOpenCvTypes.KeyPoint.arrayType())) {
                         rects("add", JvmOpenCvTypes.Rect.new(
-                            it.propertyValue("center", JvmOpenCvTypes.Point),
-                            JvmOpenCvTypes.Size.new(it.propertyValue("rad", FloatType), it.propertyValue("size", FloatType))
+                            int(it.propertyValue("center", JvmOpenCvTypes.Point).propertyValue("x", DoubleType) - it.propertyValue("size", FloatType) / 2.v),
+                            int(it.propertyValue("center", JvmOpenCvTypes.Point).propertyValue("y", DoubleType) - it.propertyValue("size", FloatType) / 2.v),
+                            int(it.propertyValue("size", FloatType)),
+                            int(it.propertyValue("size", FloatType))
                         ))
                     }
 
@@ -95,8 +97,8 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
 
                     foreach(DeclarableVariable(NoType, "kp"), keypoints.value.v) {
                         rects("append", CPythonLanguage.tuple(
-                            it.propertyValue("pt", NoType)[0.v, NoType],
-                            it.propertyValue("pt", NoType)[1.v, NoType],
+                            it.propertyValue("pt", NoType)[0.v, NoType] - it.propertyValue("size", NoType) / 2.v,
+                            it.propertyValue("pt", NoType)[1.v, NoType] - it.propertyValue("size", NoType) / 2.v,
                             it.propertyValue("size", NoType),
                             it.propertyValue("size", NoType)
                         ))

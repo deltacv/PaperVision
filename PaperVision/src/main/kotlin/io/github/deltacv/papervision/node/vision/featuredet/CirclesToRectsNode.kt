@@ -56,7 +56,7 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
                 current.scope {
                     nameComment()
 
-                    foreach(AccessorVariable(Circle, "circle"), circles.value.v.callValue("toArray", Circle.arrayType())) {
+                    foreach(AccessorVariable(Circle, "circle"), circles.value.v) {
                         rects("add", JvmOpenCvTypes.Rect.new(
                             int(it.propertyValue("center", JvmOpenCvTypes.Point).propertyValue("x", DoubleType) - it.propertyValue("radius", DoubleType)),
                             int(it.propertyValue("center", JvmOpenCvTypes.Point).propertyValue("y", DoubleType) - it.propertyValue("radius", DoubleType)),

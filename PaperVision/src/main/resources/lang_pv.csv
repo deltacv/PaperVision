@@ -39,6 +39,7 @@ nod_grouprects_byratio,Filter Rectangles by Ratio,Filtrar Rectangulos por Ratio
 nod_cannyedge,Canny Edge,Canny Edge
 nod_blobdetector,Simple Blob Detector,Detector de Blobs
 nod_keypointsto_rects,Key Points to Rectangles,Puntos Clave a Rectangulos
+nod_circlesto_rects,Circles to Rectangles,Circulos a Rectangulos
 nod_exportrect_target,Export Rectangle,Exportar Rectangulo
 nod_exportrot_recttarget,Export Rotated Rectangle,Exportar Rectangulo Rotado
 nod_exportrect_targets,Export Rectangles,Exportar Rectangulos

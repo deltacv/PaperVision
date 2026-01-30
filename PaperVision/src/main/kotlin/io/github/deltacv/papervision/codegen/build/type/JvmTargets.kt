@@ -74,8 +74,9 @@ fun CodeGen.Current.enableJavaTargets() = this {
 
                     separate()
 
-                    val entrySetType = JavaTypes.Set(JavaTypes.Map.Entry(Rect, JavaTypes.String)) // oof
-                    foreach(AccessorVariable(entrySetType, "namedTarget"), rectTargets.callValue("entrySet", entrySetType)) {
+                    val entryType = JavaTypes.Map.Entry(JavaTypes.String, Rect)
+                    val entrySetType = JavaTypes.Set(entryType) // oof
+                    foreach(AccessorVariable(entryType, "namedTarget"), rectTargets.callValue("entrySet", entrySetType)) {
                         ifCondition (it.callValue("getKey", JavaTypes.String).castTo(JavaTypes.String).callValue("startsWith", BooleanType, labelParameter).condition()) {
                             targets("add", it.callValue("getValue", Rect))
                         }
@@ -101,8 +102,10 @@ fun CodeGen.Current.enableJavaTargets() = this {
 
                     separate()
 
-                    foreach(DeclarableVariable(JavaTypes.Map.Entry(JavaTypes.String, RotatedRect), "namedTarget"), rotRectTargets.callValue("entrySet", JavaTypes.Set(JavaTypes.Map.Entry(
-                        RotatedRect, JavaTypes.String)))) {
+                    val entryType = JavaTypes.Map.Entry(JavaTypes.String, RotatedRect)
+                    val entrySetType = JavaTypes.Set(entryType) // oof
+
+                    foreach(DeclarableVariable(entryType, "namedTarget"), rotRectTargets.callValue("entrySet", entrySetType)) {
                         ifCondition (it.callValue("getKey", JavaTypes.String).castTo(JavaTypes.String).callValue("startsWith", BooleanType, labelParameter).condition()) {
                             targets("add", it.callValue("getValue", RotatedRect))
                         }

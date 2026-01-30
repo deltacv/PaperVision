@@ -266,7 +266,7 @@ open class LanguageBase(
     )
 
     override fun arraySize(array: Value) = ConValue(IntType, "${array.value}.length")
-    override fun castValue(value: Value, castTo: Type) = ConValue(castTo, "(${castTo.shortNameWithGenerics}) ${value.value}")
+    override fun castValue(value: Value, castTo: Type) = ConValue(castTo, "((${castTo.shortNameWithGenerics}) (${value.value}))")
 
     override fun comment(text: String): String {
         return if(text.contains('\n')) {
