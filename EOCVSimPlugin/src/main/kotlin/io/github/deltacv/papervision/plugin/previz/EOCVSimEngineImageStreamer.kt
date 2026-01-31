@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.plugin.ipc.eocvsim
+package io.github.deltacv.papervision.plugin.previz
 
 import com.qualcomm.robotcore.util.ElapsedTime
 import com.qualcomm.robotcore.util.MovingStatistics

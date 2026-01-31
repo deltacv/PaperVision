@@ -1,4 +1,4 @@
-package io.github.deltacv.papervision.plugin.ipc.eocvsim
+package io.github.deltacv.papervision.plugin.previz
 
 import io.github.deltacv.eocvsim.pipeline.StreamableOpenCvPipeline
 import com.github.serivesmejia.eocvsim.pipeline.instantiator.DefaultPipelineInstantiator

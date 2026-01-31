@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.plugin.ipc.eocvsim
+package io.github.deltacv.papervision.plugin.previz
 
 import io.github.deltacv.eocvsim.plugin.api.EOCVSimApi
 import io.github.deltacv.eocvsim.plugin.api.PipelineManagerApi
@@ -24,7 +24,6 @@ import io.github.deltacv.eocvsim.stream.ImageStreamer
 import io.github.deltacv.eocvsim.virtualreflect.VirtualReflectContext
 import io.github.deltacv.eocvsim.virtualreflect.jvm.JvmVirtualReflection
 import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
-import io.github.deltacv.papervision.plugin.eocvsim.SinglePipelineCompiler
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.util.loggerForThis
 import org.openftc.easyopencv.OpenCvPipeline

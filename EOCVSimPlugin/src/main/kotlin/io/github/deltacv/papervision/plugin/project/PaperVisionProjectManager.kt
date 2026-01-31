@@ -31,7 +31,7 @@ import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
 import io.github.deltacv.papervision.plugin.PaperVisionEOCVSimPlugin
 import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
-import io.github.deltacv.papervision.plugin.eocvsim.SinglePipelineCompiler
+import io.github.deltacv.papervision.plugin.previz.SinglePipelineCompiler
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngine
 import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMessage

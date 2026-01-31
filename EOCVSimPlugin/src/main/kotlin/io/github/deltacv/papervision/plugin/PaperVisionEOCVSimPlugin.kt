@@ -31,11 +31,11 @@ import io.github.deltacv.papervision.engine.client.response.ErrorResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
 import io.github.deltacv.papervision.engine.client.response.PrevizStatisticsResponse
 import io.github.deltacv.papervision.engine.client.response.StringResponse
-import io.github.deltacv.papervision.plugin.eocvsim.PaperVisionDefaultPipeline
+import io.github.deltacv.papervision.plugin.previz.PaperVisionDefaultPipeline
 import io.github.deltacv.papervision.plugin.gui.eocvsim.PaperVisionTabPanel
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
-import io.github.deltacv.papervision.plugin.ipc.eocvsim.EOCVSimEngineImageStreamer
-import io.github.deltacv.papervision.plugin.ipc.eocvsim.EOCVSimPrevizSession
+import io.github.deltacv.papervision.plugin.previz.EOCVSimEngineImageStreamer
+import io.github.deltacv.papervision.plugin.previz.EOCVSimPrevizSession
 import io.github.deltacv.papervision.plugin.ipc.message.*
 import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager

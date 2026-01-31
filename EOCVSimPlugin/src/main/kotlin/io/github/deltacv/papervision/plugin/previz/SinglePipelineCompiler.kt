@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.plugin.eocvsim
+package io.github.deltacv.papervision.plugin.previz
 
 import com.github.serivesmejia.eocvsim.util.ReflectUtil
 import org.codehaus.janino.JavaSourceClassLoader
