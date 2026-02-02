@@ -18,6 +18,8 @@
 
 package io.github.deltacv.papervision.plugin
 
+import com.github.serivesmejia.eocvsim.plugin.api.impl.EOCVSimApiImpl
+import com.github.serivesmejia.eocvsim.plugin.api.impl.VisualizerApiImpl
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
 import io.github.deltacv.eocvsim.plugin.api.InputSourceApi
 import io.github.deltacv.eocvsim.plugin.api.PipelineManagerApi
@@ -46,6 +48,7 @@ import java.util.*
 import javax.swing.JMenu
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
+import javax.swing.SwingUtilities
 
 /**
  * Main entry point for the PaperVision plugin.
@@ -137,6 +140,11 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
             currentPrevizSession?.stopPreviz()
             currentPrevizSession = null
+
+
+            SwingUtilities.invokeLater {
+                (eocvSimApi.visualizerApi as? VisualizerApiImpl)?.internalVisualizer?.viewport?.activate()
+            }
         }
     }
 
@@ -366,7 +374,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                 switchToDefaultPipeline()
             }
         } else {
-            // eocvSim.visualizer.viewport.renderer.setFpsMeterEnabled(true)
             isRunningPreviewPipeline = false
         }
     }

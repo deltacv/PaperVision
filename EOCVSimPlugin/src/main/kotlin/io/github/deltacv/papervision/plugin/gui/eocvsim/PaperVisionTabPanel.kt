@@ -21,6 +21,7 @@ package io.github.deltacv.papervision.plugin.gui.eocvsim
 import com.formdev.flatlaf.demo.HintManager
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.pipeline.SourceSelectorPanel
 import com.github.serivesmejia.eocvsim.plugin.api.impl.EOCVSimApiImpl
+import com.github.serivesmejia.eocvsim.plugin.api.impl.VisualizerApiImpl
 import io.github.deltacv.eocvsim.plugin.api.VisualizerSidebarApi
 import io.github.deltacv.papervision.plugin.PaperVisionEOCVSimPlugin
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectTree
@@ -129,7 +130,7 @@ class PaperVisionTabPanel(
             insets = Insets(10, 20, 5, 20)
         })
 
-        if(sourceSelectorPanel != null) {
+        if (sourceSelectorPanel != null) {
             sourceSelectorPanel.border = TitledBorder("Sources").apply {
                 titleFont = titleFont.deriveFont(Font.BOLD)
                 border = EmptyBorder(0, 0, 0, 0)
@@ -238,19 +239,19 @@ class PaperVisionTabPanel(
     override val title = "PaperVision"
 
     override fun onActivated(): Unit = apiImpl {
-        SwingUtilities.invokeLater {
-            if(!plugin.eocvSimApi.configApi.hasFlag("hasShownPaperVisionHint")) {
-                val hint = HintManager.Hint(
-                    "Create a new PaperVision project here",
-                    projectButtonsPanel.newProjectBtt,
-                    SwingConstants.TOP, null
-                )
+        if (!plugin.eocvSimApi.configApi.hasFlag("hasShownPaperVisionHint")) {
+            val hint = HintManager.Hint(
+                "Create a new PaperVision project here",
+                projectButtonsPanel.newProjectBtt,
+                SwingConstants.TOP, null
+            )
 
-                HintManager.showHint(hint)
+            HintManager.showHint(hint)
 
-                plugin.eocvSimApi.configApi.putFlag("hasShownPaperVisionHint")
-            }
+            plugin.eocvSimApi.configApi.putFlag("hasShownPaperVisionHint")
         }
+
+        (plugin.eocvSimApi.visualizerApi as? VisualizerApiImpl)?.internalVisualizer?.viewport?.renderer?.setFpsMeterEnabled(false)
 
         setSourceSelectorEnabled(false)
 
@@ -259,6 +260,8 @@ class PaperVisionTabPanel(
 
     override fun onDeactivated() = apiImpl {
         HintManager.hideAllHints()
+
+        (plugin.eocvSimApi.visualizerApi as? VisualizerApiImpl)?.internalVisualizer?.viewport?.renderer?.setFpsMeterEnabled(true)
 
         setSourceSelectorEnabled(false)
     }
