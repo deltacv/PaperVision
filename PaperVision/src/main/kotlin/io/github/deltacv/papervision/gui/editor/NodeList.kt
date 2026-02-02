@@ -32,6 +32,7 @@ import io.github.deltacv.papervision.gui.style.opacity
 import io.github.deltacv.papervision.gui.FrameWidthWindow
 import io.github.deltacv.papervision.gui.Table
 import io.github.deltacv.papervision.gui.Window
+import io.github.deltacv.papervision.gui.isModalWindowOpen
 import io.github.deltacv.papervision.id.IdContainer
 import io.github.deltacv.papervision.id.IdContainerStacks
 import io.github.deltacv.papervision.io.KeyManager
@@ -90,6 +91,8 @@ class NodeList(
         private set
     var isHoveringScrollBar = false
         private set
+    var isHoldingScrollBar = false
+        private set
 
     private val drawnNodes = mutableListOf<Int>()
 
@@ -106,7 +109,7 @@ class NodeList(
         paperVision.onUpdate {
             if (!paperVision.nodeEditor.isNodeFocused &&
                 keyManager.released(keys.Spacebar) &&
-                !paperVision.isModalWindowOpen
+                !Window.isModalWindowOpen
             ) {
                 showList() // open the list when the spacebar is pressed
             }
@@ -279,6 +282,14 @@ class NodeList(
 
         isHoveringScrollBar = mousePos.x >= (size.x - 15f)
 
+        if(!isHoldingScrollBar) {
+            isHoldingScrollBar = ImGui.isMouseDown(ImGuiMouseButton.Left) && isHoveringScrollBar
+        } else {
+            if(!ImGui.isMouseDown(ImGuiMouseButton.Left)) {
+                isHoldingScrollBar = false
+            }
+        }
+
         hoveredNode = ImNodes.getHoveredNode()
         if(hoveredNode >= 0) {
             hoveredNodePos = ImNodes.getNodeScreenSpacePos(hoveredNode)
@@ -333,7 +344,7 @@ class NodeList(
         ImNodes.getStyle().gridSpacing = 32f // back to normal
         ImNodes.popColorStyle()
 
-        floatingButton.focus = isNodesListOpen && !isHoveringScrollBar
+        floatingButton.focus = isNodesListOpen && !isHoveringScrollBar && !isHoldingScrollBar
 
         headers.size = size
 
@@ -361,7 +372,7 @@ class NodeList(
                 }
 
                 closeList()
-            } else if (closeOnClick && !isHoveringScrollBar) { // don't close when the scroll bar is clicked
+            } else if (closeOnClick && !isHoveringScrollBar && !isHoldingScrollBar) { // don't close when the scroll bar is clicked
                 closeList()
             }
         }
@@ -476,8 +487,7 @@ class NodeList(
 
             frameWidth = ImGui.getFrameHeight() * 1.3f
 
-            val button =
-                ImGui.button(if (nodeList.isNodesListOpen) "x" else FontAwesomeIcons.Plus, frameWidth, frameWidth)
+            val button = ImGui.button(if (nodeList.isNodesListOpen) "x" else FontAwesomeIcons.Plus, frameWidth, frameWidth)
             ImGui.popFont()
 
             if (ImGui.isItemHovered()) {

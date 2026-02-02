@@ -31,31 +31,31 @@ class PaperVisionProjectTree(val rootPath: Path) {
 
     val folders by lazy { getAllFolders(rootTree) }
 
-    private fun getAllProjects(node: ProjectTreeNode.Folder): List<String> {
+    private fun getAllProjects(node: TreeNode.Folder): List<String> {
         val projectList = mutableListOf<String>()
 
         for (child in node.nodes) {
             when (child) {
-                is ProjectTreeNode.Project -> projectList.add(child.name.trim())
-                is ProjectTreeNode.Folder -> projectList.addAll(getAllProjects(child))
+                is TreeNode.Project -> projectList.add(child.name.trim())
+                is TreeNode.Folder -> projectList.addAll(getAllProjects(child))
             }
         }
 
         return projectList
     }
 
-    private fun getAllFolders(node: ProjectTreeNode.Folder): List<String> {
+    private fun getAllFolders(node: TreeNode.Folder): List<String> {
         val folderList = mutableListOf<String>()
 
         // Check if the current folder contains any projects
-        if (node.nodes.any { it is ProjectTreeNode.Project }) {
+        if (node.nodes.any { it is TreeNode.Project }) {
             if(node.name.isNotBlank())
                 folderList.add(node.name)
         }
 
         // Recursively check subfolders
         for (child in node.nodes) {
-            if (child is ProjectTreeNode.Folder) {
+            if (child is TreeNode.Folder) {
                 folderList.addAll(getAllFolders(child))
             }
         }
@@ -69,24 +69,24 @@ class PaperVisionProjectTree(val rootPath: Path) {
 
     fun get(vararg path: String) = get(rootTree, path.toList())
 
-    private fun get(currentNode: ProjectTreeNode.Folder, path: List<String>): ProjectTreeNode? {
+    private fun get(currentNode: TreeNode.Folder, path: List<String>): TreeNode? {
         if (path.isEmpty()) return currentNode
 
         val nextNode = currentNode.nodes.find { it.name == path[0] }
         return when {
-            nextNode is ProjectTreeNode.Folder && path.size > 1 -> get(nextNode, path.drop(1))
+            nextNode is TreeNode.Folder && path.size > 1 -> get(nextNode, path.drop(1))
             nextNode != null && path.size == 1 -> nextNode
             else -> null
         }
     }
 
-    private fun printTree(tree: ProjectTreeNode.Folder, depth: Int) {
+    private fun printTree(tree: TreeNode.Folder, depth: Int) {
         for (node in tree.nodes) {
             when (node) {
-                is ProjectTreeNode.Project -> {
+                is TreeNode.Project -> {
                     println("  ".repeat(depth) + node.name)
                 }
-                is ProjectTreeNode.Folder -> {
+                is TreeNode.Folder -> {
                     println("  ".repeat(depth) + node.name)
                     printTree(node, depth + 1)
                 }
@@ -94,8 +94,8 @@ class PaperVisionProjectTree(val rootPath: Path) {
         }
     }
 
-    private fun scanDeep(path: Path): ProjectTreeNode.Folder {
-        val tree = mutableListOf<ProjectTreeNode>()
+    private fun scanDeep(path: Path): TreeNode.Folder {
+        val tree = mutableListOf<TreeNode>()
 
         rootPath.fileSystem.provider().newDirectoryStream(path) { true }.use { stream ->
             for (entry in stream) {
@@ -104,17 +104,17 @@ class PaperVisionProjectTree(val rootPath: Path) {
                 if (entry.isDirectory()) {
                     tree.add(scanDeep(entry))
                 } else {
-                    tree.add(ProjectTreeNode.Project(entry.name))
+                    tree.add(TreeNode.Project(entry.name))
                 }
             }
         }
 
-        return ProjectTreeNode.Folder(path.name, tree)
+        return TreeNode.Folder(path.name, tree)
     }
 
-    sealed class ProjectTreeNode(val name: String) {
-        class Project(name: String) : ProjectTreeNode(name)
-        class Folder(name: String, val nodes: List<ProjectTreeNode>) : ProjectTreeNode(name)
+    sealed class TreeNode(val name: String) {
+        class Project(name: String) : TreeNode(name)
+        class Folder(name: String, val nodes: List<TreeNode>) : TreeNode(name)
 
         override fun toString() = name
     }

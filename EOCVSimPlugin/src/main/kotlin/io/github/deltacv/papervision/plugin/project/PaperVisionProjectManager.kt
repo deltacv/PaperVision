@@ -21,9 +21,9 @@ package io.github.deltacv.papervision.plugin.project
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.extension.plus
 import com.github.serivesmejia.eocvsim.util.extension.removeFromEnd
-import com.github.serivesmejia.eocvsim.util.loggerForThis
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import io.github.deltacv.common.util.loggerForThis
 import io.github.deltacv.eocvsim.plugin.PLUGIN_CACHING_FOLDER
 import io.github.deltacv.eocvsim.plugin.api.EOCVSimApi
 import io.github.deltacv.eocvsim.sandbox.nio.SandboxFileSystem
@@ -82,10 +82,10 @@ class PaperVisionProjectManager(
     var projectTree = PaperVisionProjectTree(root)
         private set
 
-    var projects = listOf<PaperVisionProjectTree.ProjectTreeNode.Project>()
+    var projects = listOf<PaperVisionProjectTree.TreeNode.Project>()
         private set
 
-    var currentProject: PaperVisionProjectTree.ProjectTreeNode.Project? = null
+    var currentProject: PaperVisionProjectTree.TreeNode.Project? = null
         private set
 
     var currentPaperVisionProject: PaperVisionProject? = null
@@ -94,7 +94,7 @@ class PaperVisionProjectManager(
     val previewPipelines = mutableListOf<WeakReference<Class<out OpenCvPipeline>>>()
 
     fun paperVisionProjectFrom(
-        project: PaperVisionProjectTree.ProjectTreeNode.Project,
+        project: PaperVisionProjectTree.TreeNode.Project,
         tree: JsonElement
     ) = PaperVisionProject(
         Instant.now().toEpochMilli(),
@@ -184,16 +184,16 @@ class PaperVisionProjectManager(
         onRefresh.run()
     }
 
-    private fun recursiveSearchProjects(root: PaperVisionProjectTree.ProjectTreeNode.Folder): List<PaperVisionProjectTree.ProjectTreeNode.Project> {
-        val list = mutableListOf<PaperVisionProjectTree.ProjectTreeNode.Project>()
+    private fun recursiveSearchProjects(root: PaperVisionProjectTree.TreeNode.Folder): List<PaperVisionProjectTree.TreeNode.Project> {
+        val list = mutableListOf<PaperVisionProjectTree.TreeNode.Project>()
 
         for (node in root.nodes) {
             when (node) {
-                is PaperVisionProjectTree.ProjectTreeNode.Folder -> {
+                is PaperVisionProjectTree.TreeNode.Folder -> {
                     list.addAll(recursiveSearchProjects(node))
                 }
 
-                is PaperVisionProjectTree.ProjectTreeNode.Project -> {
+                is PaperVisionProjectTree.TreeNode.Project -> {
                     list.add(node)
                 }
             }
@@ -242,7 +242,7 @@ class PaperVisionProjectManager(
         }
     }
 
-    fun cloneProjectAsk(project: PaperVisionProjectTree.ProjectTreeNode.Project, ancestor: Window) {
+    fun cloneProjectAsk(project: PaperVisionProjectTree.TreeNode.Project, ancestor: Window) {
         SwingUtilities.invokeLater {
             PaperVisionDialogFactory.displayNewProjectDialog(
                 ancestor,
@@ -280,7 +280,7 @@ class PaperVisionProjectManager(
         newProject(path, name, jsonElement = PaperVisionProject.fromJson(SysUtil.loadFileStr(file)).json)
     }
 
-    fun cloneProject(path: String, newName: String, project: PaperVisionProjectTree.ProjectTreeNode.Project) {
+    fun cloneProject(path: String, newName: String, project: PaperVisionProjectTree.TreeNode.Project) {
         newProject(path, newName, jsonElement = PaperVisionProject.fromJson(readProjectFile(project)).json)
     }
 
@@ -323,11 +323,11 @@ class PaperVisionProjectManager(
         refresh()
     }
 
-    fun deleteProject(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
+    fun deleteProject(project: PaperVisionProjectTree.TreeNode.Project) {
         bulkDeleteProjects(project)
     }
 
-    fun bulkDeleteProjects(vararg projects: PaperVisionProjectTree.ProjectTreeNode.Project) {
+    fun bulkDeleteProjects(vararg projects: PaperVisionProjectTree.TreeNode.Project) {
         for (project in projects) {
             val path = findProjectPath(project) ?: throw FileNotFoundException("Project $project not found in tree")
             fileSystem.delete(path)
@@ -336,7 +336,7 @@ class PaperVisionProjectManager(
         refresh()
     }
 
-    fun readProjectFile(project: PaperVisionProjectTree.ProjectTreeNode.Project) =
+    fun readProjectFile(project: PaperVisionProjectTree.TreeNode.Project) =
         String(
             fileSystem.readAllBytes(
                 findProjectPath(project) ?: throw FileNotFoundException("Project $project not found in tree")
@@ -344,14 +344,20 @@ class PaperVisionProjectManager(
             StandardCharsets.UTF_8
         )
 
-    fun requestOpenProject(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
+    fun requestOpenProject(project: PaperVisionProjectTree.TreeNode.Project) {
         onMainUpdate.once {
             openProject(project)
         }
     }
 
-    fun requestPreviewLatestPipeline(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
+    fun previewProject(project: PaperVisionProjectTree.TreeNode.Project?) {
         onMainUpdate.once {
+            if(project == null) {
+                plugin.isRunningPreviewPipeline = false
+                plugin.switchToDefaultPipelineIfNecessary()
+                return@once
+            }
+
             val path = (findProjectFolderPath(project)?.pathString ?: "").replace("/", "_")
             val name = project.name.removeFromEnd(".paperproj")
 
@@ -369,13 +375,13 @@ class PaperVisionProjectManager(
                 logger.warn("Failed to show pipeline preview for project ${project.name}", e)
 
                 plugin.isRunningPreviewPipeline = false
-                plugin.switchToNecessaryPipeline()
+                plugin.switchToDefaultPipelineIfNecessary()
                 return@once
             }
         }
     }
 
-    fun openProject(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
+    fun openProject(project: PaperVisionProjectTree.TreeNode.Project) {
         logger.info("Opening ${project.name}")
 
         currentPaperVisionProject = PaperVisionProject.fromJson(readProjectFile(project))
@@ -407,16 +413,16 @@ class PaperVisionProjectManager(
         )
     }
 
-    fun findProject(path: String, name: String): PaperVisionProjectTree.ProjectTreeNode.Project? {
+    fun findProject(path: String, name: String): PaperVisionProjectTree.TreeNode.Project? {
         val paths = path.split("/").filter { it.isNotBlank() }
 
         // Start at the root of the project tree
-        var currentNode: PaperVisionProjectTree.ProjectTreeNode = projectTree.rootTree
+        var currentNode: PaperVisionProjectTree.TreeNode = projectTree.rootTree
 
         if (path.isNotBlank() || path != "/") {
             // Traverse the path segments
             for (segment in paths) {
-                if (currentNode is PaperVisionProjectTree.ProjectTreeNode.Folder) {
+                if (currentNode is PaperVisionProjectTree.TreeNode.Folder) {
                     // Find the subfolder with the matching segment name
                     val nextNode = currentNode.nodes.find { it.name == segment }
                     if (nextNode != null) {
@@ -433,29 +439,29 @@ class PaperVisionProjectManager(
         }
 
         // At the end of the path, check for a project with the given name
-        if (currentNode is PaperVisionProjectTree.ProjectTreeNode.Folder) {
+        if (currentNode is PaperVisionProjectTree.TreeNode.Folder) {
             return currentNode.nodes.find {
-                it is PaperVisionProjectTree.ProjectTreeNode.Project && it.name == name
-            } as? PaperVisionProjectTree.ProjectTreeNode.Project
+                it is PaperVisionProjectTree.TreeNode.Project && it.name == name
+            } as? PaperVisionProjectTree.TreeNode.Project
         }
 
         // If the final node is not a folder or doesn't contain the project, return null
         return null
     }
 
-    fun findProjectFolderPath(project: PaperVisionProjectTree.ProjectTreeNode.Project) =
+    fun findProjectFolderPath(project: PaperVisionProjectTree.TreeNode.Project) =
         findProjectPath(project)?.toAbsolutePath()?.parent
 
-    fun findProjectPath(project: PaperVisionProjectTree.ProjectTreeNode.Project) =
+    fun findProjectPath(project: PaperVisionProjectTree.TreeNode.Project) =
         findProjectPath(project, projectTree.rootTree, root)
 
     private fun findProjectPath(
-        targetProject: PaperVisionProjectTree.ProjectTreeNode.Project,
-        currentNode: PaperVisionProjectTree.ProjectTreeNode,
+        targetProject: PaperVisionProjectTree.TreeNode.Project,
+        currentNode: PaperVisionProjectTree.TreeNode,
         currentPath: Path
     ): Path? {
         return when (currentNode) {
-            is PaperVisionProjectTree.ProjectTreeNode.Folder -> {
+            is PaperVisionProjectTree.TreeNode.Folder -> {
                 for (node in currentNode.nodes) {
                     val path = findProjectPath(targetProject, node, currentPath.resolve(currentNode.name))
                     if (path != null) {
@@ -465,7 +471,7 @@ class PaperVisionProjectManager(
                 null
             }
 
-            is PaperVisionProjectTree.ProjectTreeNode.Project -> {
+            is PaperVisionProjectTree.TreeNode.Project -> {
                 if (currentNode == targetProject) {
                     return currentPath.resolve(currentNode.name)
                 }
@@ -475,7 +481,7 @@ class PaperVisionProjectManager(
     }
 
     fun sendRecoveryProject(
-        projectNode: PaperVisionProjectTree.ProjectTreeNode.Project,
+        projectNode: PaperVisionProjectTree.TreeNode.Project,
         tree: JsonElement
     ) {
         val projectPath = findProjectPath(projectNode)?.pathString ?: return
@@ -524,7 +530,7 @@ class PaperVisionProjectManager(
         refresh()
     }
 
-    fun saveLatestSource(source: String, project: PaperVisionProjectTree.ProjectTreeNode.Project? = currentProject) {
+    fun saveLatestSource(source: String, project: PaperVisionProjectTree.TreeNode.Project? = currentProject) {
         fileSystem.createDirectories(latestSourceFolder)
 
         val path = (if (project == null) "" else findProjectFolderPath(project)?.pathString ?: "").replace("/", "_")

@@ -21,7 +21,7 @@ package io.github.deltacv.papervision.plugin
 import com.github.serivesmejia.eocvsim.util.JavaProcess
 import com.github.serivesmejia.eocvsim.util.JavaProcess.SLF4JIOReceiver
 import com.github.serivesmejia.eocvsim.util.SysUtil
-import com.github.serivesmejia.eocvsim.util.loggerForThis
+import io.github.deltacv.common.util.loggerForThis
 import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngine
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import java.util.concurrent.Executors

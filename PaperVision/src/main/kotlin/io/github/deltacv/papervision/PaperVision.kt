@@ -113,8 +113,6 @@ class PaperVision(
     val misc                   = IdContainer<Misc>()
     val popups                 = IdContainer<Popup>()
 
-    val isModalWindowOpen get() = windows.inmutable.any { it.isModal && it.isVisible }
-
     lateinit var engineClient: PaperVisionEngineClient
     lateinit var previzManager: ClientPrevizManager
 

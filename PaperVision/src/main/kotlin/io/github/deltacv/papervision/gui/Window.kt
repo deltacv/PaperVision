@@ -37,6 +37,8 @@ abstract class Window(
     override val requestedId: Int? = null,
 ) : DrawableIdElementBase<Window>() {
 
+    companion object;
+
     override val idContainer = IdContainerStacks.local.peekNonNull<Window>()
 
     var isVisible: Boolean = false
@@ -260,3 +262,5 @@ fun alignForWidth(width: Float, alignment: Float): Float {
 
     return pos + alignment
 }
+
+val Window.Companion.isModalWindowOpen get() = IdContainerStacks.local.peekNonNull<Window>().inmutable.any { it.isModal && it.isVisible }

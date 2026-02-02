@@ -4,24 +4,20 @@ import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.extension.plus
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectTree
-import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
 import java.awt.Window
 import java.io.File
 import java.util.concurrent.CancellationException
-import javax.swing.Box
-import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JFileChooser
 import javax.swing.JOptionPane
 import javax.swing.JPanel
-import javax.swing.SwingUtilities
 import javax.swing.filechooser.FileNameExtensionFilter
 
 class EditSelectionPanel(
-    val targetProjects: List<PaperVisionProjectTree.ProjectTreeNode.Project>,
+    val targetProjects: List<PaperVisionProjectTree.TreeNode.Project>,
     val projectManager: PaperVisionProjectManager,
     val ancestor: Window
 ) : JPanel() {
@@ -55,7 +51,7 @@ class EditSelectionPanel(
         exportProjectBtt.addActionListener {
             var nextDir: File? = null
 
-            fun openFileChooserFor(project: PaperVisionProjectTree.ProjectTreeNode.Project) {
+            fun openFileChooserFor(project: PaperVisionProjectTree.TreeNode.Project) {
                 JFileChooser().apply {
                     if(nextDir == null) {
                         nextDir = fileSystemView.defaultDirectory

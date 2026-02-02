@@ -40,7 +40,7 @@ abstract class DrawNode<S: CodeGenSession>(
     var pinToMouseOffset = ImVec2()
 
     override val genNodeName: String?
-        get() = tr(annotationData.name)
+        get() = "${tr(annotationData.name)} (#$id)"
 
     private var lastPinToMouse = false
     private var pinToMouseNewOffset = ImVec2()

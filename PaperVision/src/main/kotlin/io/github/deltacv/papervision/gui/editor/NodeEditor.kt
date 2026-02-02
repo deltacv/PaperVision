@@ -42,6 +42,7 @@ import io.github.deltacv.papervision.gui.editor.menu.RightClickMenuPopup
 import io.github.deltacv.papervision.gui.editor.button.OptionsButtonWindow
 import io.github.deltacv.papervision.gui.editor.button.PlayButtonWindow
 import io.github.deltacv.papervision.gui.editor.button.SourceCodeExportButtonWindow
+import io.github.deltacv.papervision.gui.isModalWindowOpen
 import io.github.deltacv.papervision.id.DrawableIdElement
 import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.node.DrawNode
@@ -266,7 +267,14 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         ImNodes.endNodeEditor()
 
         updateEditorState()
-        handleInteractions()
+
+        if (Window.isModalWindowOpen || paperVision.nodeList.isNodesListOpen) {
+            ImNodes.clearLinkSelection()
+            ImNodes.clearNodeSelection()
+        } else {
+            handleInteractions()
+        }
+
         updatePanning()
         updateRightClickMenuSelection()
         handleDeleteLink()
@@ -305,7 +313,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     }
 
     private fun handleRightClickState() {
-        val isFreeToMove = !isNodeFocused || scrollTimer.millis <= SCROLL_COOLDOWN_MS
+        val isFreeToMove = (!isNodeFocused || scrollTimer.millis <= SCROLL_COOLDOWN_MS)
 
         if (rightClickedWhileHoveringNode) {
             if (ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
@@ -325,8 +333,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     private fun handleRightClickMenu() {
         if (ImGui.isMouseReleased(ImGuiMouseButton.Right) &&
             rightClickMenuPopupTimer.millis <= RIGHT_CLICK_POPUP_THRESHOLD_MS &&
-            !paperVision.nodeList.isNodesListOpen &&
-            !paperVision.isModalWindowOpen &&
             justDeletedLinkTimer.millis >= LINK_DELETE_COOLDOWN_MS) {
 
             currentRightClickMenuPopup = RightClickMenuPopup(
@@ -340,12 +346,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     }
 
     private fun handleMousePanning() {
-        if (paperVision.nodeList.isNodesListOpen || paperVision.isModalWindowOpen) {
-            ImNodes.clearLinkSelection()
-            ImNodes.clearNodeSelection()
-            return
-        }
-
         val shouldPan = ImGui.isMouseDown(ImGuiMouseButton.Middle) ||
                 (ImGui.isMouseDown(ImGuiMouseButton.Right) &&
                         rightClickMenuPopupTimer.millis >= 100 &&
@@ -737,11 +737,9 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             try {
                 val node = nodes[nodeId]
 
-                if (node != null && node.joinActionStack) {
+                if (node?.joinActionStack == true) {
                     nodesToDelete.add(node)
-                } else if (node != null && !node.joinActionStack) {
-                    node.delete()
-                }
+                } else node?.delete()
             } catch (_: Exception) {
             }
         }

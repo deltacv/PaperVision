@@ -18,7 +18,6 @@
 
 package io.github.deltacv.papervision.plugin
 
-import com.github.serivesmejia.eocvsim.util.loggerForThis
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
 import io.github.deltacv.eocvsim.plugin.api.InputSourceApi
 import io.github.deltacv.eocvsim.plugin.api.PipelineManagerApi
@@ -54,8 +53,6 @@ import javax.swing.JOptionPane
  */
 class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
-    val logger by loggerForThis()
-
     val engine = PaperVisionProcessRunner.paperVisionEngine
 
     var isRunningPreviewPipeline = false
@@ -82,9 +79,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         )
     }
 
-    val paperVisionTabPanel by lazy {
-        PaperVisionTabPanel(this, eocvSimApi, paperVisionProjectManager)
-    }
+    val paperVisionTabPanel by lazy { PaperVisionTabPanel(this) }
 
     override fun onLoad() {
         paperVisionProjectManager.init()
@@ -96,7 +91,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
             switchablePanel.tabChangeHook {
                 isRunningPreviewPipeline = false
-                switchToNecessaryPipeline()
+                switchToDefaultPipelineIfNecessary()
             }
 
             val fileNewMenu = eocvSimApi.visualizerApi.topMenuBarApi.fileMenuApi.findSubMenuByTitle("New")
@@ -125,12 +120,12 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         PaperVisionProcessRunner.onPaperVisionExitError.doOnce(this::recoverProjects)
 
         eocvSimApi.pipelineManagerApi.onPipelineChangeHook {
-            switchToNecessaryPipeline()
+            switchToDefaultPipelineIfNecessary()
         }
 
         PaperVisionProcessRunner.onPaperVisionStart {
             // abort papervision pipeline
-            switchToNecessaryPipeline()
+            switchToDefaultPipelineIfNecessary()
 
             eocvSimApi.mainLoopHook.once {
                 eocvSimApi.pipelineManagerApi.changePipeline(0, force = true)
@@ -138,7 +133,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         PaperVisionProcessRunner.onPaperVisionExit {
-            switchToNecessaryPipeline()
+            switchToDefaultPipelineIfNecessary()
 
             currentPrevizSession?.stopPreviz()
             currentPrevizSession = null
@@ -350,21 +345,25 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
     }
 
-    internal fun switchToNecessaryPipeline() {
+    internal fun switchToDefaultPipeline() {
+        isRunningPreviewPipeline = true
+
+        eocvSimApi.mainLoopHook.once {
+            eocvSimApi.pipelineManagerApi.changePipeline(
+                eocvSimApi.pipelineManagerApi.getIndexOf(
+                    PaperVisionDefaultPipeline::class.java,
+                    PipelineManagerApi.PipelineSource.CLASSPATH
+                ) ?: 0
+            )
+        }
+    }
+
+    internal fun switchToDefaultPipelineIfNecessary() {
         if (isRunningPreviewPipeline) return
 
         if (eocvSimApi.visualizerApi.sidebarApi.isActive(paperVisionTabPanel)) {
             if (currentPrevizSession?.previzRunning != true || !PaperVisionProcessRunner.isRunning) {
-                isRunningPreviewPipeline = true
-
-                eocvSimApi.mainLoopHook.once {
-                    eocvSimApi.pipelineManagerApi.changePipeline(
-                        eocvSimApi.pipelineManagerApi.getIndexOf(
-                            PaperVisionDefaultPipeline::class.java,
-                            PipelineManagerApi.PipelineSource.CLASSPATH
-                        ) ?: 0
-                    )
-                }
+                switchToDefaultPipeline()
             }
         } else {
             // eocvSim.visualizer.viewport.renderer.setFpsMeterEnabled(true)

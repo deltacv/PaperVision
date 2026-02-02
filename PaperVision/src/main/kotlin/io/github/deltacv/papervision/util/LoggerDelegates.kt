@@ -25,6 +25,5 @@ fun Any.loggerFor(clazz: KClass<*>) = lazy { LoggerFactory.getLogger(clazz.java)
 // Reified
 inline fun <reified T> Any.loggerFor() = lazy { LoggerFactory.getLogger(T::class.java)!! }
 
-
 fun Any.loggerForThis() = lazy { LoggerFactory.getLogger(this::class.java)!! }
 fun Any.loggerOf(name: String) = lazy { LoggerFactory.getLogger(name)!! }
