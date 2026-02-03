@@ -1,18 +1,18 @@
 /*
  * PaperVision
- * Copyright (C) 2024 Sebastian Erives, deltacv
-
+ * Copyright (C) 2026 Sebastian Erives, deltacv
+ *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
+ * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
-
- * You should have received a copy of the GNU General Public License
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -38,10 +38,8 @@ import io.github.deltacv.papervision.node.PaperNode
 @PaperNode(
     name = "nod_binarymask",
     category = Category.IMAGE_PROC,
-    description = "des_binarymask",
-    showInList = false
+    description = "des_binarymask"
 )
-@Deprecated("Use BitwiseANDNode instead")
 class MaskNode : DrawNode<MaskNode.Session>(){
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")
@@ -77,7 +75,8 @@ class MaskNode : DrawNode<MaskNode.Session>(){
                     nameComment()
 
                     output("release")
-                    Core("bitwise_and", input.value.v, input.value.v, output, mask.value.v)
+                    input.value.v("copyTo", output, mask.value.v)
+
                     outputMat.streamIfEnabled(output, input.color)
                 }
 
