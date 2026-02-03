@@ -4,7 +4,7 @@ Create your custom OpenCV algorithms using a user-friendly node editor interface
 
 <img src="https://raw.githubusercontent.com/deltacv/EOCV-Sim/refs/heads/main/EOCV-Sim/src/main/resources/images/papervision.gif"/>
 
-# Running 
+# Getting Started
 
 ## Run with EOCV-Sim (recommended)
 
