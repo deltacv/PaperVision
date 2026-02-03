@@ -54,8 +54,10 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         block()
     }
 
-    fun separate() {
-        scope.newLineIfNotBlank()
+    fun separate(separations: Int = 1) {
+        repeat(separations) {
+            scope.newLineIfNotBlank()
+        }
     }
 
     fun streamMat(id: Int, mat: Value, matColor: ColorSpace = ColorSpace.RGB) {
@@ -73,24 +75,24 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
     }
 
     infix fun String.local(v: Value) =
-        scope.localVariable(Variable(this, v))
+        scope.localVariable(DeclarableVariable(this, v))
 
-    fun local(v: Variable) = scope.localVariable(v)
+    fun local(v: DeclarableVariable) = scope.localVariable(v)
 
     fun instanceVariable(
-        vis: Visibility, variable: Variable, label: String? = null,
+        vis: Visibility, variable: DeclarableVariable, label: String? = null,
         isStatic: Boolean = false, isFinal: Boolean = false
     ) = scope.instanceVariable(vis, variable, label, isStatic, isFinal)
 
-    infix fun Variable.set(v: Value) =
+    infix fun DeclarableVariable.set(v: Value) =
         scope.variableSet(this, v)
 
-    fun Variable.arraySet(index: Value, v: Value) =
+    fun DeclarableVariable.arraySet(index: Value, v: Value) =
         scope.arraySet(this, index, v)
 
-    operator fun Variable.set(index: Value, v: Value) = arraySet(index, v)
+    operator fun DeclarableVariable.set(index: Value, v: Value) = arraySet(index, v)
 
-    infix fun Variable.instanceSet(v: Value) =
+    infix fun DeclarableVariable.instanceSet(v: Value) =
         scope.instanceVariableSet(this, v)
 
     fun ifCondition(condition: Condition, block: ScopeContext.() -> Unit) {
@@ -100,21 +102,21 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         scope.ifCondition(condition, ifScope)
     }
 
-    fun foreach(variable: Value, list: Value, block: ScopeContext.(Value) -> Unit) {
+    fun <T: Value> foreach(variable: T, list: Value, block: ScopeContext.(T) -> Unit) {
         val loopScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
         block(loopScope.context, variable)
 
         scope.foreachLoop(variable, list, loopScope)
     }
 
-    fun forLoop(variable: Value, start: Value, max: Value, step: Value?, block: ScopeContext.(Value) -> Unit) {
+    fun <T: Value> forLoop(variable: T, start: Value, max: Value, step: Value?, block: ScopeContext.(T) -> Unit) {
         val loopScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
         block(loopScope.context, variable)
 
         scope.forLoop(variable, start, max, step, loopScope)
     }
 
-    fun forLoop(variable: Value, start: Value, max: Value, block: ScopeContext.(Value) -> Unit) =
+    fun <T: Value> forLoop(variable: T, start: Value, max: Value, block: ScopeContext.(T) -> Unit) =
         forLoop(variable, start, max, null, block)
 
     fun constructor(

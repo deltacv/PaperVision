@@ -95,7 +95,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
             val drawOn = drawCrosshairOn.genValue(current)
 
-            val crosshairLineParams = crosshairLineParams.genValue(current).ensureRuntimeLineJava(current)
+            val crosshairLineParams = crosshairLineParams.genValue(current).ensureRuntimeLineJvm(current)
 
             val crosshairSizeValue = crosshairScale.genValue(current).value
 
@@ -304,7 +304,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
-                    val rowsCols = CPythonLanguage.tupleVariables(
+                    val rowsCols = CPythonLanguage.declaredTupleVariable(
                         crosshairImage.propertyValue("shape", CPythonLanguage.NoType),
                         "height", "width", "channels"
                     )
@@ -374,7 +374,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     foreach(variable(CPythonLanguage.NoType, "contour"), inputPoints.value.v) {
                         // Get the bounding rectangle of the current contour
-                        val boundingRect = CPythonLanguage.tupleVariables(
+                        val boundingRect = CPythonLanguage.declaredTupleVariable(
                             CPythonOpenCvTypes.cv2.callValue("boundingRect", CPythonLanguage.NoType, it),
                             "x", "y", "w", "h"
                         )

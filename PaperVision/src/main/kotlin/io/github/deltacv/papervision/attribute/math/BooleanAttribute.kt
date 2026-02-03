@@ -25,7 +25,7 @@ import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.gui.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.serialization.data.SerializeData
 
 class BooleanAttribute(
@@ -63,10 +63,10 @@ class BooleanAttribute(
                     "Boolean attribute must have another attribute attached"
                 )
 
-                val value = linkedAttrib!!.genValue(current)
+                val value = linkedAttrib.genValue(current)
                 raiseAssert(value is GenValue.Boolean, "Attribute attached is not a Boolean")
 
-                return value as GenValue.Boolean
+                return value
             } else {
                 return if (value.get()) {
                     GenValue.Boolean.TRUE
@@ -76,7 +76,7 @@ class BooleanAttribute(
             val value = getGenValueFromNode(current)
             raiseAssert(value is GenValue.Boolean, "Value returned from the node is not a Boolean")
 
-            return value as GenValue.Boolean
+            return value
         }
     }
 

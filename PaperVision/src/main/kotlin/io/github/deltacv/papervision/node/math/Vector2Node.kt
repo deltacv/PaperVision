@@ -48,10 +48,10 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
 
     override fun onEnable() {
         + xAttribute
-        xAttribute.normalMode(range = Range2i(Int.MIN_VALUE, Int.MAX_VALUE))
+        xAttribute.fieldMode(range = Range2i(Int.MIN_VALUE, Int.MAX_VALUE))
 
         + yAttribute
-        yAttribute.normalMode(range = Range2i(Int.MIN_VALUE, Int.MAX_VALUE))
+        yAttribute.fieldMode(range = Range2i(Int.MIN_VALUE, Int.MAX_VALUE))
 
         + result
     }

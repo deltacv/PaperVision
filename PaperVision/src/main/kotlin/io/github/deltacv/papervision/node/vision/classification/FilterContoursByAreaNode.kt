@@ -8,7 +8,8 @@ import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.Variable
+import io.github.deltacv.papervision.codegen.build.AccessorVariable
+import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
@@ -62,7 +63,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                 val minAreaVar = uniqueVariable("minArea", minAreaVal.value.v)
                 val maxAreaVar = uniqueVariable("maxArea", maxAreaVal.value.v)
 
-                val contoursVar = uniqueVariable("${contours.value.value}ByArea", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
+                val contoursVar = uniqueVariable("${contours.value.v}ByArea", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
 
                 group {
                     public(minAreaVar, minArea.label())
@@ -76,7 +77,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
 
                     contoursVar("clear")
 
-                    foreach(Variable(JvmOpenCvTypes.MatOfPoint, "contour"), contours.value.v) { contour ->
+                    foreach(AccessorVariable(JvmOpenCvTypes.MatOfPoint, "contour"), contours.value.v) { contour ->
                         val areaVar = uniqueVariable("area", JvmOpenCvTypes.Imgproc.callValue("contourArea", DoubleType, contour))
                         local(areaVar)
 
@@ -110,7 +111,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                 current.scope {
                     local(contoursVar)
 
-                    foreach(Variable(CPythonLanguage.NoType, "contour"), contours.value.v) { contour ->
+                    foreach(AccessorVariable(CPythonLanguage.NoType, "contour"), contours.value.v) { contour ->
                         val areaVar = uniqueVariable("area", CPythonOpenCvTypes.cv2.callValue("contourArea", CPythonLanguage.NoType, contour))
                         local(areaVar)
 

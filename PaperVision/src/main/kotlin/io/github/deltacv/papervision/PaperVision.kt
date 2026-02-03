@@ -21,7 +21,6 @@ package io.github.deltacv.papervision
 import imgui.ImFontGlyphRangesBuilder
 import imgui.ImGui
 import imgui.flag.ImGuiCond
-import io.github.deltacv.mai18n.Language
 import io.github.deltacv.papervision.action.Action
 import io.github.deltacv.papervision.action.RootAction
 import io.github.deltacv.papervision.attribute.Attribute
@@ -33,45 +32,50 @@ import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
 import io.github.deltacv.papervision.gui.*
 import io.github.deltacv.papervision.gui.display.ImageDisplay
+import io.github.deltacv.papervision.gui.editor.IntroModalWindow
+import io.github.deltacv.papervision.gui.editor.NodeEditor
+import io.github.deltacv.papervision.gui.editor.NodeList
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
-import io.github.deltacv.papervision.gui.util.Popup
-import io.github.deltacv.papervision.gui.util.Window
-import io.github.deltacv.papervision.id.IdElementContainer
-import io.github.deltacv.papervision.id.IdElementContainerStack
-import io.github.deltacv.papervision.id.Misc
-import io.github.deltacv.papervision.id.SingleIdElementContainer
+import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.util.FontManager
+import io.github.deltacv.papervision.gui.Popup
+import io.github.deltacv.papervision.gui.Window
+import io.github.deltacv.papervision.gui.util.defaultFontConfig
+import io.github.deltacv.papervision.id.*
+import io.github.deltacv.papervision.id.container.IdContainer
+import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.SingleIdContainer
 import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
-import io.github.deltacv.papervision.node.NodeRegistry
+import io.github.deltacv.papervision.node.PaperNodeRegistry
 import io.github.deltacv.papervision.platform.*
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
+import org.deltacv.mai18n.Language
+import org.deltacv.mai18n.makeThreadTr
 import java.awt.Taskbar
 import java.awt.Toolkit
 
 class PaperVision(
-    private val setupCall: PlatformSetupCallback
+    private val platformSetupCallback: PlatformSetupCallback
 ) {
 
     companion object {
         var imnodesStyle
-            set(value) { CurrentStyles.imnodesStyle = value }
+            set(value) {
+                CurrentStyles.imnodesStyle = value
+            }
             get() = CurrentStyles.imnodesStyle
-
-        lateinit var defaultImGuiFont: Font
-            private set
-        lateinit var defaultImGuiFontSmall: Font
-            private set
-
         init {
             imnodesStyle = ImNodesDarkStyle
         }
     }
 
-    val logger by loggerForThis()
+    private val logger by loggerForThis()
 
     lateinit var setup: PlatformSetup
         private set
@@ -82,154 +86,149 @@ class PaperVision(
     lateinit var config: PlatformConfig
         private set
 
-    val onInit = PaperVisionEventHandler("PaperVision-OnInit")
-    val onUpdate = PaperVisionEventHandler("PaperVision-OnUpdate")
+    val onInit            = PaperVisionEventHandler("PaperVision-OnInit")
+    val onUpdate          = PaperVisionEventHandler("PaperVision-OnUpdate")
     val onDeserialization = PaperVisionEventHandler("PaperVision-OnDeserialization")
 
+    // these depend on PlatformSetup so they are initialized later
     lateinit var textureProcessorQueue: TextureProcessorQueue
         private set
-
     lateinit var keyManager: KeyManager
         private set
 
-    val codeGenManager = CodeGenManager(this)
-    val fontManager = FontManager()
-
-    val langManager = Language("/lang.csv", "en").makeTr()
+    val codeGenManager  = CodeGenManager(this)
+    val fontManager     = FontManager()
+    lateinit var currentLanguage: Language
+        private set
 
     val nodeEditor by lazy { NodeEditor(this, keyManager) }
-    val nodeList by lazy { NodeList(this, keyManager, NodeRegistry.nodes) }
+    val nodeList   by lazy { NodeList(this, keyManager, PaperNodeRegistry.nodes) }
 
-    val nodes = IdElementContainer<Node<*>>()
-    val attributes = IdElementContainer<Attribute>()
-    val links = IdElementContainer<Link>()
-    val windows = IdElementContainer<Window>()
-    val textures = IdElementContainer<PlatformTexture>()
-    val textureProcessorQueues = SingleIdElementContainer<TextureProcessorQueue>()
-    val streamDisplays = IdElementContainer<ImageDisplay>()
-    val actions = IdElementContainer<Action>()
-    val misc = IdElementContainer<Misc>()
-
-    val popups = IdElementContainer<Popup>()
-
-    val isModalWindowOpen get() = windows.inmutable.find { it.isModal && it.isVisible } != null
-
-    val isPopupOpen get() = popups.inmutable.find { it.isVisible } != null
+    val nodes                  = IdContainer<Node<*>>()
+    val attributes             = IdContainer<Attribute>()
+    val links                  = IdContainer<Link>()
+    val windows                = IdContainer<Window>()
+    val textures               = IdContainer<PlatformTexture>()
+    val textureProcessorQueues = SingleIdContainer<TextureProcessorQueue>()
+    val fonts                  = IdContainer<Font>()
+    val streamDisplays         = IdContainer<ImageDisplay>()
+    val actions                = IdContainer<Action>()
+    val misc                   = IdContainer<Misc>()
+    val popups                 = IdContainer<Popup>()
 
     lateinit var engineClient: PaperVisionEngineClient
-
     lateinit var previzManager: ClientPrevizManager
-        private set
 
     lateinit var defaultFont: Font
-        private set
 
-    lateinit var defaultFontBig: Font
-        private set
-
-    lateinit var codeFont: Font
-        private set
-
-    lateinit var fontAwesome: Font
-        private set
-    lateinit var fontAwesomeBig: Font
-        private set
-
-    lateinit var fontAwesomeBrands: Font
-        private set
-    lateinit var fontAwesomeBrandsBig: Font
-        private set
-
-    fun init() {
-        IdElementContainerStack.localStack.push(nodes)
-        IdElementContainerStack.localStack.push(attributes)
-        IdElementContainerStack.localStack.push(links)
-        IdElementContainerStack.localStack.push(windows)
-        IdElementContainerStack.localStack.push(textures)
-        IdElementContainerStack.localStack.push(textureProcessorQueues)
-        IdElementContainerStack.localStack.push(streamDisplays)
-        IdElementContainerStack.localStack.push(actions)
-        IdElementContainerStack.localStack.push(popups)
-        IdElementContainerStack.localStack.push(misc)
-
+    fun init() = withStacks {
         logger.info("Starting PaperVision...\n\n${IntroModalWindow.iconLogo}\n")
+        logger.info("Using the ${platformSetupCallback.name} platform")
 
-        logger.info("Using the ${setupCall.name} platform")
-        setup = setupCall.setup()
+        initPlatform()
+        initLanguage()
+        initEngine()
+        initFonts()
+        initUI()
 
-        keyManager = KeyManager(setup.keys ?: throw IllegalArgumentException("Platform ${setup.name} must provide PlatformKeys"))
-        window = setup.window ?: throw IllegalArgumentException("Platform ${setup.name} must provide a Window")
-        textureFactory = setup.textureFactory ?: throw IllegalArgumentException("Platform ${setup.name} must provide a TextureFactory")
+        RootAction().enable()
+        onInit.run()
+
+        setTaskbarIcon()
+
+        dumpStartupDiagnostics()
+        logger.info("PaperVision started")
+    }
+
+    private fun initPlatform() {
+        setup = platformSetupCallback.setup()
+        keyManager = KeyManager(setup.keys ?: error("Platform ${setup.name} must provide PlatformKeys"))
+        window = setup.window ?: error("Platform ${setup.name} must provide a Window")
+        textureFactory = setup.textureFactory ?: error("Platform ${setup.name} must provide a TextureFactory")
         config = setup.config
-
         config.load()
+    }
 
-        if(!langManager.availableLangs.contains(config.fields.lang)) {
-            langManager.lang = config.fields.lang
-        } else {
+    private fun initLanguage() {
+        try {
+            changeLanguage(config.fields.lang)
+        } catch (_: Exception) {
             logger.warn("Configured language ${config.fields.lang} is not available, defaulting")
         }
+    }
 
+    private fun initEngine() {
         textureProcessorQueue = TextureProcessorQueue(textureFactory)
         textureProcessorQueue.enable()
 
         engineClient = PaperVisionEngineClient(setup.engineBridge ?: NoOpPaperVisionEngineBridge)
-        previzManager = ClientPrevizManager(160, 120, codeGenManager, engineClient, setup.previzByteMessageReceiverProvider)
-
+        previzManager = ClientPrevizManager(
+            160, 120, codeGenManager, engineClient, setup.previzByteMessageReceiverProvider
+        )
         engineClient.connect()
 
-        // disable annoying ini file creation (hopefully shouldn't break anything)
-        ImGui.getIO().iniFilename = null
-        ImGui.getIO().logFilename = null
+        ImGui.getIO().apply {
+            iniFilename = null
+            logFilename = null
+            fonts.setFreeTypeRenderer(false)
+        }
+    }
 
-        // ImGui.getIO().getFonts().setFreeTypeRenderer(true);
+    private fun initFonts() {
+        val rangesBuilder = ImFontGlyphRangesBuilder().apply {
+            addRanges(ImGui.getIO().fonts.glyphRangesDefault)
+            addRanges(FontAwesomeIcons._IconRange)
+        }
+        val ranges = rangesBuilder.buildRanges()
 
-        // initializing fonts right after the imgui context is created
-        // we can't create fonts mid-frame so that's kind of a problem
-        defaultFont = fontManager.makeFont("/fonts/Calcutta-SemiBold.otf", defaultFontConfig(20f))
-        defaultFontBig = fontManager.makeFont("/fonts/Calcutta-SemiBold.otf", defaultFontConfig(28f))
+        defaultFont = font("calcutta", "/fonts/Calcutta-SemiBold.otf", 20f)
+        font("calcutta-big", "/fonts/Calcutta-SemiBold.otf", 28f)
+        font("jetbrains-mono", "/fonts/JetBrainsMono-Regular.ttf", 28f)
 
-        codeFont = fontManager.makeFont("/fonts/JetBrainsMono-Regular.ttf", defaultFontConfig(28f))
-        defaultImGuiFont = fontManager.makeDefaultFont(20f)
-        defaultImGuiFontSmall = fontManager.makeDefaultFont(12f)
+        fontManager.makeDefaultFont(20) // "default-20"
+        fontManager.makeDefaultFont(12) // "default-12"
 
-        val rangesBuilder = ImFontGlyphRangesBuilder()
-        rangesBuilder.addRanges(ImGui.getIO().fonts.glyphRangesDefault)
-        rangesBuilder.addRanges(FontAwesomeIcons._IconRange)
+        // Pass the ranges to the icon fonts so FontAwesome glyphs are available
+        fontManager.makeFont("font-awesome", "/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(16f), ranges)
+        fontManager.makeFont("font-awesome-big", "/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(52f), ranges)
+        fontManager.makeFont("font-awesome-brands", "/fonts/icons/FontAwesome6-Brands-Regular-400.otf", defaultFontConfig(16f), ranges)
+        fontManager.makeFont("font-awesome-brands-big", "/fonts/icons/FontAwesome6-Brands-Regular-400.otf", defaultFontConfig(80f), ranges)
+    }
 
-        fontAwesome = fontManager.makeFont("/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(16f), rangesBuilder.buildRanges())
-        fontAwesomeBig = fontManager.makeFont("/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(52f), rangesBuilder.buildRanges())
-
-        fontAwesomeBrands = fontManager.makeFont("/fonts/icons/FontAwesome6-Brands-Regular-400.otf", defaultFontConfig(16f), rangesBuilder.buildRanges())
-        fontAwesomeBrandsBig = fontManager.makeFont("/fonts/icons/FontAwesome6-Brands-Regular-400.otf", defaultFontConfig(80f), rangesBuilder.buildRanges())
-
+    private fun initUI() {
         nodeEditor.enable()
-        langManager.loadIfNeeded()
-
         nodeList.enable()
+    }
 
-        RootAction().enable()
+    private fun dumpStartupDiagnostics() {
+        logger.debug("=== PaperVision JVM startup diagnostics ===")
 
-        onInit.run()
+        logger.debug("java.version = {}", System.getProperty("java.version"))
+        logger.debug("java.home = {}", System.getProperty("java.home"))
+        logger.debug("java.class.path = {}", System.getProperty("java.class.path"))
+        logger.debug("java.library.path = {}", System.getProperty("java.library.path"))
+        logger.debug("org.lwjgl.librarypath = {}", System.getProperty("org.lwjgl.librarypath"))
+        logger.debug("java.io.tmpdir = {}", System.getProperty("java.io.tmpdir"))
+        logger.debug("user.dir = {}", System.getProperty("user.dir"))
 
-        if(Taskbar.isTaskbarSupported() && Taskbar.getTaskbar().isSupported(Taskbar.Feature.ICON_IMAGE)) {
-            Taskbar.getTaskbar().iconImage = Toolkit.getDefaultToolkit().getImage(javaClass.getResource("/ico/ico_ezv.png"))
+        // env vars
+        val path = System.getenv("PATH") ?: "<null>"
+        val temp = System.getenv("TEMP") ?: System.getenv("TMP") ?: "<null>"
+
+        logger.debug("env PATH (truncated) = {}", path.take(800))
+        logger.debug("env TEMP/TMP = {}", temp)
+
+        logger.debug("=== end diagnostics ===")
+    }
+
+    private fun setTaskbarIcon() {
+        if (Taskbar.isTaskbarSupported() && Taskbar.getTaskbar().isSupported(Taskbar.Feature.ICON_IMAGE)) {
+            Taskbar.getTaskbar().iconImage = Toolkit.getDefaultToolkit().getImage(
+                javaClass.getResource("/ico/ico_ezv.png")
+            )
         } else {
             logger.warn("Taskbar icon not supported")
         }
-
-        IdElementContainerStack.localStack.pop<Node<*>>()
-        IdElementContainerStack.localStack.pop<Attribute>()
-        IdElementContainerStack.localStack.pop<Link>()
-        IdElementContainerStack.localStack.pop<Window>()
-        IdElementContainerStack.localStack.pop<PlatformTexture>()
-        IdElementContainerStack.localStack.pop<TextureProcessorQueue>()
-        IdElementContainerStack.localStack.pop<ImageDisplay>()
-        IdElementContainerStack.localStack.pop<Action>()
-        IdElementContainerStack.localStack.pop<Popup>()
-        IdElementContainerStack.localStack.pop<Misc>()
-
-        logger.info("PaperVision started")
     }
 
     fun firstProcess() {
@@ -238,90 +237,67 @@ class PaperVision(
         window.maximized = true
 
         onUpdate.doOnce {
-            if(setup.showWelcomeWindow) {
+            if (setup.showWelcomeWindow) {
                 showWelcome()
             } else {
                 onDeserialization {
-                    logger.info("showWelcome = ${nodeEditor.flags["showWelcome"]}")
-
-                    if (nodeEditor.flags.getOrElse("showWelcome", { true })) {
-                        showWelcome()
-                    }
+                    if (nodeEditor.flags.getOrElse("showWelcome") { true }) showWelcome()
                 }
             }
-
             window.requestFocus()
         }
     }
 
+    fun process() = withStacks {
+        onUpdate.run()
+        engineClient.process()
+
+        ImGui.setNextWindowPos(0f, 0f, ImGuiCond.Always)
+        val size = window.size
+        ImGui.setNextWindowSize(size.x, size.y, ImGuiCond.Always)
+
+        ImGui.pushFont(defaultFont.imfont)
+
+        windows.inmutable.forEach { it.draw() }
+        popups.inmutable.forEach { it.draw() }
+
+        textureProcessorQueues.inmutable.forEach { it.draw() }
+
+        ImGui.popFont()
+
+        keyManager.update()
+        previzManager.update()
+    }
+
+    fun destroy() {
+        logger.info("Shutting down PaperVision...")
+
+        config.save()
+
+        engineClient.disconnect()
+
+        textureProcessorQueue.delete()
+
+        windows.inmutable.reversed().forEach { it.delete() }
+        popups.inmutable.reversed().forEach { it.delete() }
+
+        nodeEditor.delete()
+        nodeList.delete()
+    }
+
+    fun changeLanguage(langCode: String) {
+        currentLanguage = Language("/lang_pv.csv", langCode).apply { makeThreadTr() }
+    }
+
     fun showWelcome(askLanguage: Boolean = setup.config.fields.shouldAskForLang) {
         IntroModalWindow(
-            defaultImGuiFontSmall,
-            codeFont,
-            defaultFontBig,
-            nodeEditor,
-            chooseLanguage = askLanguage
+            nodeEditor, chooseLanguage = askLanguage
         ).apply {
             onDontShowAgain {
                 nodeEditor.flags["showWelcome"] = false
                 logger.info("showWelcome = ${nodeEditor.flags["showWelcome"]}")
             }
         }.enable()
-    }
-
-    fun process() {
-        IdElementContainerStack.localStack.push(nodes)
-        IdElementContainerStack.localStack.push(attributes)
-        IdElementContainerStack.localStack.push(links)
-        IdElementContainerStack.localStack.push(windows)
-        IdElementContainerStack.localStack.push(textures)
-        IdElementContainerStack.localStack.push(textureProcessorQueues)
-        IdElementContainerStack.localStack.push(streamDisplays)
-        IdElementContainerStack.localStack.push(actions)
-        IdElementContainerStack.localStack.push(popups)
-        IdElementContainerStack.localStack.push(misc)
-
-        onUpdate.run()
-
-        engineClient.process()
-
-        ImGui.setNextWindowPos(0f, 0f, ImGuiCond.Always)
-
-        val size = window.size
-        ImGui.setNextWindowSize(size.x, size.y, ImGuiCond.Always)
-
-        ImGui.pushFont(defaultFont.imfont)
-
-        for(window in windows.inmutable) {
-            window.draw()
-        }
-        for(popup in popups.inmutable) {
-            popup.draw()
-        }
-        for(textureQueue in textureProcessorQueues.inmutable) {
-            textureQueue.draw() // silly silly
-        }
-
-        ImGui.popFont()
-
-        keyManager.update()
-
-        previzManager.update()
-
-        IdElementContainerStack.localStack.pop<Node<*>>()
-        IdElementContainerStack.localStack.pop<Attribute>()
-        IdElementContainerStack.localStack.pop<Link>()
-        IdElementContainerStack.localStack.pop<Window>()
-        IdElementContainerStack.localStack.pop<PlatformTexture>()
-        IdElementContainerStack.localStack.pop<TextureProcessorQueue>()
-        IdElementContainerStack.localStack.pop<ImageDisplay>()
-        IdElementContainerStack.localStack.pop<Action>()
-        IdElementContainerStack.localStack.pop<Popup>()
-        IdElementContainerStack.localStack.pop<Misc>()
-    }
-
-    fun destroy() {
-        nodeEditor.destroy()
     }
 
     fun startPrevizWithEngine() {
@@ -335,10 +311,41 @@ class PaperVision(
     }
 
     fun clearToasts() {
-        for(window in windows.inmutable) {
-            if(window is ToastWindow) {
-                window.delete()
-            }
+        windows.inmutable.filterIsInstance<ToastWindow>().forEach { it.delete() }
+    }
+
+    /** Helper to simplify font creation */
+    private fun font(name: String, path: String, size: Float) =
+        fontManager.makeFont(name, path, defaultFontConfig(size))
+
+    /** Executes a block of code with all containers pushed/popped safely */
+    private inline fun withStacks(block: () -> Unit) {
+        IdContainerStacks.local.push(nodes)
+        IdContainerStacks.local.push(attributes)
+        IdContainerStacks.local.push(links)
+        IdContainerStacks.local.push(windows)
+        IdContainerStacks.local.push(textures)
+        IdContainerStacks.local.push(textureProcessorQueues)
+        IdContainerStacks.local.push(fonts)
+        IdContainerStacks.local.push(streamDisplays)
+        IdContainerStacks.local.push(actions)
+        IdContainerStacks.local.push(popups)
+        IdContainerStacks.local.push(misc)
+
+        try {
+            block()
+        } finally {
+            IdContainerStacks.local.pop<Node<*>>()
+            IdContainerStacks.local.pop<Attribute>()
+            IdContainerStacks.local.pop<Link>()
+            IdContainerStacks.local.pop<Window>()
+            IdContainerStacks.local.pop<PlatformTexture>()
+            IdContainerStacks.local.pop<TextureProcessorQueue>()
+            IdContainerStacks.local.pop<Font>()
+            IdContainerStacks.local.pop<ImageDisplay>()
+            IdContainerStacks.local.pop<Action>()
+            IdContainerStacks.local.pop<Popup>()
+            IdContainerStacks.local.pop<Misc>()
         }
     }
 }

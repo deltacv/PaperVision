@@ -74,7 +74,7 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                     }
                 }
 
-                val output = uniqueVariable("${input.value.value!!}Canny", Mat.new())
+                val output = uniqueVariable("${input.value.v}Canny", Mat.new())
 
                 val firstThresholdValue = firstThreshold.genValue(current).value.v
                 val firstThresholdVariable = uniqueVariable("cannyFirstThreshold", int(firstThresholdValue))

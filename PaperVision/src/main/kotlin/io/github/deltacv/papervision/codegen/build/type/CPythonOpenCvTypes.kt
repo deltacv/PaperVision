@@ -38,6 +38,10 @@ object CPythonOpenCvTypes {
             additionalImports(this)
         }
 
+        val HOUGH_GRADIENT = ConValue(this, "cv2.HOUGH_GRADIENT").apply {
+            additionalImports(this)
+        }
+
         val contourArea = ConValue(this, "cv2.contourArea").apply {
             additionalImports(this)
         }

@@ -129,7 +129,7 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
                             }
                         }.v
 
-                        val mat = uniqueVariable("${inputMat.value.value}_${targetColor.name.lowercase()}", value)
+                        val mat = uniqueVariable("${inputMat.value.v}_${targetColor.name.lowercase()}", value)
 
                         local(mat)
 

@@ -18,11 +18,6 @@
 
 package io.github.deltacv.papervision.codegen.build
 
-import io.github.deltacv.papervision.codegen.CodeGen
-import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
-import io.github.deltacv.papervision.util.hexString
-
 val String.v get() = ConValue(genType, this)
 val Number.v get() = toString().v
 
@@ -72,12 +67,16 @@ open class ConValue(override val type: Type, override val value: String?): Value
     override fun toString() = value ?: "null"
 }
 
+class EmptyConValue(type: Type) : ConValue(type, null)
+
 class Condition(booleanType: Type, condition: String) : ConValue(booleanType, condition)
 class Operation(numberType: Type, operation: String) : ConValue(numberType, operation)
 
-open class Variable(val name: String, val variableValue: Value) : ConValue(variableValue.type, name) {
+open class AccessorVariable(type: Type, name: String) : DeclarableVariable(name, ConValue(type, name))
 
-    constructor(type: Type, name: String) : this(name, ConValue(type, name))
+open class DeclarableVariable(val name: String, val variableValue: Value) : ConValue(variableValue.type, name) {
+
+    constructor(type: Type, name: String) : this(name, EmptyConValue(type))
 
     init {
         additionalImports(*variableValue.imports.toTypedArray())

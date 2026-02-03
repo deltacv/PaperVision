@@ -21,7 +21,7 @@ package io.github.deltacv.papervision.plugin
 import com.github.serivesmejia.eocvsim.util.JavaProcess
 import com.github.serivesmejia.eocvsim.util.JavaProcess.SLF4JIOReceiver
 import com.github.serivesmejia.eocvsim.util.SysUtil
-import com.github.serivesmejia.eocvsim.util.loggerForThis
+import io.github.deltacv.common.util.loggerForThis
 import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngine
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import java.util.concurrent.Executors
@@ -59,23 +59,20 @@ object PaperVisionProcessRunner {
 
         isRunning = true
 
-        onPaperVisionStart.run()
+        onPaperVisionStart()
 
         currentJob = pool.submit {
             logger.info("Starting PaperVision process...")
-
-            val jvmArgs = mutableListOf("-Dlog4j.configurationFile=log4j2_nofile_pv.xml")
 
             val programParams = listOf("-q", "-i=${paperVisionEngine.server.port}")
 
             val exitCode = if(SysUtil.OS == SysUtil.OperatingSystem.MACOS) {
                 logger.info("Running on macOS, adding platform-specific flags")
 
-                jvmArgs.add("-XstartOnFirstThread")
-                jvmArgs.add("-Djava.awt.headless=true")
+                val jvmArgs = listOf("-XstartOnFirstThread", "-Djava.awt.headless=true")
 
                 JavaProcess.execClasspath(
-                    EOCVSimIpcPaperVisionMain::class.java,
+                    IpcPaperVisionMain::class.java,
                     SLF4JIOReceiver(logger),
                     classpath,
                     jvmArgs,
@@ -83,17 +80,17 @@ object PaperVisionProcessRunner {
                 )
             } else {
                 JavaProcess.execClasspath(
-                    EOCVSimIpcPaperVisionMain::class.java,
+                    IpcPaperVisionMain::class.java,
                     SLF4JIOReceiver(logger),
                     classpath,
-                    jvmArgs, programParams,
+                    listOf(), programParams,
                 )
             }
 
-            onPaperVisionExit.run()
+            onPaperVisionExit()
 
             if(exitCode != 0) {
-                onPaperVisionExitError.run()
+                onPaperVisionExitError()
             }
 
             logger.warn("PaperVision process has exited with exit code $exitCode")

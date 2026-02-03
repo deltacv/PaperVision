@@ -24,10 +24,11 @@ import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.RotatedRectAttribute
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.NoSession
-import io.github.deltacv.papervision.codegen.build.Variable
+import io.github.deltacv.papervision.codegen.build.AccessorVariable
+import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
-import io.github.deltacv.papervision.codegen.dsl.targets
+import io.github.deltacv.papervision.codegen.dsl.jvm.jvmTargets
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.Category
@@ -66,9 +67,9 @@ class ExportTargetsNode : DrawNode<NoSession>() {
                     }
                 }
 
-                current.targets {
+                current.jvmTargets {
                     current.scope {
-                        forLoop(Variable(IntType, "i"), 0.v, targetsValue.value.v.callValue("size", IntType), 1.v) {
+                        forLoop(AccessorVariable(IntType, "i"), 0.v, targetsValue.value.v.callValue("size", IntType), 1.v) {
                             addRectTarget(string("${labelValue}_").plus(it), targetsValue.value.v.callValue("get", JvmOpenCvTypes.Rect, it).castTo(JvmOpenCvTypes.Rect))
                         }
                     }
@@ -118,9 +119,9 @@ class ExportRotTargetsNode : DrawNode<NoSession>() {
                     }
                 }
 
-                current.targets {
+                current.jvmTargets {
                     current.scope {
-                        forLoop(Variable(IntType, "i"), 0.v, targetsValue.value.v.callValue("size", IntType), 1.v) {
+                        forLoop(DeclarableVariable(IntType, "i"), 0.v, targetsValue.value.v.callValue("size", IntType), 1.v) {
                             addRotRectTarget(string("${labelValue}_").plus(it), targetsValue.value.v.callValue("get", JvmOpenCvTypes.RotatedRect, it).castTo(JvmOpenCvTypes.RotatedRect))
                         }
                     }

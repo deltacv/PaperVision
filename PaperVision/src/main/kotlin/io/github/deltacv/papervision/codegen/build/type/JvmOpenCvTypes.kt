@@ -18,8 +18,12 @@
 
 package io.github.deltacv.papervision.codegen.build.type
 
+import io.github.deltacv.papervision.codegen.CodeGen
+import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.ConValue
+import io.github.deltacv.papervision.codegen.build.Parameter
 import io.github.deltacv.papervision.codegen.build.Type
+import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 
 object JvmOpenCvTypes {
 
@@ -40,6 +44,10 @@ object JvmOpenCvTypes {
         }
 
         val MORPH_RECT = ConValue(StandardTypes.cint, "Imgproc.MORPH_RECT").apply {
+            additionalImports(this)
+        }
+
+        val HOUGH_GRADIENT = ConValue(StandardTypes.cint, "Imgproc.HOUGH_GRADIENT").apply {
             additionalImports(this)
         }
     }
@@ -69,4 +77,45 @@ object JvmOpenCvTypes {
         val Params = Type("SimpleBlobDetector_Params", "org.opencv.features2d")
     }
 
+    fun getCircleType(current: CodeGen.Current): Type {
+        val circleType = Type("Circle", "Circle")
+        current {
+            if (!codeGen.hasFlag("circleTypeEnabled")) {
+                codeGen.classEndScope {
+                    clazz(Visibility.PACKAGE_PRIVATE, "Circle", isStatic = true) {
+                        val centerVariable = DeclarableVariable(Point, "center")
+                        val radiusVariable = DeclarableVariable(DoubleType, "radius")
+
+                        group {
+                            instanceVariable(
+                                Visibility.PACKAGE_PRIVATE,
+                                centerVariable,
+                                isFinal = true
+                            )
+
+                            instanceVariable(
+                                Visibility.PACKAGE_PRIVATE,
+                                radiusVariable,
+                                isFinal = true
+                            )
+                        }
+
+                        separate()
+
+                        val centerParameter = Parameter(Point, "center")
+                        val radiusParameter = Parameter(FloatType, "radius")
+
+                        constructor(Visibility.PACKAGE_PRIVATE, circleType, centerParameter, radiusParameter) {
+                            centerVariable instanceSet centerParameter
+                            radiusVariable instanceSet radiusParameter
+                        }
+                    }
+                }
+
+                codeGen.addFlag("circleTypeEnabled")
+            }
+        }
+
+        return circleType
+    }
 }

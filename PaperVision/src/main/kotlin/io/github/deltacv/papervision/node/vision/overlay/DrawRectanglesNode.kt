@@ -75,11 +75,11 @@ open class DrawRectanglesNode
             current {
                 val session = Session()
 
-                val lineParams = (lineParams.genValue(current) as GenValue.LineParameters).ensureRuntimeLineJava(current)
+                val lineParams = lineParams.genValue(current).ensureRuntimeLineJvm(current)
 
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)
-                val output = uniqueVariable("${input.value.value}Rects", Mat.new())
+                val output = uniqueVariable("${input.value.v}Rects", Mat.new())
 
                 var drawMat = input.value.v
 
@@ -166,7 +166,7 @@ open class DrawRectanglesNode
                         input.value.v
                     } else {
                         val output = uniqueVariable(
-                            "${input.value.value}_rects",
+                            "${input.value.v}_rects",
                             input.value.v.callValue("copy", CPythonLanguage.NoType)
                         )
                         local(output)
@@ -181,7 +181,7 @@ open class DrawRectanglesNode
 
                     fun ScopeContext.runtimeRect(rectValue: Value) {
                         ifCondition(rectValue notEqualsTo language.nullValue) {
-                            val rectangle = CPythonLanguage.tupleVariables(
+                            val rectangle = CPythonLanguage.declaredTupleVariable(
                                 rectValue,
                                 "x", "y", "w", "h"
                             )

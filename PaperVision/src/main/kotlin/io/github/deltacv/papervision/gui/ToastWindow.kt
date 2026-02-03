@@ -3,8 +3,8 @@ package io.github.deltacv.papervision.gui
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
-import io.github.deltacv.mai18n.tr
-import io.github.deltacv.papervision.gui.util.Window
+import org.deltacv.mai18n.tr
+import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.flags
 
@@ -28,7 +28,7 @@ class ToastWindow(
         super.onEnable()
         timer.reset()
 
-        for(window in idElementContainer.inmutable) {
+        for(window in idContainer.inmutable) {
             if(window is ToastWindow && window != this) {
                 window.delete()
             }

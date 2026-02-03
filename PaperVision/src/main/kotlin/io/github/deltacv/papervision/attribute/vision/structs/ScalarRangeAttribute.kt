@@ -27,7 +27,8 @@ import io.github.deltacv.papervision.attribute.math.RangeAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.gui.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.ColorSpace
 import io.github.deltacv.papervision.util.hexString
 
@@ -43,6 +44,8 @@ class ScalarRangeAttribute(
             field = value
         }
 
+    private val defaultImGuiFont by Font.findLazy("default-20")
+
     override var icon = FontAwesomeIcons.GripVertical
 
     override fun drawAttributeText(index: Int, attrib: Attribute): Boolean {
@@ -55,7 +58,7 @@ class ScalarRangeAttribute(
                 attrib.inputSameLine = true
             }
 
-            ImGui.pushFont(PaperVision.defaultImGuiFont.imfont)
+            ImGui.pushFont(defaultImGuiFont.imfont)
             ImGui.text(elementName)
             ImGui.popFont()
 

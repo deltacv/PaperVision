@@ -19,8 +19,8 @@
 package io.github.deltacv.papervision.plugin.ipc.message.response
 
 import io.github.deltacv.papervision.engine.client.response.OkResponse
-import io.github.deltacv.papervision.plugin.ipc.message.InputSourceData
+import io.github.deltacv.papervision.plugin.ipc.message.IpcInputSourceData
 
 class InputSourcesListResponse(
-    var sources: Array<InputSourceData>
+    var sources: Array<IpcInputSourceData>
 ) : OkResponse()

@@ -22,11 +22,11 @@ import io.github.deltacv.papervision.codegen.build.Scope
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.dsl.CodeGenContext
 import io.github.deltacv.papervision.codegen.language.Language
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.util.loggerFor
 
 enum class Visibility {
-    PUBLIC, PRIVATE, PROTECTED
+    PUBLIC, PRIVATE, PROTECTED, PACKAGE_PRIVATE
 }
 
 class CodeGen(
@@ -36,16 +36,10 @@ class CodeGen(
 ) {
 
     companion object {
-        val RESOLVER_PREFIX = "<mack!"
-        val RESOLVER_SUFFIX = ">"
-
-        // %s is the ID of the placeholder
-        val RESOLVER_TEMPLATE = "$RESOLVER_PREFIX%d$RESOLVER_SUFFIX"
-
         val logger by loggerFor<CodeGen>()
     }
 
-    val importScope            = Scope(0, language)
+    val importScope = Scope(0, language)
     val importScopePlaceholder = Resolvable.Placeholder(resolveLast = true) {
         importScope
     }
@@ -53,14 +47,14 @@ class CodeGen(
     val classStartScope = Scope(1, language, importScope, isForPreviz)
     val classEndScope   = Scope(1, language, importScope, isForPreviz)
 
-    val initScope     = Scope(2, language, importScope, isForPreviz)
-    val currScopeInit = Current(this, initScope, isForPreviz)
+    val initScope = Scope(2, language, importScope, isForPreviz)
+    val currInit  = Current(this, initScope, isForPreviz)
 
-    val processFrameScope     = Scope(2, language, importScope, isForPreviz)
-    val currScopeProcessFrame = Current(this, processFrameScope, isForPreviz)
+    val processFrameScope = Scope(2, language, importScope, isForPreviz)
+    val currProcessFrame  = Current(this, processFrameScope, isForPreviz)
 
-    val viewportTappedScope     = Scope(2, language, importScope, isForPreviz)
-    val currScopeViewportTapped = Current(this, viewportTappedScope, isForPreviz)
+    val viewportTappedScope = Scope(2, language, importScope, isForPreviz)
+    val currViewportTapped  = Current(this, viewportTappedScope, isForPreviz)
 
     val sessions = mutableMapOf<GenNode<*>, CodeGenSession>()
     val busyNodes = mutableListOf<GenNode<*>>()
@@ -80,8 +74,7 @@ class CodeGen(
     private fun resolveAllPlaceholders(preprocessed: String): String {
         var resolved = preprocessed
 
-        val placeholders = IdElementContainerStack.localStack
-            .peekNonNull<Resolvable.Placeholder<*>>()
+        val placeholders = IdContainerStacks.local.peekNonNull<Resolvable.Placeholder<*>>()
 
         logger.info("Resolving active placeholders: ${placeholders.inmutable.size}")
 
@@ -101,14 +94,14 @@ class CodeGen(
                 currentPlaceholdersProvider().forEach { it.resolve() }
 
                 while (i < resolved.length) {
-                    val start = resolved.indexOf(RESOLVER_PREFIX, i)
+                    val start = resolved.indexOf(Resolvable.RESOLVER_PREFIX, i)
                     if (start == -1) {
                         // No more placeholders
                         sb.append(resolved, i, resolved.length)
                         break
                     }
 
-                    val end = resolved.indexOf(RESOLVER_SUFFIX, start)
+                    val end = resolved.indexOf(Resolvable.RESOLVER_SUFFIX, start)
                     if (end == -1) {
                         // No closing '>', append rest as-is
                         sb.append(resolved, i, resolved.length)
@@ -147,7 +140,7 @@ class CodeGen(
                 }
 
                 resolved = sb.toString()
-            } while (changed)
+            } while (changed) // Repeat until no changes, meaning all placeholders were resolved
         }
 
         resolve { placeholders.inmutable.filter { !it.resolveLast } } // Resolve non-last placeholders first
@@ -184,5 +177,4 @@ class CodeGen(
 data class CodeGenOptions(var genAtTheEnd: Boolean = false)
 
 interface CodeGenSession
-
 object NoSession : CodeGenSession

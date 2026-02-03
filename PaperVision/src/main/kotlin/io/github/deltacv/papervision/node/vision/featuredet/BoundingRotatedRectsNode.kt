@@ -63,11 +63,11 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                 val input = contours.genValue(current)
 
                 val name = if(input is GenValue.GList.RuntimeListOf<*>) {
-                    input.value.value.toString()
+                    input.value.v
                 } else null
 
                 val points2f = uniqueVariable("${name ?: "points"}2f", JvmOpenCvTypes.MatOfPoint2f.new())
-                val rectsList = uniqueVariable("${name?.run { this + "R"} ?: "r"}otRects", JavaTypes.ArrayList(JvmOpenCvTypes.RotatedRect).new())
+                val rectsList = uniqueVariable("${name?.run { this.value + "R"} ?: "r"}otRects", JavaTypes.ArrayList(JvmOpenCvTypes.RotatedRect).new())
 
                 group {
                     private(points2f)
@@ -116,7 +116,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                 val input = contours.genValue(current)
 
                 val name = if(input is GenValue.GList.RuntimeListOf<*>) {
-                    input.value.value.toString() + "_r"
+                    input.value.v.toString() + "_r"
                 } else null
 
                 val rectsList = uniqueVariable("${name ?: "r"}ot_rects", CPythonLanguage.NoType.newArray())

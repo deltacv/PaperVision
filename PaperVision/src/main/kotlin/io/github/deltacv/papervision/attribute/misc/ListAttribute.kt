@@ -28,7 +28,7 @@ import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.gui.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.serialization.data.DataSerializable
@@ -220,13 +220,13 @@ open class ListAttribute(
                     "List attribute must have another attribute attached"
                 )
 
-                val value = linkedAttrib!!.genValue(current)
+                val value = linkedAttrib.genValue(current)
                 raiseAssert(
                     value is GenValue.GList.ListOf<*> || value is GenValue.GList.RuntimeListOf<*>,
                     "Attribute attached is not a list"
                 )
 
-                value as GenValue.GList
+                value
             } else {
                 // get the values of all the attributes and return a
                 // GenValue.List with the attribute values in an array
@@ -240,7 +240,7 @@ open class ListAttribute(
                 "Value returned from the node is not a list"
             )
 
-            value as GenValue.GList
+            value
         }
     }
 
@@ -327,7 +327,7 @@ open class ListAttribute(
                         // that created the original link (hopefully he got the chance to say goodbye to his family)
                         // this avoids glitches when the user tries to undo/redo the creation of this new link
                         // otherwise, the stack would try to address the original link, which doesn't exist anymore
-                        associatedAction.idElementContainer[associatedAction.id] = action
+                        associatedAction.idContainer[associatedAction.id] = action
                     }
                 }
 

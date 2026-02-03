@@ -25,10 +25,11 @@ import imgui.extension.imnodes.flag.ImNodesCol
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.mai18n.tr
+import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValueMessage
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValuesMessage
+import io.github.deltacv.papervision.gui.util.Font
 
 interface AttributeType {
     val icon: String
@@ -84,6 +85,9 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
 
     val nodeSize = ImVec2()
 
+    private val defaultImGuiFont = Font.find("default-12")
+    private val fontAwesome = Font.find("font-awesome")
+
     override fun draw() {
         ImNodes.pushColorStyle(ImNodesCol.Pin, styleColor)
         ImNodes.pushColorStyle(ImNodesCol.PinHovered, styleHoveredColor)
@@ -107,14 +111,14 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
         }
 
         if(inputSameLine) {
-            ImGui.pushFont(PaperVision.defaultImGuiFont.imfont)
+            ImGui.pushFont(defaultImGuiFont.imfont)
         }
 
         if(drawDescriptiveText) {
             val t = tr(finalVarName)
 
             if(mode == AttributeMode.INPUT) {
-                ImGui.pushFont(parentNode.fontAwesome.imfont)
+                ImGui.pushFont(fontAwesome.imfont)
                 ImGui.text(icon)
                 ImGui.popFont()
 
@@ -126,7 +130,7 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
             } else {
                 val textSize = ImGui.calcTextSize(t)
 
-                ImGui.pushFont(parentNode.fontAwesome.imfont)
+                ImGui.pushFont(fontAwesome.imfont)
                 textSize.plus(ImGui.calcTextSize(icon))
                 ImGui.popFont()
 
@@ -141,7 +145,7 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
                 ImGui.text(t)
                 ImGui.sameLine()
 
-                ImGui.pushFont(parentNode.fontAwesome.imfont)
+                ImGui.pushFont(fontAwesome.imfont)
                 ImGui.text(icon)
                 ImGui.popFont()
 
@@ -167,7 +171,7 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified T : GenValue> readGenValue(
+    protected inline fun <reified T : GenValue> readGenValue(
         current: CodeGen.Current,
         name: String,
         inputFieldValue: T? = null,

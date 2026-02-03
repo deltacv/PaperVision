@@ -33,9 +33,9 @@ class ProjectTreeCellRenderer: DefaultTreeCellRenderer() {
         if(value is DefaultMutableTreeNode) {
             val node = value.userObject
 
-            if(node is PaperVisionProjectTree.ProjectTreeNode.Project) {
+            if(node is PaperVisionProjectTree.TreeNode.Project) {
                 icon = UIManager.getIcon("FileView.fileIcon")
-            } else if(node is PaperVisionProjectTree.ProjectTreeNode.Folder) {
+            } else if(node is PaperVisionProjectTree.TreeNode.Folder) {
                 icon = UIManager.getIcon("FileView.directoryIcon")
             }
         }

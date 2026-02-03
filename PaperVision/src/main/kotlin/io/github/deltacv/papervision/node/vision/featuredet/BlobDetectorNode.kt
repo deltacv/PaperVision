@@ -22,9 +22,10 @@ import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.math.RangeAttribute
 import io.github.deltacv.papervision.attribute.math.rebuildOnToggleChange
+import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
-import io.github.deltacv.papervision.attribute.vision.structs.KeyPointsAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.KeyPointAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
@@ -53,7 +54,7 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
     val convexity = RangeAttribute(INPUT, "$[att_convexity]") { it / 100.0 }
     val inertia = RangeAttribute(INPUT, "$[att_inertia]") { it / 100.0 }
 
-    val output = KeyPointsAttribute(AttributeMode.OUTPUT, "$[att_keypoints]")
+    val output = ListAttribute(AttributeMode.OUTPUT, KeyPointAttribute, "$[att_keypoints]")
 
     override fun onEnable() {
         + input.rebuildOnChange()
@@ -108,22 +109,22 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
                     JvmOpenCvTypes.MatOfKeyPoint.new()
                 )
 
-                val varPrefix = "blobDet"
+                val pref = "blobDet"
 
-                val minThreshold = uniqueVariable("${varPrefix}MinThreshold", float(thresholdRangeValue.min.value.v))
-                val maxThreshold = uniqueVariable("${varPrefix}MaxThreshold", float(thresholdRangeValue.max.value.v))
+                val minThreshold = uniqueVariable("${pref}MinThreshold", float(thresholdRangeValue.min.value.v))
+                val maxThreshold = uniqueVariable("${pref}MaxThreshold", float(thresholdRangeValue.max.value.v))
 
-                val minArea = uniqueVariable("${varPrefix}MinArea", float(areaRangeValue.min.value.v))
-                val maxArea = uniqueVariable("${varPrefix}MaxArea", float(areaRangeValue.max.value.v))
+                val minArea = uniqueVariable("${pref}MinArea", float(areaRangeValue.min.value.v))
+                val maxArea = uniqueVariable("${pref}MaxArea", float(areaRangeValue.max.value.v))
 
-                val minCircularity = uniqueVariable("${varPrefix}MinCircularity", float(circularityRangeValue.min.value.v))
-                val maxCircularity = uniqueVariable("${varPrefix}MaxCircularity", float(circularityRangeValue.max.value.v))
+                val minCircularity = uniqueVariable("${pref}MinCircularity", float(circularityRangeValue.min.value.v))
+                val maxCircularity = uniqueVariable("${pref}MaxCircularity", float(circularityRangeValue.max.value.v))
 
-                val minConvexity = uniqueVariable("${varPrefix}MinConvexity", float(convexityRangeValue.min.value.v))
-                val maxConvexity = uniqueVariable("${varPrefix}MaxConvexity", float(convexityRangeValue.max.value.v))
+                val minConvexity = uniqueVariable("${pref}MinConvexity", float(convexityRangeValue.min.value.v))
+                val maxConvexity = uniqueVariable("${pref}MaxConvexity", float(convexityRangeValue.max.value.v))
 
-                val minInertia = uniqueVariable("${varPrefix}MinInertia", float(inertiaRangeValue.min.value.v))
-                val maxInertia = uniqueVariable("${varPrefix}MaxInertia", float(inertiaRangeValue.max.value.v))
+                val minInertia = uniqueVariable("${pref}MinInertia", float(inertiaRangeValue.min.value.v))
+                val maxInertia = uniqueVariable("${pref}MaxInertia", float(inertiaRangeValue.max.value.v))
 
                 group {
                     // fyi with the indices;
@@ -194,7 +195,7 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
                     detector("detect", inputValue.v, keyPoints)
                 }
 
-                session.output = GenValue.RuntimeKeyPoints(keyPoints.resolved())
+                session.output = GenValue.GList.RuntimeListOf(keyPoints.resolved(), GenValue.GKeyPoint.RuntimeKeyPoint::class.resolved())
             }
 
             session
@@ -262,7 +263,7 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
 
                     local(keyPoints)
 
-                    session.output = GenValue.RuntimeKeyPoints(keyPoints.resolved())
+                    session.output = GenValue.GList.RuntimeListOf(keyPoints.resolved(), GenValue.GKeyPoint.RuntimeKeyPoint::class.resolved())
                 }
             }
 
@@ -274,12 +275,12 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
         genCodeIfNecessary(current)
 
         return when(attrib) {
-            output -> GenValue.RuntimeKeyPoints.defer { current.sessionOf(this)?.output }
+            output -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.output }
             else -> noValue(attrib)
         }
     }
 
     class Session : CodeGenSession {
-        lateinit var output: GenValue.RuntimeKeyPoints
+        lateinit var output: GenValue.GList.RuntimeListOf<GenValue.GKeyPoint.RuntimeKeyPoint>
     }
 }

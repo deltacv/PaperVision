@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.plugin.project.recovery
 
 import com.github.serivesmejia.eocvsim.util.JavaProcess
 import com.github.serivesmejia.eocvsim.util.JavaProcess.SLF4JIOReceiver
-import com.github.serivesmejia.eocvsim.util.loggerForThis
+import io.github.deltacv.common.util.loggerForThis
 import org.java_websocket.WebSocket
 import org.java_websocket.handshake.ClientHandshake
 import org.java_websocket.server.WebSocketServer
@@ -33,7 +33,7 @@ class RecoveryDaemonProcessManager(
     val classpath: String
 ) {
 
-    val executor = Executors.newFixedThreadPool(2)
+    val executor = Executors.newFixedThreadPool(2)!!
 
     private val server = WsServer(this)
 
@@ -51,7 +51,7 @@ class RecoveryDaemonProcessManager(
                 RecoveryDaemonClientMain::class.java,
                 SLF4JIOReceiver(logger),
                 classpath,
-                listOf("-Dlog4j.configurationFile=log4j2_nofile_pv.xml"),
+                listOf("-Dlogback.configurationFile=logback-nofile.xml"),
                 listOf(port.toString())
             )
 

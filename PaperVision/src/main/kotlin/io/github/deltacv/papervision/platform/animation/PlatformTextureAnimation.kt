@@ -18,7 +18,7 @@
 
 package io.github.deltacv.papervision.platform.animation
 
-import io.github.deltacv.papervision.id.IdElementContainer
+import io.github.deltacv.papervision.id.container.IdContainer
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
 import java.lang.UnsupportedOperationException
@@ -30,7 +30,7 @@ abstract class PlatformTextureAnimation : PlatformTexture() {
 
     abstract var isActive: Boolean
 
-    override val id by animations.nextId()
+    override val id by animations.nextIdLazy()
 
     var isPaused: Boolean
         get() = !isActive
@@ -60,7 +60,7 @@ abstract class PlatformTextureAnimation : PlatformTexture() {
         throw UnsupportedOperationException("setJpeg() is not supported on animations")
 
     companion object {
-        val animations = IdElementContainer<PlatformTextureAnimation>()
+        val animations = IdContainer<PlatformTextureAnimation>()
     }
 
 }

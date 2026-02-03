@@ -22,6 +22,7 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
 import io.github.deltacv.papervision.codegen.build.type.CPythonType
+import io.github.deltacv.papervision.codegen.build.type.StandardTypes
 import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.LanguageBase
@@ -41,12 +42,20 @@ object CPythonLanguage : LanguageBase(
         override val shouldImport = false
     }
 
+    override val IntType get() = NoType
+    override val LongType get() = NoType
+    override val FloatType get() = NoType
+    override val DoubleType get() = NoType
+
     override val trueValue = ConValue(BooleanType, "True")
     override val falseValue = ConValue(BooleanType, "False")
 
     override val nullValue = ConValue(NoType, "None")
 
     override fun newImportBuilder() = PythonImportBuilder(this)
+
+    fun valueIs(value: Value, type: Type) = condition("${value.value} is ${type.className}")
+    fun valueIsNot(value: Value, type: Type) = condition("${value.value} is not ${type.className}")
 
     override fun and(left: Condition, right: Condition) = condition("(${left.value}) and (${right.value})")
     override fun or(left: Condition, right: Condition) = condition("(${left.value}) or (${right.value})")
@@ -55,7 +64,7 @@ object CPythonLanguage : LanguageBase(
 
     override fun instanceVariableDeclaration(
         vis: Visibility,
-        variable: Variable,
+        variable: DeclarableVariable,
         label: String?,
         isStatic: Boolean,
         isFinal: Boolean
@@ -65,11 +74,11 @@ object CPythonLanguage : LanguageBase(
     )
 
     override fun localVariableDeclaration(
-        variable: Variable,
+        variable: DeclarableVariable,
         isFinal: Boolean
     ) = instanceVariableDeclaration(Visibility.PUBLIC, variable).second
 
-    override fun instanceVariableSetDeclaration(variable: Variable, v: Value) = "${variable.name} = ${v.value!!}" + semicolonIfNecessary()
+    override fun instanceVariableSetDeclaration(variable: DeclarableVariable, v: Value) = "${variable.name} = ${v.value!!}" + semicolonIfNecessary()
 
     override fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value) =
         throw UnsupportedOperationException("streamMatCallDeclaration is not supported in Python")
@@ -136,6 +145,23 @@ object CPythonLanguage : LanguageBase(
 
     override fun castValue(value: Value, castTo: Type) = ConValue(castTo, value.value)
 
+    fun sliceValue(start: Value? = null, end: Value? = null, step: Value? = null) : ConValue {
+        val sliceStr = buildString {
+            if(start != null) {
+                append(start.value)
+            }
+            append(":")
+            if(end != null) {
+                append(end.value)
+            }
+            if(step != null) {
+                append(":${step.value}")
+            }
+        }
+
+        return ConValue(NoType, sliceStr)
+    }
+
     override fun arrayOf(type: Type) = type
 
     override fun newArrayOf(type: Type, size: Value): ConValue {
@@ -174,7 +200,7 @@ object CPythonLanguage : LanguageBase(
 
         val start = classStartScope.get()
         if(start.isNotBlank()) {
-            classBodyScope.scope(classStartScope)
+            classBodyScope.scope(classStartScope, indentOverride = 0)
             classBodyScope.newStatement()
         }
 
@@ -202,14 +228,24 @@ object CPythonLanguage : LanguageBase(
         mainScope.get()
     }
 
-    fun conditionOfValue(value: Value) = Condition(BooleanType, value.value!!)
-
-    class TupleVariable(value: Value, vararg names: String) : Variable(names.csv(), value) {
+    class AccessorTupleVariable(vararg names: String) : AccessorVariable(NoType, "(${names.csv()})") {
         val names = names.toSet()
 
         fun get(name: String): Value {
             if(name !in names) {
-                throw IllegalArgumentException("Name $name is not in the tuple variable")
+                throw IllegalArgumentException("$name is not in the tuple variable")
+            }
+
+            return ConValue(NoType, name);
+        }
+    }
+
+    class DeclarableTupleVariable(value: Value, vararg names: String) : DeclarableVariable(names.csv(), value) {
+        val names = names.toSet()
+
+        fun get(name: String): Value {
+            if(name !in names) {
+                throw IllegalArgumentException("$name is not in the tuple variable")
             }
 
             return ConValue(NoType, name);
@@ -237,7 +273,8 @@ object CPythonLanguage : LanguageBase(
     override fun double(value: Value) = callValue("float", language.IntType, value)
     override fun double(value: Double) = double(value.toString().v)
 
-    fun tupleVariables(value: Value, vararg names: String) = TupleVariable(value, *names)
+    fun accessorTupleVariable(vararg names: String) = AccessorTupleVariable(*names)
+    fun declaredTupleVariable(value: Value, vararg names: String) = DeclarableTupleVariable(value, *names)
 
     fun tuple(vararg value: Value) = ConValue(NoType, "(${value.csv()})")
 

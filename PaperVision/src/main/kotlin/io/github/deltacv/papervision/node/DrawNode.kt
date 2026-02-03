@@ -25,7 +25,7 @@ import imgui.extension.imnodes.flag.ImNodesCol
 import imgui.flag.ImGuiMouseButton
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.CodeGenSession
-import io.github.deltacv.mai18n.tr
+import org.deltacv.mai18n.tr
 import java.lang.IllegalArgumentException
 import java.util.concurrent.ArrayBlockingQueue
 
@@ -40,7 +40,7 @@ abstract class DrawNode<S: CodeGenSession>(
     var pinToMouseOffset = ImVec2()
 
     override val genNodeName: String?
-        get() = tr(annotationData.name)
+        get() = "${tr(annotationData.name)} (#$id)"
 
     private var lastPinToMouse = false
     private var pinToMouseNewOffset = ImVec2()

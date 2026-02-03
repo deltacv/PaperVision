@@ -19,9 +19,10 @@
 package io.github.deltacv.papervision.node.vision.overlay
 
 import io.github.deltacv.papervision.attribute.Attribute
+import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
-import io.github.deltacv.papervision.attribute.vision.structs.KeyPointsAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.KeyPointAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
@@ -48,7 +49,7 @@ open class DrawKeyPointsNode
 @JvmOverloads constructor(val isDrawOnInput: Boolean = false) : DrawNode<DrawKeyPointsNode.Session>() {
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")
-    val keypoints = KeyPointsAttribute(INPUT, "$[att_keypoints]")
+    val keypoints = ListAttribute(INPUT, KeyPointAttribute, "$[att_keypoints]")
 
     val lineColor = ScalarAttribute(INPUT, ColorSpace.RGB, "$[att_linecolor]")
 
@@ -76,8 +77,13 @@ open class DrawKeyPointsNode
                 val color = lineColor.genValue(current)
 
                 val input = inputMat.genValue(current)
+
                 val keypointsValue = keypoints.genValue(current)
-                val output = uniqueVariable("${input.value.value}KeyPoints", Mat.new())
+                if(keypointsValue !is GenValue.GList.RuntimeListOf<*>) {
+                    raise("Only runtime lists are supported for now")
+                }
+
+                val output = uniqueVariable("${input.value.v}KeyPoints", Mat.new())
 
                 var drawMat = if (!isDrawOnInput) {
                     output
@@ -126,11 +132,15 @@ open class DrawKeyPointsNode
 
                 val input = inputMat.genValue(current)
                 val keypointsValue = keypoints.genValue(current)
+                if(keypointsValue !is GenValue.GList.RuntimeListOf<*>) {
+                    raise("Only runtime lists are supported for now")
+                }
+
 
                 current.scope {
                     nameComment()
 
-                    val output = uniqueVariable("${input.value.value}_keypoints",
+                    val output = uniqueVariable("${input.value.v}_keypoints",
                         cv2.callValue("drawKeypoints",
                             CPythonLanguage.NoType,
                             input.value.v,
@@ -151,6 +161,8 @@ open class DrawKeyPointsNode
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+        genCodeIfNecessary(current)
+
         if (attrib == outputMat) {
             return GenValue.Mat.defer { current.sessionOf(this)?.outputMat }
         }

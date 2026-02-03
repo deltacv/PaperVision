@@ -20,8 +20,8 @@ package io.github.deltacv.papervision.plugin.gui.imgui
 
 import imgui.ImGui
 import imgui.flag.ImGuiWindowFlags
-import io.github.deltacv.mai18n.tr
-import io.github.deltacv.papervision.gui.util.Window
+import org.deltacv.mai18n.tr
+import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.util.flags
 
 class CloseConfirmWindow(
@@ -40,7 +40,7 @@ class CloseConfirmWindow(
         ImGuiWindowFlags.NoCollapse
     )
 
-    override val isModal = true
+    override val modal = ModalMode.Modal()
 
     override fun onEnable() {
         focus = true

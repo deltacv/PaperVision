@@ -1,6 +1,3 @@
-import com.vanniktech.maven.publish.JavaLibrary
-import com.vanniktech.maven.publish.JavadocJar
-
 plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'com.gradleup.shadow' version '8.3.5'
@@ -146,13 +143,16 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation project(":LwjglPlatform")
 
-    implementation "org.apache.logging.log4j:log4j-api:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-core:$log4j_version"
-    implementation "org.apache.logging.log4j:log4j-slf4j2-impl:$log4j_version"
+    implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 
-    compileOnly('org.deltacv.EOCV-Sim:EOCV-Sim:4.0.2') { transitive = false }
-    compileOnly('org.deltacv.EOCV-Sim:Common:4.0.2') { transitive = false }
-    compileOnly('org.deltacv.EOCV-Sim:Vision:4.0.2')
+    compileOnly("org.deltacv.EOCV-Sim:EOCV-Sim:$eocvsim_version") { transitive = false }
+    compileOnly("org.deltacv.EOCV-Sim:Common:$eocvsim_version") { transitive = false }
+    compileOnly("org.deltacv.EOCV-Sim:Vision:$eocvsim_version")
+
+    // ugh, coroutines, an internal method call of EOCV-Sim in PaperVisionTabPanel returns a Job
+    // and the compiler freaks out if we don't have it accessible during compile time, we can make
+    // it with only compileOnly since at runtime EOCV-Sim already has coroutines included
+    compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
     implementation 'org.codehaus.janino:janino:3.1.12'
     implementation "com.google.code.gson:gson:$gson_version"

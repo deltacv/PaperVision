@@ -22,28 +22,20 @@ import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiWindowFlags
-import io.github.deltacv.mai18n.tr
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.client.response.StringResponse
-import io.github.deltacv.papervision.gui.Font
-import io.github.deltacv.papervision.gui.FontAwesomeIcons
-import io.github.deltacv.papervision.gui.util.Window
-import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentInputSourceMessage
-import io.github.deltacv.papervision.plugin.ipc.message.GetInputSourcesMessage
-import io.github.deltacv.papervision.plugin.ipc.message.InputSourceData
-import io.github.deltacv.papervision.plugin.ipc.message.InputSourceListChangeListenerMessage
-import io.github.deltacv.papervision.plugin.ipc.message.InputSourceType
-import io.github.deltacv.papervision.plugin.ipc.message.OpenCreateInputSourceMessage
-import io.github.deltacv.papervision.plugin.ipc.message.SetInputSourceMessage
+import io.github.deltacv.papervision.gui.Window
+import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.plugin.ipc.message.*
 import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
 import io.github.deltacv.papervision.util.flags
+import org.deltacv.mai18n.tr
 
 class InputSourceWindow(
-    val fontAwesome: Font,
-    val fontAwesomeBig: Font,
     val client: PaperVisionEngineClient
 ) : Window(){
-    var inputSources = arrayOf<InputSourceData>()
+    var inputSources = arrayOf<IpcInputSourceData>()
 
     private var previousInputSource: String? = null
     var currentInputSource: String? = null
@@ -54,7 +46,12 @@ class InputSourceWindow(
         ImGuiWindowFlags.AlwaysAutoResize,
     )
 
+    override val isCloseable = false
+
     private var initialPosition: ImVec2? = null
+
+    private val fontAwesome = Font.find("font-awesome")
+    private val fontAwesomeBig = Font.find("font-awesome-big")
 
     init {
         client.sendMessage(GetInputSourcesMessage().onResponseWith<InputSourcesListResponse> {
@@ -74,23 +71,24 @@ class InputSourceWindow(
         }
     }
 
-
-    override fun drawContents() {
+    override fun preDrawContents() {
         if(initialPosition != null) {
             position = ImVec2(
                 ImGui.getMainViewport().size.x - size.x - initialPosition!!.y, initialPosition!!.y
             )
         }
+    }
 
+    override fun drawContents() {
         if(ImGui.beginListBox("###$id")) {
             for (inputSource in inputSources) {
                 ImGui.pushFont(fontAwesome.imfont)
 
                 val type = when(inputSource.type) {
-                    InputSourceType.IMAGE -> FontAwesomeIcons.Image
-                    InputSourceType.CAMERA -> FontAwesomeIcons.Camera
-                    InputSourceType.VIDEO -> FontAwesomeIcons.Film
-                    InputSourceType.HTTP -> FontAwesomeIcons.Globe
+                    IpcInputSourceType.IMAGE -> FontAwesomeIcons.Image
+                    IpcInputSourceType.CAMERA -> FontAwesomeIcons.Camera
+                    IpcInputSourceType.VIDEO -> FontAwesomeIcons.Film
+                    IpcInputSourceType.HTTP -> FontAwesomeIcons.Globe
                 }
 
                 ImGui.text(type)
@@ -123,7 +121,7 @@ class CreateInputSourceWindow(
     val fontAwesome: Font
 ) : Window() {
     companion object {
-        val separationMultiplier = 1.5f
+        const val SEPARATION_MULTIPLIER = 1.5f
     }
 
     override var title = "$[win_createinput_sources]"
@@ -132,7 +130,7 @@ class CreateInputSourceWindow(
         ImGuiWindowFlags.AlwaysAutoResize,
     )
 
-    override val isModal = true
+    override val modal = ModalMode.Modal()
 
     override fun drawContents() {
         ImGui.pushStyleColor(ImGuiCol.Button, 0)
@@ -140,7 +138,7 @@ class CreateInputSourceWindow(
         ImGui.pushFont(fontAwesome.imfont)
 
         if(ImGui.button(FontAwesomeIcons.Camera)){
-            client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.CAMERA))
+            client.sendMessage(OpenCreateInputSourceMessage(IpcInputSourceType.CAMERA))
             delete()
         }
         if(ImGui.isItemHovered()) {
@@ -150,10 +148,10 @@ class CreateInputSourceWindow(
         }
 
         ImGui.sameLine()
-        ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+        ImGui.indent(ImGui.getItemRectSizeX() * SEPARATION_MULTIPLIER)
 
         if(ImGui.button(FontAwesomeIcons.Image)){
-            client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.IMAGE))
+            client.sendMessage(OpenCreateInputSourceMessage(IpcInputSourceType.IMAGE))
             delete()
         }
         if(ImGui.isItemHovered()) {
@@ -163,10 +161,10 @@ class CreateInputSourceWindow(
         }
 
         ImGui.sameLine()
-        ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+        ImGui.indent(ImGui.getItemRectSizeX() * SEPARATION_MULTIPLIER)
 
         if(ImGui.button(FontAwesomeIcons.Film)){
-            client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.VIDEO))
+            client.sendMessage(OpenCreateInputSourceMessage(IpcInputSourceType.VIDEO))
             delete()
         }
         if(ImGui.isItemHovered()) {
@@ -176,10 +174,10 @@ class CreateInputSourceWindow(
         }
 
         ImGui.sameLine()
-        ImGui.indent(ImGui.getItemRectSizeX() * separationMultiplier)
+        ImGui.indent(ImGui.getItemRectSizeX() * SEPARATION_MULTIPLIER)
 
         if(ImGui.button(FontAwesomeIcons.Globe)){
-            client.sendMessage(OpenCreateInputSourceMessage(InputSourceType.HTTP))
+            client.sendMessage(OpenCreateInputSourceMessage(IpcInputSourceType.HTTP))
             delete()
         }
         if(ImGui.isItemHovered()) {

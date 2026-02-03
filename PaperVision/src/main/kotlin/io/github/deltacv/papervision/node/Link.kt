@@ -24,7 +24,7 @@ import io.github.deltacv.papervision.action.Action
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.LinkSerializationData
 
@@ -35,8 +35,8 @@ class Link(
     override val shouldSerialize: Boolean = true
 ) : DrawableIdElementBase<Link>(), DataSerializable<LinkSerializationData> {
 
-    val attribIdElementContainer = IdElementContainerStack.localStack.peekNonNull<Attribute>()
-    override val idElementContainer = IdElementContainerStack.localStack.peekNonNull<Link>()
+    val attribIdElementContainer = IdContainerStacks.local.peekNonNull<Attribute>()
+    override val idContainer = IdContainerStacks.local.peekNonNull<Link>()
 
     val aAttrib get() = attribIdElementContainer[a]
     val bAttrib get() = attribIdElementContainer[b]
@@ -83,12 +83,12 @@ class Link(
     }
 
     override fun delete() {
-        idElementContainer.removeId(id)
+        idContainer.removeId(id)
         triggerOnChange()
     }
 
     override fun restore() {
-        idElementContainer[id] = this
+        idContainer[id] = this
         triggerOnChange()
     }
 
@@ -101,7 +101,7 @@ class Link(
         fun getLinksBetween(a: Node<*>, b: Node<*>): List<Link> {
             val l = mutableListOf<Link>()
 
-            for(link in IdElementContainerStack.localStack.peekNonNull<Link>()) {
+            for(link in IdContainerStacks.local.peekNonNull<Link>()) {
                 val linkNodeA = link.aAttrib?.parentNode ?: continue
                 val linkNodeB = link.bAttrib?.parentNode ?: continue
 

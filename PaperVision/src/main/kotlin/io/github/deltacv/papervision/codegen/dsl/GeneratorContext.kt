@@ -26,9 +26,7 @@ import io.github.deltacv.papervision.codegen.language.Language
 class GeneratorContext<S: CodeGenSession>(val current: CodeGen.Current)
 
 fun <S: CodeGenSession> generator(init: GeneratorContext<S>.() -> S) =
-    object: Generator<S> {
-        override fun genCode(current: CodeGen.Current) = init(GeneratorContext(current))
-    }
+    Generator { current -> init(GeneratorContext(current)) }
 
 fun <S: CodeGenSession> generatorFor(language: Language, init: GeneratorContext<S>.() -> S) =
     language to generator(init)

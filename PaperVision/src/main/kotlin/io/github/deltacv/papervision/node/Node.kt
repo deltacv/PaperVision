@@ -27,10 +27,9 @@ import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.*
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.exception.NodeGenException
-import io.github.deltacv.papervision.gui.Font
-import io.github.deltacv.papervision.gui.NodeEditor
+import io.github.deltacv.papervision.gui.editor.NodeEditor
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.BasicNodeData
@@ -50,7 +49,7 @@ abstract class Node<S: CodeGenSession>(
     val joinActionStack: Boolean = true
 ) : DrawableIdElementBase<Node<*>>(), GeneratorsGenNode<S>, DataSerializable<NodeSerializationData> {
 
-    override val idElementContainer = IdElementContainerStack.localStack.peekNonNull<Node<*>>()
+    override val idContainer = IdContainerStacks.local.peekNonNull<Node<*>>()
     override val requestedId get() = if(forgetSerializedId) null else serializedId
 
     private var beforeDeletingPosition = ImVec2()
@@ -72,11 +71,7 @@ abstract class Node<S: CodeGenSession>(
     lateinit var editor: NodeEditor
         internal set
 
-    // will be set on NodeEditor#draw or NodeList#draw
-    lateinit var fontAwesome: Font
-        internal set
-
-    val isOnEditor get() = ::editor.isInitialized && idElementContainer.contains(this)
+    val isOnEditor get() = ::editor.isInitialized && idContainer.contains(this)
 
     // it is the responsibility of the inheriting class to set this value in draw()
     val screenPosition = ImVec2()
@@ -126,7 +121,7 @@ abstract class Node<S: CodeGenSession>(
             attribute.delete()
         }
 
-        idElementContainer.removeId(id)
+        idContainer.removeId(id)
         onDelete.run()
     }
 
@@ -141,7 +136,7 @@ abstract class Node<S: CodeGenSession>(
             attribute.restore()
         }
 
-        idElementContainer[id] = this
+        idContainer[id] = this
 
         if(this is DrawNode<*>) {
             nextNodePosition = beforeDeletingPosition
@@ -211,9 +206,9 @@ abstract class Node<S: CodeGenSession>(
         for(linkedNode in linkedNodes) {
             if(linkedNode.hasDeadEnd()) {
                 deadEndNodes.add(linkedNode)
-                logger.debug("Dead end: $linkedNode")
+                logger.debug("Dead end: {}", linkedNode)
             } else {
-                logger.debug("Complete path: $linkedNode")
+                logger.debug("Complete path: {}", linkedNode)
                 completePathNodes.add(linkedNode)
             }
         }
@@ -271,6 +266,10 @@ abstract class Node<S: CodeGenSession>(
         }
     }
 
+    fun forgetSerializedId() {
+        forgetSerializedId = true
+    }
+
     override fun toString() = "Node(${this::class.java.typeName}, id=$id)"
 
     companion object {
@@ -289,7 +288,7 @@ abstract class Node<S: CodeGenSession>(
             null
         }
 
-        fun checkRecursion(from: Node<*>, to: Node<*>): Boolean {
+        fun checkSimpleRecursion(from: Node<*>, to: Node<*>): Boolean {
             val linksBetween = Link.getLinksBetween(from, to)
 
             var hasOutputToInput = false
@@ -313,10 +312,6 @@ abstract class Node<S: CodeGenSession>(
 
             return false
         }
-    }
-
-    fun forgetSerializedId() {
-        forgetSerializedId = true
     }
 
 }

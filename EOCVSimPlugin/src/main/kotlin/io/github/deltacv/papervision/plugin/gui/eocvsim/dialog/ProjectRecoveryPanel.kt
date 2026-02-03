@@ -9,8 +9,7 @@
 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -24,6 +23,7 @@ import java.awt.Dimension
 import java.time.Instant
 import java.util.*
 import javax.swing.*
+import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
 
 class ProjectRecoveryPanel(
@@ -35,29 +35,47 @@ class ProjectRecoveryPanel(
         layout = BorderLayout(10, 10)
         preferredSize = Dimension(400, 250)
 
-        // Add a descriptive label at the top
-        val label = JLabel("<html><div style='text-align: center;'><h3>PaperVision detected unsaved projects from a previous session.<br>You can choose which projects to recover below.</h3></div></html>")
-        label.horizontalAlignment = SwingConstants.CENTER // Center align the text
-
+        // Descriptive label at the top
+        val label = JLabel(
+            "<html><div style='text-align: center;'>" +
+                    "<h3>PaperVision detected unsaved projects from a previous session.<br>" +
+                    "You can choose which projects to recover below.</h3></div></html>"
+        )
+        label.horizontalAlignment = SwingConstants.CENTER
         add(label, BorderLayout.NORTH)
 
-        // Data for the table, including the checkbox column initialized to true
-        val data = recoveredProjects.map { arrayOf(it.originalProjectPath, Date.from(Instant.ofEpochMilli(it.date)), true) }.toTypedArray()
-        val model = DefaultTableModel(data, arrayOf("Project Name", "Date", "Recover"))
+        // Table data with the "Recover" column initially true
+        val data = recoveredProjects.map {
+            arrayOf(it.originalProjectPath, Date.from(Instant.ofEpochMilli(it.date)), true)
+        }.toTypedArray()
 
-        // Create the table with the custom model
-        val table = object: JTable(model) {
-            override fun getColumnClass(column: Int) = when (column) {
-                2 -> java.lang.Boolean::class.java
+        // Table model
+        val model = object : DefaultTableModel(data, arrayOf("Project Name", "Date", "Recover")) {
+            override fun getColumnClass(column: Int): Class<*> = when (column) {
+                2 -> Boolean::class.java   // Column 2 will show checkboxes
+                1 -> Date::class.java
                 else -> String::class.java
             }
 
-            override fun isCellEditable(row: Int, column: Int) = column == 2
+            override fun isCellEditable(row: Int, column: Int): Boolean = column == 2
         }
+
+        // JTable
+        val table = JTable(model).apply {
+            rowHeight = 25
+
+            // Robust fix: make sure Recover column uses checkbox editor and centered renderer
+            getColumnModel().getColumn(2).cellEditor = DefaultCellEditor(JCheckBox())
+            getColumnModel().getColumn(2).cellRenderer = DefaultTableCellRenderer().apply {
+                horizontalAlignment = SwingConstants.CENTER
+            }
+        }
+
         val scrollPane = JScrollPane(table)
         scrollPane.border = BorderFactory.createEmptyBorder(-5, 10, 0, 10)
         add(scrollPane, BorderLayout.CENTER)
 
+        // Buttons panel
         val buttonsPanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.X_AXIS)
             border = BorderFactory.createEmptyBorder(0, 0, 10, 0)
@@ -67,14 +85,11 @@ class ProjectRecoveryPanel(
             add(JButton("Recover Selected").apply {
                 addActionListener {
                     val selectedProjects = mutableListOf<RecoveredProject>()
-
                     for (i in 0 until model.rowCount) {
-                        val recover = model.getValueAt(i, 2) as Boolean
-                        if (recover) {
+                        if (model.getValueAt(i, 2) as Boolean) {
                             selectedProjects.add(recoveredProjects[i])
                         }
                     }
-
                     callback(selectedProjects.toList())
                     SwingUtilities.getWindowAncestor(this@ProjectRecoveryPanel).isVisible = false
                 }
@@ -102,5 +117,5 @@ class ProjectRecoveryPanel(
 
         add(buttonsPanel, BorderLayout.SOUTH)
     }
-
 }
+

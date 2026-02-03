@@ -1,8 +1,7 @@
 name = "PaperVision"
 author = "deltacv"
 author-email = "dev@deltacv.org"
-# This will be replaced by Gradle using the artifact version
-version = "{{version}}"
+version = "{{version}}" # This will be replaced by Gradle using the artifact version
 description = "Create your custom OpenCV algorithms using a user-friendly node editor interface, inspired by Blender and Unreal Engine blueprints! Quickly prototype your vision using live previews as you edit. "
 
 min-api-version = "4.0.0"

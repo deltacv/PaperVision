@@ -93,6 +93,6 @@ class PaperVisionEngineClient(
             }
         }
 
-        onProcess.run()
+        onProcess()
     }
 }

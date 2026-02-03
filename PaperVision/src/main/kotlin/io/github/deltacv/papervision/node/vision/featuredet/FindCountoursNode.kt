@@ -86,19 +86,19 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
         }
 
         generatorFor(CPythonLanguage) {
+            val session = Session()
+
+            val input = inputMat.genValue(current)
+            input.requireBinary(inputMat)
+
             current {
-                val session = Session()
-
-                val input = inputMat.genValue(current)
-                input.requireBinary(inputMat)
-
                 current.scope {
                     nameComment()
 
                     val contours = tryName("contours")
                     val hierarchy = tryName("hierarchy")
 
-                    val result = CPythonLanguage.tupleVariables(cv2.callValue(
+                    val result = CPythonLanguage.declaredTupleVariable(cv2.callValue(
                         "findContours",
                         CPythonLanguage.NoType,
                         input.value.v,

@@ -25,10 +25,11 @@ import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.gui.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.display.ImageDisplayNode
 import io.github.deltacv.papervision.gui.style.rgbaColor
-import io.github.deltacv.papervision.gui.util.ExtraWidgets
+import io.github.deltacv.papervision.gui.util.ImGuiEx
+import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.serialization.data.SerializeIgnore
 
 class MatAttribute(
@@ -60,16 +61,18 @@ class MatAttribute(
     var displayWindow: ImageDisplayNode? = null
         private set
 
+    private val fontAwesome = Font.find("font-awesome")
+
     override fun drawAfterText() {
         if(mode == AttributeMode.OUTPUT && allowPrevizButton && isOnEditor) {
             ImGui.sameLine()
 
-            ImGui.pushFont(editor.fontAwesome.imfont)
+            ImGui.pushFont(fontAwesome.imfont)
                 val text = if (isPrevizEnabled) FontAwesomeIcons.EyeSlash else FontAwesomeIcons.Eye
 
                 ImGui.pushStyleColor(ImGuiCol.Button, 0)
 
-                isPrevizEnabled = ExtraWidgets.toggleButton(
+                isPrevizEnabled = ImGuiEx.toggleButton(
                     text, isPrevizEnabled
                 )
 

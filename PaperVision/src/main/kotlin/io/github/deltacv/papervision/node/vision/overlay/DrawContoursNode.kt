@@ -27,7 +27,7 @@ import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.Variable
+import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
@@ -76,7 +76,7 @@ open class DrawContoursNode
             current {
                 val session = Session()
 
-                val lineParams = (lineParams.genValue(current) as GenValue.LineParameters).ensureRuntimeLineJava(current)
+                val lineParams = lineParams.genValue(current).ensureRuntimeLineJvm(current)
 
                 val input = inputMat.genValue(current)
                 input.requireNonBinary(inputMat)
@@ -108,7 +108,7 @@ open class DrawContoursNode
                     } else {
                         separate()
 
-                        val list = Variable("contoursList", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
+                        val list = DeclarableVariable("contoursList", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
                         local(list)
 
                         for (contour in (contoursList as GenValue.GList.ListOf<*>).elements) {

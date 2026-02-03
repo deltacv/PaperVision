@@ -27,7 +27,7 @@ import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolved
-import io.github.deltacv.papervision.gui.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.serialization.AttributeSerializationData
 import io.github.deltacv.papervision.util.Range2i
 
@@ -44,14 +44,16 @@ class IntAttribute(
     val value = ImInt()
     private val sliderValue = ImInt()
     private var nextValue: Int? = null
+
     var disableInput = false
         set(value) {
             showAttributesCircles = !value
             field = value
         }
 
-    private var range: Range2i? = Range2i(0, Int.MAX_VALUE)
-    private var sliders = false
+    private var range: Range2i = Range2i.DEFAULT_POSITIVE
+    var isSlider = false
+        private set
 
     override fun drawAttribute() {
         super.drawAttribute()
@@ -61,14 +63,12 @@ class IntAttribute(
 
             ImGui.pushItemWidth(110.0f)
 
-            if(!sliders || disableInput) {
-                range?.let {
-                    value.set(it.clip(value.get()))
-                }
+            if(!isSlider || disableInput) {
+                value.set(range.clip(value.get()))
 
                 ImGui.inputInt("", value, 1, 100, if(disableInput) ImGuiInputTextFlags.ReadOnly else 0)
             } else {
-                ImGui.sliderInt("", sliderValue.data, range!!.min, range!!.max)
+                ImGui.sliderInt("", sliderValue.data, range.min, range.max)
                 value.set(sliderValue.get())
             }
 
@@ -86,12 +86,12 @@ class IntAttribute(
 
     fun sliderMode(range: Range2i) {
         this.range = range
-        sliders = true
+        isSlider = true
     }
 
-    fun normalMode(range: Range2i? = null) {
+    fun fieldMode(range: Range2i = Range2i.DEFAULT_POSITIVE) {
         this.range = range
-        sliders = false
+        isSlider = false
     }
 
     override fun readEditorValue() = value.get()

@@ -68,7 +68,7 @@ class Scope(
         }
     }
 
-    fun instanceVariable(vis: Visibility, variable: Variable, label: String? = null,
+    fun instanceVariable(vis: Visibility, variable: DeclarableVariable, label: String? = null,
                          isStatic: Boolean = false, isFinal: Boolean = false) {
         newStatement()
         usedNames.add(variable.name)
@@ -86,7 +86,7 @@ class Scope(
         builder.append("$tabs${pair.second}")
     }
     
-    fun localVariable(variable: Variable) {
+    fun localVariable(variable: DeclarableVariable) {
         newStatement()
         usedNames.add(variable.name)
         importValue(variable)
@@ -108,21 +108,21 @@ class Scope(
         return newName
     }
 
-    fun variableSet(variable: Variable, v: Value) {
+    fun variableSet(variable: DeclarableVariable, v: Value) {
         newStatement()
         importValue(v)
 
         builder.append("$tabs${language.variableSetDeclaration(variable, v)}")
     }
 
-    fun arraySet(variable: Variable, index: Value, v: Value) {
+    fun arraySet(variable: DeclarableVariable, index: Value, v: Value) {
         newStatement()
         importValue(v)
 
         builder.append("$tabs${language.arrayVariableSetDeclaration(variable, index, v)}")
     }
 
-    fun instanceVariableSet(variable: Variable, v: Value) {
+    fun instanceVariableSet(variable: DeclarableVariable, v: Value) {
         newStatement()
         importValue(v)
 

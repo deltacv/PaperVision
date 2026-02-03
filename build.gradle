@@ -4,17 +4,19 @@ import java.time.format.DateTimeFormatter
 
 buildscript {
     ext {
-        kotlin_version = "2.0.20"
-        kotlinx_coroutines_version = "1.8.1"
-        classgraph_version = "4.8.108"
+        kotlin_version = "2.3.0"
+        kotlinx_coroutines_version = "1.10.2"
+        classgraph_version = "4.8.112"
         imgui_version = "1.87.6"
         gson_version = "2.8.9"
         lwjgl_version = "3.3.2"
         mackjpeg_version = "1.0.5"
 
+        eocvsim_version = '4.1.1'
+
         slf4j_version = "2.0.16"
         log4j_version = "2.24.1"
-        logback_classic_version = "1.5.8"
+        logback_classic_version = "1.5.13"
 
         Penv = findProperty('env')
         if(Penv != null && (Penv != 'dev' && Penv != 'release')) {\
@@ -39,7 +41,7 @@ buildscript {
 
 allprojects {
     group 'org.deltacv.PaperVision'
-    version '1.0.10'
+    version '1.1.0'
 
     ext {
         standardVersion = version
@@ -47,6 +49,7 @@ allprojects {
 
     repositories {
         mavenCentral()
+        mavenLocal()
         google()
         maven { url "https://maven.pkg.jetbrains.space/public/p/compose/dev" }
         maven { url 'https://artifacts.openmicroscopy.org/artifactory/ome.releases/' }

@@ -61,7 +61,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                 val input = inputContours.genValue(current)
 
                 val listName = if (input is GenValue.GList.RuntimeListOf<*>) {
-                    "${input.value.value}Rects"
+                    "${input.value.v}Rects"
                 } else "rects"
 
                 val rectsList = uniqueVariable(listName, JavaTypes.ArrayList(JvmOpenCvTypes.Rect).new())
@@ -108,7 +108,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                 val input = inputContours.genValue(current)
 
                 val listName = if (input is GenValue.GList.RuntimeListOf<*>) {
-                    "${input.value.value}_rects"
+                    "${input.value.v}_rects"
                 } else "rects"
 
                 val rectsList = uniqueVariable(listName, CPythonLanguage.NoType.newArray(0.v))

@@ -29,7 +29,7 @@ object JavascriptLanguage : LanguageBase(genInClass = false, optimizeImports = f
 
     override fun instanceVariableDeclaration(
         vis: Visibility,
-        variable: Variable,
+        variable: DeclarableVariable,
         label: String?,
         isStatic: Boolean,
         isFinal: Boolean
@@ -41,11 +41,11 @@ object JavascriptLanguage : LanguageBase(genInClass = false, optimizeImports = f
     )
 
     override fun localVariableDeclaration(
-        variable: Variable,
+        variable: DeclarableVariable,
         isFinal: Boolean
     ) = instanceVariableDeclaration(Visibility.PUBLIC, variable).second
 
-    override fun instanceVariableSetDeclaration(variable: Variable, v: Value) = "${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
+    override fun instanceVariableSetDeclaration(variable: DeclarableVariable, v: Value) = "${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
 
     override fun methodDeclaration(
         vis: Visibility,

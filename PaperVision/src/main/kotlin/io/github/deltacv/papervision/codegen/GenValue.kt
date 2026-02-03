@@ -40,7 +40,7 @@ sealed class GenValue {
         }
 
         companion object {
-            fun defer(genValueResolver: () -> GenValue.Mat?) = GenValue.Mat(
+            fun defer(genValueResolver: () -> Mat?) = Mat(
                 Resolvable.fromResolvable { genValueResolver()?.value },
                 Resolvable.fromResolvable { genValueResolver()?.color },
                 Boolean.defer { genValueResolver()?.isBinary }
@@ -48,11 +48,19 @@ sealed class GenValue {
         }
     }
 
-    data class RuntimeKeyPoints(val value: Resolvable<Value>) : GenValue() {
-        companion object {
-            fun defer(genValueResolver: () -> RuntimeKeyPoints?) = RuntimeKeyPoints(
-                Resolvable.fromResolvable { genValueResolver()?.value }
-            )
+    sealed class GKeyPoint : GenValue() {
+        data class KeyPoint(
+            val x: Double,
+            val y: Double,
+            val size: Double
+        ) : GKeyPoint()
+
+        data class RuntimeKeyPoint(val value: Resolvable<Value>) : GKeyPoint() {
+            companion object {
+                fun defer(genValueResolver: () -> RuntimeKeyPoint?) = RuntimeKeyPoint(
+                    Resolvable.fromResolvable { genValueResolver()?.value }
+                )
+            }
         }
     }
 
@@ -63,6 +71,18 @@ sealed class GenValue {
         data class RuntimePoints(val value: Resolvable<Value>) : GPoints() {
             companion object {
                 fun defer(genValueResolver: () -> RuntimePoints?) = RuntimePoints(
+                    Resolvable.fromResolvable { genValueResolver()?.value }
+                )
+            }
+        }
+    }
+
+    sealed class GCircle : GenValue() {
+        data class Circle(val x: Double, val y: Double,  val r: Double) : GCircle()
+
+        data class RuntimeCircle(val value: Resolvable<Value>) : GCircle() {
+            companion object {
+                fun defer(genValueResolver: () -> RuntimeCircle?) = RuntimeCircle(
                     Resolvable.fromResolvable { genValueResolver()?.value }
                 )
             }
@@ -97,7 +117,7 @@ sealed class GenValue {
         }
     }
 
-    data class Enum<E : kotlin.Enum<E>>(val value: E, val clazz: Class<*>) : GenValue()
+    data class Enum<E : kotlin.Enum<E>>(val value: E) : GenValue()
 
     data class Int(val value: Resolvable<kotlin.Int>) : GenValue(){
         companion object {
@@ -147,7 +167,7 @@ sealed class GenValue {
             }
         }
 
-        fun ensureRuntimeLineJava(current: CodeGen.Current): RuntimeLine {
+        fun ensureRuntimeLineJvm(current: CodeGen.Current): RuntimeLine {
             return current {
                 when (val lineParams = this@LineParameters) {
                     is Line -> {

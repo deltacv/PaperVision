@@ -38,8 +38,10 @@ import io.github.deltacv.papervision.node.PaperNode
 @PaperNode(
     name = "nod_binarymask",
     category = Category.IMAGE_PROC,
-    description = "des_binarymask"
+    description = "des_binarymask",
+    showInList = false
 )
+@Deprecated("Use BitwiseANDNode instead")
 class MaskNode : DrawNode<MaskNode.Session>(){
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")

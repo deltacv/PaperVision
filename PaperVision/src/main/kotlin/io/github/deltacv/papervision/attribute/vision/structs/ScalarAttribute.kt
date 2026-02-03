@@ -27,7 +27,8 @@ import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.gui.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.ColorSpace
 import io.github.deltacv.papervision.util.Range2i
 
@@ -45,6 +46,8 @@ class ScalarAttribute(
 
     override var icon = FontAwesomeIcons.GripHorizontal
 
+    private val defaultImGuiFont by Font.findLazy("default-20")
+
     override fun drawAttributeText(index: Int, attrib: Attribute): Boolean {
         if(index < color.channelNames.size) {
             val name = color.channelNames[index]
@@ -55,7 +58,7 @@ class ScalarAttribute(
                 attrib.inputSameLine = true
             }
 
-            ImGui.pushFont(PaperVision.defaultImGuiFont.imfont)
+            ImGui.pushFont(defaultImGuiFont.imfont)
             ImGui.text(elementName)
             ImGui.popFont()
 

@@ -25,7 +25,7 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.exception.AttributeGenException
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.serialization.AttributeSerializationData
@@ -61,10 +61,10 @@ class EmptyInputAttribute(
 
 abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<AttributeSerializationData> {
 
-    override val idElementContainer get() = IdElementContainerStack.localStack.peekNonNull<Attribute>()
+    override val idContainer get() = IdContainerStacks.local.peekNonNull<Attribute>()
 
     override val requestedId get() = if(forgetSerializedId || (hasParentNode && parentNode.forgetSerializedId))
-        null
+        null // generate new id
     else serializedId
 
     private var serializedId: Int? = null
@@ -160,7 +160,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
     override fun delete() {
         onDelete.run()
-        idElementContainer.removeId(id)
+        idContainer.removeId(id)
 
         for(link in enabledLinks.toTypedArray()) {
             link.delete()
@@ -168,7 +168,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     }
 
     override fun restore() {
-        idElementContainer[id] = this
+        idContainer[id] = this
 
         for(link in links.toTypedArray()) {
             if(link.getOtherAttribute(this)?.isEnabled == true)
@@ -282,7 +282,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
 fun <T: Attribute> T.rebuildOnChange(): T = apply {
     onChange {
-        if(idElementContainer[id] != null) {
+        if(idContainer[id] != null) {
             rebuildPreviz()
         }
     }

@@ -20,18 +20,19 @@ package io.github.deltacv.papervision.codegen
 
 import imgui.ImGui
 import imgui.ImVec2
-import io.github.deltacv.mai18n.tr
+import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.exception.AttributeGenException
 import io.github.deltacv.papervision.exception.NodeGenException
 import io.github.deltacv.papervision.gui.ToastWindow
-import io.github.deltacv.papervision.gui.util.DialogMessageWindow
-import io.github.deltacv.papervision.gui.util.Popup
-import io.github.deltacv.papervision.gui.util.TooltipPopup
-import io.github.deltacv.papervision.id.IdElementContainer
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.gui.DialogMessageWindow
+import io.github.deltacv.papervision.gui.Popup
+import io.github.deltacv.papervision.gui.TooltipPopup
+import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.id.container.IdContainer
+import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.util.loggerForThis
@@ -45,15 +46,15 @@ class CodeGenManager(val paperVision: PaperVision) {
         language: Language = JavaLanguage,
         isForPreviz: Boolean = false
     ): String? {
-        val placeholders = IdElementContainer<Resolvable.Placeholder<*>>()
+        val placeholders = IdContainer<Resolvable.Placeholder<*>>()
 
-        IdElementContainerStack.localStack.push(placeholders)
+        IdContainerStacks.local.push(placeholders) // all placeholders created during code gen will be caught here
 
         val timestamp = System.currentTimeMillis()
 
         logger.info("Starting code gen at $timestamp")
 
-        for(popup in IdElementContainerStack.localStack.peekNonNull<Popup>().inmutable) {
+        for(popup in IdContainerStacks.local.peekNonNull<Popup>().inmutable) {
             if(popup.label == "Gen-Error") {
                 popup.delete()
             }
@@ -62,12 +63,12 @@ class CodeGenManager(val paperVision: PaperVision) {
 
         val codeGen = CodeGen(name, language, isForPreviz)
 
-        val current = codeGen.currScopeProcessFrame
+        val current = codeGen.currProcessFrame
 
         try {
             codeGen.stage = CodeGen.Stage.INITIAL_GEN
 
-            paperVision.nodeEditor.outputNode.input.requireAttachedAttribute()
+            paperVision.nodeEditor.outputNode.input.requireAttachedAttribute() // output always needs to be connected
 
             paperVision.nodeEditor.inputNode.startGen(current)
 
@@ -112,7 +113,7 @@ class CodeGenManager(val paperVision: PaperVision) {
                 tr("win_codegen_error"),
                 tr("mis_codegen_error"),
                 ex.stackTraceToString(),
-                font = paperVision.defaultFontBig
+                font = Font.find("calcutta-big")
             ).enable()
 
             logger.error("Code gen stopped due to unknown exception", ex)
@@ -125,7 +126,7 @@ class CodeGenManager(val paperVision: PaperVision) {
 
         logger.info("Code gen $timestamp OK")
 
-        IdElementContainerStack.localStack.pop<Resolvable.Placeholder<*>>()
+        IdContainerStacks.local.pop<Resolvable.Placeholder<*>>() // we're done with placeholders
 
         return result.trim()
     }
@@ -142,7 +143,7 @@ class CodeGenManager(val paperVision: PaperVision) {
             tr("mis_codegen_errortoast")
         }
 
-        ToastWindow(toast, 5.0, font = paperVision.defaultFontBig).enable()
+        ToastWindow(toast, 5.0, font = Font.find("calcutta-big")).enable()
     }
 
 }

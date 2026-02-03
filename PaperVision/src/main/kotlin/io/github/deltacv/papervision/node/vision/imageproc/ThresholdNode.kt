@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.node.vision.imageproc
 
 import imgui.ImGui
 import imgui.type.ImInt
-import io.github.deltacv.mai18n.tr
+import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.misc.EnumAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
@@ -39,7 +39,8 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolved
-import io.github.deltacv.papervision.gui.util.ExtraWidgets
+import io.github.deltacv.papervision.gui.util.ImGuiEx
+import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
@@ -67,7 +68,9 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
     @SerializeData
     private var colorValue = ImInt()
 
-    private var lastColor = ColorSpace.values()[0]
+    private var lastColor = ColorSpace.entries.first()
+
+    private val fontAwesome = Font.find("font-awesome")
 
     override fun drawNode() {
         input.drawHere()
@@ -82,7 +85,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         ImGui.text(tr("att_colorspace"))
 
         ImGui.pushItemWidth(110.0f)
-        val color = ExtraWidgets.enumCombo(ColorSpace.values(), colorValue)
+        val color = ImGuiEx.enumCombo(ColorSpace.values(), colorValue)
         ImGui.popItemWidth()
 
         ImGui.newLine()

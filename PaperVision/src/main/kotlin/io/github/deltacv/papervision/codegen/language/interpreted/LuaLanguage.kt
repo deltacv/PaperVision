@@ -47,7 +47,7 @@ object LuaLanguage : LanguageBase(
 
     override fun instanceVariableDeclaration(
         vis: Visibility,
-        variable: Variable,
+        variable: DeclarableVariable,
         label: String?,
         isStatic: Boolean,
         isFinal: Boolean
@@ -59,11 +59,11 @@ object LuaLanguage : LanguageBase(
     )
 
     override fun localVariableDeclaration(
-        variable: Variable,
+        variable: DeclarableVariable,
         isFinal: Boolean
     ) = instanceVariableDeclaration(Visibility.PUBLIC, variable).second
 
-    override fun instanceVariableSetDeclaration(variable: Variable, v: Value) = "${variable.name} = ${v.value!!}" + semicolonIfNecessary()
+    override fun instanceVariableSetDeclaration(variable: DeclarableVariable, v: Value) = "${variable.name} = ${v.value!!}" + semicolonIfNecessary()
 
     override fun streamMatCallDeclaration(id: Value, mat: Value, cvtColor: Value) =
         methodCallDeclaration("stream", id, mat, cvtColor)

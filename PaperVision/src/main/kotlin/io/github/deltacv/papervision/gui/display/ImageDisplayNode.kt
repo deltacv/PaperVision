@@ -54,7 +54,7 @@ class ImageDisplayNode(
 
         ImGui.sameLine()
 
-        imageDisplay.drawStream()
+        imageDisplay.draw()
     }
 
     override fun delete() {

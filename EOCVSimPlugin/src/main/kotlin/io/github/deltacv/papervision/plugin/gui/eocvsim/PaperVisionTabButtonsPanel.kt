@@ -20,18 +20,12 @@ package io.github.deltacv.papervision.plugin.gui.eocvsim
 
 import com.formdev.flatlaf.demo.HintManager
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
-import com.github.serivesmejia.eocvsim.gui.component.PopupX.Companion.popUpXOnThis
-import com.github.serivesmejia.eocvsim.gui.util.Corner
-import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
-import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectTree
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
 import javax.swing.JButton
-import javax.swing.JFrame
-import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.SwingUtilities
@@ -79,15 +73,15 @@ class PaperVisionTabButtonsPanel(
         editSelectionBtt.addActionListener {
             if(projectsJTree.selectionPaths == null) return@addActionListener
 
-            val projects = mutableListOf<PaperVisionProjectTree.ProjectTreeNode.Project>()
+            val projects = mutableListOf<PaperVisionProjectTree.TreeNode.Project>()
 
             for(selection in projectsJTree.selectionPaths!!) {
                 val selectedProject = selection.lastPathComponent
-                if(selectedProject !is DefaultMutableTreeNode || selectedProject.userObject !is PaperVisionProjectTree.ProjectTreeNode.Project)
+                if(selectedProject !is DefaultMutableTreeNode || selectedProject.userObject !is PaperVisionProjectTree.TreeNode.Project)
                     continue
 
                 if(projects.contains(selectedProject.userObject)) continue // avoid duplication
-                projects.add(selectedProject.userObject as PaperVisionProjectTree.ProjectTreeNode.Project)
+                projects.add(selectedProject.userObject as PaperVisionProjectTree.TreeNode.Project)
             }
 
             val location = editSelectionBtt.locationOnScreen
@@ -111,17 +105,17 @@ class PaperVisionTabButtonsPanel(
 
         openSelectionBtt.addActionListener {
             val selectedProject = projectsJTree.lastSelectedPathComponent
-            if(selectedProject !is DefaultMutableTreeNode || selectedProject.userObject !is PaperVisionProjectTree.ProjectTreeNode.Project)
+            if(selectedProject !is DefaultMutableTreeNode || selectedProject.userObject !is PaperVisionProjectTree.TreeNode.Project)
                 return@addActionListener
 
-            projectManager.requestOpenProject(selectedProject.userObject as PaperVisionProjectTree.ProjectTreeNode.Project)
+            projectManager.requestOpenProject(selectedProject.userObject as PaperVisionProjectTree.TreeNode.Project)
         }
 
         projectsJTree.addTreeSelectionListener {
             val selectedProject = projectsJTree.lastSelectedPathComponent
 
             val state = selectedProject is DefaultMutableTreeNode &&
-                    selectedProject.userObject is PaperVisionProjectTree.ProjectTreeNode.Project
+                    selectedProject.userObject is PaperVisionProjectTree.TreeNode.Project
 
             editSelectionBtt.isEnabled = state
             openSelectionBtt.isEnabled = state

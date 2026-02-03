@@ -18,21 +18,21 @@
 
 package io.github.deltacv.papervision.action
 
-import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.IdElementContainerStack
+import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.StatedIdElementBase
 import io.github.deltacv.papervision.util.loggerForThis
 
 abstract class Action(
     val executeOnEnable: Boolean = true
-) : DrawableIdElementBase<Action>() {
-    override val idElementContainer = IdElementContainerStack.localStack.peekNonNull<Action>()
+) : StatedIdElementBase<Action>() {
+    override val idContainer get() = IdContainerStacks.local.peekNonNull<Action>()
 
     val logger by loggerForThis()
 
     override fun enable() {
-        if(!idElementContainer.stackPointerFollowing) {
+        if(!idContainer.stackPointerFollowing) {
             logger.info("Forking after pointer")
-            idElementContainer.fork()
+            idContainer.fork()
         }
         super.enable()
     }
@@ -42,8 +42,6 @@ abstract class Action(
             execute()
         }
     }
-
-    override fun draw() {}
 
     abstract fun undo()
     abstract fun execute()
@@ -55,7 +53,11 @@ class RootAction : Action(
     override fun undo() {}
 
     override fun execute() {
-        logger.info("Root action executed")
-        idElementContainer.pushforwardIfNonNull()
+        logger.debug("Root action reached, nothing to do")
+        idContainer.pushforwardIfNonNull()
+    }
+
+    override fun toString(): String {
+        return "RootAction"
     }
 }

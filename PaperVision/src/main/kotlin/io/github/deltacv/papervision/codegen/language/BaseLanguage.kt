@@ -24,13 +24,22 @@ import io.github.deltacv.papervision.codegen.build.*
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.csv
+import io.github.deltacv.papervision.util.loggerForThis
 import io.github.deltacv.papervision.util.toValidIdentifier
+import org.eclipse.jdt.core.JavaCore
+import org.eclipse.jdt.core.ToolFactory
+import org.eclipse.jdt.core.formatter.CodeFormatter
+import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants
+import org.eclipse.jface.text.Document
+import org.eclipse.text.edits.TextEdit
 
 open class LanguageBase(
     val usesSemicolon: Boolean = true,
     val genInClass: Boolean = true,
     val optimizeImports: Boolean = true
 ) : Language {
+
+    private val logger by loggerForThis()
 
     protected val mutableExcludedImports =  mutableListOf(
         JavaTypes.String
@@ -43,7 +52,7 @@ open class LanguageBase(
         try {
             val i = value.value!!.toInt()
             return int(i)
-        } catch (e: Exception) {
+        } catch (_: NumberFormatException) {
             return castValue(value, language.IntType)
         }
     }
@@ -51,7 +60,7 @@ open class LanguageBase(
         try {
             val l = value.value!!.replace("l", "", ignoreCase = true).toLong()
             return long(l)
-        } catch (e: NumberFormatException) {
+        } catch (_: NumberFormatException) {
             return castValue(value, language.LongType)
         }
     }
@@ -59,9 +68,9 @@ open class LanguageBase(
 
     override fun float(value: Value): Value {
         try {
-            val f = value.value!!.replace("f", "", ignoreCase = true).toFloat()
+            val f = value.value!!.replace("f", "", ignoreCase = true).toFloat() // remove f suffix and try to parse
             return float(f)
-        } catch (e: NumberFormatException) {
+        } catch (_: NumberFormatException) {
             return castValue(value, language.FloatType)
         }
     }
@@ -71,7 +80,7 @@ open class LanguageBase(
         try {
             val d = value.value!!.replace("d", "", ignoreCase = true).toDouble()
             return double(d)
-        } catch (e: NumberFormatException) {
+        } catch (_: NumberFormatException) {
             return castValue(value, language.DoubleType)
         }
     }
@@ -104,13 +113,13 @@ open class LanguageBase(
 
     override fun instanceVariableDeclaration(
         vis: Visibility,
-        variable: Variable,
+        variable: DeclarableVariable,
         label: String?,
         isStatic: Boolean,
         isFinal: Boolean
     ): Pair<String?, String> {
-        val modifiers = if(isStatic) " static" else "" +
-                if(isFinal) " final" else ""
+        val modifiers = if(isStatic) "static " else "" +
+                if(isFinal) "final " else ""
 
         val ending = if(variable.variableValue.value != null) " = ${variable.variableValue.value}" else ""
 
@@ -119,22 +128,22 @@ open class LanguageBase(
                 variable.additionalImports(JavaTypes.LabelAnnotation)
                 "@Label(name = \"$label\")"
             } else null,
-            "${vis.name.lowercase()}$modifiers ${variable.type.shortNameWithGenerics} ${variable.name}$ending${semicolonIfNecessary()}"
+            "${vis.stringify()}$modifiers${variable.type.shortNameWithGenerics} ${variable.name}$ending${semicolonIfNecessary()}"
         )
     }
 
-    override fun localVariableDeclaration(variable: Variable, isFinal: Boolean): String {
+    override fun localVariableDeclaration(variable: DeclarableVariable, isFinal: Boolean): String {
         val ending = (if(variable.variableValue.value != null) " = ${variable.variableValue.value}" else "")
 
         return "${if(isFinal) "final " else ""}${variable.type.shortNameWithGenerics} ${variable.name}$ending${semicolonIfNecessary()}"
     }
 
-    override fun variableSetDeclaration(variable: Variable, v: Value) = "${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
+    override fun variableSetDeclaration(variable: DeclarableVariable, v: Value) = "${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
 
-    override fun arrayVariableSetDeclaration(variable: Variable, index: Value, v: Value) =
+    override fun arrayVariableSetDeclaration(variable: DeclarableVariable, index: Value, v: Value) =
         "${variable.name}[${index.value}] = ${v.value}${semicolonIfNecessary()}"
 
-    override fun instanceVariableSetDeclaration(variable: Variable, v: Value) = "this.${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
+    override fun instanceVariableSetDeclaration(variable: DeclarableVariable, v: Value) = "this.${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
 
     override fun methodCallDeclaration(className: Type, methodName: String, vararg parameters: Value) =
         "${className.className}.$methodName(${parameters.csv()})${semicolonIfNecessary()}"
@@ -151,7 +160,7 @@ open class LanguageBase(
         else methodCallDeclaration("streamFrame", id, mat, nullValue)
 
     override fun constructorDeclaration(vis: Visibility, className: String, vararg parameters: Parameter) =
-        "${vis.name.lowercase()} $className(${parameters.csv()})"
+        "${vis.stringify()}$className(${parameters.csv()})"
 
     override fun methodDeclaration(
         vis: Visibility,
@@ -164,14 +173,13 @@ open class LanguageBase(
         isOverride: Boolean
     ): Pair<String?, String> {
         val synchronized = if(isSynchronized) "synchronized " else ""
-
         val static = if(isStatic) "static " else ""
         val final = if(isFinal) "final " else ""
 
         return Pair(if(isOverride) {
             "@Override"
         } else null,
-            "${vis.name.lowercase()} $synchronized$static$final${returnType.shortNameWithGenerics} $name(${parameters.csv()})"
+            "${vis.stringify()}$synchronized$static$final${returnType.shortNameWithGenerics} $name(${parameters.csv()})"
         )
     }
 
@@ -209,7 +217,7 @@ open class LanguageBase(
         val e = if(extends != null) "extends ${extends.shortNameWithGenerics} " else ""
         val i = if(implements.isNotEmpty()) "implements ${implements.csv()} " else ""
 
-        return "${vis.name.lowercase()} $static${final}class $name $e$i"
+        return "${vis.stringify()}$static${final}class $name $e$i"
     }
 
     override fun enumClassDeclaration(name: String, vararg values: String) = "enum $name { ${values.csv() } "
@@ -251,7 +259,7 @@ open class LanguageBase(
         }
 
     override fun propertyValue(from: Value, property: String, type: Type) = ConValue(type, "${from.value}.${property}")
-    override fun propertyVariable(from: Value, property: String, type: Type) = Variable(type, "${from.value}.${property}")
+    override fun propertyVariable(from: Value, property: String, type: Type) = AccessorVariable(type, "${from.value}.${property}")
 
     override fun arrayValue(from: Value, index: Value, type: Type) = ConValue(
         type, "${from.value}[${index.value}]"
@@ -261,10 +269,10 @@ open class LanguageBase(
     override fun castValue(value: Value, castTo: Type) = ConValue(castTo, "((${castTo.shortNameWithGenerics}) (${value.value}))")
 
     override fun comment(text: String): String {
-        if(text.contains('\n')) {
-            return text.lines().joinToString("\n") { "// $it" }
+        return if(text.contains('\n')) {
+            text.lines().joinToString("\n") { "// $it" }
         } else {
-            return "// $text"
+            "// $text"
         }
     }
 
@@ -322,7 +330,49 @@ open class LanguageBase(
             mainScope.scope(classBodyScope, indentOverride = 0)
         }
 
-        mainScope.get()
+        val code = mainScope.get()
+
+        // Format the generated code using Palantir Java Formatter
+        // Clean up some of the mess left by code-gen, we didn't bother
+        // to make it clean due to complexity, so this we'll see if this helps
+        formatJavaSource(code)
+    }
+
+    private fun formatJavaSource(source: String): String {
+        val options = HashMap<String, String>().apply {
+            putAll(JavaCore.getOptions())
+
+            put(
+                DefaultCodeFormatterConstants.FORMATTER_TAB_CHAR,
+                JavaCore.SPACE
+            )
+            put(DefaultCodeFormatterConstants.FORMATTER_TAB_SIZE, "4")
+            put(DefaultCodeFormatterConstants.FORMATTER_LINE_SPLIT, "120")
+
+            put(JavaCore.COMPILER_SOURCE, JavaCore.VERSION_1_8)
+            put(JavaCore.COMPILER_COMPLIANCE, JavaCore.VERSION_1_8)
+            put(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, JavaCore.VERSION_1_8)
+        }
+
+        val formatter = ToolFactory.createCodeFormatter(options)
+
+        val edit: TextEdit = formatter.format(
+            CodeFormatter.K_COMPILATION_UNIT,
+            source,
+            0,
+            source.length,
+            0,
+            System.lineSeparator()
+        ) ?: return source
+
+        return try {
+            val document = Document(source)
+            edit.apply(document)
+            document.get()
+        } catch (e: Exception) {
+            logger.error("Error formatting generated code, returning unformatted code.", e)
+            source
+        }
     }
 
     override val trueValue by lazy { ConValue(BooleanType, "true") }
@@ -330,12 +380,20 @@ open class LanguageBase(
 
     protected fun semicolonIfNecessary() = if(usesSemicolon) ";" else ""
 
+    private fun Visibility.stringify() = when(this) {
+        Visibility.PUBLIC -> "public "
+        Visibility.PRIVATE -> "private "
+        Visibility.PROTECTED -> "protected "
+        Visibility.PACKAGE_PRIVATE -> ""
+    }
+
     class BaseImportBuilder(val lang: LanguageBase) : Language.ImportBuilder {
         private val imports = mutableMapOf<String, MutableList<String>>()
 
         override fun import(type: Type) {
             val actualType = type.overridenImport ?: type
 
+            if(!actualType.shouldImport) return
             if(lang.isImportExcluded(actualType)) return
             if(type.packagePath.isBlank()) return
 

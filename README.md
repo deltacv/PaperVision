@@ -4,14 +4,15 @@ Create your custom OpenCV algorithms using a user-friendly node editor interface
 
 <img src="https://raw.githubusercontent.com/deltacv/EOCV-Sim/refs/heads/main/EOCV-Sim/src/main/resources/images/papervision.gif"/>
 
-# Running 
+# Getting Started
 
 ## Run with EOCV-Sim (recommended)
 
-PaperVision comes bundled with EOCV-Sim, starting from v4.0.0. [You can download the latest version of EOCV-Sim from the docs](https://docs.deltacv.org/eocv-sim/downloading-eocv-sim).<br><br>
-Make sure to refer to the "PaperVision" tab in the simulator to create a new project and open it right away ! The integration with EOCV-Sim will allow you to live preview your pipeline as you build it in the node editor.
+PaperVision is available out of the box in EOCV-Sim v4.0.0 and later. [You can download the latest version of EOCV-Sim from the docs here](https://docs.deltacv.org/eocv-sim/downloading-eocv-sim).<br><br>
+**Create a new project from the PaperVision tab in the simulator and start experimenting right away.**
+EOCV-Sim integration enables live pipeline previews directly from the node editor.
 
-## Run with Gradle
+## Run with Gradle (development)
 
 Use the following commands to run the project with gradle, this will allow you to test the latest features and changes, building from source.
 <br>
@@ -22,7 +23,7 @@ cd PaperVision
 ./gradlew runEv
 ```
 
-<br>This option won't allow for live previewing, since the backend runs in NO-OP mode, but it will let you to test the node editor.
+<br>**Live previewing is unavailable in this mode** (the backend runs in NO-OP due to the absence of EOCV-Sim), but the node editor remains fully testable.
 
 # Community
 
