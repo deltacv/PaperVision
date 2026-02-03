@@ -1,7 +1,7 @@
 package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.id.IdElement
-import io.github.deltacv.papervision.id.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import kotlin.getValue
 

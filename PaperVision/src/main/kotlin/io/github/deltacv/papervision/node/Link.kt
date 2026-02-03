@@ -24,7 +24,7 @@ import io.github.deltacv.papervision.action.Action
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.LinkSerializationData
 

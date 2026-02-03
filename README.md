@@ -9,9 +9,10 @@ Create your custom OpenCV algorithms using a user-friendly node editor interface
 ## Run with EOCV-Sim (recommended)
 
 PaperVision comes bundled with EOCV-Sim, starting from v4.0.0. [You can download the latest version of EOCV-Sim from the docs](https://docs.deltacv.org/eocv-sim/downloading-eocv-sim).<br><br>
-Make sure to refer to the "PaperVision" tab in the simulator to create a new project and open it right away ! The integration with EOCV-Sim will allow you to live preview your pipeline as you build it in the node editor.
+**Create a new project from the PaperVision tab in the simulator and start experimenting right away.**
+EOCV-Sim integration enables live pipeline previews directly from the node editor.
 
-## Run with Gradle
+## Run with Gradle (development)
 
 Use the following commands to run the project with gradle, this will allow you to test the latest features and changes, building from source.
 <br>
@@ -22,36 +23,7 @@ cd PaperVision
 ./gradlew runEv
 ```
 
-<br>This option won't allow for live previewing, since the backend runs in NO-OP mode, but it will let you to test the node editor.
-
-# Beta Testing the EOCV-Sim plugin
-
-Thank you for your interesting in beta-testing PaperVision. I'm really happy to finally have functional preview builds after stalling on this project numerous times through the last three years,
-Although PaperVision is able to run the user interface on its own, it was made with EOCV-Sim integration in mind since day one as the backend engine, which pretty much allows to have a live visualization of the pipeline as you mess around in the node editor. Use the following instructions to get it all up and running.
-
-1. [Download and open EOCV-Sim 3.8.1+](https://docs.deltacv.org/eocv-sim/downloading-eocv-sim).<br><br>
-2. Go to `File -> Manage Plugins` and click on "Open Plugins Folder". You'll find a `repository.toml` file in that folder, open it with your favorite text editor.<br><br>
-3. Add the following line under the `[plugins]` section:
-   - `PaperVision = "com.github.deltacv.PaperVision:EOCVSimPlugin:master-SNAPSHOT"`<br><br>
-4. Your `repository.toml` file should look like this:
-```toml
-[repositories]
-# Declare the URL of the Maven repositories to use, with a friendly name.
-# The URL must preferably end with a slash to be handled correctly.
-central = "https://repo.maven.apache.org/maven2/"
-jitpack = "https://jitpack.io/"
-
-[plugins]
-# Declare the plugin ID and the Maven coordinates of the plugin, similar to how you do it in Gradle.
-# (group:artifact:version) which will be used to download the plugin from one of Maven repositories.
-# Any dependency that does not have a plugin.toml in its jar will not be considered after download.
-PaperVision = "com.github.deltacv.PaperVision:EOCVSimPlugin:master-SNAPSHOT"
-```
-5. Restart EOCV-Sim after saving the file, and make sure accept the SuperAccess upon prompting (PaperVision won't work without SuperAccess as it needs it to load LWJGL onto your system, among other filesystem interactions)<br><br>
-   - **Please note that EOCV-Sim will complain about the unverified origin of the plugin.** As long as you are copying the PaperVision plugin entry correctly and not adding additional entries under the `[repositories]` section, you can safely ignore those warnings.
-   - As a beta-tester, it is recommended to run EOCV-Sim on a terminal with `java -jar /path/to/EOCV-Sim-<version>-all.jar` to catch any issues and report them to GitHub issues or the discord server<br><br>
-6. Locate the PaperVision tab in the simulator's top-right, create a new project using the provided interface, and open it right away.<br><br>
-7. Happy testing!<br><br>
+<br>**Live previewing is unavailable in this mode** (the backend runs in NO-OP due to the absence of EOCV-Sim), but the node editor remains fully testable.
 
 # Community
 

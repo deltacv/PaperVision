@@ -18,6 +18,8 @@
 
 package io.github.deltacv.papervision.id
 
+import io.github.deltacv.papervision.id.container.IdContainer
+
 // Internal helper class to encapsulate the common logic
 internal class IdElementState<T: IdElement>(
     private val idContainer: IdContainer<T>,

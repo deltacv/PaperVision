@@ -21,7 +21,7 @@ package io.github.deltacv.papervision.engine.previz
 import io.github.deltacv.papervision.engine.client.ByteMessageReceiver
 import io.github.deltacv.papervision.engine.client.Handler
 import io.github.deltacv.papervision.engine.message.ByteMessages
-import io.github.deltacv.papervision.id.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bytes
 import io.github.deltacv.papervision.io.scaleToFit

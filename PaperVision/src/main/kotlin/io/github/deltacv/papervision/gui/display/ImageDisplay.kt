@@ -19,7 +19,7 @@
 package io.github.deltacv.papervision.gui.display
 
 import imgui.ImGui
-import io.github.deltacv.papervision.id.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.engine.previz.ClientPrevizStream
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 

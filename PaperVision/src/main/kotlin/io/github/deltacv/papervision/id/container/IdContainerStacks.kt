@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.id
+package io.github.deltacv.papervision.id.container
+
+import io.github.deltacv.papervision.id.IdElement
 
 class IdContainerStacks {
 

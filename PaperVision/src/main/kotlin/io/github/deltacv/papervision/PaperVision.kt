@@ -44,6 +44,9 @@ import io.github.deltacv.papervision.gui.Popup
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.util.defaultFontConfig
 import io.github.deltacv.papervision.id.*
+import io.github.deltacv.papervision.id.container.IdContainer
+import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.SingleIdContainer
 import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.node.Link

@@ -18,7 +18,7 @@
 
 package io.github.deltacv.papervision.platform.animation
 
-import io.github.deltacv.papervision.id.IdContainer
+import io.github.deltacv.papervision.id.container.IdContainer
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
 import java.lang.UnsupportedOperationException

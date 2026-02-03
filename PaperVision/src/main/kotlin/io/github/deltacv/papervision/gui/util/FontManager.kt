@@ -21,7 +21,7 @@ package io.github.deltacv.papervision.gui.util
 import imgui.ImFont
 import imgui.ImFontConfig
 import imgui.ImGui
-import io.github.deltacv.papervision.id.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.id.StatedIdElementBase
 
 class FontManager {

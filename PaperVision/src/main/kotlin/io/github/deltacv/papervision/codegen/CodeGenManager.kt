@@ -31,8 +31,8 @@ import io.github.deltacv.papervision.gui.DialogMessageWindow
 import io.github.deltacv.papervision.gui.Popup
 import io.github.deltacv.papervision.gui.TooltipPopup
 import io.github.deltacv.papervision.gui.util.Font
-import io.github.deltacv.papervision.id.IdContainer
-import io.github.deltacv.papervision.id.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainer
+import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.util.loggerForThis

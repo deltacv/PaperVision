@@ -33,8 +33,8 @@ import io.github.deltacv.papervision.gui.FrameWidthWindow
 import io.github.deltacv.papervision.gui.Table
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.isModalWindowOpen
-import io.github.deltacv.papervision.id.IdContainer
-import io.github.deltacv.papervision.id.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainer
+import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.node.*
 import io.github.deltacv.papervision.platform.PlatformWindow

@@ -18,6 +18,8 @@
 
 package io.github.deltacv.papervision.id
 
+import io.github.deltacv.papervision.id.container.IdContainer
+
 interface DrawableIdElement : StatedIdElement {
     fun draw()
     fun pollChange(): Boolean

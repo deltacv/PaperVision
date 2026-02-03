@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.platform
 
 import imgui.ImGui
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import java.nio.ByteBuffer
 
