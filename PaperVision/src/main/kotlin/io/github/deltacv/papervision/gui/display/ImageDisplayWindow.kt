@@ -30,6 +30,8 @@ class ImageDisplayWindow(
 ) : Window() {
     override var title = "Preview"
 
+    override var isCloseable = true
+
     override val windowFlags = flags(
         ImGuiWindowFlags.AlwaysAutoResize,
         ImGuiWindowFlags.NoMove

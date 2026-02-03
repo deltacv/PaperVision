@@ -46,6 +46,8 @@ class InputSourceWindow(
         ImGuiWindowFlags.AlwaysAutoResize,
     )
 
+    override val isCloseable = false
+
     private var initialPosition: ImVec2? = null
 
     private val fontAwesome = Font.find("font-awesome")
@@ -69,14 +71,15 @@ class InputSourceWindow(
         }
     }
 
-
-    override fun drawContents() {
+    override fun preDrawContents() {
         if(initialPosition != null) {
             position = ImVec2(
                 ImGui.getMainViewport().size.x - size.x - initialPosition!!.y, initialPosition!!.y
             )
         }
+    }
 
+    override fun drawContents() {
         if(ImGui.beginListBox("###$id")) {
             for (inputSource in inputSources) {
                 ImGui.pushFont(fontAwesome.imfont)
@@ -127,7 +130,7 @@ class CreateInputSourceWindow(
         ImGuiWindowFlags.AlwaysAutoResize,
     )
 
-    override val isModal = true
+    override val modal = ModalMode.Modal()
 
     override fun drawContents() {
         ImGui.pushStyleColor(ImGuiCol.Button, 0)

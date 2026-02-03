@@ -42,11 +42,12 @@ abstract class Window(
     abstract val windowFlags: Int
 
     open val modal: ModalMode = ModalMode.NotModal
-
     val isModal get() = modal is ModalMode.Modal
 
     private val imOpen = ImBoolean(true)
     val isOpen get() = imOpen.get()
+
+    open val isCloseable = true
 
     private var imFocus = false
     private var requestedFocus = false
@@ -164,7 +165,7 @@ abstract class Window(
         preDrawContents()
 
         // --- the actual window ---
-        if(ImGui.begin(titleId, imOpen, windowFlags)) {
+        if(ImGui.begin(titleId, if(isCloseable) imOpen else null, windowFlags)) {
             drawContents()
 
             ImGui.getWindowPos(imPosition)

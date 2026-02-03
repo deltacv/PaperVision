@@ -235,6 +235,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         paperVision.previzManager.onPrevizStart {
             val streamWindow = ImageDisplayWindow(outputImageDisplay)
+            streamWindow.isCloseable = false
             streamWindow.enable()
 
             paperVision.previzManager.onPrevizStop.doOnce {
@@ -307,7 +308,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     private fun handleInteractions() {
         handleRightClickState()
-        handleMousePanning()
+        handleMouseClickPanning()
         handleKeyboardPanning()
         handleRightClickMenu()
     }
@@ -345,7 +346,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
     }
 
-    private fun handleMousePanning() {
+    private fun handleMouseClickPanning() {
         val shouldPan = ImGui.isMouseDown(ImGuiMouseButton.Middle) ||
                 (ImGui.isMouseDown(ImGuiMouseButton.Right) &&
                         rightClickMenuPopupTimer.millis >= 100 &&
@@ -394,7 +395,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         val plusPan = ImGui.getIO().mouseWheel * PAN_CONSTANT
         val plusPanX = ImGui.getIO().mouseWheelH * PAN_CONSTANT
 
-        if (plusPan != 0f) {
+        if (plusPan != 0f || plusPanX != 0f) {
             scrollTimer.reset()
         }
 

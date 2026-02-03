@@ -40,7 +40,7 @@ class CloseConfirmWindow(
         ImGuiWindowFlags.NoCollapse
     )
 
-    override val isModal = true
+    override val modal = ModalMode.Modal()
 
     override fun onEnable() {
         focus = true
