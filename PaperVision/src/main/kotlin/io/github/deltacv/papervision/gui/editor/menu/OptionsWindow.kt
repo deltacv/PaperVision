@@ -23,7 +23,7 @@ class OptionsWindow(
     val tooltipFont = Font.find("calcutta-big")
     val fontAwesomeBig = Font.find("font-awesome-big")
 
-    override val isModal = true
+    override val modal = ModalMode.Modal()
 
     override fun drawContents() {
         ImGui.pushFont(fontAwesomeBig.imfont)

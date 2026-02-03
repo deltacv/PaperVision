@@ -46,6 +46,8 @@ class CreateNodesAction(
             }
         }
     }
+
+    override fun toString() = "CreateNodesAction(#nodes=${nodes.size})"
 }
 
 class DeleteNodesAction(
@@ -68,4 +70,6 @@ class DeleteNodesAction(
             it.delete()
         }
     }
+
+    override fun toString() = "DeleteNodesAction(#nodes=${nodes.size})"
 }

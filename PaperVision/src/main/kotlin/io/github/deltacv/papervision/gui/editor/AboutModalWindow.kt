@@ -29,7 +29,7 @@ class AboutModalWindow : Window() {
         ImGuiWindowFlags.HorizontalScrollbar
     )
 
-    override val isModal = true
+    override val modal = ModalMode.Modal()
 
     val onDontShowAgain = PaperVisionEventHandler("IntroModalWindow-OnDontShowAgain")
 

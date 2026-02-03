@@ -22,9 +22,10 @@ import imgui.ImGui
 import imgui.flag.ImGuiMouseButton
 import imgui.type.ImBoolean
 import imgui.type.ImInt
+import org.deltacv.mai18n.tr
 
 
-object ExtraWidgets {
+object ImGuiEx {
 
     fun rangeSliders(min: Int, max: Int,
                      minValue: ImInt, maxValue: ImInt,
@@ -147,4 +148,21 @@ object ExtraWidgets {
         )
     }
 
+    fun centeredText(text: String) {
+        val textSize = ImGui.calcTextSize(tr(text))
+        val windowSize = ImGui.getWindowSize()
+        val pos = windowSize.x / 2 - textSize.x / 2
+
+        ImGui.sameLine(pos)
+        ImGui.text(tr(text))
+        ImGui.newLine()
+    }
+
+    fun alignForWidth(width: Float, alignment: Float): Float {
+        val windowSize = ImGui.getWindowSize()
+        val pos = windowSize.x / 2 - width / 2
+        ImGui.sameLine(pos + alignment)
+
+        return pos + alignment
+    }
 }

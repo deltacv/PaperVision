@@ -456,7 +456,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         pasteCount = 0
         clipboard = PaperVisionSerializer.serialize(selectedNodesList, listOf())
 
-        logger.info("Clipboard content: $clipboard")
+        logger.debug("Clipboard content: $clipboard")
     }
 
     private fun getSelectedNodesList(overrideSelection: List<Node<*>>?): List<Node<*>>? {

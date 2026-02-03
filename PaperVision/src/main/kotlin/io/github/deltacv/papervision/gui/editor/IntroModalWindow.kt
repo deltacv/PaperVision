@@ -5,9 +5,8 @@ import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
 import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.gui.Window
-import io.github.deltacv.papervision.gui.alignForWidth
-import io.github.deltacv.papervision.gui.centeredText
 import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.util.ImGuiEx
 import io.github.deltacv.papervision.io.resourceToString
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
@@ -29,7 +28,7 @@ class IntroModalWindow(
     private val imguiFont = Font.find("default-12")
     private val monoFont = Font.find("jetbrains-mono")
 
-    override val isModal = true
+    override val modal = ModalMode.Modal(closeOnOutsideClick = false)
 
     val onDontShowAgain = PaperVisionEventHandler("IntroModalWindow-OnDontShowAgain")
 
@@ -50,7 +49,7 @@ class IntroModalWindow(
 
             val lines = tr("mis_welcomelanguage").split("\n")
             for(line in lines) {
-                centeredText(line)
+                ImGuiEx.centeredText(line)
             }
 
             ImGui.newLine()
@@ -60,7 +59,7 @@ class IntroModalWindow(
             width += ImGui.getStyle().itemSpacing.x + 30f
             width += ImGui.calcTextSize(tr("lan_es")).x
 
-            val alignment = alignForWidth(width, 0.5f)
+            val alignment = ImGuiEx.alignForWidth(width, 0.5f)
 
             if(ImGui.button(tr("lan_en"))) {
                 nodeEditor.paperVision.changeLanguage("en")
@@ -85,7 +84,7 @@ class IntroModalWindow(
             ImGui.newLine()
 
             ImGui.pushFont(imguiFont.imfont)
-            centeredText(icon)
+            ImGuiEx.centeredText(icon)
             ImGui.popFont()
 
             ImGui.newLine()
@@ -93,14 +92,14 @@ class IntroModalWindow(
 
             ImGui.pushFont(monoFont.imfont)
 
-            centeredText("mis_welcome1")
-            centeredText("mis_welcome2")
-            centeredText("mis_welcome3")
-            centeredText("mis_welcome4")
+            ImGuiEx.centeredText("mis_welcome1")
+            ImGuiEx.centeredText("mis_welcome2")
+            ImGuiEx.centeredText("mis_welcome3")
+            ImGuiEx.centeredText("mis_welcome4")
 
             ImGui.newLine()
 
-            centeredText("mis_welcome5")
+            ImGuiEx.centeredText("mis_welcome5")
 
             ImGui.newLine()
 
@@ -111,7 +110,7 @@ class IntroModalWindow(
             width += ImGui.getStyle().itemSpacing.x
             width += ImGui.calcTextSize(tr("mis_guidedtour")).x
 
-            alignForWidth(width, 0.5f)
+            ImGuiEx.alignForWidth(width, 0.5f)
 
             if (ImGui.button(tr("mis_gotit"))) {
                 delete()

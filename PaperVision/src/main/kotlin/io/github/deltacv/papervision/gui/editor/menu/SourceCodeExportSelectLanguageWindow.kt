@@ -36,7 +36,7 @@ class SourceCodeExportSelectLanguageWindow(
 
     val fontAwesomeBrandsBig = Font.find("font-awesome-brands-big")
 
-    override val isModal = true
+    override val modal = ModalMode.Modal()
 
     val logger by loggerForThis()
 

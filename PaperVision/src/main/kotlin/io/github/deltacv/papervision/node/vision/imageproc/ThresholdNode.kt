@@ -39,7 +39,7 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolved
-import io.github.deltacv.papervision.gui.util.ExtraWidgets
+import io.github.deltacv.papervision.gui.util.ImGuiEx
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.Category
@@ -85,7 +85,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         ImGui.text(tr("att_colorspace"))
 
         ImGui.pushItemWidth(110.0f)
-        val color = ExtraWidgets.enumCombo(ColorSpace.values(), colorValue)
+        val color = ImGuiEx.enumCombo(ColorSpace.values(), colorValue)
         ImGui.popItemWidth()
 
         ImGui.newLine()

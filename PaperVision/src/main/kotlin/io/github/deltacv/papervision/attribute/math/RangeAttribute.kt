@@ -28,7 +28,7 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
-import io.github.deltacv.papervision.gui.util.ExtraWidgets
+import io.github.deltacv.papervision.gui.util.ImGuiEx
 import io.github.deltacv.papervision.id.Misc
 import io.github.deltacv.papervision.serialization.data.SerializeData
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
@@ -98,14 +98,14 @@ class RangeAttribute(
             sameLineIfNeeded()
 
             if(useSliders) {
-                ExtraWidgets.rangeSliders(
+                ImGuiEx.rangeSliders(
                     min, max,
                     minValue, maxValue,
                     minId, maxId,
                     width = 95f
                 )
             } else {
-                ExtraWidgets.rangeTextInputs(
+                ImGuiEx.rangeTextInputs(
                     min, max,
                     minValue, maxValue,
                     minId, maxId,

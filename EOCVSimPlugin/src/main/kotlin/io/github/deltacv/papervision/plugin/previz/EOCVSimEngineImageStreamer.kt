@@ -77,8 +77,8 @@ class EOCVSimEngineImageStreamer(
     private val bufferPool = ReusableBufferPool(5)
     private val matRecycler = MatRecycler(10)
 
-    private val reportedJpegExceptions = mutableSetOf<String>()
-    private val reportedJpegExceptionsCleanup = ElapsedTime()
+    // message -> currently active
+    private val reportedJpegExceptions = mutableMapOf<String, Boolean>()
 
     val tag by lazy { ByteMessageTag.fromString(previzNameProvider()) }
 
@@ -158,15 +158,25 @@ class EOCVSimEngineImageStreamer(
                         val jpegSize = try {
                             compressor.compress(jpegBuffer)
 
+                            // compression succeeded, log and clear any previously active exceptions
+                            synchronized(reportedJpegExceptions) {
+                                val resolved = reportedJpegExceptions.entries.filter { it.value }
+                                for (entry in resolved) {
+                                    logger.info("MackJPEG compression error resolved for id=$id (was: ${entry.key})")
+                                    entry.setValue(false)
+                                }
+                            }
+
                             compressor.compressedSize // jpegSize
                         } catch (e: JPEGException) {
-                            // only report once, to avoid spamming the logs
-                            // report every 5 seconds that "the issue is still present"
-                            if (reportedJpegExceptions.add(e.message ?: "unknown")) {
-                                logger.error("MackJPEG compression error, falling back to OpenCV for id=$id: ${e.message}", e)
-                            } else if (reportedJpegExceptionsCleanup.seconds() >= 5.0) {
-                                reportedJpegExceptionsCleanup.reset()
-                                logger.warn("MackJPEG compression error still present for id=$id: ${e.message}")
+                            val msg = e.message ?: "unknown"
+
+                            // only log on first occurrence or if it was previously resolved
+                            synchronized(reportedJpegExceptions) {
+                                if (reportedJpegExceptions.getOrDefault(msg, false) != true) {
+                                    reportedJpegExceptions[msg] = true
+                                    logger.error("MackJPEG compression error, falling back to OpenCV for id=$id: $msg", e)
+                                }
                             }
 
                             // fallback to opencv !?

@@ -20,18 +20,15 @@ package io.github.deltacv.papervision.gui
 
 import imgui.ImGui
 import imgui.ImVec2
+import imgui.flag.ImGuiCol
+import imgui.flag.ImGuiMouseButton
 import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImBoolean
-import imgui.type.ImString
-import org.deltacv.mai18n.tr
-import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.IdContainerStacks
-import io.github.deltacv.papervision.id.Misc
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
-import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
+import org.deltacv.mai18n.tr
 
 abstract class Window(
     override val requestedId: Int? = null,
@@ -41,110 +38,152 @@ abstract class Window(
 
     override val idContainer = IdContainerStacks.local.peekNonNull<Window>()
 
-    var isVisible: Boolean = false
-        private set
-
     abstract var title: String
     abstract val windowFlags: Int
 
-    open val isModal: Boolean = false
+    open val modal: ModalMode = ModalMode.NotModal
 
-    private var modalIsClosing = false
+    val isModal get() = modal is ModalMode.Modal
 
-    private var nextPosition: ImVec2? = null
-    private var internalPosition = ImVec2()
+    private val imOpen = ImBoolean(true)
+    val isOpen get() = imOpen.get()
 
-    val onDraw = PaperVisionEventHandler("Window-$title-OnDraw")
-
-    var position: ImVec2
-        get() = internalPosition
-        set(value) {
-            nextPosition = value
-            // dont assign the backing field lol
-        }
-
-    private var nextSize: ImVec2? = null
-    private var internalSize = ImVec2()
-
-    var size: ImVec2
-        get() = internalSize
-        set(value) {
-            nextSize = value
-            // again dont assign the backing field lol
-        }
-
-    private var realFocus = false
-    private var userFocus = false
-
-    private val modalPOpen = ImBoolean(true)
+    private var imFocus = false
+    private var requestedFocus = false
 
     var focus: Boolean
         set(value) {
-            userFocus = value
+            requestedFocus = value
         }
-        get() = realFocus
+        get() = imFocus
+
+    private var requestedPosition: ImVec2? = null
+    private var imPosition = ImVec2()
+
+    var position: ImVec2
+        get() = imPosition
+        set(value) {
+            requestedPosition = value
+        }
+
+    private var requestedSize: ImVec2? = null
+    private var imSize = ImVec2()
+
+    var size: ImVec2
+        get() = imSize
+        set(value) {
+            requestedSize = value
+        }
 
     val titleId get() = "${tr(title)}###$id"
+
+    private var onDrawInitialized = false
+    val onDraw by lazy {
+        onDrawInitialized = true
+        PaperVisionEventHandler("Window-$title-OnDraw")
+    }
 
     private var firstDraw = true
 
     override fun enable() {
         super.enable()
         firstDraw = true
+
+        if(isModal) {
+            // delete the other modal window if there's one
+            for(window in idContainer) {
+                if(window != this && window.isModal && window.isEnabled) {
+                    window.delete() // delete current modal
+                    break
+                }
+            }
+        }
     }
 
     override fun draw() {
-        preDrawContents()
+        val viewport = ImGui.getMainViewport()
 
-        if(nextPosition != null) {
-            ImGui.setNextWindowPos(nextPosition!!.x, nextPosition!!.y)
-        }
-        if(nextSize != null) {
-            ImGui.setNextWindowSize(nextSize!!.x, nextSize!!.y)
-        }
+        // --- modal: blackout overlay ---
+        // same pattern as NodeList: push a semi-transparent black WindowBg,
+        // let ImGui draw it natively, pop after end.
+        // the modal window drawn after this stays on top via setNextWindowFocus.
+        (modal as? ModalMode.Modal)?.let {
+            ImGui.setNextWindowPos(viewport.posX, viewport.posY)
+            ImGui.setNextWindowSize(viewport.sizeX, viewport.sizeY)
 
-        if(userFocus) {
-            ImGui.setNextWindowFocus()
-        }
+            ImGui.pushStyleColor(ImGuiCol.WindowBg, 0f, 0f, 0f, it.backgroundOpacity)
 
-        if(isModal) {
-            if(firstDraw) {
-                ImGui.closeCurrentPopup()
-                ImGui.openPopup(titleId)
-            }
+            ImGui.begin("##modal_overlay_$id", flags(
+                ImGuiWindowFlags.NoDecoration,
+                ImGuiWindowFlags.NoNav,
+                ImGuiWindowFlags.NoMove,
+                ImGuiWindowFlags.NoResize,
+                ImGuiWindowFlags.NoSavedSettings,
 
-            if(ImGui.beginPopupModal(titleId, modalPOpen, windowFlags)) {
-                contents()
+                if(!firstDraw && !it.closeOnOutsideClick)
+                    ImGuiWindowFlags.NoBringToFrontOnFocus
+                else ImGuiWindowFlags.None
+            ))
 
-                if(modalIsClosing) {
-                    ImGui.closeCurrentPopup()
-                    super.delete() // bye bye finally
+            if(ImGui.isWindowHovered() && ImGui.isMouseClicked(ImGuiMouseButton.Left)) {
+                if(it.closeOnOutsideClick) {
+                    delete()
+                } else {
+                    onDraw.doOnce { // defer to the next frame to avoid issues with ImGui state
+                        focus = true // restore
+                    }
                 }
-
-                ImGui.endPopup()
             }
 
-            isVisible = modalPOpen.get()
-        } else {
-            if(ImGui.begin(titleId, windowFlags)) {
-                contents()
-            }
             ImGui.end()
 
-            isVisible = ImGui.isItemVisible()
+            ImGui.popStyleColor()
         }
 
-        onDraw.run()
+        // --- position / size / focus hints ---
 
-        firstDraw = false
-    }
+        if(isModal) {
+            val cx = viewport.posX + viewport.sizeX / 2f
+            val cy = viewport.posY + viewport.sizeY / 2f
+            ImGui.setNextWindowPos(cx, cy, 0, 0.5f, 0.5f) // pivot = center
+        } else if(requestedPosition != null) {
+            ImGui.setNextWindowPos(requestedPosition!!.x, requestedPosition!!.y)
+            requestedPosition = null
+        }
 
-    private fun contents() {
-        drawContents()
+        if(requestedSize != null) {
+            ImGui.setNextWindowSize(requestedSize!!.x, requestedSize!!.y)
+            requestedSize = null
+        }
 
-        ImGui.getWindowPos(internalPosition)
-        ImGui.getWindowSize(internalSize)
-        realFocus = ImGui.isWindowFocused()
+        if(requestedFocus || (isModal && firstDraw)) {
+            ImGui.setNextWindowFocus()
+            requestedFocus = false
+        }
+
+        preDrawContents()
+
+        // --- the actual window ---
+        if(ImGui.begin(titleId, imOpen, windowFlags)) {
+            drawContents()
+
+            ImGui.getWindowPos(imPosition)
+            ImGui.getWindowSize(imSize)
+            imFocus = ImGui.isWindowFocused()
+        }
+        ImGui.end()
+
+        if(!imOpen.get()) {
+            delete()
+        }
+
+        if(firstDraw) {
+            firstDraw = false
+        }
+
+        if(onDrawInitialized) {
+            onDraw.run()
+        }
     }
 
     open fun preDrawContents() { }
@@ -156,12 +195,12 @@ abstract class Window(
         position = ImVec2((displaySize.x - size.x) / 2, (displaySize.y - size.y) / 2)
     }
 
-    override fun delete() {
-        if(isModal && !modalIsClosing) {
-            modalIsClosing = true
-        } else {
-            super.delete()
-        }
+    sealed class ModalMode {
+        object NotModal : ModalMode()
+        data class Modal(
+            val backgroundOpacity: Float = 0.5f,
+            val closeOnOutsideClick: Boolean = true
+        ) : ModalMode()
     }
 }
 
@@ -170,97 +209,4 @@ abstract class FrameWidthWindow : Window() {
         protected set
 }
 
-class DialogMessageWindow(
-    override var title: String,
-    val message: String,
-    val textArea: String? = null,
-    val font: Font? = null
-): Window() {
-    override val windowFlags = flags(
-        ImGuiWindowFlags.NoResize,
-        ImGuiWindowFlags.NoCollapse,
-        ImGuiWindowFlags.NoMove,
-        ImGuiWindowFlags.NoScrollbar,
-        ImGuiWindowFlags.NoScrollWithMouse
-    )
-
-    val textAreaId by Misc.newMiscId()
-
-    override val isModal = true
-
-    override fun drawContents() {
-        font?.let {
-            ImGui.pushFont(it.imfont)
-        }
-
-        val messageSize = ImGui.calcTextSize(tr(message))
-
-        var maxWidth = messageSize.x
-        var height = messageSize.y
-
-        centeredText(message)
-
-        ImGui.setCursorPos(ImVec2(ImGui.getCursorPosX(), ImGui.getCursorPosY() - 20))
-
-        if(textArea != null) {
-            val textSize = ImGui.calcTextSize(tr(textArea))
-            ImGui.inputTextMultiline("##$textAreaId", ImString(textArea), ImGui.calcTextSize(tr(textArea)).x, textSize.y + 20)
-
-            height += textSize.y.coerceAtMost(ImGui.getMainViewport().sizeY * 0.6f)
-            maxWidth = maxOf(maxWidth, textSize.x)
-        }
-
-        ImGui.dummy(0f, 15f)
-        ImGui.newLine()
-
-        val gotItSize = ImGui.calcTextSize(tr("mis_gotit"))
-        height += gotItSize.y * 2
-
-        var buttonsWidth = gotItSize.x
-        if(textArea != null) {
-            buttonsWidth += ImGui.calcTextSize(tr("mis_copytext")).y
-        }
-
-        alignForWidth(buttonsWidth, 0.5f)
-
-        if(ImGui.button(tr("mis_gotit"))) {
-            delete()
-        }
-
-        if(textArea != null) {
-            ImGui.sameLine()
-
-            if(ImGui.button(tr("mis_copytext"))) {
-                Toolkit.getDefaultToolkit().systemClipboard.setContents(
-                    StringSelection(textArea), null
-                )
-            }
-        }
-
-        font?.let {
-            ImGui.popFont()
-        }
-
-        size = ImVec2(maxWidth + 10, height + 80)
-    }
-}
-
-fun centeredText(text: String) {
-    val textSize = ImGui.calcTextSize(tr(text))
-    val windowSize = ImGui.getWindowSize()
-    val pos = windowSize.x / 2 - textSize.x / 2
-
-    ImGui.sameLine(pos)
-    ImGui.text(tr(text))
-    ImGui.newLine()
-}
-
-fun alignForWidth(width: Float, alignment: Float): Float {
-    val windowSize = ImGui.getWindowSize()
-    val pos = windowSize.x / 2 - width / 2
-    ImGui.sameLine(pos + alignment)
-
-    return pos + alignment
-}
-
-val Window.Companion.isModalWindowOpen get() = IdContainerStacks.local.peekNonNull<Window>().inmutable.any { it.isModal && it.isVisible }
+val Window.Companion.isModalWindowOpen get() = IdContainerStacks.local.peekNonNull<Window>().inmutable.any { it.isModal && it.isEnabled }

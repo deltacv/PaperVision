@@ -38,6 +38,8 @@ class CreateLinkAction(
             link.enable()
         }
     }
+
+    override fun toString() = "CreateLinkAction(link=$link)"
 }
 
 class DeleteLinksAction(
@@ -55,4 +57,6 @@ class DeleteLinksAction(
             it.delete()
         }
     }
+
+    override fun toString() = "DeleteLinksAction(#links=${links.size})"
 }

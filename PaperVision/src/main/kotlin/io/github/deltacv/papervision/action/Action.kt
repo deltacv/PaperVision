@@ -57,4 +57,8 @@ class RootAction : Action(
         logger.debug("Root action reached, nothing to do")
         idContainer.pushforwardIfNonNull()
     }
+
+    override fun toString(): String {
+        return "RootAction"
+    }
 }

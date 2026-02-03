@@ -54,7 +54,7 @@ class CodeDisplayWindow(
         ImGuiWindowFlags.NoScrollWithMouse
     )
 
-    override val isModal = true
+    override val modal = ModalMode.Modal()
 
     val EDITOR = TextEditor()
 
@@ -65,8 +65,10 @@ class CodeDisplayWindow(
 
         EDITOR.languageDefinition = editorLanguage
         EDITOR.textLines = code.lines().toTypedArray()
+    }
 
-        size = ImVec2(500f, 400f)
+    override fun preDrawContents() {
+        size = ImVec2(ImGui.getMainViewport().size.x * 0.7f, ImGui.getMainViewport().size.y * 0.8f)
     }
 
     override fun drawContents() {

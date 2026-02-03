@@ -48,7 +48,7 @@ import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
-import io.github.deltacv.papervision.node.NodeRegistry
+import io.github.deltacv.papervision.node.PaperNodeRegistry
 import io.github.deltacv.papervision.platform.*
 import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
@@ -58,7 +58,7 @@ import java.awt.Taskbar
 import java.awt.Toolkit
 
 class PaperVision(
-    private val setupCall: PlatformSetupCallback
+    private val platformSetupCallback: PlatformSetupCallback
 ) {
 
     companion object {
@@ -99,7 +99,7 @@ class PaperVision(
         private set
 
     val nodeEditor by lazy { NodeEditor(this, keyManager) }
-    val nodeList   by lazy { NodeList(this, keyManager, NodeRegistry.nodes) }
+    val nodeList   by lazy { NodeList(this, keyManager, PaperNodeRegistry.nodes) }
 
     val nodes                  = IdContainer<Node<*>>()
     val attributes             = IdContainer<Attribute>()
@@ -118,44 +118,9 @@ class PaperVision(
 
     lateinit var defaultFont: Font
 
-    /** Helper to simplify font creation */
-    private fun font(name: String, path: String, size: Float) =
-        fontManager.makeFont(name, path, defaultFontConfig(size))
-
-    /** Executes a block of code with all containers pushed/popped safely */
-    private inline fun withStacks(block: () -> Unit) {
-        IdContainerStacks.local.push(nodes)
-        IdContainerStacks.local.push(attributes)
-        IdContainerStacks.local.push(links)
-        IdContainerStacks.local.push(windows)
-        IdContainerStacks.local.push(textures)
-        IdContainerStacks.local.push(textureProcessorQueues)
-        IdContainerStacks.local.push(fonts)
-        IdContainerStacks.local.push(streamDisplays)
-        IdContainerStacks.local.push(actions)
-        IdContainerStacks.local.push(popups)
-        IdContainerStacks.local.push(misc)
-
-        try {
-            block()
-        } finally {
-            IdContainerStacks.local.pop<Node<*>>()
-            IdContainerStacks.local.pop<Attribute>()
-            IdContainerStacks.local.pop<Link>()
-            IdContainerStacks.local.pop<Window>()
-            IdContainerStacks.local.pop<PlatformTexture>()
-            IdContainerStacks.local.pop<TextureProcessorQueue>()
-            IdContainerStacks.local.pop<Font>()
-            IdContainerStacks.local.pop<ImageDisplay>()
-            IdContainerStacks.local.pop<Action>()
-            IdContainerStacks.local.pop<Popup>()
-            IdContainerStacks.local.pop<Misc>()
-        }
-    }
-
     fun init() = withStacks {
         logger.info("Starting PaperVision...\n\n${IntroModalWindow.iconLogo}\n")
-        logger.info("Using the ${setupCall.name} platform")
+        logger.info("Using the ${platformSetupCallback.name} platform")
 
         initPlatform()
         initLanguage()
@@ -173,7 +138,7 @@ class PaperVision(
     }
 
     private fun initPlatform() {
-        setup = setupCall.setup()
+        setup = platformSetupCallback.setup()
         keyManager = KeyManager(setup.keys ?: error("Platform ${setup.name} must provide PlatformKeys"))
         window = setup.window ?: error("Platform ${setup.name} must provide a Window")
         textureFactory = setup.textureFactory ?: error("Platform ${setup.name} must provide a TextureFactory")
@@ -280,17 +245,6 @@ class PaperVision(
         }
     }
 
-    fun showWelcome(askLanguage: Boolean = setup.config.fields.shouldAskForLang) {
-        IntroModalWindow(
-            nodeEditor, chooseLanguage = askLanguage
-        ).apply {
-            onDontShowAgain {
-                nodeEditor.flags["showWelcome"] = false
-                logger.info("showWelcome = ${nodeEditor.flags["showWelcome"]}")
-            }
-        }.enable()
-    }
-
     fun process() = withStacks {
         onUpdate.run()
         engineClient.process()
@@ -332,6 +286,17 @@ class PaperVision(
         currentLanguage = Language("/lang_pv.csv", langCode).apply { makeThreadTr() }
     }
 
+    fun showWelcome(askLanguage: Boolean = setup.config.fields.shouldAskForLang) {
+        IntroModalWindow(
+            nodeEditor, chooseLanguage = askLanguage
+        ).apply {
+            onDontShowAgain {
+                nodeEditor.flags["showWelcome"] = false
+                logger.info("showWelcome = ${nodeEditor.flags["showWelcome"]}")
+            }
+        }.enable()
+    }
+
     fun startPrevizWithEngine() {
         engineClient.sendMessage(PrevizAskNameMessage().onResponseWith<StringResponse> { response ->
             logger.info("Engine responded with previz name ${response.value}")
@@ -344,5 +309,40 @@ class PaperVision(
 
     fun clearToasts() {
         windows.inmutable.filterIsInstance<ToastWindow>().forEach { it.delete() }
+    }
+
+    /** Helper to simplify font creation */
+    private fun font(name: String, path: String, size: Float) =
+        fontManager.makeFont(name, path, defaultFontConfig(size))
+
+    /** Executes a block of code with all containers pushed/popped safely */
+    private inline fun withStacks(block: () -> Unit) {
+        IdContainerStacks.local.push(nodes)
+        IdContainerStacks.local.push(attributes)
+        IdContainerStacks.local.push(links)
+        IdContainerStacks.local.push(windows)
+        IdContainerStacks.local.push(textures)
+        IdContainerStacks.local.push(textureProcessorQueues)
+        IdContainerStacks.local.push(fonts)
+        IdContainerStacks.local.push(streamDisplays)
+        IdContainerStacks.local.push(actions)
+        IdContainerStacks.local.push(popups)
+        IdContainerStacks.local.push(misc)
+
+        try {
+            block()
+        } finally {
+            IdContainerStacks.local.pop<Node<*>>()
+            IdContainerStacks.local.pop<Attribute>()
+            IdContainerStacks.local.pop<Link>()
+            IdContainerStacks.local.pop<Window>()
+            IdContainerStacks.local.pop<PlatformTexture>()
+            IdContainerStacks.local.pop<TextureProcessorQueue>()
+            IdContainerStacks.local.pop<Font>()
+            IdContainerStacks.local.pop<ImageDisplay>()
+            IdContainerStacks.local.pop<Action>()
+            IdContainerStacks.local.pop<Popup>()
+            IdContainerStacks.local.pop<Misc>()
+        }
     }
 }
