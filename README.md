@@ -8,7 +8,7 @@ Create your custom OpenCV algorithms using a user-friendly node editor interface
 
 ## Run with EOCV-Sim (recommended)
 
-PaperVision comes bundled with EOCV-Sim, starting from v4.0.0. [You can download the latest version of EOCV-Sim from the docs](https://docs.deltacv.org/eocv-sim/downloading-eocv-sim).<br><br>
+PaperVision is available out of the box in EOCV-Sim v4.0.0 and later. [You can download the latest version of EOCV-Sim from the docs here](https://docs.deltacv.org/eocv-sim/downloading-eocv-sim).<br><br>
 **Create a new project from the PaperVision tab in the simulator and start experimenting right away.**
 EOCV-Sim integration enables live pipeline previews directly from the node editor.
 
