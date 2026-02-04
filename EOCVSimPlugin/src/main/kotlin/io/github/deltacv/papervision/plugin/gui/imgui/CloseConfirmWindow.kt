@@ -62,7 +62,7 @@ class CloseConfirmWindow(
         ImGui.sameLine()
         if(ImGui.button(tr("mis_cancel"))) {
             callback(Action.CANCEL)
-            ImGui.closeCurrentPopup()
+            delete()
         }
     }
 }

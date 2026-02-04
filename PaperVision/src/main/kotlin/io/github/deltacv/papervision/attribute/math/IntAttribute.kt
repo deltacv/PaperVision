@@ -33,7 +33,8 @@ import io.github.deltacv.papervision.util.Range2i
 
 class IntAttribute(
     override val mode: AttributeMode,
-    override var variableName: String? = null
+    override var variableName: String? = null,
+    initialValue: Int = 0
 ) : TypedAttribute(Companion) {
 
     companion object: AttributeType {
@@ -41,8 +42,8 @@ class IntAttribute(
         override fun new(mode: AttributeMode, variableName: String) = IntAttribute(mode, variableName)
     }
 
-    val value = ImInt()
-    private val sliderValue = ImInt()
+    val value = ImInt(initialValue)
+    private val sliderValue = ImInt(initialValue)
     private var nextValue: Int? = null
 
     var disableInput = false

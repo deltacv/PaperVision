@@ -36,6 +36,8 @@ import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 class RangeAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null,
+    minDefault: Int = 0,
+    maxDefault: Int = 255,
     val valueMutator: (Int) -> Double = { it.toDouble() }
 ) : TypedAttribute(Companion) {
     companion object : AttributeType {
@@ -49,7 +51,7 @@ class RangeAttribute(
         PaperVisionEventHandler("RangeAttribute-OnToggleChange")
     }
 
-    var min = 0
+    var min = minDefault
         set(value) {
             field = value
             if(minValue.get() < value) {
@@ -59,7 +61,7 @@ class RangeAttribute(
                 maxValue.set(value)
             }
         }
-    var max = 255
+    var max = maxDefault
         set(value) {
             field = value
             if(maxValue.get() > value) {

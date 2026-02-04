@@ -20,23 +20,20 @@ package io.github.deltacv.papervision.node.vision.featuredet
 
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.math.DoubleAttribute
+import io.github.deltacv.papervision.attribute.math.RangeAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.CircleAttribute
-import io.github.deltacv.papervision.codegen.CodeGen
-import io.github.deltacv.papervision.codegen.CodeGenSession
-import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.*
 import io.github.deltacv.papervision.codegen.build.AccessorVariable
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JavaTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
-import io.github.deltacv.papervision.codegen.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -51,8 +48,14 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
 
     val input = MatAttribute(INPUT, "$[att_input]")
 
-    val minDistance = DoubleAttribute(INPUT, "$[att_mindistance]")
+    val minDistance = DoubleAttribute(INPUT, "$[att_mindistance]", 1.0)
+
+    val radiusRange = RangeAttribute(INPUT, "$[att_radiusrange]", 0, 300)
+
     val downscale = DoubleAttribute(INPUT, "$[att_downscale]")
+
+    val param1 = DoubleAttribute(INPUT, "$[att_edgethreshold]", 255.0)
+    val param2 = DoubleAttribute(INPUT, "$[att_accumulatorthreshold]", 100.0)
 
     val output = ListAttribute(OUTPUT, CircleAttribute, "$[att_circles]")
 
@@ -62,8 +65,17 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
         + minDistance
         minDistance.fieldMode(Range2d(0.1, Double.MAX_VALUE))
 
+        + radiusRange
+        radiusRange.useSliders = false
+
         + downscale
         downscale.fieldMode(Range2d(0.1, Double.MAX_VALUE))
+
+        + param1
+        param1.fieldMode(Range2d(1.0, Double.MAX_VALUE))
+
+        + param2
+        param2.fieldMode(Range2d(1.0, Double.MAX_VALUE))
 
         + output.rebuildOnChange()
     }
@@ -78,6 +90,13 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
             val inputValue = input.genValue(current).value
 
             val minDistanceValue = minDistance.genValue(current).value
+
+            val minRadiusValue = radiusRange.genValue(current).min.value
+            val maxRadiusValue = radiusRange.genValue(current).max.value
+
+            val param1Value = param1.genValue(current).value
+            val param2Value = param2.genValue(current).value
+
             val downscaleValue = downscale.genValue(current).value
 
             current {
@@ -86,15 +105,26 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
                     JavaTypes.ArrayList(Circle).new()
                 )
 
-                val downscaleVar = uniqueVariable("houghCirclesDownscale", downscaleValue.v)
                 val minDistanceVar = uniqueVariable("houghCirclesMinDistance", minDistanceValue.v)
+
+                val minRadiusVar = uniqueVariable("houghCirclesMinRadius", int(minRadiusValue.v))
+                val maxRadiusVar = uniqueVariable("houghCirclesMaxRadius", int(maxRadiusValue.v))
+
+                val param1Var = uniqueVariable("houghCirclesParam1", param1Value.v)
+                val param2Var = uniqueVariable("houghCirclesParam2", param2Value.v)
+
+                val downscaleVar = uniqueVariable("houghCirclesDownscale", downscaleValue.v)
 
                 group {
                     private(circlesMatVar)
                     private(circlesListVar)
 
-                    public(downscaleVar, downscale.label())
                     public(minDistanceVar, minDistance.label())
+                    public(minRadiusVar, radiusRange.label(0))
+                    public(maxRadiusVar, radiusRange.label(1))
+                    public(param1Var, param1.label())
+                    public(param2Var, param2.label())
+                    public(downscaleVar, downscale.label())
                 }
 
                 current.scope {
@@ -110,7 +140,11 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
                         circlesMatVar,
                         JvmOpenCvTypes.Imgproc.HOUGH_GRADIENT,
                         downscaleVar,
-                        minDistanceVar
+                        minDistanceVar,
+                        param1Var,
+                        param2Var,
+                        minRadiusVar,
+                        maxRadiusVar
                     )
 
                     separate()
@@ -149,7 +183,15 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
             val session = Session()
 
             val input = input.genValue(current).value
+
             val minDistanceValue = minDistance.genValue(current).value
+
+            val minRadiusValue = radiusRange.genValue(current).min.value
+            val maxRadiusValue = radiusRange.genValue(current).max.value
+
+            val param1Value = param1.genValue(current).value
+            val param2Value = param2.genValue(current).value
+
             val downscaleValue = downscale.genValue(current).value
 
             current {
@@ -160,7 +202,11 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
                             input.v,
                             CPythonOpenCvTypes.cv2.HOUGH_GRADIENT,
                             downscaleValue.v,
-                            minDistanceValue.v
+                            minDistanceValue.v,
+                            param1Value.v,
+                            param2Value.v,
+                            minRadiusValue.v,
+                            maxRadiusValue.v
                         )
                     )
 

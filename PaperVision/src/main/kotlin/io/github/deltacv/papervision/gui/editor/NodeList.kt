@@ -150,7 +150,7 @@ class NodeList(
     }
 
     override fun drawContents() {
-        if (!isNodesListOpen) {
+        if (!isNodesListOpen || Window.isModalWindowOpen) {
             closeList()
             return
         }

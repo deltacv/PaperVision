@@ -35,7 +35,8 @@ import io.github.deltacv.papervision.util.Range2d
 
 class DoubleAttribute(
     override val mode: AttributeMode,
-    override var variableName: String? = null
+    override var variableName: String? = null,
+    initialValue: Double = 0.0
 ) : TypedAttribute(Companion) {
 
     companion object : AttributeType {
@@ -44,8 +45,8 @@ class DoubleAttribute(
             DoubleAttribute(mode, variableName)
     }
 
-    val value = ImDouble()
-    private val sliderValue = ImFloat()
+    val value = ImDouble(initialValue)
+    private val sliderValue = ImFloat(initialValue.toFloat())
 
     private val sliderId by Misc.newMiscId()
 

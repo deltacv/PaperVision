@@ -37,16 +37,16 @@ enum class Category(val properName: String,
         hexColor("#ffa000")),
 
     FEATURE_DET("cat_feature_det",
-        hexColor("#3949ab"), // material indigo
-        hexColor("#5c6bc0")),
+        hexColor("#283593"), // material indigo 800
+        hexColor("#3949ab")), // material indigo 600
 
     CLASSIFICATION("cat_class",
-        hexColor("#F9A825"), // material yellow 800
-        hexColor("#FDD835")),
+        hexColor("#6a1b9a"), // material purple 800
+        hexColor("#8e24aa")), // material purple 600
 
     OVERLAY("cat_overlay",
-        hexColor("#00897b"), // material teal
-        hexColor("#26a69a")),
+        hexColor("#00695c"), // material teal 800
+        hexColor("#00897b")),  // material teal 600
 
     MATH("cat_math"),
     MISC("cat_misc")

@@ -76,6 +76,9 @@ att_binarymask,Binary Mask,Mascara Binaria
 att_binaryinput,Binary Input,Entrada Binaria
 att_binaryoutput,Binary Output,Salida Binaria
 att_threshold,Threshold,Umbral de Color
+att_edgethreshold,Edge Threshold,Umbral de Borde
+att_accumulatorthreshold,Accumulator Threshold,Umbral de Acumulador
+att_radiusrange,Radius Range,Rango de Radio
 att_lowerthreshold,Lower Threshold,Umbral Inferior
 att_upperthreshold,Upper Threshold,Umbral Superior
 att_bluralgo,Blur Algorithm,Algoritmo de Difuminado
