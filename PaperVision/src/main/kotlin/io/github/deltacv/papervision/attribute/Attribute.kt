@@ -31,7 +31,7 @@ import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.serialization.AttributeSerializationData
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.BasicAttribData
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -98,12 +98,12 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     var wasLastDrawCancelled = false
         private set
 
-    val onChange = PaperVisionEventHandler("OnChange-${this::class.simpleName}").apply {
-        doPersistent {
+    val onChange = PaperEventHandler("OnChange-${this::class.simpleName}").apply {
+        attach {
             changeQueue.add(true)
         }
     }
-    val onDelete = PaperVisionEventHandler("OnDelete-${this::class.simpleName}")
+    val onDelete = PaperEventHandler("OnDelete-${this::class.simpleName}")
 
     val position = ImVec2()
     val editorPosition = ImVec2()
@@ -245,7 +245,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         if(!isOnEditor) return
 
         // schedule for a frame later
-        editor.paperVision.onUpdate.doOnce {
+        editor.paperVision.onUpdate.once {
             parentNode.editor.paperVision.previzManager.refreshPreviz()
         }
     }

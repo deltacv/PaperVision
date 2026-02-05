@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.id.IdElement
 import io.github.deltacv.papervision.id.container.IdContainerStacks
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 import kotlin.getValue
 
 sealed class Resolvable<T> {
@@ -61,7 +61,7 @@ sealed class Resolvable<T> {
         private var usingOnResolve = false // to avoid creating the event handler if not necessary
         val onResolve by lazy {
             usingOnResolve = true
-            PaperVisionEventHandler("Placeholder-$placeholder-OnResolve", catchExceptions = false) 
+            PaperEventHandler("Placeholder-$placeholder-OnResolve", catchExceptions = false)
         }
 
         private var resolving = false
@@ -76,7 +76,7 @@ sealed class Resolvable<T> {
 
             val value = cachedValue ?: resolver()
             if (value != null && usingOnResolve) {
-                onResolve()
+                onResolve.run()
             }
 
             cachedValue = value
@@ -89,7 +89,7 @@ sealed class Resolvable<T> {
             if (value != null) {
                 block(value)
             } else {
-                onResolve.doOnce {
+                onResolve.once {
                     val resolved = cachedValue ?: resolver()
                     if (resolved != null) {
                         cachedValue = resolved

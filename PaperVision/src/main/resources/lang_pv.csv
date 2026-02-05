@@ -171,7 +171,7 @@ err_grayscale_required,"Grayscale image required","Se requiere una imagen en esc
 err_musthave_attachedattrib,Must have an attribute attached,Debe tener un atributo conectado
 err_attachedattrib_isnot,Attribute attached is not $[0],El atributo conectado no es $[0]
 err_valreturned_isnot,Value returned from the node is not $[0],El valor retornado del nodo no es $[0]
-err_attrib_nothandledby_this,Attribute $[0] is not an output of this node or not handled by this,El atributo $[0] no es una salida de este nodo o no es manejado por este
+err_attrib_nothandled_bythis,Attribute $[0] is not an output of this node or not handled by this,El atributo $[0] no es una salida de este nodo o no es manejado por este
 err_couldntlink_didntmatch,Couldn't link nodes: Types didn't match,No se completo la conexion: Los tipos son diferentes
 err_couldntlink_recursion,Couldn't link nodes: Unable to create a recursive link,No se completo la conexion: No se puede crear una conexion recursiva
 err_noop_engine,"PaperVision engine is running in no-op mode, this feature is not available","El motor de PaperVision esta corriendo en modo no-op, esta caracteristica no esta disponible"
@@ -238,7 +238,7 @@ mis_guidedtour_notavailable_2,"Please create a new project and try again.","Por 
 mis_loading,Loading...,Cargando...
 mis_runningok,Running OK,Estatus OK
 mis_runningok_atfps,OK at $[0] FPS,OK a $[0] FPS
-mis_savebefore_exit,Do you wanna save before exiting?,¿Quieres guardar antes de salir?
+mis_savebefore_exit,Do you want to save before exiting?,¿Quieres guardar antes de salir?
 mis_save,Save,Guardar
 mis_discard,Discard,Descartar
 mis_cancel,Cancel,Cancelar

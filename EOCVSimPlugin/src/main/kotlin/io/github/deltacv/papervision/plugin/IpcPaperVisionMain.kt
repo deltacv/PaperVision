@@ -50,6 +50,8 @@ class IpcPaperVisionMain : Callable<Int?> {
 
     private lateinit var app: PaperVisionApp
 
+    private var userCloseRequestsCount = 0
+
     private val logger by loggerForThis()
 
     override fun call(): Int {
@@ -120,15 +122,19 @@ class IpcPaperVisionMain : Callable<Int?> {
     }
 
     private fun paperVisionUserCloseListener(): Boolean {
+        userCloseRequestsCount++
+
         app.paperVision.onUpdate.doOnce {
             openCloseConfirmDialog()
         }
 
-        return false
+        return userCloseRequestsCount >= 3
     }
 
     private fun openCloseConfirmDialog() {
         CloseConfirmWindow { action: CloseConfirmWindow.Action ->
+            userCloseRequestsCount = 0
+
             when (action) {
                 CloseConfirmWindow.Action.YES -> app.paperVision.engineClient.sendMessage(
                     SaveCurrentProjectMessage(
@@ -139,6 +145,9 @@ class IpcPaperVisionMain : Callable<Int?> {
                         if (response is OkResponse) {
                             exitProcess(0)
                         }
+                    }.onTimeout(2000) {
+                        logger.warn("Timeout saving project, exiting anyway")
+                        exitProcess(0)
                     }
                 )
 
@@ -147,6 +156,9 @@ class IpcPaperVisionMain : Callable<Int?> {
                         if (response is OkResponse) {
                             exitProcess(0)
                         }
+                    }.onTimeout(2000) {
+                        logger.warn("Timeout discarding recovery, exiting anyway")
+                        exitProcess(0)
                     }
                 )
 

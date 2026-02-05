@@ -34,8 +34,8 @@ import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.BasicNodeData
 import io.github.deltacv.papervision.serialization.NodeSerializationData
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
-import io.github.deltacv.papervision.util.event.EventListener
+import io.github.deltacv.papervision.util.event.PaperEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventListenerId
 import io.github.deltacv.papervision.util.loggerFor
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -85,12 +85,10 @@ abstract class Node<S: CodeGenSession>(
 
     override var lastGenSession: S? = null
 
-    val onChange = PaperVisionEventHandler("${this::class.java.simpleName}-OnChange")
-    val onDelete = PaperVisionEventHandler("OnDelete-${this::class.simpleName}")
+    val onChange = PaperEventHandler("${this::class.java.simpleName}-OnChange")
+    val onDelete = PaperEventHandler("OnDelete-${this::class.simpleName}")
 
-    private val attribOnChangeListener = EventListener {
-        onChange.run()
-    }
+    private val attribOnChangeListenerIds = mutableMapOf<Attribute, PaperEventListenerId>()
 
     @Transient
     private val _nodeAttributes = mutableListOf<Attribute>() // internal mutable list
@@ -146,7 +144,10 @@ abstract class Node<S: CodeGenSession>(
     fun addAttribute(attribute: Attribute) {
         if(!_nodeAttributes.contains(attribute)) {
             attribute.parentNode = this
-            attribute.onChange(attribOnChangeListener)
+            attribOnChangeListenerIds[attribute] = attribute.onChange {
+                onChange.run()
+            }
+
             _nodeAttributes.add(attribute)
         }
     }
@@ -154,7 +155,9 @@ abstract class Node<S: CodeGenSession>(
     fun removeAttribute(attribute: Attribute) {
         if(_nodeAttributes.contains(attribute)) {
             //attribute.parentNode = null
-            attribute.onChange.removePersistentListener(attribOnChangeListener)
+            attribOnChangeListenerIds.remove(attribute)?.let {
+                attribute.onChange.removeListener(it)
+            }
             _nodeAttributes.remove(attribute)
         }
     }

@@ -21,17 +21,16 @@ package io.github.deltacv.papervision.gui.editor
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
-import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.Build
+import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.util.ARCH
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.OS
-import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.util.getMemoryUsageMB
 import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.io.resourceToString
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import io.github.deltacv.papervision.util.flags
+import org.deltacv.mai18n.tr
 
 class AboutModalWindow : Window() {
     override var title = "win_welcome"
@@ -48,8 +47,6 @@ class AboutModalWindow : Window() {
     )
 
     override val modal = ModalMode.Modal()
-
-    val onDontShowAgain = PaperVisionEventHandler("IntroModalWindow-OnDontShowAgain")
 
     private var isFirstDraw = true
 

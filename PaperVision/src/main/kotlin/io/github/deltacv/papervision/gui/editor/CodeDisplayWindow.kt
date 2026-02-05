@@ -26,6 +26,7 @@ import imgui.flag.ImGuiWindowFlags
 import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.gui.ToastWindow
+import io.github.deltacv.papervision.gui.TooltipPopup
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.platform.PlatformFileFilter
@@ -54,7 +55,7 @@ class CodeDisplayWindow(
         ImGuiWindowFlags.NoScrollWithMouse
     )
 
-    override val modal = ModalMode.Modal()
+    override val modal = ModalMode.Modal(closeOnOutsideClick = false)
 
     val EDITOR = TextEditor()
 
@@ -65,6 +66,7 @@ class CodeDisplayWindow(
 
         EDITOR.languageDefinition = editorLanguage
         EDITOR.textLines = code.lines().toTypedArray()
+        EDITOR.isReadOnly = true
     }
 
     override fun preDrawContents() {
@@ -98,9 +100,10 @@ class CodeDisplayWindow(
                 StringSelection(EDITOR.text), null
             )
 
-            ToastWindow(
+            TooltipPopup(
                 tr("mis_codecopied"),
-                3.0
+                3.0,
+                font = Font.find("default-20")
             ).enable()
         }
 

@@ -18,8 +18,6 @@ dependencies {
 
     compileOnly "io.github.spair:imgui-java-binding:$imgui_version" // platforms should add the "implementation" they need
 
-    api "org.slf4j:slf4j-api:$slf4j_version"
-
     api 'org.deltacv:mai18n:1.2.0'
 
     implementation "org.java-websocket:Java-WebSocket:1.5.2"

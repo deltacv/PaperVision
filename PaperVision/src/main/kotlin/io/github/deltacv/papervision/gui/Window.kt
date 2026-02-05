@@ -26,7 +26,7 @@ import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImBoolean
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.container.IdContainerStacks
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.flags
 import org.deltacv.mai18n.tr
 
@@ -81,7 +81,7 @@ abstract class Window(
     private var onDrawInitialized = false
     val onDraw by lazy {
         onDrawInitialized = true
-        PaperVisionEventHandler("Window-$title-OnDraw")
+        PaperEventHandler("Window-$title-OnDraw")
     }
 
     private var firstDraw = true
@@ -130,7 +130,7 @@ abstract class Window(
                 if(it.closeOnOutsideClick) {
                     delete()
                 } else {
-                    onDraw.doOnce { // defer to the next frame to avoid issues with ImGui state
+                    onDraw.once { // defer to the next frame to avoid issues with ImGui state
                         focus = true // restore
                     }
                 }

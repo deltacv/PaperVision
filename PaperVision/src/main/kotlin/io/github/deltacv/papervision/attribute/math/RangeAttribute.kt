@@ -31,7 +31,7 @@ import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.util.ImGuiEx
 import io.github.deltacv.papervision.id.Misc
 import io.github.deltacv.papervision.serialization.data.SerializeData
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 
 class RangeAttribute(
     override val mode: AttributeMode,
@@ -48,7 +48,7 @@ class RangeAttribute(
     private var usesToggleChanged = false
     val onToggleChange by lazy {
         usesToggleChanged = true
-        PaperVisionEventHandler("RangeAttribute-OnToggleChange")
+        PaperEventHandler("RangeAttribute-OnToggleChange")
     }
 
     var min = minDefault
@@ -137,7 +137,7 @@ class RangeAttribute(
                 changed()
 
                 if(usesToggleChanged) {
-                    onToggleChange()
+                    onToggleChange.run()
                 }
             }
             prevToggle = toggleValue.get()

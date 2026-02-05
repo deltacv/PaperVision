@@ -21,13 +21,12 @@ package io.github.deltacv.papervision.engine.bridge
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
-import java.util.concurrent.ArrayBlockingQueue
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 
 interface PaperVisionEngineBridge {
     val isConnected: Boolean
 
-    val onClientProcess: PaperVisionEventHandler
+    val onClientProcess: PaperEventHandler
 
     fun connectClient(client: PaperVisionEngineClient)
     fun terminate(client: PaperVisionEngineClient)

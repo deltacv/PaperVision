@@ -18,6 +18,11 @@
 
 package io.github.deltacv.papervision.engine.message
 
+internal data class TimeoutCallback(
+    val timeoutMillis: Long,
+    val callback: () -> Unit
+)
+
 fun interface OnResponseCallback {
     fun onResponse(response: PaperVisionEngineMessageResponse)
 }
@@ -26,7 +31,9 @@ interface PaperVisionEngineMessage {
     var id: Int
     var persistent: Boolean
 
+    fun acceptElapsedTime(elapsedTimeMillis: Long): PaperVisionEngineMessage
     fun acceptResponse(response: PaperVisionEngineMessageResponse)
 
+    fun onTimeout(timeoutMillis: Long, callback: () -> Unit): PaperVisionEngineMessage
     fun onResponse(callback: OnResponseCallback): PaperVisionEngineMessage
 }

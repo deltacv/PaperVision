@@ -23,8 +23,9 @@ import io.github.deltacv.papervision.engine.message.ByteMessageTag
 import io.github.deltacv.papervision.engine.message.ByteMessages
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
+import java.util.concurrent.ConcurrentHashMap
 
 class ClientByteMessageReceiver : ByteMessageReceiver()
 
@@ -32,13 +33,18 @@ class PaperVisionEngineClient(
     val bridge: PaperVisionEngineBridge
 ) {
 
+    private data class AwaitingMessageData(
+        val message: PaperVisionEngineMessage,
+        val timestamp: Long
+    )
+
     val logger by loggerForThis()
 
     val byteReceiver = ClientByteMessageReceiver()
 
-    val onProcess = PaperVisionEventHandler("PaperVisionEngineClient-OnProcess")
+    val onProcess = PaperEventHandler("PaperVisionEngineClient-OnProcess")
 
-    private val messagesAwaitingResponse = mutableMapOf<Int, PaperVisionEngineMessage>()
+    private val messagesAwaitingResponse = ConcurrentHashMap<Int, AwaitingMessageData>()
 
     private val bytesQueue = mutableListOf<ByteArray>()
 
@@ -53,30 +59,33 @@ class PaperVisionEngineClient(
     }
 
     fun acceptResponse(response: PaperVisionEngineMessageResponse) {
-        val message = messagesAwaitingResponse[response.id] ?: return
+        val data = messagesAwaitingResponse[response.id] ?: return
 
-        message.acceptResponse(response)
+        data.message.acceptResponse(response)
 
-        if(!message.persistent) {
+        if(!data.message.persistent) {
             messagesAwaitingResponse.remove(response.id)
         }
     }
 
-    @Suppress("SENSELESS_COMPARISON") // uh, i have gotten NPEs from bytes being null somehow
+    @Suppress("SENSELESS_COMPARISON") // uh, I have gotten NPEs from bytes being null somehow
     fun acceptBytes(bytes: ByteArray) {
-        if(bytes == null) return
-
         synchronized(bytesQueue) {
             bytesQueue.add(bytes)
         }
     }
 
     fun sendMessage(message: PaperVisionEngineMessage) {
-        messagesAwaitingResponse[message.id] = message
+        messagesAwaitingResponse[message.id] = AwaitingMessageData(message, System.currentTimeMillis())
         bridge.sendMessage(this, message)
     }
 
     fun process() {
+        for(data in messagesAwaitingResponse.values) {
+            val timeMillis = System.currentTimeMillis() - data.timestamp
+            data.message.acceptElapsedTime(timeMillis)
+        }
+
         synchronized(bytesQueue) {
             val binaryMessages = bytesQueue.toTypedArray()
 
@@ -92,6 +101,6 @@ class PaperVisionEngineClient(
             }
         }
 
-        onProcess()
+        onProcess.run()
     }
 }

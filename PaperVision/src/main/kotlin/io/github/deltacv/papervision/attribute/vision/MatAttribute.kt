@@ -88,7 +88,7 @@ class MatAttribute(
         if(wasPrevizJustEnabled) {
             displayWindow = editor.startImageDisplayFor(this)
 
-            displayWindow!!.onDelete.doOnce {
+            displayWindow!!.onDelete.once {
                 isPrevizEnabled = false
                 displayWindow = null
             }
@@ -98,7 +98,7 @@ class MatAttribute(
         }
 
         if(wasButtonToggled) {
-            editor.onDraw.doOnce {
+            editor.onDraw.once {
                 onChange.run()
             }
         }

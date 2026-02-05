@@ -98,12 +98,12 @@ class SourceCodeExportSelectLanguageWindow(
 
         if (paperVision.engineClient.bridge.isConnected) {
             paperVision.engineClient.sendMessage(AskProjectGenClassNameMessage().onResponseWith<StringResponse> { response ->
-                paperVision.onUpdate.doOnce {
+                paperVision.onUpdate.once {
                     openWindow(paperVision.codeGenManager.build(response.value, language), response.value, language)
                 }
             })
         } else {
-            paperVision.onUpdate.doOnce {
+            paperVision.onUpdate.once {
                 openWindow(paperVision.codeGenManager.build("Mack", language), "Mack", language)
             }
         }

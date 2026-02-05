@@ -54,7 +54,7 @@ class LineParametersAttribute(
             if(!hasLink && ImGui.button(FontAwesomeIcons.PencilAlt)) {
                 val node = parentNode.editor.addNode(LineParametersNode::class.java)
 
-                parentNode.editor.onDraw.doOnce {
+                parentNode.editor.onDraw.once {
                     CreateLinkAction(
                         Link(
                             (node as LineParametersNode).output.id, id

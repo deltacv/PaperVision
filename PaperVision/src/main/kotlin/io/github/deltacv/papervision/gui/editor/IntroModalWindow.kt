@@ -26,7 +26,7 @@ import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.ImGuiEx
 import io.github.deltacv.papervision.io.resourceToString
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.flags
 
 class IntroModalWindow(
@@ -48,7 +48,7 @@ class IntroModalWindow(
 
     override val modal = ModalMode.Modal(closeOnOutsideClick = false)
 
-    val onDontShowAgain = PaperVisionEventHandler("IntroModalWindow-OnDontShowAgain")
+    val onDontShowAgain = PaperEventHandler("IntroModalWindow-OnDontShowAgain")
 
     private var isFirstDraw = true
 

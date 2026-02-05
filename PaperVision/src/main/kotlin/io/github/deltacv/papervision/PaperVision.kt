@@ -53,7 +53,7 @@ import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.node.PaperNodeRegistry
 import io.github.deltacv.papervision.platform.*
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 import org.deltacv.mai18n.Language
 import org.deltacv.mai18n.makeThreadTr
@@ -86,9 +86,9 @@ class PaperVision(
     lateinit var config: PlatformConfig
         private set
 
-    val onInit            = PaperVisionEventHandler("PaperVision-OnInit")
-    val onUpdate          = PaperVisionEventHandler("PaperVision-OnUpdate")
-    val onDeserialization = PaperVisionEventHandler("PaperVision-OnDeserialization")
+    val onInit            = PaperEventHandler("PaperVision-OnInit")
+    val onUpdate          = PaperEventHandler("PaperVision-OnUpdate")
+    val onDeserialization = PaperEventHandler("PaperVision-OnDeserialization")
 
     // these depend on PlatformSetup so they are initialized later
     lateinit var textureProcessorQueue: TextureProcessorQueue
@@ -236,7 +236,7 @@ class PaperVision(
         window.icon = "/ico/ico_ezv.png"
         window.maximized = true
 
-        onUpdate.doOnce {
+        onUpdate.once {
             if (setup.showWelcomeWindow) {
                 showWelcome()
             } else {
@@ -303,7 +303,7 @@ class PaperVision(
     fun startPrevizWithEngine() {
         engineClient.sendMessage(PrevizAskNameMessage().onResponseWith<StringResponse> { response ->
             logger.info("Engine responded with previz name ${response.value}")
-            onUpdate.doOnce {
+            onUpdate.once {
                 previzManager.startPreviz(response.value)
                 window.title = "PaperVision - ${response.value}"
             }

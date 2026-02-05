@@ -29,19 +29,19 @@ import io.github.deltacv.papervision.node.vision.imageproc.ThresholdNode
 import io.github.deltacv.papervision.node.vision.overlay.DrawContoursNode
 import io.github.deltacv.papervision.util.flags
 
-typealias Stage = GuidedTourWindow.() -> Unit
+typealias GuidedTourStage = GuidedTourWindow.() -> Unit
 
 val Next: GuidedTourWindow.() -> Boolean = {
     ImGui.button(tr("mis_next"))
 }
 
-val Close: Stage = {
+val Close: GuidedTourStage = {
     if (ImGui.button(tr("mis_cancel"))) {
         delete()
     }
 }
 
-val InitialStage: Stage = {
+val InitialStage: GuidedTourStage = {
     centerWindow()
 
     ImGui.text(tr("mis_guidedtour_1"))
@@ -55,7 +55,7 @@ val InitialStage: Stage = {
     Close()
 }
 
-val Stage1: Stage = {
+val Stage1: GuidedTourStage = {
     position = ImVec2(
         nodeEditor.inputNode.screenPosition.x,
         nodeEditor.inputNode.screenPosition.y + nodeEditor.inputNode.size.y
@@ -72,7 +72,7 @@ val Stage1: Stage = {
     Close()
 }
 
-val Stage2: Stage = {
+val Stage2: GuidedTourStage = {
     position = ImVec2(
         nodeEditor.outputNode.screenPosition.x - size.x + nodeEditor.outputNode.size.x,
         nodeEditor.outputNode.screenPosition.y + (nodeEditor.outputNode.size.y)
@@ -90,7 +90,7 @@ val Stage2: Stage = {
     Close()
 }
 
-val Stage3: Stage = {
+val Stage3: GuidedTourStage = {
     val floatingButton = nodeEditor.paperVision.nodeList.floatingButton
 
     position = ImVec2(
@@ -105,7 +105,7 @@ val Stage3: Stage = {
     }
 }
 
-val Stage4: Stage = {
+val Stage4: GuidedTourStage = {
     // bottom center
     position = ImVec2(
        (nodeEditor.paperVision.nodeList.size.x / 2) - (size.x / 2),
@@ -133,7 +133,7 @@ val Stage4: Stage = {
     }
 }
 
-val Stage5: Stage = {
+val Stage5: GuidedTourStage = {
     focus = false
     val node = nodeEditor.paperVision.nodes.find { it is ThresholdNode } as ThresholdNode?
 
@@ -162,7 +162,7 @@ val Stage5: Stage = {
     }
 }
 
-val Stage6: Stage = {
+val Stage6: GuidedTourStage = {
     val node = nodeEditor.paperVision.nodes.find { it is ThresholdNode } as ThresholdNode?
 
     if (node == null) {
@@ -184,7 +184,7 @@ val Stage6: Stage = {
     }
 }
 
-val Stage7: Stage = {
+val Stage7: GuidedTourStage = {
     val node = nodeEditor.paperVision.nodes.find { it is FindContoursNode } as FindContoursNode?
 
     if (node == null) {
@@ -211,7 +211,7 @@ val Stage7: Stage = {
     }
 }
 
-val Stage8: Stage = {
+val Stage8: GuidedTourStage = {
     val node = nodeEditor.paperVision.nodes.find { it is FindContoursNode } as FindContoursNode?
 
     if (node == null) {
@@ -233,7 +233,7 @@ val Stage8: Stage = {
     }
 }
 
-val Stage9: Stage = {
+val Stage9: GuidedTourStage = {
     val node = nodeEditor.paperVision.nodes.find { it is DrawContoursNode } as DrawContoursNode?
 
     if (node == null) {
@@ -261,7 +261,7 @@ val Stage9: Stage = {
     }
 }
 
-val Stage10: Stage = {
+val Stage10: GuidedTourStage = {
     val node = nodeEditor.paperVision.nodes.find { it is DrawContoursNode } as DrawContoursNode?
 
     nodeEditor.paperVision.nodeList.clearHighlight()
@@ -287,7 +287,7 @@ val Stage10: Stage = {
     }
 }
 
-val Stage11: Stage = {
+val Stage11: GuidedTourStage = {
     val node = nodeEditor.paperVision.nodes.find { it is DrawContoursNode } as DrawContoursNode?
 
     if (node == null) {
@@ -311,7 +311,7 @@ val Stage11: Stage = {
     }
 }
 
-val Stage12: Stage = {
+val Stage12: GuidedTourStage = {
     val floatingButton = nodeEditor.playButton
 
     position = ImVec2(
@@ -327,7 +327,7 @@ val Stage12: Stage = {
     }
 }
 
-val Stage13: Stage = {
+val Stage13: GuidedTourStage = {
     val node = nodeEditor.paperVision.nodes.find { it is ThresholdNode } as ThresholdNode?
 
     if(node == null) {
@@ -348,7 +348,7 @@ val Stage13: Stage = {
     }
 }
 
-val Stage14: Stage = {
+val Stage14: GuidedTourStage = {
     val floatingButton = nodeEditor.sourceCodeExportButton
 
     position = ImVec2(
@@ -373,9 +373,9 @@ class GuidedTourWindow(
 
     override var title = "$[mis_guidedtour]"
 
-    var currentStage: Stage = InitialStage
+    var currentStage: GuidedTourStage = InitialStage
 
-    private var previousStage: Stage? = null
+    private var previousStage: GuidedTourStage? = null
 
     var firstStageDraw: Boolean = true
         private set

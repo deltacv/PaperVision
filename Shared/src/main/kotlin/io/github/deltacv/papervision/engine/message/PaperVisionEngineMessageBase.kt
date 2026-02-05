@@ -18,21 +18,24 @@
 
 package io.github.deltacv.papervision.engine.message
 
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
+
 abstract class PaperVisionEngineMessageBase(
     override var persistent: Boolean = false
 ) : PaperVisionEngineMessage {
 
     companion object {
-        private var idCount = -1
+        private var idCount = AtomicInteger(-1)
 
-        @Synchronized fun nextId(): Int {
-            idCount++
-            return idCount
-        }
+        fun nextId() = idCount.incrementAndGet()
     }
 
     @Transient
-    private val onResponseCallbacks = mutableListOf<OnResponseCallback>()
+    private val onTimeoutCallbacks = Collections.synchronizedList(mutableListOf<TimeoutCallback>())
+    @Transient
+    private val onResponseCallbacks = Collections.synchronizedList(mutableListOf<OnResponseCallback>())
 
     override var id = nextId()
 
@@ -40,6 +43,32 @@ abstract class PaperVisionEngineMessageBase(
         for(callback in onResponseCallbacks) {
            callback.onResponse(response)
         }
+    }
+
+    override fun acceptElapsedTime(elapsedTimeMillis: Long): PaperVisionEngineMessage {
+        var toRemove: MutableList<TimeoutCallback>? = null
+
+        for((timeoutMillis, callback) in onTimeoutCallbacks) {
+            if(elapsedTimeMillis >= timeoutMillis) {
+                callback()
+
+                if(toRemove == null) {
+                    toRemove = mutableListOf()
+                }
+                toRemove.add(TimeoutCallback(timeoutMillis, callback))
+            }
+        }
+
+        if(toRemove != null) {
+            onTimeoutCallbacks.removeAll(toRemove)
+        }
+
+        return this
+    }
+
+    override fun onTimeout(timeoutMillis: Long, callback: () -> Unit): PaperVisionEngineMessage {
+        onTimeoutCallbacks.add(TimeoutCallback(timeoutMillis, callback))
+        return this
     }
 
     override fun onResponse(callback: OnResponseCallback): PaperVisionEngineMessageBase {

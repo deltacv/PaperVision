@@ -141,7 +141,7 @@ abstract class DrawNode<S: CodeGenSession>(
     }
 
     protected fun noValue(attrib: Attribute): Nothing {
-        raise(tr("err_attrib_nothandledby_this", attrib))
+        raise(tr("err_attrib_nothandled_bythis", attrib))
     }
 
     open fun drawNode() { }

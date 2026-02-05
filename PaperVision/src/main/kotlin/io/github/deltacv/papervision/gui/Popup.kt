@@ -21,31 +21,23 @@ package io.github.deltacv.papervision.gui
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
-import imgui.type.ImBoolean
-import org.deltacv.mai18n.tr
+import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.flags
+import org.deltacv.mai18n.tr
 
 class TooltipPopup(
     val text: String,
-    val positionProvider: () -> ImVec2,
     val timeoutSeconds: Double,
-    label: String = "mack"
+    val font: Font? = null,
+    label: String = "mack",
+    val positionProvider: () -> ImVec2,
 ) : Popup(label) {
 
     companion object {
-        fun warning(text: String) {
-            for(popup in IdContainerStacks.local.peekNonNull<Popup>().inmutable) {
-                if(popup is TooltipPopup && popup.label == "Warning") {
-                    popup.delete()
-                }
-            }
-
-            val position = ImGui.getMousePos()
-            TooltipPopup(text, position, 6.0, "Warning").open()
-        }
+        fun showWarning(text: String) = TooltipPopup(text, 6.0, label = "Warning").enable()
     }
 
     override val position: ImVec2
@@ -63,10 +55,11 @@ class TooltipPopup(
 
     constructor(
         text: String,
-        position: ImVec2,
         timeoutSeconds: Double,
-        label: String = "mack"
-    ) : this(text, { position }, timeoutSeconds, label)
+        font: Font? = null,
+        label: String = "mack",
+        position: ImVec2 = ImGui.getMousePos(),
+    ) : this(text, timeoutSeconds, null, label, { position })
 
     override fun onEnable() {
         elapsedTime.reset()
@@ -76,13 +69,16 @@ class TooltipPopup(
         if(elapsedTime.seconds >= timeoutSeconds) {
             delete()
         }
+
+        font?.let { ImGui.pushFont(it.imfont) }
         ImGui.text(tr(text))
+        font?.let { ImGui.popFont() }
     }
 
 }
 
 abstract class Popup(
-    val label: String = ""
+    val label: String? = null
 ) : DrawableIdElementBase<Popup>() {
     override val idContainer = IdContainerStacks.local.peekNonNull<Popup>()
 
@@ -94,10 +90,8 @@ abstract class Popup(
     var isVisible = false
         private set
 
-    open val position = ImGui.getMousePos()
+    open val position: ImVec2 = ImGui.getMousePos()
     val idName by lazy { "${title}###$id" }
-
-    private val pOpen = ImBoolean(false)
 
     abstract fun drawContents()
 
@@ -119,11 +113,18 @@ abstract class Popup(
         isVisible = ImGui.isPopupOpen(idName)
     }
 
-    fun open() {
+    override fun enable() {
         if(!isEnabled) {
-            enable()
+            open = true
         }
 
-        open = true
+        if(label != null) {
+            for(popup in IdContainerStacks.local.peekNonNull<Popup>().inmutable) {
+                if(popup != this && popup.label == label) { // close other popups with the same label
+                    popup.delete()
+                }
+            }
+        }
+        super.enable()
     }
 }

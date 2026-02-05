@@ -40,7 +40,7 @@ class CloseConfirmWindow(
         ImGuiWindowFlags.NoCollapse
     )
 
-    override val modal = ModalMode.Modal()
+    override val modal = ModalMode.Modal(closeOnOutsideClick = false)
 
     override fun onEnable() {
         focus = true
@@ -52,12 +52,12 @@ class CloseConfirmWindow(
 
         if(ImGui.button(tr("mis_save"))) {
             callback(Action.YES)
-            ImGui.closeCurrentPopup()
+            delete()
         }
         ImGui.sameLine()
         if(ImGui.button(tr("mis_discard"))) {
             callback(Action.NO)
-            ImGui.closeCurrentPopup()
+            delete()
         }
         ImGui.sameLine()
         if(ImGui.button(tr("mis_cancel"))) {

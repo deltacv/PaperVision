@@ -19,7 +19,7 @@
 package io.github.deltacv.papervision.engine.previz
 
 import io.github.deltacv.papervision.engine.client.ByteMessageReceiver
-import io.github.deltacv.papervision.engine.client.Handler
+import io.github.deltacv.papervision.engine.client.ByteMessageHandler
 import io.github.deltacv.papervision.engine.message.ByteMessages
 import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.io.TextureProcessorQueue
@@ -96,7 +96,7 @@ class ClientPrevizStream(
         }
     }
 
-    private val defaultHandler: Handler = { id, tag, bytes, length ->
+    private val defaultByteMessageHandler: ByteMessageHandler = { id, tag, bytes, length ->
         if (tag.startsWith(sessionName)) {
             if(!startedStreamIds.containsKey(id) || System.currentTimeMillis() - startedStreamIds[id]!! > 5000) {
                 val lastFrameInfo = if(startedStreamIds.containsKey(id))
@@ -116,7 +116,7 @@ class ClientPrevizStream(
     fun start() {
         logger.info("Starting pipeline stream of $sessionName at {}x{}", width, height)
 
-        byteReceiver.addHandler(defaultHandler)
+        byteReceiver.addHandler(defaultByteMessageHandler)
 
         isStarted = true
     }
@@ -124,7 +124,7 @@ class ClientPrevizStream(
     fun stop() {
         isStarted = false
 
-        byteReceiver.removeHandler(defaultHandler)
+        byteReceiver.removeHandler(defaultByteMessageHandler)
         byteReceiver.stop()
     }
 

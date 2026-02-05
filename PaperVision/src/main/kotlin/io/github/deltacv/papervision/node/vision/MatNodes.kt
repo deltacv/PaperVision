@@ -57,17 +57,14 @@ class InputMatNode @JvmOverloads constructor(
     private var lastWindowSize: ImVec2? = null
 
     override fun init() {
-        editor.onDraw { remover ->
+        val onDraw = editor.onDraw {
             if(serializedId != null) {
-                remover.removeThis()
+                removeListener()
                 return@onDraw
             }
 
-            // stop the node from adjusting when the user pans
-            remover.removeOn(editor.onEditorPan)
-
             if(!isOnEditor) {
-                remover.removeThis()
+                removeListener()
                 return@onDraw
             }
 
@@ -86,12 +83,16 @@ class InputMatNode @JvmOverloads constructor(
                 // by default, the node editor starts with 4 nodes
                 // InputMatNode, OutputMatNode, originNode, flagsNode
                 // if there are more than 4 nodes, we'll stop adjusting the position
-                // since it's likely the user is starting to work on their project
+                // since it's likely the user has just created a new project
                 if(editor.nodes.inmutable.size > 4 || ImNodes.isNodeSelected(id)) {
-                    remover.removeThis()
+                    removeListener()
                     editor.onEditorPan.run()
                 }
             }
+        }
+
+        editor.onEditorPan.once {
+            editor.onDraw.removeListener(onDraw)
         }
     }
 
@@ -140,19 +141,16 @@ class OutputMatNode @JvmOverloads constructor(
     )
 
     override fun init() {
-        editor.onDraw { remover ->
+        val onDrawId = editor.onDraw {
             if(serializedId != null) {
-                remover.removeThis()
+                removeListener()
                 return@onDraw
             }
 
             if(!isOnEditor) {
-                remover.removeThis()
+                removeListener()
                 return@onDraw
             }
-
-            // stop the node from adjusting when the user pans
-            remover.removeOn(editor.onEditorPan)
 
             windowSizeSupplier?.let {
                 val nodeSize = ImVec2()
@@ -171,10 +169,14 @@ class OutputMatNode @JvmOverloads constructor(
                 // if there are more than 4 nodes, we'll stop adjusting the position
                 // since it's likely the user is starting to work on their project
                 if(editor.nodes.inmutable.size > 4 || ImNodes.isNodeSelected(id)) {
-                    remover.removeThis()
+                    removeListener()
                     editor.onEditorPan.run()
                 }
             }
+        }
+
+        editor.onEditorPan.once {
+            editor.onDraw.removeListener(onDrawId)
         }
     }
 

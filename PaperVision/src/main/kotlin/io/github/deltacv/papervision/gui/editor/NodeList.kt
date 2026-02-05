@@ -39,7 +39,7 @@ import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.node.*
 import io.github.deltacv.papervision.platform.PlatformWindow
 import io.github.deltacv.papervision.util.ElapsedTime
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.flags
 import io.github.deltacv.papervision.util.loggerForThis
 import kotlin.collections.iterator
@@ -119,7 +119,7 @@ class NodeList(
         floatingButton.enable()
 
         floatingButton.onPressed {
-            paperVision.onUpdate.doOnce {
+            paperVision.onUpdate.once {
                 if (!isNodesListOpen && openButtonTimeout.millis > 200) {
                     showList()
                 }
@@ -137,7 +137,8 @@ class NodeList(
     }
 
     override fun preDrawContents() {
-        if (!isNodesListOpen) {
+        if (!isNodesListOpen || Window.isModalWindowOpen) {
+            closeList()
             return
         }
 
@@ -150,8 +151,7 @@ class NodeList(
     }
 
     override fun drawContents() {
-        if (!isNodesListOpen || Window.isModalWindowOpen) {
-            closeList()
+        if(!isNodesListOpen) {
             return
         }
 
@@ -472,7 +472,7 @@ class NodeList(
 
         override var frameWidth = 0f
 
-        val onPressed = PaperVisionEventHandler("FloatingButton-OnPressed")
+        val onPressed = PaperEventHandler("FloatingButton-OnPressed")
 
         override fun preDrawContents() {
             position = ImVec2(

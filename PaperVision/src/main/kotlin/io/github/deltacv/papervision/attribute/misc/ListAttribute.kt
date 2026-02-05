@@ -310,14 +310,14 @@ open class ListAttribute(
 
         element.ownedByList = true
         element.drawType = false // hides the variable type
-        element.onChange.doPersistent(onChange::run)
+        element.onChange.attach(onChange::run)
 
         listAttributes.add(element)
 
         if (linkTo != null) {
             // if the element is being created because of a link, create the link action
             // to link the new element to the linked attribute
-            parentNode.editor.onDraw.doOnce {
+            parentNode.editor.onDraw.once {
                 val action = CreateLinkAction(Link(linkTo.id, element.id))
 
                 if(relatedLink != null) {

@@ -136,15 +136,12 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
                     separate()
 
                     JvmOpenCvTypes.Imgproc("HoughCircles",
-                        inputValue.v,
-                        circlesMatVar,
+                        inputValue.v, circlesMatVar,
                         JvmOpenCvTypes.Imgproc.HOUGH_GRADIENT,
                         downscaleVar,
                         minDistanceVar,
-                        param1Var,
-                        param2Var,
-                        minRadiusVar,
-                        maxRadiusVar
+                        param1Var, param2Var,
+                        minRadiusVar, maxRadiusVar
                     )
 
                     separate()

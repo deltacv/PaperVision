@@ -54,7 +54,7 @@ import io.github.deltacv.papervision.node.vision.InputMatNode
 import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer
 import io.github.deltacv.papervision.util.ElapsedTime
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.flags
 import io.github.deltacv.papervision.util.loggerForThis
 
@@ -131,8 +131,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     var clipboard: String? = null
 
     // Events
-    val onEditorChange = PaperVisionEventHandler("NodeEditor-OnChange")
-    val onEditorPan = PaperVisionEventHandler("NodeEditor-OnPan")
+    val onEditorChange = PaperEventHandler("NodeEditor-OnChange")
+    val onEditorPan = PaperEventHandler("NodeEditor-OnPan")
 
     val logger by loggerForThis()
 
@@ -238,7 +238,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             streamWindow.isCloseable = false
             streamWindow.enable()
 
-            paperVision.previzManager.onPrevizStop.doOnce {
+            paperVision.previzManager.onPrevizStop.once {
                 streamWindow.delete()
             }
         }
@@ -340,7 +340,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                 paperVision.nodeList,
                 ::undo, ::redo, ::cut, ::copy, ::paste,
                 popupSelection
-            ).apply { open() }
+            ).apply { enable() }
 
             logger.debug("Opening right click menu popup")
         }
@@ -598,7 +598,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         window.pinToMouse = true
         window.enable()
 
-        attribute.onDelete.doOnce {
+        attribute.onDelete.once {
             window.delete()
         }
 
@@ -679,7 +679,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
 
         if (!startAttrib.acceptLink(endAttrib) || !endAttrib.acceptLink(startAttrib)) {
-            TooltipPopup.warning("err_couldntlink_didntmatch")
+            TooltipPopup.showWarning("err_couldntlink_didntmatch")
             return false
         }
 
@@ -701,10 +701,10 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         CreateLinkAction(link).enable()
 
         if (Node.checkSimpleRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
-            TooltipPopup.warning("err_couldntlink_recursion")
+            TooltipPopup.showWarning("err_couldntlink_recursion")
             link.delete()
         } else {
-            paperVision.onUpdate.doOnce {
+            paperVision.onUpdate.once {
                 link.triggerOnChange()
             }
         }

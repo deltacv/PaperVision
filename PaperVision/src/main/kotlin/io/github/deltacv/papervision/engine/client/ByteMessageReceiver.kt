@@ -18,11 +18,11 @@
 
 package io.github.deltacv.papervision.engine.client
 
-typealias Handler = (Int, String, ByteArray, Int) -> Unit
+typealias ByteMessageHandler = (Int, String, ByteArray, Int) -> Unit
 
 abstract class ByteMessageReceiver {
 
-    private val handlers = mutableListOf<Handler>()
+    private val handlers = mutableListOf<ByteMessageHandler>()
 
     fun callHandlers(id: Int, tag: String, bytes: ByteArray, messageLength: Int) {
         handlers.forEach { handler ->
@@ -30,12 +30,12 @@ abstract class ByteMessageReceiver {
         }
     }
 
-    open fun addHandler(handler: Handler) {
-        handlers.add(handler)
+    open fun addHandler(byteMessageHandler: ByteMessageHandler) {
+        handlers.add(byteMessageHandler)
     }
 
-    open fun removeHandler(handlerInstance: Handler) {
-        handlers.remove(handlerInstance)
+    open fun removeHandler(byteMessageHandlerInstance: ByteMessageHandler) {
+        handlers.remove(byteMessageHandlerInstance)
     }
 
     open fun stop() { }

@@ -53,7 +53,7 @@ class Vector2Attribute (
             if(!hasLink && ImGui.button(FontAwesomeIcons.PencilAlt)) {
                 val node = parentNode.editor.addNode(Vector2Node::class.java)
 
-                parentNode.editor.onDraw.doOnce {
+                parentNode.editor.onDraw.once {
                     CreateLinkAction(
                         Link(
                             (node as Vector2Node).result.id, id

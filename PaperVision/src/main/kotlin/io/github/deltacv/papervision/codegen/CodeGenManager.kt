@@ -82,10 +82,9 @@ class CodeGenManager(val paperVision: PaperVision) {
 
             TooltipPopup(
                 attrEx.message,
-                { ImVec2(attrEx.attribute.position.x + 5, attrEx.attribute.position.y + 20) },
                 8.0,
                 label = "Gen-Error"
-            ).open()
+            ) { ImVec2(attrEx.attribute.position.x + 5, attrEx.attribute.position.y + 20) }.enable()
 
             val node = attrEx.attribute.parentNode
             showError(codeGen, node, attrEx.message)
@@ -97,10 +96,9 @@ class CodeGenManager(val paperVision: PaperVision) {
 
             TooltipPopup(
                 nodeEx.message,
-                { ImVec2(nodeEx.node.screenPosition.x, nodeEx.node.screenPosition.y - 20) },
                 8.0,
                 label = "Gen-Error"
-            ).open()
+            ) { ImVec2(nodeEx.node.screenPosition.x, nodeEx.node.screenPosition.y - 20) }.enable()
 
             showError(codeGen, nodeEx.node, nodeEx.message)
 

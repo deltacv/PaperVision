@@ -22,7 +22,7 @@ import io.github.deltacv.papervision.engine.LocalPaperVisionEngine
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 
 class LocalPaperVisionEngineBridge(
     val paperVisionEngine: LocalPaperVisionEngine
@@ -30,7 +30,7 @@ class LocalPaperVisionEngineBridge(
 
     private val clients = mutableListOf<PaperVisionEngineClient>()
 
-    override val onClientProcess = PaperVisionEventHandler("LocalPaperVisionEngineBridge-OnClientProcess")
+    override val onClientProcess = PaperEventHandler("LocalPaperVisionEngineBridge-OnClientProcess")
 
     override val isConnected: Boolean
         get() = true
@@ -45,7 +45,7 @@ class LocalPaperVisionEngineBridge(
 
         client.onProcess {
             if(!clients.contains(client)) {
-                it.removeThis()
+                removeListener()
                 return@onProcess
             }
         }

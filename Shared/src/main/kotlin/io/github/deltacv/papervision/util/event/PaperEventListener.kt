@@ -17,23 +17,27 @@
  */
 package io.github.deltacv.papervision.util.event
 
-fun interface EventListener {
-    fun run(remover: EventListenerRemover)
-}
+@JvmInline
+value class PaperEventListenerId(val value: Int)
 
-class EventListenerRemover(
-    val handler: PaperVisionEventHandler,
-    val listener: EventListener,
-    val isOnceListener: Boolean
+typealias PaperOnceEventListener = () -> Unit
+typealias PaperEventListener = PaperEventListenerContext.() -> Unit
+
+/**
+ * Class to provide context to an event listener, mainly
+ * to allow removing itself from the event handler
+ * @param handler the event handler
+ * @param id the listener ID
+ */
+class PaperEventListenerContext(
+    private val handler: PaperEventHandler,
+    private val id: PaperEventListenerId,
 ) {
-    fun removeThis() {
-        if(isOnceListener)
-            handler.removeOnceListener(listener)
-        else
-            handler.removePersistentListener(listener)
-    }
 
-    fun removeOn(handler: PaperVisionEventHandler) = handler.doOnce {
-        removeThis()
+    /**
+     * Removes the listener from the event handler
+     */
+    fun removeListener() {
+        handler.removeListener(id)
     }
 }

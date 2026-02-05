@@ -31,7 +31,7 @@ import io.github.deltacv.papervision.engine.client.response.OkResponse
 import io.github.deltacv.papervision.engine.client.response.PrevizStatisticsResponse
 import io.github.deltacv.papervision.io.bufferedImageFromResource
 import io.github.deltacv.papervision.util.ElapsedTime
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 
 class ClientPrevizManager(
@@ -58,10 +58,10 @@ class ClientPrevizManager(
 
     val livePipelineStatistics = LivePipelineStatistics()
 
-    val onPrevizStart = PaperVisionEventHandler("ClientPrevizManager-OnPrevizStart")
-    val onPrevizStop = PaperVisionEventHandler("ClientPrevizManager-OnPrevizStop")
+    val onPrevizStart = PaperEventHandler("ClientPrevizManager-OnPrevizStart")
+    val onPrevizStop = PaperEventHandler("ClientPrevizManager-OnPrevizStop")
 
-    val onStreamChange = PaperVisionEventHandler("ClientPrevizManager-OnStreamChange")
+    val onStreamChange = PaperEventHandler("ClientPrevizManager-OnStreamChange")
 
     val logger by loggerForThis()
 
@@ -112,7 +112,7 @@ class ClientPrevizManager(
                 streamWidth,
                 streamHeight
             ).onResponseWith<OkResponse> {
-                client.onProcess.doOnce {
+                client.onProcess.once {
                     logger.info("Previz session $previzName running")
 
                     previzRunning = true
@@ -147,7 +147,7 @@ class ClientPrevizManager(
         if (previzRunning) {
             logger.info("Restarting previz session $previzName with new stream resolution")
 
-            onPrevizStop.doOnce { // restart after fully stopped
+            onPrevizStop.once { // restart after fully stopped
                 startPreviz(previzName, previzStreamWidth, previzStreamHeight, sizing)
             }
 
@@ -177,7 +177,7 @@ class ClientPrevizManager(
         logger.info("Stopping previz session $previzName")
 
         client.sendMessage(PrevizStopMessage(previzName!!).onResponseWith<OkResponse> {
-            client.onProcess.doOnce {
+            client.onProcess.once {
                 logger.info("Previz session $previzName stopped")
                 stream.stop()
 
