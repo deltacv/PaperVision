@@ -288,7 +288,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             node.editor = this
             node.draw()
 
-            if (node.pollChange()) {
+            if (node.hasChanged()) {
                 onEditorChange.run()
             }
         }
@@ -296,7 +296,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         for (link in links.inmutable) {
             link.draw()
 
-            if (link.pollChange()) {
+            if (link.hasChanged()) {
                 onEditorChange.run()
             }
         }

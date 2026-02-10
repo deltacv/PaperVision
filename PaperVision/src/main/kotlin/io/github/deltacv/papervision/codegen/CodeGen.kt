@@ -96,7 +96,7 @@ class CodeGen(
         fun <S: CodeGenSession> nonNullSessionOf(node: GenNode<S>) = sessionOf(node) ?: run {
             node.genCodeIfNecessary(this)
             this@Current.sessionOf(node)
-                ?: throw IllegalStateException("Node ${node::class.simpleName} did not generate a session")
+                ?: throw IllegalStateException("Node ${node::class.simpleName} did not generate a session when requested")
         }
 
         operator fun <T> invoke(scopeBlock: CodeGenContext.() -> T) = codeGen.invoke(scopeBlock)

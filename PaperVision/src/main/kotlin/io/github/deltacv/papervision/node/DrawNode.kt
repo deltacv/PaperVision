@@ -47,7 +47,7 @@ abstract class DrawNode<S: CodeGenSession>(
 
     private var isFirstDraw = true
 
-    private var changeQueue = ArrayBlockingQueue<Boolean>(50)
+    private var changeQueue = ArrayBlockingQueue<Boolean>(3)
 
     val annotationData by lazy {
         val annotation = this.javaClass.getAnnotation(PaperNode::class.java)
@@ -146,7 +146,7 @@ abstract class DrawNode<S: CodeGenSession>(
 
     open fun drawNode() { }
 
-    override fun pollChange() = changeQueue.poll() ?: false
+    override fun hasChanged() = changeQueue.poll() ?: false
 
     data class AnnotationData(val name: String,
                               val description: String,

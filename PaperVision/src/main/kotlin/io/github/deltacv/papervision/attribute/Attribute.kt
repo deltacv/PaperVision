@@ -276,7 +276,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         forgetSerializedId = true
     }
 
-    override fun pollChange() = changeQueue.poll() ?: false
+    override fun hasChanged() = changeQueue.poll() ?: false
 
     override fun toString() = "Attribute(type=${this::class.java.typeName}, id=$id)"
 
