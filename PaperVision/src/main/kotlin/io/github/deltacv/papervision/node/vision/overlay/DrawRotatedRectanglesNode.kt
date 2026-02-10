@@ -160,7 +160,7 @@ open class DrawRotatedRectanglesNode
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)
 
-                val lineParams = lineParams.genValue(current)
+                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Line
 
                 current.scope {
                     nameComment()
@@ -215,6 +215,8 @@ open class DrawRotatedRectanglesNode
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+        genCodeIfNecessary(current)
+
         if (attrib == outputMat) {
             return GenValue.Mat.defer { current.sessionOf(this)?.outputMat }
         }

@@ -115,7 +115,7 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
                 val circlesValue = circles.genValue(current) as? GenValue.GList.RuntimeListOf<*>
                     ?: raise("") // TODO: handle non-runtime lists
 
-                val line = line.genValue(current)
+                val line = line.genValue(current) as GenValue.LineParameters.Line
 
                 current.scope {
                     nameComment()

@@ -149,7 +149,7 @@ open class DrawContoursNode
 
                 val contoursList = contours.genValue(current)
 
-                val lineParams = lineParams.genValue(current)
+                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Line
 
                 current.scope {
                     nameComment()

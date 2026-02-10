@@ -70,6 +70,6 @@ class Vector2Attribute (
     }
 
     override fun genValue(current: CodeGen.Current) =
-        readGenValue(current, GenValue.Vec2.Vector2(GenValue.Double.ZERO, GenValue.Double.ZERO))
+        readGenValue<GenValue.Vec2>(current, GenValue.Vec2.Vector2(GenValue.Double.ZERO, GenValue.Double.ZERO))
 
 }

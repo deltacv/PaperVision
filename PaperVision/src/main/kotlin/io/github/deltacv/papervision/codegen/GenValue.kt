@@ -204,7 +204,7 @@ sealed class GenValue {
         val b: Double,
         val c: Double,
         val d: Double
-    ) : GList.ListOf<Double>(arrayOf(a, b, c, d)) {
+    ) : GList.ListOf<Double>(listOf(a, b, c, d)) {
         companion object {
             val ZERO = Scalar(Double.ZERO, Double.ZERO, Double.ZERO, Double.ZERO)
 
@@ -249,7 +249,7 @@ sealed class GenValue {
     }
 
     data class ScalarRange(val a: Range, val b: Range, val c: Range, val d: Range) :
-        GList.ListOf<Range>(arrayOf(a, b, c, d)) {
+        GList.ListOf<Range>(listOf(a, b, c, d)) {
         companion object {
             val ZERO = ScalarRange(Range.ZERO, Range.ZERO, Range.ZERO, Range.ZERO)
         }
@@ -279,7 +279,7 @@ sealed class GenValue {
             }
         }
 
-        open class ListOf<E : GenValue>(val elements: Array<E>) : GList<E>()
+        open class ListOf<E : GenValue>(val elements: List<E>) : GList<E>()
 
         data class RuntimeListOf<E : GenValue>(val value: Resolvable<Value>, val typeClass: Resolvable<KClass<E>>) : GList<E>() {
             companion object {

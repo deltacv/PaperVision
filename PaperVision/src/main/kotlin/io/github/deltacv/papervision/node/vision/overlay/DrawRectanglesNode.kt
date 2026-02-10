@@ -154,7 +154,7 @@ open class DrawRectanglesNode
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)
 
-                val lineParams = lineParams.genValue(current)
+                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Line
 
                 current.scope {
                     nameComment()

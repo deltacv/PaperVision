@@ -249,7 +249,10 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         }
     }
 
-    fun getGenValueFromNode(current: CodeGen.Current) = parentNode.getGenValueOf(current, this)
+    fun getGenValueFromNode(current: CodeGen.Current): GenValue {
+        parentNode.genCodeIfNecessary(current)
+        return parentNode.getGenValueOf(current, this)
+    }
 
     open fun makeSerializationData(): AttributeSerializationData = BasicAttribData(id)
     open fun takeSerializationData(data: AttributeSerializationData) { /* do nothing */ }

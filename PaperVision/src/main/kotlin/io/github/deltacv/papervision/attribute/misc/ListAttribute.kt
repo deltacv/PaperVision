@@ -36,14 +36,6 @@ import io.github.deltacv.papervision.serialization.data.adapter.dataSerializable
 import io.github.deltacv.papervision.serialization.data.adapter.jsonObjectToDataSerializable
 import io.github.deltacv.papervision.serialization.AttributeSerializationData
 
-fun <E: TypedAttribute<ER>, ER: GenValue> listAttributeOf(
-    mode: AttributeMode,
-    elementAttributeType: AttributeType<E>,
-    variableName: String? = null,
-    length: Int? = null,
-    allowAddOrDelete: Boolean = true
-) = ListAttribute(mode, elementAttributeType, variableName, length, allowAddOrDelete)
-
 open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
     override val mode: AttributeMode,
     val elementAttributeType: AttributeType<E>,
@@ -244,7 +236,7 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
 
                 // get the values of all the attributes and return a
                 // GenValue.List with the attribute values in an array
-                GenValue.GList.ListOf(listAttributes.map { it.genValue(current) }.toTypedArray<GenValue>()) as GenValue.GList<ER>
+                GenValue.GList.ListOf(listAttributes.map { it.genValue(current) }) as GenValue.GList<ER>
             }
         } else {
             parentNode.genCodeIfNecessary(current)

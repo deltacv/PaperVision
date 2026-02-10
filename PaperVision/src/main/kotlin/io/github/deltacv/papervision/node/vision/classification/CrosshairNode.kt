@@ -274,11 +274,11 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                 raise("") // TODO: Handle non-runtime lists
             }
 
-            val crosshairPositionVector = crosshairPosition.genValue(current)
+            val crosshairPositionVector = crosshairPosition.genValue(current) as GenValue.Vec2.Vector2
 
             val drawOn = drawCrosshairOn.genValue(current)
 
-            val crosshairLineParams = crosshairLineParams.genValue(current)
+            val crosshairLineParams = crosshairLineParams.genValue(current) as GenValue.LineParameters.Line
             val crosshairSizeValue = crosshairScale.genValue(current).value
 
             current {
