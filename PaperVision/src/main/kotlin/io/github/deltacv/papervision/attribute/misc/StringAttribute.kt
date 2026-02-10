@@ -33,9 +33,9 @@ import io.github.deltacv.papervision.serialization.AttributeSerializationData
 class StringAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null
-) : TypedAttribute(Companion) {
+) : TypedAttribute<GenValue.String>(Companion) {
 
-    companion object: AttributeType {
+    companion object: AttributeType<StringAttribute> {
         override val icon = FontAwesomeIcons.EnvelopeOpenText
 
         override fun new(mode: AttributeMode, variableName: String) = StringAttribute(mode, variableName)
@@ -77,8 +77,8 @@ class StringAttribute(
     override fun readEditorValue() = value.get()
 
     override fun genValue(current: CodeGen.Current) = readGenValue(
-        current, "a String", GenValue.String(value.get().resolved())
-    ) { it is GenValue.String }
+        current, GenValue.String(value.get().resolved())
+    )
 
     override fun makeSerializationData() = Data(value.get())
 

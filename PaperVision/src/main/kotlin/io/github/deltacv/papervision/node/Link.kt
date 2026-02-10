@@ -59,8 +59,8 @@ class Link(
         }
 
         val typedAttrib = when {
-            aAttrib is TypedAttribute -> aAttrib as TypedAttribute
-            bAttrib is TypedAttribute -> bAttrib as TypedAttribute
+            aAttrib is TypedAttribute<*> -> aAttrib as TypedAttribute<*>
+            bAttrib is TypedAttribute<*> -> bAttrib as TypedAttribute<*>
             else -> null
         }
 

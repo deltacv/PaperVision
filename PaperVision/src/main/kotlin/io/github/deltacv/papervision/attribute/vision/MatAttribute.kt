@@ -36,9 +36,9 @@ class MatAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null,
     var allowPrevizButton: Boolean = false
-) : TypedAttribute(Companion) {
+) : TypedAttribute<GenValue.Mat>(Companion) {
 
-    companion object: AttributeType {
+    companion object: AttributeType<MatAttribute> {
         override val icon = FontAwesomeIcons.Image
 
         override val styleColor = rgbaColor(0, 151, 167, 180)
@@ -106,9 +106,7 @@ class MatAttribute(
         prevIsPrevizEnabled = isPrevizEnabled
     }
 
-    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Mat>(
-        current, "a Mat"
-    ) { it is GenValue.Mat }
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Mat>(current)
 
     fun enablePrevizButton() = apply { allowPrevizButton = true }
 

@@ -204,7 +204,7 @@ sealed class GenValue {
         val b: Double,
         val c: Double,
         val d: Double
-    ) : GList.ListOf<GenValue.Double>(arrayOf(a, b, c, d)) {
+    ) : GList.ListOf<Double>(arrayOf(a, b, c, d)) {
         companion object {
             val ZERO = Scalar(Double.ZERO, Double.ZERO, Double.ZERO, Double.ZERO)
 
@@ -266,20 +266,26 @@ sealed class GenValue {
         }
     }
 
-    sealed class GList : GenValue() {
+    sealed class GList<E: GenValue> : GenValue() {
         companion object {
             inline fun <reified T : GenValue> RuntimeListOf(value: Resolvable<Value>): RuntimeListOf<T> =
                 RuntimeListOf(value, Resolvable.Now(T::class))
         }
 
-        open class ListOf<T : GenValue>(val elements: Array<T>) : GList()
-        class List(elements: Array<GenValue>) : ListOf<GenValue>(elements)
+        fun toListOrNull(): ListOf<E>? {
+            return when (this) {
+                is ListOf -> this
+                is RuntimeListOf -> null
+            }
+        }
 
-        data class RuntimeListOf<T : GenValue>(val value: Resolvable<Value>, val typeClass: Resolvable<KClass<T>>) : GList() {
+        open class ListOf<E : GenValue>(val elements: Array<E>) : GList<E>()
+
+        data class RuntimeListOf<E : GenValue>(val value: Resolvable<Value>, val typeClass: Resolvable<KClass<E>>) : GList<E>() {
             companion object {
-                fun <T : GenValue> defer(
-                    genValueResolver: () -> RuntimeListOf<T>?
-                ): RuntimeListOf<T> = RuntimeListOf(
+                fun <E : GenValue> defer(
+                    genValueResolver: () -> RuntimeListOf<E>?
+                ): RuntimeListOf<E> = RuntimeListOf(
                     Resolvable.from { genValueResolver()?.value },
                     Resolvable.from { genValueResolver()?.typeClass }
                 )

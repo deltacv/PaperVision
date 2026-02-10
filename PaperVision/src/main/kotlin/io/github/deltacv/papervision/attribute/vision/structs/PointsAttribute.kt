@@ -29,9 +29,9 @@ import io.github.deltacv.papervision.gui.style.rgbaColor
 class PointsAttribute (
     override val mode: AttributeMode,
     override var variableName: String? = null
-) : TypedAttribute(PointsAttribute) {
+) : TypedAttribute<GenValue.GPoints>(Companion) {
 
-    companion object : AttributeType {
+    companion object : AttributeType<PointsAttribute> {
         override val icon = FontAwesomeIcons.BezierCurve
 
         override val styleColor = rgbaColor(253, 216, 53, 180)
@@ -43,8 +43,6 @@ class PointsAttribute (
         override fun new(mode: AttributeMode, variableName: String) = PointsAttribute(mode, variableName)
     }
 
-    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.GPoints.RuntimePoints>(
-        current, "a Points"
-    ) { it is GenValue.GPoints.RuntimePoints }
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.GPoints.RuntimePoints>(current)
 
 }

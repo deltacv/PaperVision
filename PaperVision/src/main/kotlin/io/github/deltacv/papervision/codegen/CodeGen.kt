@@ -22,6 +22,7 @@ import io.github.deltacv.papervision.codegen.build.Scope
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.dsl.CodeGenContext
 import io.github.deltacv.papervision.codegen.language.Language
+import io.github.deltacv.papervision.codegen.resolve.PlaceholderResolver
 import io.github.deltacv.papervision.codegen.resolve.Resolvable
 import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.util.loggerFor
@@ -64,90 +65,18 @@ class CodeGen(
 
     private val flags = mutableListOf<String>()
 
+    private val placeholderResolver = PlaceholderResolver(importScope)
+
     enum class Stage {
         CREATION, INITIAL_GEN, END_GEN, ENDED_SUCCESS, ENDED_ERROR
     }
 
     var stage = Stage.CREATION
 
-    fun gen() = resolveAllPlaceholders(language.gen(this))
+    fun gen(): String {
+        val raw = language.gen(this)
 
-    private fun resolveAllPlaceholders(preprocessed: String): String {
-        var resolved = preprocessed
-
-        val placeholders = IdContainerStacks.local.peekNonNull<Resolvable.Placeholder<*>>()
-
-        logger.info("Resolving active placeholders: ${placeholders.inmutable.size}")
-
-        // Initial debug log of all placeholders
-        placeholders.inmutable.forEach {
-            val v = it.resolve()
-            logger.debug("${it.placeholder} = $v")
-        }
-
-        fun resolve(currentPlaceholdersProvider: () -> Collection<Resolvable.Placeholder<*>>) {
-            do {
-                var changed = false
-                val sb = StringBuilder()
-                var i = 0
-
-                // Resolve all once per pass
-                currentPlaceholdersProvider().forEach { it.resolve() }
-
-                while (i < resolved.length) {
-                    val start = resolved.indexOf(Resolvable.RESOLVER_PREFIX, i)
-                    if (start == -1) {
-                        // No more placeholders
-                        sb.append(resolved, i, resolved.length)
-                        break
-                    }
-
-                    val end = resolved.indexOf(Resolvable.RESOLVER_SUFFIX, start)
-                    if (end == -1) {
-                        // No closing '>', append rest as-is
-                        sb.append(resolved, i, resolved.length)
-                        break
-                    }
-
-                    // Append text before the placeholder
-                    sb.append(resolved, i, start)
-
-                    // Extract the number part
-                    val idPart = resolved.substring(start + 6, end) // after "<mack!"
-                    val id = idPart.toIntOrNull()
-
-                    if (id != null) {
-                        val placeholder = currentPlaceholdersProvider().find { it.id == id }
-                        if (placeholder != null) {
-                            val value = placeholder.resolve()
-                            val replacement = if (value is Value) {
-                                importScope.importType(value.type)
-                                value.value ?: ""
-                            } else {
-                                value.toString()
-                            }
-                            sb.append(replacement)
-                            changed = true
-                        } else {
-                            // Keep the placeholder as-is if no match found
-                            sb.append(resolved, start, end + 1)
-                        }
-                    } else {
-                        // Not a valid number after <mack!
-                        sb.append(resolved, start, end + 1)
-                    }
-
-                    i = end + 1
-                }
-
-                resolved = sb.toString()
-            } while (changed) // Repeat until no changes, meaning all placeholders were resolved
-        }
-
-        resolve { placeholders.inmutable.filter { !it.resolveLast } } // Resolve non-last placeholders first
-        resolve { placeholders.inmutable.filter { it.resolveLast } } // Then resolve last placeholders
-
-        return resolved
+        return placeholderResolver.resolve(raw, IdContainerStacks.local.peekNonNull<Resolvable.Placeholder<*>>())
     }
 
     fun addFlag(flag: String) = if(!flags.contains(flag)) flags.add(flag) else false

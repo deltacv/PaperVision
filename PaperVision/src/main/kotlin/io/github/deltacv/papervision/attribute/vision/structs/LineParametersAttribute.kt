@@ -35,9 +35,9 @@ import io.github.deltacv.papervision.node.vision.overlay.LineParametersNode
 class LineParametersAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null
-) : TypedAttribute(LineParametersAttribute) {
+) : TypedAttribute<GenValue.LineParameters>(Companion) {
 
-    companion object : AttributeType {
+    companion object : AttributeType<LineParametersAttribute> {
         override val icon = FontAwesomeIcons.ChartLine
 
         override fun new(mode: AttributeMode, variableName: String) = LineParametersAttribute(mode, variableName)
@@ -70,17 +70,11 @@ class LineParametersAttribute(
         }
     }
 
-    override fun genValue(current: CodeGen.Current): GenValue.LineParameters {
-        return if(mode == AttributeMode.INPUT && !hasLink) {
-            GenValue.LineParameters.Line(
-                GenValue.Scalar(GenValue.Double.ZERO, GenValue.Double(255.0.resolved()), GenValue.Double.ZERO, GenValue.Double.ZERO),
-                GenValue.Int(3.resolved())
-            )
-        } else {
-            readGenValue(
-                current, "a LineParameters"
-            ) { it is GenValue.LineParameters }
-        }
-    }
+    override fun genValue(current: CodeGen.Current) = readGenValue(
+        current, GenValue.LineParameters.Line(
+            GenValue.Scalar(GenValue.Double.ZERO, GenValue.Double(255.0.resolved()), GenValue.Double.ZERO, GenValue.Double.ZERO),
+            GenValue.Int(3.resolved())
+        )
+    )
 
 }

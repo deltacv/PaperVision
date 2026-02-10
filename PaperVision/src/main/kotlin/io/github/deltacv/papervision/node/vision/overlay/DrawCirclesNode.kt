@@ -116,9 +116,6 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
                     ?: raise("") // TODO: handle non-runtime lists
 
                 val line = line.genValue(current)
-                if (line !is GenValue.LineParameters.Line) {
-                    raise("Line parameters must not be runtime")
-                }
 
                 current.scope {
                     nameComment()

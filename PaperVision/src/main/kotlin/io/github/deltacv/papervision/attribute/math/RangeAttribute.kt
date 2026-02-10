@@ -39,8 +39,8 @@ class RangeAttribute(
     minDefault: Int = 0,
     maxDefault: Int = 255,
     val valueMutator: (Int) -> Double = { it.toDouble() }
-) : TypedAttribute(Companion) {
-    companion object : AttributeType {
+) : TypedAttribute<GenValue.Range>(Companion) {
+    companion object : AttributeType<RangeAttribute> {
         override val icon = FontAwesomeIcons.TextWidth
         override fun new(mode: AttributeMode, variableName: String) = RangeAttribute(mode, variableName)
     }
@@ -147,12 +147,11 @@ class RangeAttribute(
     override fun readEditorValue() = arrayOf(valueMutator(minValue.get()), valueMutator(maxValue.get()))
 
     override fun genValue(current: CodeGen.Current) = readGenValue(
-        current, "a Range", GenValue.Range(
+        current, GenValue.Range(
             GenValue.Double(valueMutator(minValue.get()).resolved()),
             GenValue.Double(valueMutator(maxValue.get()).resolved())
         )
-    ) { it is GenValue.Range }
-
+    )
 }
 
 

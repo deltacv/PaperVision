@@ -52,7 +52,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
 
     val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
 
-    val shape = EnumAttribute(INPUT, Shape.values(), "$[att_shape]")
+    val shape = EnumAttribute(INPUT, Shape.entries, "$[att_shape]")
     val sides = IntAttribute(INPUT, "$[att_sides]")
 
     val accuracy = IntAttribute(INPUT, "$[att_accuracy]")

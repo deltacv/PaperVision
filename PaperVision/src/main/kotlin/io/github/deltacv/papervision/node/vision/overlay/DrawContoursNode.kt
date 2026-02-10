@@ -150,9 +150,6 @@ open class DrawContoursNode
                 val contoursList = contours.genValue(current)
 
                 val lineParams = lineParams.genValue(current)
-                if(lineParams !is GenValue.LineParameters.Line) {
-                    raise("Given line parameters is not a static type")
-                }
 
                 current.scope {
                     nameComment()

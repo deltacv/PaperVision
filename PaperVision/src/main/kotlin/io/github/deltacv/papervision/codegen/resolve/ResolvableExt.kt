@@ -41,9 +41,12 @@ inline fun <T> Resolvable.Companion.fromResolvable(
     return resolvable ?: Placeholder { resolver()?.resolve() }
 }
 
+@JvmName("fromValueInline")
 inline fun <T> Resolvable.Companion.from(
     crossinline resolver: () -> T?
 ) = fromValue(resolver)
+
+@JvmName("fromResolvableInline")
 inline fun <T> Resolvable.Companion.from(
     crossinline resolver: () -> Resolvable<T>?
 ) = fromResolvable(resolver)

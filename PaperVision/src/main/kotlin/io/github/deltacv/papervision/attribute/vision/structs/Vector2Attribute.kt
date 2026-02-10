@@ -34,9 +34,9 @@ import io.github.deltacv.papervision.node.math.Vector2Node
 class Vector2Attribute (
     override val mode: AttributeMode,
     override var variableName: String? = null
-) : TypedAttribute(Companion) {
+) : TypedAttribute<GenValue.Vec2>(Companion) {
 
-    companion object : AttributeType {
+    companion object : AttributeType<Vector2Attribute> {
         override val icon = FontAwesomeIcons.DotCircle
 
         override fun new(mode: AttributeMode, variableName: String) = Vector2Attribute(mode, variableName)
@@ -69,14 +69,7 @@ class Vector2Attribute (
         }
     }
 
-    override fun genValue(current: CodeGen.Current): GenValue.Vec2 {
-        return if(mode == AttributeMode.INPUT && !hasLink) {
-            GenValue.Vec2.Vector2(GenValue.Double.ZERO, GenValue.Double.ZERO)
-        } else {
-            readGenValue(
-                current, "a Vector2"
-            ) { it is GenValue.Vec2 }
-        }
-    }
+    override fun genValue(current: CodeGen.Current) =
+        readGenValue(current, GenValue.Vec2.Vector2(GenValue.Double.ZERO, GenValue.Double.ZERO))
 
 }

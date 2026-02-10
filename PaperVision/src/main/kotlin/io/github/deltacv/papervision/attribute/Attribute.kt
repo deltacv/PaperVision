@@ -222,7 +222,6 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
             raise(message)
         }
     }
-
     fun warnAssert(condition: Boolean, message: String) {
         if(!condition) {
             warn(message)

@@ -155,9 +155,6 @@ open class DrawRectanglesNode
                 val rectanglesList = rectangles.genValue(current)
 
                 val lineParams = lineParams.genValue(current)
-                if (lineParams !is GenValue.LineParameters.Line) {
-                    raise("Line parameters must not be runtime")
-                }
 
                 current.scope {
                     nameComment()

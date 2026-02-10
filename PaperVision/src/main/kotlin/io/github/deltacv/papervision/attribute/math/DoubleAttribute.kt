@@ -22,6 +22,7 @@ import imgui.ImGui
 import imgui.flag.ImGuiInputTextFlags
 import imgui.type.ImDouble
 import imgui.type.ImFloat
+import imgui.type.ImInt
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
@@ -37,12 +38,11 @@ class DoubleAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null,
     initialValue: Double = 0.0
-) : TypedAttribute(Companion) {
+) : TypedAttribute<GenValue.Double>(Companion) {
 
-    companion object : AttributeType {
+    companion object : AttributeType<DoubleAttribute> {
         override val icon = FontAwesomeIcons.SquareRootAlt
-        override fun new(mode: AttributeMode, variableName: String) =
-            DoubleAttribute(mode, variableName)
+        override fun new(mode: AttributeMode, variableName: String) = DoubleAttribute(mode, variableName)
     }
 
     val value = ImDouble(initialValue)
@@ -61,6 +61,8 @@ class DoubleAttribute(
     private var range = Range2d.DEFAULT_POSITIVE
     var isSlider = false
         private set
+
+    var roundValues = false
 
     override fun drawAttribute() {
         super.drawAttribute()
@@ -81,12 +83,26 @@ class DoubleAttribute(
                     if (disableInput) ImGuiInputTextFlags.ReadOnly else 0
                 )
             } else {
-                ImGui.sliderFloat(
-                    "###$sliderId",
-                    sliderValue.data,
-                    range.min.toFloat(),
-                    range.max.toFloat()
-                )
+                if(roundValues) {
+                    val sliderValueInt = ImInt(value.get().toInt())
+
+                    ImGui.sliderInt(
+                        "###$sliderId",
+                        sliderValueInt.data,
+                        range.min.toInt(),
+                        range.max.toInt()
+                    )
+
+                    sliderValue.set(sliderValueInt.get().toFloat())
+                } else {
+                    ImGui.sliderFloat(
+                        "###$sliderId",
+                        sliderValue.data,
+                        range.min.toFloat(),
+                        range.max.toFloat()
+                    )
+                }
+
                 value.set(sliderValue.get().toDouble())
             }
 
@@ -115,10 +131,8 @@ class DoubleAttribute(
     override fun readEditorValue() = value.get()
 
     override fun genValue(current: CodeGen.Current) = readGenValue(
-        current,
-        "a Double",
-        GenValue.Double(value.get().resolved())
-    ) { it is GenValue.Double }
+        current, GenValue.Double(value.get().resolved())
+    )
 
     override fun makeSerializationData() = Data(value.get())
 

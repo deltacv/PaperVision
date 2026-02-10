@@ -54,7 +54,7 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
 
     val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
 
-    val boundingMode = EnumAttribute(INPUT, BoundingMode.values(), "$[att_boundingmode]")
+    val boundingMode = EnumAttribute(INPUT, BoundingMode.entries, "$[att_boundingmode]")
 
     val minRatio = IntAttribute(INPUT, "$[att_minratio]")
     val maxRatio = IntAttribute(INPUT, "$[att_maxratio]")
@@ -93,10 +93,10 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
                 val minRatioVar = uniqueVariable("minRatio", minRatioVal.value.v)
                 val maxRatioVar = uniqueVariable("maxRatio", maxRatioVal.value.v)
 
-                val contoursVarName = contours.value.map { it?.value ?: "contours" }
+                val contoursVarName = contours.value.map { it.value ?: "contours" }
                 val contoursVar = uniqueVariable("${contoursVarName.v}ByRatio", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
 
-                val pointsVarName = contours.value.map { it?.value ?: "points" }
+                val pointsVarName = contours.value.map { it.value ?: "points" }
                 val points2f = uniqueVariable("${pointsVarName.v}2f", JvmOpenCvTypes.MatOfPoint2f.new())
 
                 group {
@@ -125,7 +125,7 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
                             points2f("release")
                             contour("convertTo", points2f, cvTypeValue("CV_32F"))
 
-                            val rect = uniqueVariable("rect", JvmOpenCvTypes.Imgproc.callValue("minAreaRect", JvmOpenCvTypes.RotatedRect, points2f))
+                            val rect = uniqueVariable("rect", Imgproc.callValue("minAreaRect", JvmOpenCvTypes.RotatedRect, points2f))
                             local(rect)
 
                             separate()

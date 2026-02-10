@@ -62,7 +62,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
     val crosshairLineParams = LineParametersAttribute(INPUT, "$[att_crosshairline_params]")
 
-    val detectionMode = EnumAttribute(INPUT, DetectionMode.values(), "$[att_detectionmode]")
+    val detectionMode = EnumAttribute(INPUT, DetectionMode.entries, "$[att_detectionmode]")
 
     val outputCrosshair = ListAttribute(OUTPUT, PointsAttribute, "$[att_crosshair]")
     val outputCrosshairImage = MatAttribute(OUTPUT, "$[att_crosshairimage]")
@@ -274,20 +274,11 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                 raise("") // TODO: Handle non-runtime lists
             }
 
-            val lineParams = crosshairLineParams.genValue(current)
-            if (lineParams !is GenValue.LineParameters.Line) {
-                raise("Line parameters must not be runtime")
-            }
-
-
             val crosshairPositionVector = crosshairPosition.genValue(current)
-            if(crosshairPositionVector !is GenValue.Vec2.Vector2) {
-                raise("Crosshair position must not be runtime")
-            }
 
             val drawOn = drawCrosshairOn.genValue(current)
 
-            val crosshairLineParams = (crosshairLineParams.genValue(current) as GenValue.LineParameters.Line)
+            val crosshairLineParams = crosshairLineParams.genValue(current)
             val crosshairSizeValue = crosshairScale.genValue(current).value
 
             current {

@@ -36,15 +36,23 @@ import io.github.deltacv.papervision.serialization.data.adapter.dataSerializable
 import io.github.deltacv.papervision.serialization.data.adapter.jsonObjectToDataSerializable
 import io.github.deltacv.papervision.serialization.AttributeSerializationData
 
-open class ListAttribute(
+fun <E: TypedAttribute<ER>, ER: GenValue> listAttributeOf(
+    mode: AttributeMode,
+    elementAttributeType: AttributeType<E>,
+    variableName: String? = null,
+    length: Int? = null,
+    allowAddOrDelete: Boolean = true
+) = ListAttribute(mode, elementAttributeType, variableName, length, allowAddOrDelete)
+
+open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
     override val mode: AttributeMode,
-    val elementAttributeType: AttributeType,
+    val elementAttributeType: AttributeType<E>,
     override var variableName: String? = null,
     length: Int? = null,
     val allowAddOrDelete: Boolean = true
-) : TypedAttribute(Companion) {
+) : TypedAttribute<GenValue.GList<ER>>(Companion) {
 
-    companion object : AttributeType {
+    companion object : AttributeType<ListAttribute<*, *>> {
         override val icon = FontAwesomeIcons.List
         override val allowsNew = false
 
@@ -64,8 +72,8 @@ open class ListAttribute(
             Companion.styleHoveredColor
         } else elementAttributeType.listStyleHoveredColor
 
-    val listAttributes = mutableListOf<TypedAttribute>()
-    val deleteQueue = mutableListOf<TypedAttribute>()
+    val listAttributes = mutableListOf<E>()
+    val deleteQueue = mutableListOf<E>()
 
     private var lastHasLink = false
 
@@ -124,7 +132,7 @@ open class ListAttribute(
                         }
                     }
                 } else {
-                    for (attribute in listAttributes.toTypedArray()) {
+                    for (attribute in listAttributes.toTypedArray<Attribute>()) {
                         attribute.delete()
                     }
                 }
@@ -154,7 +162,7 @@ open class ListAttribute(
         var ignoreNewLink = false
 
         // accepts links of elementAttributeType to redirect them into a list element
-        if (mode == AttributeMode.INPUT && lastHasLink != hasLink && hasLink && availableLinkedAttribute !is ListAttribute) {
+        if (mode == AttributeMode.INPUT && lastHasLink != hasLink && hasLink && availableLinkedAttribute !is ListAttribute<*, *>) {
             val linkedAttribute = availableLinkedAttribute!!
 
             // the user might be crazy and try to link an attribute that is already linked to one of our elements
@@ -205,12 +213,13 @@ open class ListAttribute(
 
     // accept either another ListAttribute with the same element type or a TypedAttribute with the same type as the element type
     override fun acceptLink(other: Attribute) =
-        (other is ListAttribute && other.elementAttributeType == elementAttributeType) ||
-                (other is TypedAttribute && other.attributeType == elementAttributeType)
+        (other is ListAttribute<*, *> && other.elementAttributeType == elementAttributeType) ||
+                (other is TypedAttribute<*> && other.attributeType == elementAttributeType)
 
     open fun drawAttributeText(index: Int, attrib: Attribute): Boolean = false
 
-    override fun genValue(current: CodeGen.Current): GenValue.GList {
+    @Suppress("UNCHECKED_CAST")
+    override fun genValue(current: CodeGen.Current): GenValue.GList<ER> {
         return if (mode == AttributeMode.INPUT) {
             if (hasLink) {
                 val linkedAttrib = availableLinkedAttribute
@@ -220,27 +229,41 @@ open class ListAttribute(
                     "List attribute must have another attribute attached"
                 )
 
+                validateAttributes()
+
                 val value = linkedAttrib.genValue(current)
+
                 raiseAssert(
-                    value is GenValue.GList.ListOf<*> || value is GenValue.GList.RuntimeListOf<*>,
+                    value is GenValue.GList<*>,
                     "Attribute attached is not a list"
                 )
 
-                value
+                value as GenValue.GList<ER>
             } else {
+                validateAttributes() // we can safely do an unchecked cast after validating the attributes
+
                 // get the values of all the attributes and return a
                 // GenValue.List with the attribute values in an array
-                GenValue.GList.List(listAttributes.map { it.genValue(current) }.toTypedArray())
+                GenValue.GList.ListOf(listAttributes.map { it.genValue(current) }.toTypedArray<GenValue>()) as GenValue.GList<ER>
             }
         } else {
             parentNode.genCodeIfNecessary(current)
             val value = getGenValueFromNode(current)
             raiseAssert(
-                value is GenValue.GList,
+                value is GenValue.GList<*>,
                 "Value returned from the node is not a list"
             )
 
-            value
+            value as GenValue.GList<ER>
+        }
+    }
+
+    private fun validateAttributes() {
+        for (attribute in listAttributes) {
+            raiseAssert(
+                attribute.attributeType == elementAttributeType,
+                "All attributes in the list must be of the same type as the element type"
+            )
         }
     }
 
@@ -300,7 +323,7 @@ open class ListAttribute(
         return list.toTypedArray()
     }
 
-    private fun createElement(enable: Boolean = true, linkTo: Attribute? = null, relatedLink: Link? = null): TypedAttribute {
+    private fun createElement(enable: Boolean = true, linkTo: Attribute? = null, relatedLink: Link? = null): E {
         val count = listAttributes.size.toString()
         val elementName = count + if (count.length == 1) " " else ""
 

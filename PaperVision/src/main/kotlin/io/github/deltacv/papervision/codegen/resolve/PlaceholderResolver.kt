@@ -2,6 +2,7 @@ package io.github.deltacv.papervision.codegen.resolve
 
 import io.github.deltacv.papervision.codegen.build.Scope
 import io.github.deltacv.papervision.codegen.build.Value
+import io.github.deltacv.papervision.id.container.IdContainer
 import io.github.deltacv.papervision.util.loggerFor
 
 class PlaceholderResolver(
@@ -12,7 +13,7 @@ class PlaceholderResolver(
 
     fun resolve(
         preprocessed: String,
-        placeholders: Collection<Resolvable.Placeholder<*>>
+        placeholders: IdContainer<Resolvable.Placeholder<*>>
     ): String {
         var resolved = preprocessed
 
@@ -21,22 +22,23 @@ class PlaceholderResolver(
 
         val stack = mutableListOf<Int>() // single stack per pass
 
-        resolved = resolvePass(resolved, placeholders.filter { !it.resolveLast }, stack)
-        resolved = resolvePass(resolved, placeholders.filter { it.resolveLast }, stack)
+        resolved = resolvePass(resolved, placeholders, false, stack)
+        resolved = resolvePass(resolved, placeholders, true, stack)
 
         return resolved
     }
 
     private fun resolvePass(
         initial: String,
-        placeholders: Collection<Resolvable.Placeholder<*>>,
+        placeholders: IdContainer<Resolvable.Placeholder<*>>,
+        resolveLastPlaceholders: Boolean,
         stack: MutableList<Int>
     ): String {
         var current = initial
         placeholders.forEach { it.resolve() }
 
         do {
-            val (text, changed) = replaceOnce(current, placeholders, stack)
+            val (text, changed) = replaceOnce(current, placeholders, resolveLastPlaceholders, stack)
             current = text
         } while (changed)
 
@@ -45,7 +47,8 @@ class PlaceholderResolver(
 
     private fun replaceOnce(
         input: String,
-        placeholders: Collection<Resolvable.Placeholder<*>>,
+        placeholders: IdContainer<Resolvable.Placeholder<*>>,
+        resolveLastPlaceholders: Boolean = false,
         stack: MutableList<Int>
     ): Pair<String, Boolean> {
         val sb = StringBuilder()
@@ -70,7 +73,15 @@ class PlaceholderResolver(
             val id = input.substring(start + Resolvable.RESOLVER_PREFIX.length, end).toIntOrNull()
 
             val replacement = id?.let { pid ->
-                val placeholder = placeholders.find { it.id == pid } ?: return@let null
+                val placeholder = placeholders[pid]
+                if (placeholder == null) {
+                    logger.warn("No placeholder found for ID $pid, leaving as is")
+                    return@let null
+                }
+
+                if(placeholder.resolveLast != resolveLastPlaceholders) {
+                    return@let null
+                }
 
                 if (pid in stack) {
                     logger.warn("Cycle detected on placeholder ID $pid, stack: ${stack.joinToString(" -> ")}")

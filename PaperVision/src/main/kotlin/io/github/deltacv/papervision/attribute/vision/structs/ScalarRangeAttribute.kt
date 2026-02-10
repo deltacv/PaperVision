@@ -19,7 +19,6 @@
 package io.github.deltacv.papervision.attribute.vision.structs
 
 import imgui.ImGui
-import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.TypedAttribute
@@ -36,7 +35,7 @@ class ScalarRangeAttribute(
     mode: AttributeMode,
     color: ColorSpace,
     variableName: String? = null
-) : ListAttribute(mode, RangeAttribute, variableName, color.channels) {
+) : ListAttribute<RangeAttribute, GenValue.Range>(mode, RangeAttribute, variableName, color.channels) {
 
     var color = color
         set(value) {
@@ -53,7 +52,7 @@ class ScalarRangeAttribute(
             val name = color.channelNames[index]
             val elementName = name + if(name.length == 1) " " else ""
 
-            if(attrib is TypedAttribute) {
+            if(attrib is TypedAttribute<*>) {
                 attrib.drawDescriptiveText = false
                 attrib.inputSameLine = true
             }
@@ -69,19 +68,16 @@ class ScalarRangeAttribute(
     }
 
     override fun genValue(current: CodeGen.Current): GenValue.ScalarRange {
-        val values = (super.genValue(current) as GenValue.GList.List).elements
-        val ZERO = GenValue.Range.ZERO
+        val values = super.genValue(current).toListOrNull()!!.elements
 
         val range = GenValue.ScalarRange(
-            values.getOr(0, ZERO) as GenValue.Range,
-            values.getOr(1, ZERO) as GenValue.Range,
-            values.getOr(2, ZERO) as GenValue.Range,
-            values.getOr(3, ZERO) as GenValue.Range
+            values.getOrElse(0) { GenValue.Range.ZERO },
+            values.getOrElse(1) { GenValue.Range.ZERO },
+            values.getOrElse(2) { GenValue.Range.ZERO },
+            values.getOrElse(3) { GenValue.Range.ZERO }
         )
 
-        return readGenValue(current, "a scalar range", range) {
-            it is GenValue.ScalarRange
-        }
+        return readGenValue(current, range)
     }
 
     private var twoScalarsCached: Pair<String, String>? = null
@@ -116,10 +112,4 @@ class ScalarRangeAttribute(
         return twoScalarsCached!!
     }
 
-}
-
-fun <T> Array<T>.getOr(index: Int, or: T) = try {
-    this[index]
-} catch(ignored: ArrayIndexOutOfBoundsException) {
-    or
 }

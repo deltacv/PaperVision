@@ -160,11 +160,7 @@ open class DrawRotatedRectanglesNode
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)
 
-                val lineParams = (lineParams.genValue(current))
-
-                if(lineParams !is GenValue.LineParameters.Line) {
-                    raise("Line parameters must not be runtime")
-                }
+                val lineParams = lineParams.genValue(current)
 
                 current.scope {
                     nameComment()

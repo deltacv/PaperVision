@@ -31,7 +31,7 @@ import io.github.deltacv.papervision.engine.client.message.TunerChangeValueMessa
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValuesMessage
 import io.github.deltacv.papervision.gui.util.Font
 
-interface AttributeType {
+interface AttributeType<A: TypedAttribute<*>> {
     val icon: String
     val allowsNew: Boolean get() = true
 
@@ -45,12 +45,12 @@ interface AttributeType {
         listStyleColor == PaperVision.imnodesStyle.pin
             && listStyleHoveredColor == PaperVision.imnodesStyle.pinHovered
 
-    fun new(mode: AttributeMode, variableName: String): TypedAttribute {
+    fun new(mode: AttributeMode, variableName: String): A {
         throw UnsupportedOperationException("Cannot instantiate a List attribute with new")
     }
 }
 
-abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
+abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) : Attribute() {
 
     abstract var variableName: String?
 
@@ -170,13 +170,13 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
         }
     }
 
+    abstract override fun genValue(current: CodeGen.Current): R
+
     @Suppress("UNCHECKED_CAST")
-    protected inline fun <reified T : GenValue> readGenValue(
+    protected inline fun <reified R : GenValue> readGenValue(
         current: CodeGen.Current,
-        name: String,
-        inputFieldValue: T? = null,
-        checkConsumer: (GenValue) -> Boolean
-    ): T {
+        inputFieldValue: R? = null
+    ): R {
         if(isInput) {
             return if(hasLink || inputFieldValue == null) {
                 val linkedAttrib = availableLinkedAttribute
@@ -187,27 +187,27 @@ abstract class TypedAttribute(val attributeType: AttributeType) : Attribute() {
                 )
 
                 val value = linkedAttrib.genValue(current)
-                raiseAssert(checkConsumer(value), tr("err_attachedattrib_isnot", name))
+                raiseAssert(value is R, tr("err_attachedattrib_isnot", this::class.java.simpleName))
 
-                value as T
+                value
             } else {
                 inputFieldValue
             }
         } else {
             val value = getGenValueFromNode(current)
-            raiseAssert(checkConsumer(value), tr("err_valreturned_isnot", name))
+            raiseAssert(value is R, tr("err_valreturned_isnot", this::class.java.simpleName))
 
-            return value as T
+            return value
         }
     }
 
     // acceptLink is overridden to allow for ListAttribute to accept TypedAttribute
     override fun acceptLink(other: Attribute) =
-        (other is TypedAttribute && other.attributeType == attributeType) ||
+        (other is TypedAttribute<*> && other.attributeType == attributeType) ||
             this::class == other::class ||
                 // allow linking to ListAttribute if the types are the same so it becomes an element of the list
                 // ONLY IF THIS ELEMENT IS OUTPUT otherwise it allows to link a list output to an individual input
-                (other is ListAttribute && other.elementAttributeType == attributeType && mode == AttributeMode.OUTPUT)
+                (other is ListAttribute<*, *> && other.elementAttributeType == attributeType && mode == AttributeMode.OUTPUT)
 
     protected fun changed() {
         if (!isFirstDraw && !isSecondDraw) onChange.run()

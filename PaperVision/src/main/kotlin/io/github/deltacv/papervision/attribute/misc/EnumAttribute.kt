@@ -29,14 +29,15 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.serialization.data.SerializeData
+import kotlin.enums.EnumEntries
 
 class EnumAttribute<T: Enum<T>>(
     override val mode: AttributeMode,
-    val values: Array<T>,
+    val values: EnumEntries<T>,
     override var variableName: String?
-) : TypedAttribute(Companion) {
+) : TypedAttribute<GenValue.Enum<T>>(Companion) {
 
-    companion object: AttributeType {
+    companion object: AttributeType<EnumAttribute<*>> {
         override val icon = FontAwesomeIcons.FlagCheckered
         override val allowsNew = false
 

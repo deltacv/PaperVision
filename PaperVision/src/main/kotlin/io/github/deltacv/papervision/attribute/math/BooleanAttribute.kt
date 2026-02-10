@@ -31,9 +31,9 @@ import io.github.deltacv.papervision.serialization.data.SerializeData
 class BooleanAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null
-) : TypedAttribute(Companion) {
+) : TypedAttribute<GenValue.Boolean>(Companion) {
 
-    companion object: AttributeType {
+    companion object: AttributeType<BooleanAttribute> {
         override val icon = FontAwesomeIcons.ToggleOn
 
         override fun new(mode: AttributeMode, variableName: String) = BooleanAttribute(mode, variableName)

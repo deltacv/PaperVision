@@ -22,20 +22,20 @@ import imgui.ImGui
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.TypedAttribute
-import io.github.deltacv.papervision.attribute.math.IntAttribute
+import io.github.deltacv.papervision.attribute.math.DoubleAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.ColorSpace
-import io.github.deltacv.papervision.util.Range2i
+import io.github.deltacv.papervision.util.Range2d
 
 class ScalarAttribute(
     mode: AttributeMode,
     color: ColorSpace,
     variableName: String? = null
-) : ListAttribute(mode, IntAttribute, variableName, color.channels) {
+) : ListAttribute<DoubleAttribute, GenValue.Double>(mode, DoubleAttribute, variableName, color.channels) {
 
     var color = color
         set(value) {
@@ -52,7 +52,7 @@ class ScalarAttribute(
             val name = color.channelNames[index]
             val elementName = name + if(name.length == 1) " " else ""
 
-            if(attrib is TypedAttribute) {
+            if(attrib is TypedAttribute<*>) {
                 attrib.drawDescriptiveText = false
                 attrib.inputSameLine = true
             }
@@ -68,24 +68,23 @@ class ScalarAttribute(
     }
 
     override fun onElementCreation(element: Attribute) {
-        if(element is IntAttribute) {
-            element.sliderMode(Range2i(0, 255))
+        if(element is DoubleAttribute) {
+            element.roundValues = true
+            element.sliderMode(Range2d(0.0, 255.0))
         }
     }
 
     override fun genValue(current: CodeGen.Current): GenValue.Scalar {
-        val values = (super.genValue(current) as GenValue.GList.List).elements
+        val values = super.genValue(current).toListOrNull()!!.elements
 
         val value = GenValue.Scalar(
-            GenValue.Double((values.getOr(0, GenValue.Int.ZERO) as GenValue.Int).value.map { it?.toDouble() }),
-            GenValue.Double((values.getOr(1, GenValue.Int.ZERO) as GenValue.Int).value.map { it?.toDouble() }),
-            GenValue.Double((values.getOr(2, GenValue.Int.ZERO) as GenValue.Int).value.map { it?.toDouble() }),
-            GenValue.Double((values.getOr(3, GenValue.Int.ZERO) as GenValue.Int).value.map { it?.toDouble() }),
+            GenValue.Double(values.getOrElse(0) { GenValue.Double.ZERO }.value),
+            GenValue.Double(values.getOrElse(1) { GenValue.Double.ZERO }.value),
+            GenValue.Double(values.getOrElse(2) { GenValue.Double.ZERO }.value),
+            GenValue.Double(values.getOrElse(3) { GenValue.Double.ZERO }.value),
         )
 
-        return readGenValue(
-            current, "a Scalar", value
-        ) { it is GenValue.Scalar }
+        return readGenValue(current, value)
     }
 
 }
