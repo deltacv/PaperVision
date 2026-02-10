@@ -24,6 +24,7 @@ import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import io.github.deltacv.papervision.codegen.resolve.Resolvable
 import io.github.deltacv.papervision.exception.AttributeGenException
 import io.github.deltacv.papervision.exception.NodeGenException
 import io.github.deltacv.papervision.gui.ToastWindow
@@ -70,7 +71,8 @@ class CodeGenManager(val paperVision: PaperVision) {
 
             paperVision.nodeEditor.outputNode.input.requireAttachedAttribute() // output always needs to be connected
 
-            paperVision.nodeEditor.inputNode.startGen(current)
+            // start off code generation chain
+            paperVision.nodeEditor.outputNode.genCodeIfNecessary(current)
 
             codeGen.stage = CodeGen.Stage.END_GEN
 

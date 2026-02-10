@@ -18,8 +18,6 @@
 
 package io.github.deltacv.papervision.util
 
-val Any.hexString get() = Integer.toHexString(hashCode())!!
-
 fun flags(vararg flags: Int) = if(flags.isNotEmpty()) {
     var composedFlags = flags[0]
 

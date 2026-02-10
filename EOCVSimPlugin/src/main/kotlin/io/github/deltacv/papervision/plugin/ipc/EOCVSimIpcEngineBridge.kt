@@ -27,7 +27,7 @@ import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
 import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
 import io.github.deltacv.papervision.plugin.ipc.serialization.ipcGson
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 import org.java_websocket.client.WebSocketClient
 import org.slf4j.LoggerFactory
 import java.net.URI
@@ -50,7 +50,7 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
 
     private val clients = mutableListOf<PaperVisionEngineClient>()
 
-    override val onClientProcess = PaperVisionEventHandler("LocalPaperVisionEngineBridge-OnClientProcess")
+    override val onClientProcess = PaperEventHandler("LocalPaperVisionEngineBridge-OnClientProcess")
 
     private var wsClient = WsClient(port, this)
 
@@ -67,7 +67,7 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
 
         client.onProcess {
             if(!clients.contains(client)) {
-                it.removeThis()
+                removeListener()
                 return@onProcess
             }
 

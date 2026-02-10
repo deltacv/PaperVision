@@ -190,7 +190,7 @@ abstract class Node<S: CodeGenSession>(
         return true
     }
 
-    override fun propagate(current: CodeGen.Current) {
+    override fun codeGenPropagate(current: CodeGen.Current) {
         val linkedNodes = mutableListOf<Node<*>>()
 
         for(attribute in _nodeAttributes) {
@@ -204,22 +204,19 @@ abstract class Node<S: CodeGenSession>(
         }
 
         val deadEndNodes = mutableListOf<Node<*>>()
-        val completePathNodes = mutableListOf<Node<*>>()
 
         for(linkedNode in linkedNodes) {
             if(linkedNode.hasDeadEnd()) {
                 deadEndNodes.add(linkedNode)
                 logger.debug("Dead end: {}", linkedNode)
             } else {
-                logger.debug("Complete path: {}", linkedNode)
-                completePathNodes.add(linkedNode)
+                logger.debug("Part of the chain: {}", linkedNode)
             }
         }
 
-        // Propagate FIRST to all nodes that are not dead ends
-        completePathNodes.forEach { it.receivePropagation(current) }
-        // Propagate to dead ends, so they can be processed last
-        deadEndNodes.forEach { it.receivePropagation(current) }
+        // Propagate to dead ends, so they can be processed without being left out
+        // because no one depends on them, so they won't be propagated to otherwise.
+        deadEndNodes.forEach { it.genCodeIfNecessary(current) }
     }
 
     open fun makeSerializationData() = BasicNodeData(id, ImNodes.getNodeEditorSpacePos(id))
@@ -273,7 +270,7 @@ abstract class Node<S: CodeGenSession>(
         forgetSerializedId = true
     }
 
-    override fun toString() = "Node(${this::class.java.typeName}, id=$id)"
+    override fun toString() = "Node(\"$genNodeName\", id=$id)"
 
     companion object {
         val logger by loggerFor<Node<*>>()

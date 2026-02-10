@@ -66,7 +66,7 @@ class InputSourceWindow(
             inputSources = it.sources
         })
 
-        onDraw.doOnce {
+        onDraw.once {
             initialPosition = ImVec2(position.x, position.y)
         }
     }

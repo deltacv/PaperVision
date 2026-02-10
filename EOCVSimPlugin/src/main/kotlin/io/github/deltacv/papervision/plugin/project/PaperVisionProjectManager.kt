@@ -41,7 +41,7 @@ import io.github.deltacv.papervision.plugin.ipc.message.SaveCurrentProjectMessag
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveredProject
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryDaemonProcessManager
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryData
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.hexString
 import org.openftc.easyopencv.OpenCvPipeline
 import java.awt.Window
@@ -153,7 +153,7 @@ class PaperVisionProjectManager(
             }
         }.toList()
 
-    val onRefresh = PaperVisionEventHandler("PaperVisionProjectManager-onRefresh")
+    val onRefresh = PaperEventHandler("PaperVisionProjectManager-onRefresh")
 
     fun init() {
         engine.setMessageHandlerOf<DiscardCurrentRecoveryMessage> {
@@ -390,7 +390,7 @@ class PaperVisionProjectManager(
             eocvSim.visualizerApi.frame!!.isVisible = false
         }
 
-        PaperVisionProcessRunner.onPaperVisionExit.doOnce {
+        PaperVisionProcessRunner.onPaperVisionExit.once {
             SwingUtilities.invokeLater {
                 eocvSim.visualizerApi.frame!!.isVisible = true
             }

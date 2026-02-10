@@ -21,6 +21,9 @@ package io.github.deltacv.papervision.codegen
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.resolve.Resolvable
+import io.github.deltacv.papervision.codegen.resolve.from
+import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.vision.ColorSpace
 import kotlin.reflect.KClass
 
@@ -41,8 +44,8 @@ sealed class GenValue {
 
         companion object {
             fun defer(genValueResolver: () -> Mat?) = Mat(
-                Resolvable.fromResolvable { genValueResolver()?.value },
-                Resolvable.fromResolvable { genValueResolver()?.color },
+                Resolvable.from { genValueResolver()?.value },
+                Resolvable.from { genValueResolver()?.color },
                 Boolean.defer { genValueResolver()?.isBinary }
             )
         }
@@ -50,15 +53,15 @@ sealed class GenValue {
 
     sealed class GKeyPoint : GenValue() {
         data class KeyPoint(
-            val x: Double,
-            val y: Double,
-            val size: Double
+            val x: Resolvable<Double>,
+            val y: Resolvable<Double>,
+            val size: Resolvable<Double>
         ) : GKeyPoint()
 
         data class RuntimeKeyPoint(val value: Resolvable<Value>) : GKeyPoint() {
             companion object {
                 fun defer(genValueResolver: () -> RuntimeKeyPoint?) = RuntimeKeyPoint(
-                    Resolvable.fromResolvable { genValueResolver()?.value }
+                    Resolvable.from { genValueResolver()?.value }
                 )
             }
         }
@@ -71,7 +74,7 @@ sealed class GenValue {
         data class RuntimePoints(val value: Resolvable<Value>) : GPoints() {
             companion object {
                 fun defer(genValueResolver: () -> RuntimePoints?) = RuntimePoints(
-                    Resolvable.fromResolvable { genValueResolver()?.value }
+                    Resolvable.from { genValueResolver()?.value }
                 )
             }
         }
@@ -83,7 +86,7 @@ sealed class GenValue {
         data class RuntimeCircle(val value: Resolvable<Value>) : GCircle() {
             companion object {
                 fun defer(genValueResolver: () -> RuntimeCircle?) = RuntimeCircle(
-                    Resolvable.fromResolvable { genValueResolver()?.value }
+                    Resolvable.from { genValueResolver()?.value }
                 )
             }
         }
@@ -95,7 +98,7 @@ sealed class GenValue {
         data class RuntimeRect(val value: Resolvable<Value>) : GRect() {
             companion object {
                 fun defer(genValueResolver: () -> RuntimeRect?) = RuntimeRect(
-                    Resolvable.fromResolvable { genValueResolver()?.value }
+                    Resolvable.from { genValueResolver()?.value }
                 )
             }
         }
@@ -110,7 +113,7 @@ sealed class GenValue {
             data class RuntimeRotatedRect(val value: Resolvable<Value>) : Rotated() {
                 companion object {
                     fun defer(genValueResolver: () -> RuntimeRotatedRect?) = RuntimeRotatedRect(
-                        Resolvable.fromResolvable { genValueResolver()?.value }
+                        Resolvable.from { genValueResolver()?.value }
                     )
                 }
             }
@@ -121,10 +124,10 @@ sealed class GenValue {
 
     data class Int(val value: Resolvable<kotlin.Int>) : GenValue(){
         companion object {
-            val ZERO = Int(Resolvable.Now(0))
+            val ZERO = Int(0.resolved())
 
             fun defer(genValueResolver: () -> Int?) = Int(
-                Resolvable.fromResolvable { genValueResolver()?.value }
+                Resolvable.from { genValueResolver()?.value }
             )
         }
     }
@@ -133,16 +136,16 @@ sealed class GenValue {
             val ZERO = Float(Resolvable.Now(0.0f))
 
             fun defer(genValueResolver: () -> Float?) = Float(
-                Resolvable.fromResolvable { genValueResolver()?.value }
+                Resolvable.from { genValueResolver()?.value }
             )
         }
     }
     data class Double(val value: Resolvable<kotlin.Double>) : GenValue() {
         companion object {
-            val ZERO = Double(Resolvable.Now(0.0))
+            val ZERO = Double(0.0.resolved())
 
             fun defer(genValueResolver: () -> Double?) = Double(
-                Resolvable.fromResolvable { genValueResolver()?.value }
+                Resolvable.from { genValueResolver()?.value }
             )
         }
     }
@@ -161,8 +164,8 @@ sealed class GenValue {
         data class RuntimeLine(val colorScalarValue: Resolvable<Value>, val thicknessValue: Resolvable<Value>) : LineParameters() {
             companion object {
                 fun defer(genValueResolver: () -> RuntimeLine?) = RuntimeLine(
-                    Resolvable.fromResolvable { genValueResolver()?.colorScalarValue },
-                    Resolvable.fromResolvable { genValueResolver()?.thicknessValue }
+                    Resolvable.from { genValueResolver()?.colorScalarValue },
+                    Resolvable.from { genValueResolver()?.thicknessValue }
                 )
             }
         }
@@ -258,7 +261,7 @@ sealed class GenValue {
 
         companion object {
             fun defer(genValueResolver: () -> Boolean?) = Boolean(
-                Resolvable.fromResolvable { genValueResolver()?.value }
+                Resolvable.from { genValueResolver()?.value }
             )
         }
     }
@@ -277,8 +280,8 @@ sealed class GenValue {
                 fun <T : GenValue> defer(
                     genValueResolver: () -> RuntimeListOf<T>?
                 ): RuntimeListOf<T> = RuntimeListOf(
-                    Resolvable.fromResolvable { genValueResolver()?.value },
-                    Resolvable.fromResolvable { genValueResolver()?.typeClass }
+                    Resolvable.from { genValueResolver()?.value },
+                    Resolvable.from { genValueResolver()?.typeClass }
                 )
             }
         }

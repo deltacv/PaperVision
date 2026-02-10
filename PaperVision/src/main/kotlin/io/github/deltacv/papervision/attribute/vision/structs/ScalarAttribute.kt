@@ -19,7 +19,6 @@
 package io.github.deltacv.papervision.attribute.vision.structs
 
 import imgui.ImGui
-import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.TypedAttribute
@@ -78,10 +77,10 @@ class ScalarAttribute(
         val values = (super.genValue(current) as GenValue.GList.List).elements
 
         val value = GenValue.Scalar(
-            GenValue.Double((values.getOr(0, GenValue.Int.ZERO) as GenValue.Int).value.convertTo { it?.toDouble() }),
-            GenValue.Double((values.getOr(1, GenValue.Int.ZERO) as GenValue.Int).value.convertTo { it?.toDouble() }),
-            GenValue.Double((values.getOr(2, GenValue.Int.ZERO) as GenValue.Int).value.convertTo { it?.toDouble() }),
-            GenValue.Double((values.getOr(3, GenValue.Int.ZERO) as GenValue.Int).value.convertTo { it?.toDouble() }),
+            GenValue.Double((values.getOr(0, GenValue.Int.ZERO) as GenValue.Int).value.map { it?.toDouble() }),
+            GenValue.Double((values.getOr(1, GenValue.Int.ZERO) as GenValue.Int).value.map { it?.toDouble() }),
+            GenValue.Double((values.getOr(2, GenValue.Int.ZERO) as GenValue.Int).value.map { it?.toDouble() }),
+            GenValue.Double((values.getOr(3, GenValue.Int.ZERO) as GenValue.Int).value.map { it?.toDouble() }),
         )
 
         return readGenValue(

@@ -61,16 +61,16 @@ class IpcPaperVisionMain : Callable<Int?> {
 
         app = PaperVisionApp(bridge, false, ::paperVisionUserCloseListener)
 
-        app.paperVision.onUpdate.doOnce {
+        app.paperVision.onUpdate.once {
             if (queryProject) {
                 app.paperVision.engineClient.sendMessage(GetCurrentProjectMessage().onResponseWith<JsonElementResponse> { response ->
                     val json = response.value
 
-                    app.paperVision.onUpdate.doOnce {
+                    app.paperVision.onUpdate.once {
                         deserializeAndApply(json, app.paperVision)
 
                         app.paperVision.nodeEditor.onEditorChange {
-                            app.paperVision.onUpdate.doOnce {
+                            app.paperVision.onUpdate.once {
                                 app.paperVision.engineClient.sendMessage(
                                     EditorChangeMessage(
                                         serializeToTree(
@@ -86,7 +86,7 @@ class IpcPaperVisionMain : Callable<Int?> {
             }
         }
 
-        app.paperVision.onInit.doOnce {
+        app.paperVision.onInit.once {
             val inputSourceWindow = InputSourceWindow(
                 app.paperVision.engineClient
             )
@@ -106,8 +106,8 @@ class IpcPaperVisionMain : Callable<Int?> {
                             app.paperVision.nodes.inmutable, app.paperVision.links.inmutable
                         )
                     ).onResponseWith<OkResponse> {
-                        app.paperVision.onUpdate.doOnce {
-                            TooltipPopup("mis_projectsaved", ImGui.getMousePos(), 4.0).open()
+                        app.paperVision.onUpdate.once {
+                            TooltipPopup("mis_projectsaved", 4.0).enable()
                         }
 
                         logger.info("Project saved")
@@ -124,7 +124,7 @@ class IpcPaperVisionMain : Callable<Int?> {
     private fun paperVisionUserCloseListener(): Boolean {
         userCloseRequestsCount++
 
-        app.paperVision.onUpdate.doOnce {
+        app.paperVision.onUpdate.once {
             openCloseConfirmDialog()
         }
 

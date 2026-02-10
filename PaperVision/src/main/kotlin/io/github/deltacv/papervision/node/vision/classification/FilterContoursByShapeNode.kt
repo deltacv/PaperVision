@@ -33,7 +33,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Size
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
-import io.github.deltacv.papervision.codegen.resolved
+import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode

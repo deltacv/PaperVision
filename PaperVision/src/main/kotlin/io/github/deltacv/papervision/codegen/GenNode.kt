@@ -31,11 +31,7 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
     val genNodeName: String?
         get() = null
 
-    fun propagate(current: CodeGen.Current)
-
-    fun receivePropagation(current: CodeGen.Current) {
-        genCodeIfNecessary(current)
-    }
+    fun codeGenPropagate(current: CodeGen.Current)
 
     /**
      * Generates code if there's not a session in the current CodeGen
@@ -77,7 +73,7 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
 
                 logger.info("DONE generating code for ${name ?: this}")
 
-                propagate(current)
+                codeGenPropagate(current)
             }
         } else {
             lastGenSession = session as S

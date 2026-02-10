@@ -28,7 +28,7 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
-import io.github.deltacv.papervision.codegen.resolved
+import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.util.Range2i
@@ -79,8 +79,8 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
             val session = Session()
 
             session.vector2 = GenValue.Vec2.Vector2(
-                GenValue.Double(xAttribute.genValue(current).value.convertTo { it?.toDouble() }),
-                GenValue.Double(yAttribute.genValue(current).value.convertTo { it?.toDouble() })
+                GenValue.Double(xAttribute.genValue(current).value.map { it.toDouble() }),
+                GenValue.Double(yAttribute.genValue(current).value.map { it.toDouble() })
             )
             session
         }

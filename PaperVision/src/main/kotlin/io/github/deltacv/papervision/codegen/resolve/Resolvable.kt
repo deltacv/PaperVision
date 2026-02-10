@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.codegen
+package io.github.deltacv.papervision.codegen.resolve
 
 import io.github.deltacv.papervision.id.IdElement
 import io.github.deltacv.papervision.id.container.IdContainerStacks
@@ -38,8 +38,16 @@ sealed class Resolvable<T> {
     abstract fun letOrDefer(block: (T) -> Unit)
     abstract fun <R> tryReturn(success: (T) -> R, fail: (String) -> R): R
     abstract fun resolve(): T?
-    
-    fun <R> convertTo(converter: (T?) -> R?): Resolvable<R> = from { converter(resolve()) }
+
+    /* -- utility functions -- */
+
+    inline fun <reified R> map(
+        crossinline transform: (T) -> R
+    ): Resolvable<R> = Resolvable.fromValue { resolve()?.let(transform) }
+
+    inline fun <R> flatMap(
+        crossinline transform: (T?) -> Resolvable<R>
+    ): Resolvable<R> = Resolvable.fromResolvable { resolve()?.let(transform) }
 
     /* -- IMPLEMENTATIONS -- */
 
@@ -61,7 +69,7 @@ sealed class Resolvable<T> {
         private var usingOnResolve = false // to avoid creating the event handler if not necessary
         val onResolve by lazy {
             usingOnResolve = true
-            PaperEventHandler("Placeholder-$placeholder-OnResolve", catchExceptions = false)
+            PaperEventHandler("Placeholder-$id-OnResolve", catchExceptions = false)
         }
 
         private var resolving = false

@@ -120,7 +120,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         eocvSimApi.mainLoopHook.once(this::recoverProjects)
-        PaperVisionProcessRunner.onPaperVisionExitError.doOnce(this::recoverProjects)
+        PaperVisionProcessRunner.onPaperVisionExitError.once(this::recoverProjects)
 
         eocvSimApi.pipelineManagerApi.onPipelineChangeHook {
             switchToDefaultPipelineIfNecessary()

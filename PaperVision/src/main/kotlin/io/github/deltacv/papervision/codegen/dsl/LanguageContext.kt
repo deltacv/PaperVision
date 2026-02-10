@@ -18,7 +18,7 @@
 
 package io.github.deltacv.papervision.codegen.dsl
 
-import io.github.deltacv.papervision.codegen.Resolvable
+import io.github.deltacv.papervision.codegen.resolve.Resolvable
 import io.github.deltacv.papervision.codegen.build.*
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.node.vision.ColorSpace

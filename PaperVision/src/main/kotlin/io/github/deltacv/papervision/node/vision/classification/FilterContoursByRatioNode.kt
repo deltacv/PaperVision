@@ -36,7 +36,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
-import io.github.deltacv.papervision.codegen.resolved
+import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -93,10 +93,10 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
                 val minRatioVar = uniqueVariable("minRatio", minRatioVal.value.v)
                 val maxRatioVar = uniqueVariable("maxRatio", maxRatioVal.value.v)
 
-                val contoursVarName = contours.value.convertTo { it?.value ?: "contours" }
+                val contoursVarName = contours.value.map { it?.value ?: "contours" }
                 val contoursVar = uniqueVariable("${contoursVarName.v}ByRatio", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
 
-                val pointsVarName = contours.value.convertTo { it?.value ?: "points" }
+                val pointsVarName = contours.value.map { it?.value ?: "points" }
                 val points2f = uniqueVariable("${pointsVarName.v}2f", JvmOpenCvTypes.MatOfPoint2f.new())
 
                 group {

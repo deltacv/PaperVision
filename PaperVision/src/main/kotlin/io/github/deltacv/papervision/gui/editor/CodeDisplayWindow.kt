@@ -62,8 +62,6 @@ class CodeDisplayWindow(
     override fun onEnable() {
         focus = true
 
-        EDITOR.isReadOnly
-
         EDITOR.languageDefinition = editorLanguage
         EDITOR.textLines = code.lines().toTypedArray()
         EDITOR.isReadOnly = true

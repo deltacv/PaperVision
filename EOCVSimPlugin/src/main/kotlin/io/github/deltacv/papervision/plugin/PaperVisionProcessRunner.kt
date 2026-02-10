@@ -21,9 +21,9 @@ package io.github.deltacv.papervision.plugin
 import com.github.serivesmejia.eocvsim.util.JavaProcess
 import com.github.serivesmejia.eocvsim.util.JavaProcess.SLF4JIOReceiver
 import com.github.serivesmejia.eocvsim.util.SysUtil
+import com.github.serivesmejia.eocvsim.util.event.EventHandler
 import io.github.deltacv.common.util.loggerForThis
 import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngine
-import io.github.deltacv.papervision.util.event.PaperVisionEventHandler
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
@@ -42,10 +42,10 @@ object PaperVisionProcessRunner {
 
     val paperVisionEngine = EOCVSimIpcEngine()
 
-    val onPaperVisionStart = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionStart")
+    val onPaperVisionStart = EventHandler("PaperVisionProcessRunner-OnPaperVisionStart")
 
-    val onPaperVisionExit = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionExit")
-    val onPaperVisionExitError = PaperVisionEventHandler("PaperVisionProcessRunner-OnPaperVisionExitError")
+    val onPaperVisionExit = EventHandler("PaperVisionProcessRunner-OnPaperVisionExit")
+    val onPaperVisionExitError = EventHandler("PaperVisionProcessRunner-OnPaperVisionExitError")
 
     private val pool = Executors.newFixedThreadPool(1)
 
@@ -59,7 +59,7 @@ object PaperVisionProcessRunner {
 
         isRunning = true
 
-        onPaperVisionStart()
+        onPaperVisionStart.run()
 
         currentJob = pool.submit {
             logger.info("Starting PaperVision process...")
@@ -87,10 +87,10 @@ object PaperVisionProcessRunner {
                 )
             }
 
-            onPaperVisionExit()
+            onPaperVisionExit.run()
 
             if(exitCode != 0) {
-                onPaperVisionExitError()
+                onPaperVisionExitError.run()
             }
 
             logger.warn("PaperVision process has exited with exit code $exitCode")

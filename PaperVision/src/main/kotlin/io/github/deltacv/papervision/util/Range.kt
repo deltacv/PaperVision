@@ -37,7 +37,7 @@ data class Range2i(override val min: Int, override val max: Int): Range<Int> {
 data class Range2d(override val min: Double, override val max: Double) : Range<Double> {
     companion object {
         val DEFAULT = Range2d(Double.MIN_VALUE, Double.MAX_VALUE)
-        val DEFAULT_POSITIVE = Range2d(Double.MIN_VALUE, Double.MAX_VALUE)
+        val DEFAULT_POSITIVE = Range2d(0.0, Double.MAX_VALUE)
     }
 
     override fun clip(x: Double) = if(x < min) min else if(x > max) max else x

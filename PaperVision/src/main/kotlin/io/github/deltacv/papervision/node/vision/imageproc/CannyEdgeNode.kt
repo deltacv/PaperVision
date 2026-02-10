@@ -31,7 +31,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
-import io.github.deltacv.papervision.codegen.resolved
+import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -66,7 +66,7 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 val session = Session()
 
                 val input = inputMat.genValue(current)
-                input.requireNonBinary(inputMat)
+                // input.requireNonBinary(inputMat)
 
                 input.color.letOrDefer {
                     if(it != ColorSpace.GRAY) {
@@ -80,7 +80,7 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 val firstThresholdVariable = uniqueVariable("cannyFirstThreshold", int(firstThresholdValue))
 
                 val secondThresholdValue = secondThreshold.genValue(current).value.v
-                val secondThresholdVariable = uniqueVariable("cannySecondThreshold", int(firstThresholdValue))
+                val secondThresholdVariable = uniqueVariable("cannySecondThreshold", int(secondThresholdValue))
 
                 group {
                     private(output)

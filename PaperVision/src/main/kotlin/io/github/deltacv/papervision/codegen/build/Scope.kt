@@ -21,6 +21,7 @@ package io.github.deltacv.papervision.codegen.build
 import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.*
 import io.github.deltacv.papervision.codegen.language.Language
+import io.github.deltacv.papervision.codegen.resolve.Resolvable
 import io.github.deltacv.papervision.node.vision.ColorSpace
 
 class Scope(

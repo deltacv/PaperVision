@@ -54,3 +54,5 @@ fun String.toValidIdentifier(
 
     return sb.toString()
 }
+
+val Any.hexString get() = Integer.toHexString(hashCode())!!

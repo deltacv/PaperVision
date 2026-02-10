@@ -93,7 +93,7 @@ class EOCVSimPrevizSession(
             }
         }
 
-        PaperVisionProcessRunner.onPaperVisionExit.doOnce {
+        PaperVisionProcessRunner.onPaperVisionExit.once {
             stopPreviz()
         }
 

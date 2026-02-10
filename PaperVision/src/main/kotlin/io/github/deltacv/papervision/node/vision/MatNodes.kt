@@ -27,19 +27,17 @@ import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
-import io.github.deltacv.papervision.codegen.CodeGenOptions
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.codegen.build.AccessorVariable
 import io.github.deltacv.papervision.codegen.build.Value
-import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorFor
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
-import io.github.deltacv.papervision.codegen.resolved
+import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
@@ -112,10 +110,6 @@ class InputMatNode @JvmOverloads constructor(
         generatorFor(JavaLanguage) { NoSession }
     )
 
-    fun startGen(current: CodeGen.Current) {
-        propagate(current)
-    }
-
     override fun getGenValueOf(current: CodeGen.Current,
                                attrib: Attribute
     ) = when(current.language) {
@@ -135,10 +129,6 @@ class OutputMatNode @JvmOverloads constructor(
     
     var streamId: Int? = null
     private var lastWindowSize: ImVec2? = null
-
-    override val genOptions = CodeGenOptions(
-        genAtTheEnd = true
-    )
 
     override fun init() {
         val onDrawId = editor.onDraw {
