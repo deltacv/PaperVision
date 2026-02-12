@@ -74,6 +74,7 @@ class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
 
                 it.position(0)
                 glfwSetWindowIcon(ptrSupplier(), it)
+                glfwPollEvents()
 
                 stbi_image_free(image.buffer)
             }
