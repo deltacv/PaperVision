@@ -36,7 +36,7 @@ abstract class Window(
 
     companion object;
 
-    override val idContainer = IdContainerStacks.local.peekNonNull<Window>()
+    override val idContainer by lazy { IdContainerStacks.local.peekNonNull<Window>() }
 
     abstract var title: String
     abstract val windowFlags: Int
@@ -174,6 +174,8 @@ abstract class Window(
         }
         ImGui.end()
 
+        postDrawContents()
+
         if(!imOpen.get()) {
             delete()
         }
@@ -191,8 +193,10 @@ abstract class Window(
 
     abstract fun drawContents()
 
+    open fun postDrawContents() { }
+
     fun centerWindow() {
-        val displaySize = ImGui.getIO().displaySize
+        val displaySize = ImGui.getMainViewport().size
         position = ImVec2((displaySize.x - size.x) / 2, (displaySize.y - size.y) / 2)
     }
 
@@ -203,11 +207,6 @@ abstract class Window(
             val closeOnOutsideClick: Boolean = true
         ) : ModalMode()
     }
-}
-
-abstract class FrameWidthWindow : Window() {
-    abstract var frameWidth: Float
-        protected set
 }
 
 val Window.Companion.isModalWindowOpen get() = IdContainerStacks.local.peekNonNull<Window>().inmutable.any { it.isModal && it.isEnabled }

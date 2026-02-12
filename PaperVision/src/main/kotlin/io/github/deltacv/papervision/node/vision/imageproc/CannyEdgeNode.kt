@@ -91,7 +91,7 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
 
                 current.scope {
                     nameComment()
-
+1
                     JvmOpenCvTypes.Imgproc("Canny", input.value.v, output, firstThresholdVariable, secondThresholdVariable)
                     outputMat.streamIfEnabled(output, input.color)
                 }

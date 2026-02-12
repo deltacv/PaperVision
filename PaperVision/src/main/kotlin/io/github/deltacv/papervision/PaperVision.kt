@@ -102,7 +102,6 @@ class PaperVision(
         private set
 
     val nodeEditor by lazy { NodeEditor(this, keyManager) }
-    val nodeList   by lazy { NodeList(this, keyManager, PaperNodeRegistry.nodes) }
 
     val nodes                  = IdContainer<Node<*>>()
     val attributes             = IdContainer<Attribute>()
@@ -197,7 +196,6 @@ class PaperVision(
 
     private fun initUI() {
         nodeEditor.enable()
-        nodeList.enable()
     }
 
     private fun dumpStartupDiagnostics() {
@@ -282,7 +280,6 @@ class PaperVision(
         popups.inmutable.reversed().forEach { it.delete() }
 
         nodeEditor.delete()
-        nodeList.delete()
     }
 
     fun changeLanguage(langCode: String) {

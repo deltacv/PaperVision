@@ -128,6 +128,10 @@ class KeyManager(val keys: PlatformKeys) {
         addShortcut(listOf(modifier), key, false, action)
     }
 
+    fun addShortcut(key: Int, action: () -> Unit) {
+        addShortcut(emptyList(), key, false, action)
+    }
+
     fun pressed(scancode: Int)  = pressedKeys[scancode] == true
     fun pressing(scancode: Int) = pressingKeys[scancode] == true
     fun released(scancode: Int) = releasedKeys[scancode] == true

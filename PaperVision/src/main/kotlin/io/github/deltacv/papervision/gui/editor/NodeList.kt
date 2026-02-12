@@ -18,31 +18,33 @@
 
 package io.github.deltacv.papervision.gui.editor
 
-import imgui.*
+import imgui.ImColor
+import imgui.ImGui
+import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.ImNodesEditorContext
 import imgui.extension.imnodes.flag.ImNodesCol
-import imgui.flag.*
-import org.deltacv.mai18n.tr
+import imgui.flag.ImGuiCol
+import imgui.flag.ImGuiCond
+import imgui.flag.ImGuiMouseButton
+import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.papervision.PaperVision
 import io.github.deltacv.papervision.attribute.Attribute
-import io.github.deltacv.papervision.gui.util.Font
-import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
-import io.github.deltacv.papervision.gui.style.opacity
-import io.github.deltacv.papervision.gui.FrameWidthWindow
-import io.github.deltacv.papervision.gui.Table
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.isModalWindowOpen
+import io.github.deltacv.papervision.gui.style.opacity
+import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.id.container.IdContainer
 import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.io.KeyManager
-import io.github.deltacv.papervision.node.*
-import io.github.deltacv.papervision.platform.PlatformWindow
+import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.DrawNode
+import io.github.deltacv.papervision.node.Node
+import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.util.ElapsedTime
-import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.flags
 import io.github.deltacv.papervision.util.loggerForThis
-import kotlin.collections.iterator
+import org.deltacv.mai18n.tr
 
 typealias CategorizedNodes = Map<Category, MutableList<Class<out Node<*>>>>
 
@@ -63,13 +65,12 @@ class NodeList(
 
     private val keys = keyManager.keys
 
+    val closeElapsedTime = ElapsedTime()
     var isNodesListOpen = false
         private set
 
     private val openButtonTimeout = ElapsedTime()
 
-    lateinit var floatingButton: FloatingButton
-        private set
     lateinit var headers: Headers
         private set
 
@@ -106,26 +107,6 @@ class NodeList(
     private val defaultFontBig = Font.find("calcutta-big")
 
     override fun onEnable() {
-        paperVision.onUpdate {
-            if (!paperVision.nodeEditor.isNodeFocused &&
-                keyManager.released(keys.Spacebar) &&
-                !Window.isModalWindowOpen
-            ) {
-                showList() // open the list when the spacebar is pressed
-            }
-        }
-
-        floatingButton = FloatingButton(this, paperVision.window)
-        floatingButton.enable()
-
-        floatingButton.onPressed {
-            paperVision.onUpdate.once {
-                if (!isNodesListOpen && openButtonTimeout.millis > 200) {
-                    showList()
-                }
-            }
-        }
-
         // use different id stacks for the node list, we dont want these nodes on the actual editor
         IdContainerStacks.local.push(listNodes)
         IdContainerStacks.local.push(listAttributes)
@@ -151,7 +132,7 @@ class NodeList(
     }
 
     override fun drawContents() {
-        if(!isNodesListOpen) {
+        if (!isNodesListOpen) {
             return
         }
 
@@ -159,10 +140,6 @@ class NodeList(
         IdContainerStacks.local.push(listAttributes)
 
         val size = paperVision.window.size
-
-        if (keyManager.released(this@NodeList.keys.Escape)) {
-            closeList()
-        }
 
         ImNodes.editorContextSet(listContext)
 
@@ -202,11 +179,12 @@ class NodeList(
                             }
                         }
 
-                        val titleColor = if(node is DrawNode<*>) {
+                        val titleColor = if (node is DrawNode<*>) {
                             node.titleColor
                         } else 0
 
-                        val highlighted = (isHoverManuallyDetected && hoveredNode == node.id) || (highlightedNode == node.id && highlightStatus)
+                        val highlighted =
+                            (isHoverManuallyDetected && hoveredNode == node.id) || (highlightedNode == node.id && highlightStatus)
 
                         if (highlighted) {
                             if (node.description != null && hoveredNode == node.id) {
@@ -232,11 +210,14 @@ class NodeList(
                             )
 
                             imNodesPushColorCount++
-                        } else if(highlightedNode != null && highlightedNode != node.id) {
+                        } else if (highlightedNode != null && highlightedNode != node.id) {
                             if (node is DrawNode<*>) {
                                 node.titleColor = node.titleColor.opacity(0.5f)
                             } else {
-                                ImNodes.pushColorStyle(ImNodesCol.TitleBar, PaperVision.imnodesStyle.titleBar.opacity(0.5f))
+                                ImNodes.pushColorStyle(
+                                    ImNodesCol.TitleBar,
+                                    PaperVision.imnodesStyle.titleBar.opacity(0.5f)
+                                )
                                 imNodesPushColorCount++
                             }
 
@@ -246,7 +227,10 @@ class NodeList(
                             )
                             imNodesPushColorCount++
 
-                            ImGui.pushStyleColor(ImGuiCol.Text, ImColor.rgba(ImGui.getStyleColorVec4(ImGuiCol.Text)).opacity(0.5f))
+                            ImGui.pushStyleColor(
+                                ImGuiCol.Text,
+                                ImColor.rgba(ImGui.getStyleColorVec4(ImGuiCol.Text)).opacity(0.5f)
+                            )
                             imGuiPushColorCount++
                         }
 
@@ -282,16 +266,16 @@ class NodeList(
 
         isHoveringScrollBar = mousePos.x >= (size.x - 15f)
 
-        if(!isHoldingScrollBar) {
+        if (!isHoldingScrollBar) {
             isHoldingScrollBar = ImGui.isMouseDown(ImGuiMouseButton.Left) && isHoveringScrollBar
         } else {
-            if(!ImGui.isMouseDown(ImGuiMouseButton.Left)) {
+            if (!ImGui.isMouseDown(ImGuiMouseButton.Left)) {
                 isHoldingScrollBar = false
             }
         }
 
         hoveredNode = ImNodes.getHoveredNode()
-        if(hoveredNode >= 0) {
+        if (hoveredNode >= 0) {
             hoveredNodePos = ImNodes.getNodeScreenSpacePos(hoveredNode)
         } else {
             hoveredNodePos = ImVec2(0f, 0f)
@@ -302,12 +286,12 @@ class NodeList(
         if (highlightedNodeClass != null) {
             for (node in listNodes) {
                 if (node::class.java == highlightedNodeClass) {
-                    if(node.id != highlightedNode) {
+                    if (node.id != highlightedNode) {
                         highlightedNode = node.id
 
                         val nodePos = hoveredNodePos.y - ImNodes.getNodeDimensionsY(highlightedNode!!) * 1.3f
 
-                        val scrollPos = if(nodePos >= size.y * 0.9) {
+                        val scrollPos = if (nodePos >= size.y * 0.9) {
                             99999f // trigger max scroll
                         } else nodePos
 
@@ -344,7 +328,7 @@ class NodeList(
         ImNodes.getStyle().gridSpacing = 32f // back to normal
         ImNodes.popColorStyle()
 
-        floatingButton.focus = isNodesListOpen && !isHoveringScrollBar && !isHoldingScrollBar
+        paperVision.nodeEditor.nodeListButton.focus = isNodesListOpen && !isHoveringScrollBar && !isHoldingScrollBar
 
         headers.size = size
 
@@ -372,7 +356,7 @@ class NodeList(
                 }
 
                 closeList()
-            } else if (closeOnClick && !isHoveringScrollBar && !isHoldingScrollBar) { // don't close when the scroll bar is clicked
+            } else if (closeOnClick && !isHoveringScrollBar && !isHoldingScrollBar && !paperVision.nodeEditor.nodeListButton.hovered) { // don't close when the scroll bar is clicked
                 closeList()
             }
         }
@@ -411,9 +395,10 @@ class NodeList(
     fun closeList() {
         isNodesListOpen = false
         openButtonTimeout.reset()
-        floatingButton.focus = false
+        paperVision.nodeEditor.nodeListButton.focus = false
 
         delete()
+        closeElapsedTime.reset()
     }
 
     val nodes by lazy {
@@ -429,7 +414,7 @@ class NodeList(
 
                 val instance = Node.instantiateNode(nodeClass)
 
-                if(instance == null) {
+                if (instance == null) {
                     logger.warn("Skipping node ${nodeClass.typeName}")
                     continue
                 }
@@ -451,184 +436,4 @@ class NodeList(
 
         map
     }
-
-    class FloatingButton(
-        val nodeList: NodeList,
-        val window: PlatformWindow,
-    ) : FrameWidthWindow() {
-
-        override var title = "floating"
-        override val windowFlags = flags(
-            ImGuiWindowFlags.NoBackground, ImGuiWindowFlags.NoTitleBar,
-            ImGuiWindowFlags.NoDecoration, ImGuiWindowFlags.NoMove,
-            ImGuiWindowFlags.AlwaysAutoResize
-        )
-
-        val defaultFontBig = Font.find("calcutta-big")
-        val fontAwesome = Font.find("font-awesome-big")
-
-        private var lastButton = false
-        private val hoveringPlusTime = ElapsedTime()
-
-        override var frameWidth = 0f
-
-        val onPressed = PaperEventHandler("FloatingButton-OnPressed")
-
-        override fun preDrawContents() {
-            position = ImVec2(
-                window.size.x - PLUS_FONT_SIZE * 2f, window.size.y - PLUS_FONT_SIZE * 2f
-            )
-        }
-
-        override fun drawContents() {
-            focus = false
-
-            ImGui.pushFont(fontAwesome.imfont)
-
-            frameWidth = ImGui.getFrameHeight() * 1.3f
-
-            val button = ImGui.button(if (nodeList.isNodesListOpen) "x" else FontAwesomeIcons.Plus, frameWidth, frameWidth)
-            ImGui.popFont()
-
-            if (ImGui.isItemHovered()) {
-                if (hoveringPlusTime.millis > 500) {
-                    val tooltipText = if (nodeList.isNodesListOpen) "mis_nodeslist_close" else "mis_nodeslist_open"
-
-                    ImGui.pushFont(defaultFontBig.imfont)
-
-                    ImGui.beginTooltip()
-                    ImGui.text(tr(tooltipText))
-                    ImGui.endTooltip()
-
-                    ImGui.popFont()
-                }
-            } else {
-                hoveringPlusTime.reset()
-            }
-
-            // falling edge detector
-            if (lastButton != button && button) {
-                onPressed.run()
-            }
-
-            lastButton = button
-        }
-
-    }
-
-    class Headers(
-        val keyManager: KeyManager,
-        val nodesSupplier: () -> Map<Category, List<Node<*>>>
-    ) : Window() {
-
-        override var title = "headers"
-        override val windowFlags = flags(
-            ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoMove,
-            ImGuiWindowFlags.NoCollapse, ImGuiWindowFlags.NoTitleBar,
-            ImGuiWindowFlags.NoDecoration, ImGuiWindowFlags.AlwaysVerticalScrollbar
-        )
-
-        val categoryTables = mutableMapOf<Category, Table>()
-        val categoryStates = mutableMapOf<Category, Boolean>()
-
-        var currentScroll = 0f
-        var nextScroll: Float? = null
-
-        private var previousScroll = 0f
-
-        var isHeaderHovered = false
-            private set
-
-        val keys = keyManager.keys
-
-        val headerFont = Font.find("calcutta-big")
-
-        override fun preDrawContents() {
-            ImGui.setNextWindowPos(0f, 0f)
-            ImGui.pushStyleColor(ImGuiCol.WindowBg, 0f, 0f, 0f, 0.0f) // transparent headers window
-        }
-
-        override fun drawContents() {
-            val scrollValue = when {
-                keyManager.pressing(keys.ArrowUp) -> {
-                    -0.8f
-                }
-
-                keyManager.pressing(keys.ArrowDown) -> {
-                    0.8f
-                }
-
-                else -> {
-                    -ImGui.getIO().mouseWheel
-                }
-            }
-
-            ImGui.setCursorPos(0f, 0f) // draw the node editor on top of the collapisng headers
-
-            isHeaderHovered = false
-
-            for (category in Category.entries) {
-                if (nodesSupplier().containsKey(category)) {
-                    if (!categoryTables.containsKey(category)) {
-                        categoryTables[category] = Table()
-                    }
-
-                    ImGui.pushStyleColor(ImGuiCol.Header, category.color)
-                    ImGui.pushStyleColor(ImGuiCol.HeaderActive, category.colorSelected)
-                    ImGui.pushStyleColor(ImGuiCol.HeaderHovered, category.colorSelected)
-
-                    ImGui.pushFont(headerFont.imfont)
-
-                    val isOpen = ImGui.collapsingHeader(
-                        tr(category.properName), ImGuiTreeNodeFlags.DefaultOpen
-                    )
-
-                    ImGui.popFont()
-
-                    categoryStates[category] = isOpen
-
-                    ImGui.popStyleColor()
-                    ImGui.popStyleColor()
-                    ImGui.popStyleColor()
-
-                    if (ImGui.isItemHovered()) {
-                        isHeaderHovered = true
-                    }
-
-                    if (isOpen) {
-                        val table = categoryTables[category]!!
-                        ImGui.newLine()
-                        ImGui.indent(10f)
-
-                        ImGui.pushStyleVar(ImGuiStyleVar.CellPadding, 20f, 20f)
-
-                        table.draw()
-
-                        ImGui.popStyleVar()
-
-                        ImGui.newLine()
-                        ImGui.unindent(10f)
-                    }
-                }
-            }
-
-            if (nextScroll == null) {
-                if (previousScroll != currentScroll) {
-                    currentScroll = ImGui.getScrollY() + scrollValue * 20.0f
-                    ImGui.setScrollY(currentScroll)
-                } else {
-                    currentScroll = ImGui.getScrollY()
-                }
-            } else {
-                ImGui.setScrollY(nextScroll!!.coerceIn(0f, ImGui.getScrollMaxY()))
-                nextScroll = null
-            }
-
-            ImGui.popStyleColor()
-
-            previousScroll = scrollValue
-        }
-
-    }
-
 }

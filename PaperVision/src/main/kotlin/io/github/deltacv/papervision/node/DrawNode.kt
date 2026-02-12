@@ -58,6 +58,10 @@ abstract class DrawNode<S: CodeGenSession>(
 
     init {
         onChange {
+            if(changeQueue.remainingCapacity() <= 1) {
+                changeQueue.poll()
+            }
+
             changeQueue.add(true)
         }
     }
@@ -75,10 +79,6 @@ abstract class DrawNode<S: CodeGenSession>(
 
     override fun draw() {
         val title = annotationData.name
-
-        if(changeQueue.remainingCapacity() <= 1) {
-            changeQueue.poll()
-        }
 
         nextNodePosition?.let {
             ImNodes.setNodeEditorSpacePos(id, it.x, it.y)

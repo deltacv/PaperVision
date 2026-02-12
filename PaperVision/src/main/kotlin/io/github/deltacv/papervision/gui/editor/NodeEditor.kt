@@ -32,16 +32,16 @@ import io.github.deltacv.papervision.action.editor.DeleteLinksAction
 import io.github.deltacv.papervision.action.editor.DeleteNodesAction
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
+import io.github.deltacv.papervision.gui.LayoutDirection
+import io.github.deltacv.papervision.gui.SizingMode
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.display.ImageDisplay
 import io.github.deltacv.papervision.gui.display.ImageDisplayNode
 import io.github.deltacv.papervision.gui.display.ImageDisplayWindow
 import io.github.deltacv.papervision.gui.TooltipPopup
 import io.github.deltacv.papervision.gui.Window
+import io.github.deltacv.papervision.gui.WindowGroup
 import io.github.deltacv.papervision.gui.editor.menu.RightClickMenuPopup
-import io.github.deltacv.papervision.gui.editor.button.OptionsButtonWindow
-import io.github.deltacv.papervision.gui.editor.button.PlayButtonWindow
-import io.github.deltacv.papervision.gui.editor.button.SourceCodeExportButtonWindow
 import io.github.deltacv.papervision.gui.isModalWindowOpen
 import io.github.deltacv.papervision.id.DrawableIdElement
 import io.github.deltacv.papervision.io.KeyManager
@@ -50,6 +50,7 @@ import io.github.deltacv.papervision.node.FlagsNode
 import io.github.deltacv.papervision.node.InvisibleNode
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
+import io.github.deltacv.papervision.node.PaperNodeRegistry
 import io.github.deltacv.papervision.node.vision.InputMatNode
 import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.PaperVisionSerializer
@@ -104,13 +105,19 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
 
     // UI components
+    val nodeList by lazy { NodeList(paperVision, keyManager, PaperNodeRegistry.nodes) }
+
     val options = mutableMapOf<String, Option>()
+
+    lateinit var nodeListButton: NodeListButton
+        private set
     lateinit var optionsButton: OptionsButtonWindow
         private set
     lateinit var playButton: PlayButtonWindow
         private set
     lateinit var sourceCodeExportButton: SourceCodeExportButtonWindow
         private set
+
     // Panning state
     val editorPanning = ImVec2(0f, 0f)
     val editorPanningDelta = ImVec2(0f, 0f)
@@ -159,12 +166,20 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     override fun onEnable() {
         ImNodes.createContext()
+
         initializeNodes()
         initializeButtons()
         registerOptions()
         registerShortcuts()
         setupPrevizHandlers()
         restoreEditorPanning()
+
+        nodeList.enable()
+    }
+
+    override fun delete() {
+        nodeList.delete()
+        super.delete()
     }
 
     private fun initializeNodes() {
@@ -182,25 +197,31 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     }
 
     private fun initializeButtons() {
+        nodeListButton = NodeListButton(nodeList)
+
         sourceCodeExportButton = SourceCodeExportButtonWindow(
-            { paperVision.nodeList.floatingButton },
             { size },
             paperVision
         )
-        sourceCodeExportButton.enable()
 
-        playButton = PlayButtonWindow(
-            sourceCodeExportButton,
-            paperVision
-        )
-        playButton.enable()
+        playButton = PlayButtonWindow(paperVision)
 
-        optionsButton = OptionsButtonWindow(
-            playButton,
-            paperVision,
-            options,
+        optionsButton = OptionsButtonWindow(options)
+
+        val group = WindowGroup(
+            nodeListButton, sourceCodeExportButton, playButton, optionsButton,
+            direction = LayoutDirection.RIGHT_TO_LEFT,
+            spacing = 25f,
+            sizingMode = SizingMode.GridFixed(ImVec2(90f, 95f))
         )
-        optionsButton.enable()
+
+        group.enable()
+
+        onDraw {
+            group.position = ImVec2(
+                size.x - 40f , size.y - nodeListButton.size.y - 40f
+            )
+        }
     }
 
     private fun registerOptions() {
@@ -215,6 +236,17 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     private fun registerShortcuts() {
         with(keyManager) {
+            addShortcut(keys.Spacebar) {
+                if (!isNodeFocused && !Window.isModalWindowOpen) {
+                    nodeList.showList() // open the list when the spacebar is pressed
+                }
+            }
+            addShortcut(keys.Escape) {
+                if(nodeList.isOpen) {
+                    nodeList.closeList() // close the list when the escape key is pressed
+                }
+            }
+
             addShortcut(keys.NativeLeftSuper, keys.Z, ::undo)
             addShortcut(keys.NativeRightSuper, keys.Z, ::undo)
             addShortcut(keys.NativeLeftSuper, keys.Y, ::redo)
@@ -269,7 +301,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         updateEditorState()
 
-        if (Window.isModalWindowOpen || paperVision.nodeList.isNodesListOpen) {
+        if (Window.isModalWindowOpen || nodeList.isNodesListOpen) {
             ImNodes.clearLinkSelection()
             ImNodes.clearNodeSelection()
         } else {
@@ -337,7 +369,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             justDeletedLinkTimer.millis >= LINK_DELETE_COOLDOWN_MS) {
 
             currentRightClickMenuPopup = RightClickMenuPopup(
-                paperVision.nodeList,
+                nodeList,
                 ::undo, ::redo, ::cut, ::copy, ::paste,
                 popupSelection
             ).apply { enable() }

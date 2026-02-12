@@ -29,19 +29,16 @@ import io.github.deltacv.papervision.node.vision.imageproc.ThresholdNode
 import io.github.deltacv.papervision.node.vision.overlay.DrawContoursNode
 import io.github.deltacv.papervision.util.flags
 
-typealias GuidedTourStage = GuidedTourWindow.() -> Unit
-
 val Next: GuidedTourWindow.() -> Boolean = {
     ImGui.button(tr("mis_next"))
 }
-
 val Close: GuidedTourStage = {
     if (ImGui.button(tr("mis_cancel"))) {
         delete()
     }
 }
 
-val InitialStage: GuidedTourStage = {
+val IntroStage: GuidedTourStage = {
     centerWindow()
 
     ImGui.text(tr("mis_guidedtour_1"))
@@ -81,7 +78,6 @@ val Stage2: GuidedTourStage = {
     ImGui.text(tr("mis_guidedtour_5"))
     ImGui.text(tr("mis_guidedtour_6"))
 
-
     if (Next()) {
         currentStage = Stage3
     }
@@ -91,7 +87,7 @@ val Stage2: GuidedTourStage = {
 }
 
 val Stage3: GuidedTourStage = {
-    val floatingButton = nodeEditor.paperVision.nodeList.floatingButton
+    val floatingButton = nodeEditor.paperVision.nodeEditor.nodeListButton
 
     position = ImVec2(
         floatingButton.position.x - size.x + floatingButton.size.x,
@@ -100,7 +96,7 @@ val Stage3: GuidedTourStage = {
 
     ImGui.text(tr("mis_guidedtour_7"))
 
-    if (nodeEditor.paperVision.nodeList.isNodesListOpen) {
+    if (nodeEditor.paperVision.nodeEditor.nodeList.isNodesListOpen) {
         currentStage = Stage4
     }
 }
@@ -108,13 +104,13 @@ val Stage3: GuidedTourStage = {
 val Stage4: GuidedTourStage = {
     // bottom center
     position = ImVec2(
-       (nodeEditor.paperVision.nodeList.size.x / 2) - (size.x / 2),
-        nodeEditor.paperVision.nodeList.size.y - size.y - 50
+       (nodeEditor.paperVision.nodeEditor.nodeList.size.x / 2) - (size.x / 2),
+        nodeEditor.paperVision.nodeEditor.nodeList.size.y - size.y - 50
     )
 
     focus = true
 
-    if (!nodeEditor.paperVision.nodeList.isNodesListOpen) {
+    if (!nodeEditor.paperVision.nodeEditor.nodeList.isNodesListOpen) {
         if (nodeEditor.paperVision.nodes.find { it is ThresholdNode } != null) {
             currentStage = Stage5
         } else {
@@ -129,7 +125,7 @@ val Stage4: GuidedTourStage = {
 
         Close()
 
-        nodeEditor.paperVision.nodeList.highlight(ThresholdNode::class.java)
+        nodeEditor.paperVision.nodeEditor.nodeList.highlight(ThresholdNode::class.java)
     }
 }
 
@@ -178,7 +174,7 @@ val Stage6: GuidedTourStage = {
 
         Close()
 
-        if (nodeEditor.paperVision.nodeList.isNodesListOpen) {
+        if (nodeEditor.paperVision.nodeEditor.nodeList.isNodesListOpen) {
             currentStage = Stage7
         }
     }
@@ -191,7 +187,7 @@ val Stage7: GuidedTourStage = {
         ImGui.text(tr("mis_guidedtour_15"))
         Close()
 
-        nodeEditor.paperVision.nodeList.highlight(FindContoursNode::class.java)
+        nodeEditor.paperVision.nodeEditor.nodeList.highlight(FindContoursNode::class.java)
     } else {
         centerWindow()
 
@@ -227,7 +223,7 @@ val Stage8: GuidedTourStage = {
 
         Close()
 
-        if (nodeEditor.paperVision.nodeList.isNodesListOpen) {
+        if (nodeEditor.paperVision.nodeEditor.nodeList.isNodesListOpen) {
             currentStage = Stage9
         }
     }
@@ -240,7 +236,7 @@ val Stage9: GuidedTourStage = {
         ImGui.text(tr("mis_guidedtour_18"))
         Close()
 
-        nodeEditor.paperVision.nodeList.highlight(DrawContoursNode::class.java)
+        nodeEditor.paperVision.nodeEditor.nodeList.highlight(DrawContoursNode::class.java)
     } else {
         centerWindow()
 
@@ -264,7 +260,7 @@ val Stage9: GuidedTourStage = {
 val Stage10: GuidedTourStage = {
     val node = nodeEditor.paperVision.nodes.find { it is DrawContoursNode } as DrawContoursNode?
 
-    nodeEditor.paperVision.nodeList.clearHighlight()
+    nodeEditor.paperVision.nodeEditor.nodeList.clearHighlight()
 
     if (node == null) {
         currentStage = Stage6
@@ -373,7 +369,7 @@ class GuidedTourWindow(
 
     override var title = "$[mis_guidedtour]"
 
-    var currentStage: GuidedTourStage = InitialStage
+    var currentStage: GuidedTourStage = IntroStage
 
     private var previousStage: GuidedTourStage? = null
 
@@ -388,7 +384,7 @@ class GuidedTourWindow(
     )
 
     override fun drawContents() {
-        if(nodeEditor.paperVision.nodes.elements.size > 4 && currentStage == InitialStage) {
+        if(nodeEditor.paperVision.nodes.elements.size > 4 && currentStage == IntroStage) {
             centerWindow()
             ImGui.text(tr("mis_guidedtour_notavailable_1"))
             ImGui.text(tr("mis_guidedtour_notavailable_2"))
@@ -408,6 +404,8 @@ class GuidedTourWindow(
 
     override fun delete() {
         super.delete()
-        nodeEditor.paperVision.nodeList.clearHighlight()
+        nodeEditor.paperVision.nodeEditor.nodeList.clearHighlight()
     }
 }
+
+typealias GuidedTourStage = GuidedTourWindow.() -> Unit

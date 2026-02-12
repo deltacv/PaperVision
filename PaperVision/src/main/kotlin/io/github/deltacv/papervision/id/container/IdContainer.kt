@@ -27,7 +27,7 @@ import kotlin.math.max
 class SingleIdContainer<T : IdElement> : IdContainer<T>() {
 
     // ------------------------
-    // NON-LAZY VERSION (new)
+    // NON-LAZY VERSION
     // ------------------------
     override fun requestId(element: T, id: Int): Int {
         if (e.any { it != null }) {
@@ -159,7 +159,7 @@ open class IdContainer<T : IdElement> : Iterable<T> {
 
 
     // ============================================================
-    // -------------   NON-LAZY PUBLIC API (new)   ----------------
+    // -------------   NON-LAZY PUBLIC API         ----------------
     // ============================================================
 
     /**
