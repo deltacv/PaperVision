@@ -140,7 +140,7 @@ class IpcPaperVisionMain : Callable<Int?> {
                         }
                     }.onTimeout(2000) {
                         logger.warn("Timeout saving project, exiting anyway")
-                        exitProcess(0)
+                        exitProcess(-1)
                     }
                 )
 
@@ -151,7 +151,7 @@ class IpcPaperVisionMain : Callable<Int?> {
                         }
                     }.onTimeout(2000) {
                         logger.warn("Timeout discarding recovery, exiting anyway")
-                        exitProcess(0)
+                        exitProcess(-1)
                     }
                 )
 
