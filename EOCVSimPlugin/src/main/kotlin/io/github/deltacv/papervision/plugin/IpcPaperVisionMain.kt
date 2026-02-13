@@ -18,7 +18,6 @@
 
 package io.github.deltacv.papervision.plugin
 
-import imgui.ImGui
 import imgui.app.Application
 import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
@@ -91,13 +90,7 @@ class IpcPaperVisionMain : Callable<Int?> {
                 app.paperVision.engineClient
             )
 
-            app.paperVision.previzManager.onPrevizStart {
-                inputSourceWindow.enable()
-            }
-
-            app.paperVision.previzManager.onPrevizStop {
-                inputSourceWindow.delete()
-            }
+            app.paperVision.nodeEditor.streamWindowGroup.add(inputSourceWindow)
 
             app.paperVision.nodeEditor.options[FontAwesomeIcons.Save] = Option("mis_saveproject") {
                 app.paperVision.engineClient.sendMessage(

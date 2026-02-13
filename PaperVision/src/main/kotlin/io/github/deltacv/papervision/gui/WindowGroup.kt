@@ -1,5 +1,6 @@
 package io.github.deltacv.papervision.gui
 
+import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.papervision.util.flags
@@ -51,11 +52,12 @@ class WindowGroup(
     vararg windows: Window,
     var direction: LayoutDirection = LayoutDirection.LEFT_TO_RIGHT,
     var spacing: Float = 10f,
-    var padding: Float = 0f,  // outer offset from group origin
+    var padding: Float = 0f,
     var sizingMode: SizingMode = SizingMode.None
 ) : Window() {
 
     private val orderedWindows = mutableListOf<Window>()
+    private val pendingWindows = mutableListOf<Window>()
     private val initialWindows = windows.toList()
 
     override var title = "Window Group"
@@ -67,239 +69,240 @@ class WindowGroup(
     )
 
     override fun onEnable() {
-        for(window in initialWindows) {
-            add(window)
+        for (window in initialWindows) add(window)
+        enablePendingWindows()
+    }
+
+    fun add(vararg windows: Window) {
+        for (window in windows) {
+            if (window.isEnabled)
+                error("Cannot add already enabled window '${window.title}' to WindowGroup")
+
+            if (isEnabled) {
+                window.enable()
+                orderedWindows.add(window)
+            } else {
+                pendingWindows.add(window)
+            }
         }
     }
 
-    /**
-     * Add a window to the group (will be positioned according to layout direction)
-     */
-    fun add(vararg windows: Window) {
-        for(window in windows) {
-            if(window.isEnabled) {
-                throw IllegalStateException("Cannot add already enabled window '${window.title}' to WindowGroup")
-            }
-
+    private fun enablePendingWindows() {
+        for (window in pendingWindows) {
             window.enable()
             orderedWindows.add(window)
         }
+        pendingWindows.clear()
     }
 
-    override fun drawContents() {
-        // Empty - children draw themselves
-    }
+    override fun drawContents() {}
 
     override fun postDrawContents() {
         if (orderedWindows.isEmpty()) return
 
-        // Get WindowGroup's position as the origin for the FIRST element
         val groupPos = position
         var groupSize = size
 
-        // For GridFixed and GridDynamic modes, calculate the group size
+        // ---- sizing mode size calculation ----
         when (sizingMode) {
             is SizingMode.GridFixed -> {
                 groupSize = calculateGridFixedSize(sizingMode as SizingMode.GridFixed)
-                size = groupSize // Update the actual WindowGroup size
+                size = groupSize
             }
             is SizingMode.GridDynamic -> {
                 groupSize = calculateGridDynamicSize()
-                size = groupSize // Update the actual WindowGroup size
+                size = groupSize
             }
             else -> {}
         }
 
-        // Calculate available space for windows
-        val availableWidth = groupSize.x - (padding * 2)
-        val availableHeight = groupSize.y - (padding * 2)
+        val availableWidth = groupSize.x - padding * 2f
+        val availableHeight = groupSize.y - padding * 2f
 
-        // Apply sizing based on mode
         when (sizingMode) {
-            is SizingMode.None -> {
-                // Keep original sizes
-            }
-            is SizingMode.Grid -> {
-                applyGridSizing(availableWidth, availableHeight)
-            }
-            is SizingMode.GridFixed -> {
-                applyGridFixedSizing(sizingMode as SizingMode.GridFixed)
-            }
-            is SizingMode.GridDynamic -> {
-                applyGridDynamicSizing()
-            }
-            is SizingMode.Custom -> {
-                applyCustomSizing(availableWidth, availableHeight, sizingMode as SizingMode.Custom)
-            }
+            is SizingMode.Grid -> applyGridSizing(availableWidth, availableHeight)
+            is SizingMode.GridFixed -> applyGridFixedSizing(sizingMode as SizingMode.GridFixed)
+            is SizingMode.GridDynamic -> applyGridDynamicSizing()
+            is SizingMode.Custom -> applyCustomSizing(
+                availableWidth,
+                availableHeight,
+                sizingMode as SizingMode.Custom
+            )
+            else -> {}
         }
 
-        // Calculate starting positions based on direction
-        // groupPos is the origin of the FIRST element (accounting for direction)
+        // ---- layout helpers ----
+        fun layoutW(w: Window) = w.size.x
+        fun layoutH(w: Window) =
+            if (w.collapsed) ImGui.getFrameHeight()
+            else w.size.y
+
+        // ---- starting cursor ----
         var currentX = when (direction) {
-            LayoutDirection.LEFT_TO_RIGHT -> groupPos.x + padding
-            LayoutDirection.RIGHT_TO_LEFT -> groupPos.x - padding  // First element's top-right
+            LayoutDirection.RIGHT_TO_LEFT -> groupPos.x - padding
             else -> groupPos.x + padding
         }
 
         var currentY = when (direction) {
-            LayoutDirection.TOP_TO_BOTTOM -> groupPos.y + padding
-            LayoutDirection.BOTTOM_TO_TOP -> groupPos.y - padding  // First element's bottom
+            LayoutDirection.BOTTOM_TO_TOP -> groupPos.y - padding
             else -> groupPos.y + padding
         }
 
-        // Position each window
-        for (window in orderedWindows) {
-            val windowSize = window.size
+        // ---- position windows ----
+        orderedWindows.forEachIndexed { index, window ->
 
-            // Place window based on direction
-            val windowX = when (direction) {
-                LayoutDirection.RIGHT_TO_LEFT -> currentX - windowSize.x
+            val w = layoutW(window)
+            val h = layoutH(window)
+
+            val x = when (direction) {
+                LayoutDirection.RIGHT_TO_LEFT -> currentX - w
                 else -> currentX
             }
 
-            val windowY = when (direction) {
-                LayoutDirection.BOTTOM_TO_TOP -> currentY - windowSize.y
+            val y = when (direction) {
+                LayoutDirection.BOTTOM_TO_TOP -> currentY - h
                 else -> currentY
             }
 
-            window.position = ImVec2(windowX, windowY)
+            window.position = ImVec2(x, y)
 
-            // Advance position for next window
+            val isLast = index == orderedWindows.lastIndex
+
             when (direction) {
-                LayoutDirection.LEFT_TO_RIGHT -> currentX += windowSize.x + spacing
-                LayoutDirection.RIGHT_TO_LEFT -> currentX -= windowSize.x + spacing
-                LayoutDirection.TOP_TO_BOTTOM -> currentY += windowSize.y + spacing
-                LayoutDirection.BOTTOM_TO_TOP -> currentY -= windowSize.y + spacing
+                LayoutDirection.LEFT_TO_RIGHT ->
+                    currentX += w + if (!isLast) spacing else 0f
+
+                LayoutDirection.RIGHT_TO_LEFT ->
+                    currentX -= w + if (!isLast) spacing else 0f
+
+                LayoutDirection.TOP_TO_BOTTOM ->
+                    currentY += h + if (!isLast) spacing else 0f
+
+                LayoutDirection.BOTTOM_TO_TOP ->
+                    currentY -= h + if (!isLast) spacing else 0f
             }
         }
     }
 
+    // --------------------------------------------------
+    // SIZE CALCULATIONS
+    // --------------------------------------------------
+
     private fun calculateGridDynamicSize(): ImVec2 {
-        val count = orderedWindows.size
-        if (count == 0) return ImVec2(0f, 0f)
+        if (orderedWindows.isEmpty()) return ImVec2()
 
-        // Find the largest width and height among all windows
-        var maxWidth = 0f
-        var maxHeight = 0f
+        var maxW = 0f
+        var maxH = 0f
 
-        for (window in orderedWindows) {
-            val windowSize = window.size
-            if (windowSize.x > maxWidth) maxWidth = windowSize.x
-            if (windowSize.y > maxHeight) maxHeight = windowSize.y
+        for (w in orderedWindows) {
+            val h = if (w.collapsed) ImGui.getFrameHeight() else w.size.y
+            if (w.size.x > maxW) maxW = w.size.x
+            if (h > maxH) maxH = h
         }
 
+        val count = orderedWindows.size
+
         return when (direction) {
-            LayoutDirection.LEFT_TO_RIGHT, LayoutDirection.RIGHT_TO_LEFT -> {
-                // Width = sum of largest widths + spacing + padding
-                val totalWidth = (maxWidth * count) + (spacing * (count - 1)) + (padding * 2)
-                // Height = largest height + padding
-                val totalHeight = maxHeight + (padding * 2)
-                ImVec2(totalWidth, totalHeight)
-            }
-            LayoutDirection.TOP_TO_BOTTOM, LayoutDirection.BOTTOM_TO_TOP -> {
-                // Width = largest width + padding
-                val totalWidth = maxWidth + (padding * 2)
-                // Height = sum of largest heights + spacing + padding
-                val totalHeight = (maxHeight * count) + (spacing * (count - 1)) + (padding * 2)
-                ImVec2(totalWidth, totalHeight)
-            }
+            LayoutDirection.LEFT_TO_RIGHT, LayoutDirection.RIGHT_TO_LEFT ->
+                ImVec2(
+                    (maxW * count) + spacing * (count - 1) + padding * 2,
+                    maxH + padding * 2
+                )
+
+            else ->
+                ImVec2(
+                    maxW + padding * 2,
+                    (maxH * count) + spacing * (count - 1) + padding * 2
+                )
         }
     }
 
     private fun applyGridDynamicSizing() {
-        // Find the largest width and height among all windows
-        var maxWidth = 0f
-        var maxHeight = 0f
+        var maxW = 0f
+        var maxH = 0f
 
-        for (window in orderedWindows) {
-            val windowSize = window.size
-            if (windowSize.x > maxWidth) maxWidth = windowSize.x
-            if (windowSize.y > maxHeight) maxHeight = windowSize.y
+        for (w in orderedWindows) {
+            val h = if (w.collapsed) ImGui.getFrameHeight() else w.size.y
+            if (w.size.x > maxW) maxW = w.size.x
+            if (h > maxH) maxH = h
         }
 
-        // Set all windows to the largest size
-        for (window in orderedWindows) {
-            window.size = ImVec2(maxWidth, maxHeight)
+        for (w in orderedWindows) {
+            w.size = ImVec2(maxW, maxH)
         }
     }
 
-    private fun calculateGridFixedSize(fixedMode: SizingMode.GridFixed): ImVec2 {
-        val count = orderedWindows.size
-        if (count == 0) return ImVec2(0f, 0f)
+    private fun calculateGridFixedSize(mode: SizingMode.GridFixed): ImVec2 {
+        if (orderedWindows.isEmpty()) return ImVec2()
 
-        val itemSize = fixedMode.itemSizeProvider()
+        val item = mode.itemSizeProvider()
+        val count = orderedWindows.size
 
         return when (direction) {
-            LayoutDirection.LEFT_TO_RIGHT, LayoutDirection.RIGHT_TO_LEFT -> {
-                // Width = sum of all item widths + spacing + padding
-                val totalWidth = (itemSize.x * count) + (spacing * (count - 1)) + (padding * 2)
-                // Height = item height + padding
-                val totalHeight = itemSize.y + (padding * 2)
-                ImVec2(totalWidth, totalHeight)
-            }
-            LayoutDirection.TOP_TO_BOTTOM, LayoutDirection.BOTTOM_TO_TOP -> {
-                // Width = item width + padding
-                val totalWidth = itemSize.x + (padding * 2)
-                // Height = sum of all item heights + spacing + padding
-                val totalHeight = (itemSize.y * count) + (spacing * (count - 1)) + (padding * 2)
-                ImVec2(totalWidth, totalHeight)
-            }
+            LayoutDirection.LEFT_TO_RIGHT, LayoutDirection.RIGHT_TO_LEFT ->
+                ImVec2(
+                    item.x * count + spacing * (count - 1) + padding * 2,
+                    item.y + padding * 2
+                )
+
+            else ->
+                ImVec2(
+                    item.x + padding * 2,
+                    item.y * count + spacing * (count - 1) + padding * 2
+                )
         }
     }
 
-    private fun applyGridSizing(availableWidth: Float, availableHeight: Float) {
+    private fun applyGridSizing(w: Float, h: Float) {
         val count = orderedWindows.size
         if (count == 0) return
 
         when (direction) {
             LayoutDirection.LEFT_TO_RIGHT, LayoutDirection.RIGHT_TO_LEFT -> {
-                // Equal widths, full height
                 val totalSpacing = spacing * (count - 1)
-                val widthPerWindow = (availableWidth - totalSpacing) / count
-
-                for (window in orderedWindows) {
-                    window.size = ImVec2(widthPerWindow, availableHeight)
-                }
+                val width = (w - totalSpacing) / count
+                orderedWindows.forEach { it.size = ImVec2(width, h) }
             }
-            LayoutDirection.TOP_TO_BOTTOM, LayoutDirection.BOTTOM_TO_TOP -> {
-                // Full width, equal heights
-                val totalSpacing = spacing * (count - 1)
-                val heightPerWindow = (availableHeight - totalSpacing) / count
 
-                for (window in orderedWindows) {
-                    window.size = ImVec2(availableWidth, heightPerWindow)
-                }
+            else -> {
+                val totalSpacing = spacing * (count - 1)
+                val height = (h - totalSpacing) / count
+                orderedWindows.forEach { it.size = ImVec2(w, height) }
             }
         }
     }
 
-    private fun applyGridFixedSizing(fixedMode: SizingMode.GridFixed) {
-        val itemSize = fixedMode.itemSizeProvider()
+    private fun applyGridFixedSizing(mode: SizingMode.GridFixed) {
+        val item = mode.itemSizeProvider()
 
-        // Set all windows to the fixed item size
-        for (window in orderedWindows) {
-            window.size = ImVec2(itemSize.x, itemSize.y)
+        for (w in orderedWindows) {
+            val width = if (item.x > 0) item.x else w.size.x
+            val height = if (item.y > 0) item.y else w.size.y
+            w.size = ImVec2(width, height)
         }
     }
 
     private fun applyCustomSizing(
-        availableWidth: Float,
-        availableHeight: Float,
-        customMode: SizingMode.Custom
+        w: Float,
+        h: Float,
+        mode: SizingMode.Custom
     ) {
-        val availableSpace = ImVec2(availableWidth, availableHeight)
-
-        orderedWindows.forEachIndexed { index, window ->
-            window.size = customMode.sizer(window, index, orderedWindows.size, availableSpace)
+        val space = ImVec2(w, h)
+        orderedWindows.forEachIndexed { i, win ->
+            win.size = mode.sizer(win, i, orderedWindows.size, space)
         }
+    }
+
+    // --------------------------------------------------
+
+    override fun restore() {
+        orderedWindows.forEach { it.restore() }
+        super.restore()
     }
 
     override fun delete() {
-        for(window in orderedWindows) {
-            window.delete()
-        }
-
+        orderedWindows.forEach { it.delete() }
+        pendingWindows.forEach { it.delete() }
         super.delete()
     }
-
 }

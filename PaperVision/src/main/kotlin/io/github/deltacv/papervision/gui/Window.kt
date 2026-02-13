@@ -70,6 +70,9 @@ abstract class Window(
     private var requestedSize: ImVec2? = null
     private var imSize = ImVec2()
 
+    var collapsed = false
+        private set
+
     var size: ImVec2
         get() = imSize
         set(value) {
@@ -164,14 +167,18 @@ abstract class Window(
 
         preDrawContents()
 
-        // --- the actual window ---
-        if(ImGui.begin(titleId, if(isCloseable) imOpen else null, windowFlags)) {
+        val open = ImGui.begin(titleId, if(isCloseable) imOpen else null, windowFlags)
+
+        collapsed = ImGui.isWindowCollapsed()
+
+        if(open) {
             drawContents()
 
             ImGui.getWindowPos(imPosition)
             ImGui.getWindowSize(imSize)
             imFocus = ImGui.isWindowFocused()
         }
+
         ImGui.end()
 
         postDrawContents()

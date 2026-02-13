@@ -157,6 +157,16 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     // Display
     val outputImageDisplay by lazy { ImageDisplay(paperVision.previzManager.stream) }
+    val streamWindow by lazy { ImageDisplayWindow(outputImageDisplay).apply { isCloseable = false } }
+
+    val streamWindowGroup by lazy {
+        WindowGroup(
+            streamWindow,
+            direction = LayoutDirection.TOP_TO_BOTTOM,
+            spacing = 30f,
+            sizingMode = SizingMode.None
+        )
+    }
 
     // Shortcuts to PaperVision collections
     val nodes get() = paperVision.nodes
@@ -219,7 +229,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         onDraw {
             group.position = ImVec2(
-                size.x - 40f , size.y - nodeListButton.size.y - 40f
+                size.x - 40f, size.y - nodeListButton.size.y - 40f
             )
         }
     }
@@ -242,7 +252,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                 }
             }
             addShortcut(keys.Escape) {
-                if(nodeList.isOpen) {
+                if (nodeList.isOpen) {
                     nodeList.closeList() // close the list when the escape key is pressed
                 }
             }
@@ -266,12 +276,14 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
 
         paperVision.previzManager.onPrevizStart {
-            val streamWindow = ImageDisplayWindow(outputImageDisplay)
-            streamWindow.isCloseable = false
-            streamWindow.enable()
+            if(!streamWindowGroup.hasEnabled) {
+                streamWindowGroup.enable()
+            } else {
+                streamWindowGroup.restore()
+            }
 
             paperVision.previzManager.onPrevizStop.once {
-                streamWindow.delete()
+                streamWindowGroup.delete()
             }
         }
     }
@@ -358,7 +370,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
 
         if (!ImGui.isMouseDown(ImGuiMouseButton.Right) &&
-            !ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
+            !ImGui.isMouseReleased(ImGuiMouseButton.Right)
+        ) {
             rightClickMenuPopupTimer.reset()
         }
     }
@@ -366,7 +379,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     private fun handleRightClickMenu() {
         if (ImGui.isMouseReleased(ImGuiMouseButton.Right) &&
             rightClickMenuPopupTimer.millis <= RIGHT_CLICK_POPUP_THRESHOLD_MS &&
-            justDeletedLinkTimer.millis >= LINK_DELETE_COOLDOWN_MS) {
+            justDeletedLinkTimer.millis >= LINK_DELETE_COOLDOWN_MS
+        ) {
 
             currentRightClickMenuPopup = RightClickMenuPopup(
                 nodeList,
@@ -542,7 +556,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         // Reset on mouse movement
         val currentMousePos = ImGui.getMousePos()
         if (pasteInitialMousePos.x != currentMousePos.x ||
-            pasteInitialMousePos.y != currentMousePos.y) {
+            pasteInitialMousePos.y != currentMousePos.y
+        ) {
             pasteCount = 0
             pasteInitialMousePos = currentMousePos
         }
