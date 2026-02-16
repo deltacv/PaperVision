@@ -104,7 +104,7 @@ class NodeList(
         ImGuiWindowFlags.NoDecoration
     )
 
-    private val defaultFontBig = Font.find("calcutta-big")
+    private val defaultFontBig by Font.findLazy("calcutta-big")
 
     override fun onEnable() {
         // use different id stacks for the node list, we dont want these nodes on the actual editor

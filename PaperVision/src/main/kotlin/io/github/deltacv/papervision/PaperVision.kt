@@ -34,7 +34,6 @@ import io.github.deltacv.papervision.gui.*
 import io.github.deltacv.papervision.gui.display.ImageDisplay
 import io.github.deltacv.papervision.gui.editor.IntroModalWindow
 import io.github.deltacv.papervision.gui.editor.NodeEditor
-import io.github.deltacv.papervision.gui.editor.NodeList
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
 import io.github.deltacv.papervision.gui.util.Font
@@ -51,7 +50,6 @@ import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
-import io.github.deltacv.papervision.node.PaperNodeRegistry
 import io.github.deltacv.papervision.platform.*
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
@@ -256,10 +254,10 @@ class PaperVision(
 
         ImGui.pushFont(defaultFont.imfont)
 
-        windows.inmutable.forEach { it.draw() }
-        popups.inmutable.forEach { it.draw() }
+        windows.forEach { it.draw() }
+        popups.forEach { it.draw() }
 
-        textureProcessorQueues.inmutable.forEach { it.draw() }
+        textureProcessorQueues.forEach { it.draw() }
 
         ImGui.popFont()
 
@@ -276,8 +274,8 @@ class PaperVision(
 
         textureProcessorQueue.delete()
 
-        windows.inmutable.reversed().forEach { it.delete() }
-        popups.inmutable.reversed().forEach { it.delete() }
+        windows.reversed().forEach { it.delete() }
+        popups.reversed().forEach { it.delete() }
 
         nodeEditor.delete()
     }
@@ -308,7 +306,7 @@ class PaperVision(
     }
 
     fun clearToasts() {
-        windows.inmutable.filterIsInstance<ToastWindow>().forEach { it.delete() }
+        windows.filterIsInstance<ToastWindow>().forEach { it.delete() }
     }
 
     /** Helper to simplify font creation */
@@ -316,7 +314,7 @@ class PaperVision(
         fontManager.makeFont(name, path, defaultFontConfig(size))
 
     /** Executes a block of code with all containers pushed/popped safely */
-    private inline fun withStacks(block: () -> Unit) {
+    private inline fun withStacks(crossinline block: () -> Unit) {
         IdContainerStacks.local.push(nodes)
         IdContainerStacks.local.push(attributes)
         IdContainerStacks.local.push(links)

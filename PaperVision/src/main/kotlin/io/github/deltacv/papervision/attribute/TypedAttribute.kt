@@ -85,8 +85,8 @@ abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) 
 
     val nodeSize = ImVec2()
 
-    private val defaultImGuiFont = Font.find("default-12")
-    private val fontAwesome = Font.find("font-awesome")
+    private val defaultImGuiFont by Font.findLazy("default-12")
+    private val fontAwesome by Font.findLazy("font-awesome")
 
     override fun draw() {
         ImNodes.pushColorStyle(ImNodesCol.Pin, styleColor)

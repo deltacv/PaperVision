@@ -384,7 +384,7 @@ class GuidedTourWindow(
     )
 
     override fun drawContents() {
-        if(nodeEditor.paperVision.nodes.elements.size > 4 && currentStage == IntroStage) {
+        if(nodeEditor.paperVision.nodes.size > 4 && currentStage == IntroStage) {
             centerWindow()
             ImGui.text(tr("mis_guidedtour_notavailable_1"))
             ImGui.text(tr("mis_guidedtour_notavailable_2"))

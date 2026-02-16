@@ -61,7 +61,7 @@ class MatAttribute(
     var displayWindow: ImageDisplayNode? = null
         private set
 
-    private val fontAwesome = Font.find("font-awesome")
+    private val fontAwesome by Font.findLazy("font-awesome")
 
     override fun drawAfterText() {
         if(mode == AttributeMode.OUTPUT && allowPrevizButton && isOnEditor) {

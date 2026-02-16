@@ -35,8 +35,8 @@ import org.deltacv.mai18n.tr
 class AboutModalWindow : Window() {
     override var title = "win_welcome"
 
-    val imguiFont = Font.find("default-12")
-    val monoFont = Font.find("jetbrains-mono")
+    val imguiFont by Font.findLazy("default-12")
+    val monoFont by Font.findLazy("jetbrains-mono")
 
     override val windowFlags = flags(
         ImGuiWindowFlags.NoResize,
@@ -83,7 +83,7 @@ class AboutModalWindow : Window() {
 
         var elementCount = 0
         for(container in IdContainerStacks.local.all()) {
-            elementCount += container.elements.size
+            elementCount += container.inmutable.size
         }
 
         centeredText("System details: $OS $OS_VERSION $ARCH running on Java ${System.getProperty("java.version")} ${System.getProperty("java.vendor")}")
