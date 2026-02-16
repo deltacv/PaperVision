@@ -35,13 +35,13 @@ import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguag
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage.NoType
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
-import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 
 @PaperNode(
     name = "nod_keypointsto_rects",
-    category = Category.FEATURE_DET,
+    category = NodeCategory.TRANSFORM,
     description = "des_keypointsto_rects"
 )
 class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {

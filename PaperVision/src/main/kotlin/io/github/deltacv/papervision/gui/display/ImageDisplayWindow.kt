@@ -26,11 +26,12 @@ import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.util.flags
 
 class ImageDisplayWindow(
-    val imageDisplay: ImageDisplay
+    val imageDisplay: ImageDisplay,
+    override val isCloseable: Boolean = true
 ) : Window() {
     override var title = "Preview"
 
-    override var isCloseable = true
+    override val focusOnHover = true
 
     override val windowFlags = flags(
         ImGuiWindowFlags.AlwaysAutoResize,

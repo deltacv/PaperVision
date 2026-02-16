@@ -42,6 +42,7 @@ import io.github.deltacv.papervision.gui.TooltipPopup
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.WindowGroup
 import io.github.deltacv.papervision.gui.editor.menu.RightClickMenuPopup
+import io.github.deltacv.papervision.gui.isAnyWindowHovered
 import io.github.deltacv.papervision.gui.isModalWindowOpen
 import io.github.deltacv.papervision.id.DrawableIdElement
 import io.github.deltacv.papervision.io.KeyManager
@@ -151,20 +152,22 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         ImGuiWindowFlags.NoTitleBar, ImGuiWindowFlags.NoDecoration
     )
 
+    var editorHovered = false
+        private set
+
     // Popup state
     private val popupSelection = mutableListOf<DrawableIdElement>()
     private var currentRightClickMenuPopup: RightClickMenuPopup? = null
 
     // Display
     val outputImageDisplay by lazy { ImageDisplay(paperVision.previzManager.stream) }
-    val streamWindow by lazy { ImageDisplayWindow(outputImageDisplay).apply { isCloseable = false } }
+    val streamWindow by lazy { ImageDisplayWindow(outputImageDisplay, isCloseable = false) }
 
     val streamWindowGroup by lazy {
         WindowGroup(
             streamWindow,
             direction = LayoutDirection.TOP_TO_BOTTOM,
-            spacing = 30f,
-            sizingMode = SizingMode.None
+            spacing = 30f
         )
     }
 
@@ -307,27 +310,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         ImNodes.setNodeGridSpacePos(originNode.id, 0f, 0f)
         ImNodes.miniMap(MINIMAP_SCALE, ImNodesMiniMapLocation.BottomLeft)
 
-        drawNodesAndLinks()
-
-        ImNodes.endNodeEditor()
-
-        updateEditorState()
-
-        if (Window.isModalWindowOpen || nodeList.isNodesListOpen) {
-            ImNodes.clearLinkSelection()
-            ImNodes.clearNodeSelection()
-        } else {
-            handleInteractions()
-        }
-
-        updatePanning()
-        updateRightClickMenuSelection()
-        handleDeleteLink()
-        handleCreateLink()
-        handleDeleteSelection()
-    }
-
-    private fun drawNodesAndLinks() {
         for (node in nodes.inmutable) {
             node.editor = this
             node.draw()
@@ -344,6 +326,27 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                 onEditorChange.run()
             }
         }
+
+        editorHovered = ImNodes.isEditorHovered()
+
+        ImNodes.endNodeEditor()
+
+        updateEditorState()
+
+        if (Window.isModalWindowOpen || nodeList.isNodesListOpen) {
+            ImNodes.clearLinkSelection()
+            ImNodes.clearNodeSelection()
+        } else {
+            handleInteractions()
+        }
+
+        ImNodes.getIO()
+
+        updatePanning()
+        updateRightClickMenuSelection()
+        handleDeleteLink()
+        handleCreateLink()
+        handleDeleteSelection()
     }
 
     private fun updateEditorState() {
@@ -358,7 +361,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     }
 
     private fun handleRightClickState() {
-        val isFreeToMove = (!isNodeFocused || scrollTimer.millis <= SCROLL_COOLDOWN_MS)
+        val isFreeToMove = (!isNodeFocused || scrollTimer.millis <= SCROLL_COOLDOWN_MS) && editorHovered
 
         if (rightClickedWhileHoveringNode) {
             if (ImGui.isMouseReleased(ImGuiMouseButton.Right)) {
@@ -379,7 +382,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     private fun handleRightClickMenu() {
         if (ImGui.isMouseReleased(ImGuiMouseButton.Right) &&
             rightClickMenuPopupTimer.millis <= RIGHT_CLICK_POPUP_THRESHOLD_MS &&
-            justDeletedLinkTimer.millis >= LINK_DELETE_COOLDOWN_MS
+            justDeletedLinkTimer.millis >= LINK_DELETE_COOLDOWN_MS &&
+            editorHovered
         ) {
 
             currentRightClickMenuPopup = RightClickMenuPopup(
@@ -393,10 +397,10 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     }
 
     private fun handleMouseClickPanning() {
-        val shouldPan = ImGui.isMouseDown(ImGuiMouseButton.Middle) ||
+        val shouldPan = (ImGui.isMouseDown(ImGuiMouseButton.Middle) ||
                 (ImGui.isMouseDown(ImGuiMouseButton.Right) &&
                         rightClickMenuPopupTimer.millis >= 100 &&
-                        (!rightClickedWhileHoveringNode || keyManager.pressing(keys.LeftControl)))
+                        (!rightClickedWhileHoveringNode || keyManager.pressing(keys.LeftControl)))) && editorHovered
 
         if (shouldPan) {
             editorPanning.x += (ImGui.getMousePosX() - prevMouseX)
@@ -408,24 +412,24 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     }
 
     private fun handleKeyboardPanning() {
-        val isFreeToMove = !isNodeFocused || scrollTimer.millis <= SCROLL_COOLDOWN_MS
+        val isFreeToMove = (!isNodeFocused || scrollTimer.millis <= SCROLL_COOLDOWN_MS) && editorHovered
         if (!isFreeToMove) return
 
         var doingKeys = false
 
         // Arrow key panning
-        if (keyManager.pressing(keys.ArrowLeft)) {
+        if (keyManager.pressing(keys.ArrowLeft) && focus) {
             editorPanning.x += KEY_PAN_CONSTANT
             doingKeys = true
-        } else if (keyManager.pressing(keys.ArrowRight)) {
+        } else if (keyManager.pressing(keys.ArrowRight) && focus) {
             editorPanning.x -= KEY_PAN_CONSTANT
             doingKeys = true
         }
 
-        if (keyManager.pressing(keys.ArrowUp)) {
+        if (keyManager.pressing(keys.ArrowUp) && focus) {
             editorPanning.y += KEY_PAN_CONSTANT
             doingKeys = true
-        } else if (keyManager.pressing(keys.ArrowDown)) {
+        } else if (keyManager.pressing(keys.ArrowDown) && focus) {
             editorPanning.y -= KEY_PAN_CONSTANT
             doingKeys = true
         }
@@ -501,7 +505,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         val selectedNodesList = getSelectedNodesList(overrideSelection) ?: return
 
         pasteCount = 0
-        clipboard = PaperVisionSerializer.serialize(selectedNodesList, listOf())
+        clipboard = PaperVisionSerializer.serialize(selectedNodesList.filter { it.joinActionStack }, listOf())
 
         logger.debug("Clipboard content: $clipboard")
     }
@@ -606,12 +610,10 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         var count = 0
 
         for (node in nodes) {
-            if (node is DrawNode<*>) {
-                node.nextNodePosition?.let {
-                    totalX += it.x
-                    totalY += it.y
-                    count++
-                }
+            node.position.let {
+                totalX += it.x
+                totalY += it.y
+                count++
             }
         }
 

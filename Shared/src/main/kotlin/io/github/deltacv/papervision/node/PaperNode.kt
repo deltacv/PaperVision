@@ -21,7 +21,7 @@ package io.github.deltacv.papervision.node
 @Target(AnnotationTarget.CLASS)
 annotation class PaperNode(
     val name: String,
-    val category: Category,
+    val category: NodeCategory,
     val description: String = "",
     val showInList: Boolean = true
 )

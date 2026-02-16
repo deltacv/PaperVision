@@ -25,14 +25,14 @@ import io.github.deltacv.papervision.attribute.EmptyInputAttribute
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.NoSession
-import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.serialization.data.SerializeIgnore
 
 @PaperNode(
     name = "nod_previewdisplay",
-    category = Category.HIGH_LEVEL_CV,
+    category = NodeCategory.HIGH_LEVEL_CV,
     showInList = false
 )
 @SerializeIgnore

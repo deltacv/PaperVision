@@ -37,7 +37,7 @@ import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.id.container.IdContainer
 import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.io.KeyManager
-import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.node.PaperNode
@@ -46,7 +46,7 @@ import io.github.deltacv.papervision.util.flags
 import io.github.deltacv.papervision.util.loggerForThis
 import org.deltacv.mai18n.tr
 
-typealias CategorizedNodes = Map<Category, MutableList<Class<out Node<*>>>>
+typealias CategorizedNodes = Map<NodeCategory, MutableList<Class<out Node<*>>>>
 
 class NodeList(
     val paperVision: PaperVision,
@@ -158,7 +158,7 @@ class NodeList(
             highlightTimer.reset()
         }
 
-        for (category in Category.entries) {
+        for (category in NodeCategory.entries) {
             if (nodes.containsKey(category)) {
                 val table = headers.categoryTables[category] ?: continue
 
@@ -402,7 +402,7 @@ class NodeList(
     }
 
     val nodes by lazy {
-        val map = mutableMapOf<Category, MutableList<Node<*>>>()
+        val map = mutableMapOf<NodeCategory, MutableList<Node<*>>>()
 
         for ((category, nodeClasses) in nodeClasses) {
             val list = mutableListOf<Node<*>>()

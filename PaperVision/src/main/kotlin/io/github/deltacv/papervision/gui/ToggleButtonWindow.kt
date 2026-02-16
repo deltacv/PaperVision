@@ -42,7 +42,7 @@ open class ToggleButtonWindow(
         ImGuiWindowFlags.AlwaysAutoResize
     )
 
-    private var hovered = false
+    private var buttonHovered = false
     private var lastPressed = false
 
     var isPressed = false
@@ -63,7 +63,7 @@ open class ToggleButtonWindow(
 
         val color = when {
             isPressed -> style.getColor(ImGuiCol.ButtonActive)
-            hovered -> style.getColor(ImGuiCol.ButtonHovered)
+            buttonHovered -> style.getColor(ImGuiCol.ButtonHovered)
             else -> style.getColor(ImGuiCol.Button)
         }
 
@@ -79,11 +79,11 @@ open class ToggleButtonWindow(
         // ---- interactive region ----
         ImGui.invisibleButton("##$id", size.x.coerceAtLeast(1f), size.y.coerceAtLeast(1f))
 
-        hovered = ImGui.isItemHovered()
+        buttonHovered = ImGui.isItemHovered()
         val held = ImGui.isItemActive()
 
         // Check if button was released while hovered (proper button behavior)
-        val released = lastPressed && !held && hovered
+        val released = lastPressed && !held && buttonHovered
 
         isPressed = held
 

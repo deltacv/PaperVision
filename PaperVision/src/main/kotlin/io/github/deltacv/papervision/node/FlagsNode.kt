@@ -23,7 +23,7 @@ import io.github.deltacv.papervision.serialization.data.SerializeData
 @PaperNode(
     name = "Flags",
     description = "A node that holds flags",
-    category = Category.MISC,
+    category = NodeCategory.MISC,
     showInList = false
 )
 class FlagsNode : InvisibleNode() {

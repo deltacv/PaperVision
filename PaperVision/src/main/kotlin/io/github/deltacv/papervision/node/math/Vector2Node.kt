@@ -30,13 +30,13 @@ import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguag
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.PaperNode
-import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.util.Range2i
 
 
 @PaperNode(
     name = "nod_vector2",
-    category = Category.MATH,
+    category = NodeCategory.MATH,
     description = "des_vector2"
 )
 class Vector2Node : DrawNode<Vector2Node.Session>() {

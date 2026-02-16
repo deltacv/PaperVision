@@ -9,14 +9,14 @@ import io.github.deltacv.papervision.gui.Table
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.io.KeyManager
-import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.util.flags
 import org.deltacv.mai18n.tr
 
 class Headers(
     val keyManager: KeyManager,
-    val nodesSupplier: () -> Map<Category, List<Node<*>>>
+    val nodesSupplier: () -> Map<NodeCategory, List<Node<*>>>
 ) : Window() {
 
     override var title = "headers"
@@ -26,8 +26,8 @@ class Headers(
         ImGuiWindowFlags.NoDecoration, ImGuiWindowFlags.AlwaysVerticalScrollbar
     )
 
-    val categoryTables = mutableMapOf<Category, Table>()
-    val categoryStates = mutableMapOf<Category, Boolean>()
+    val categoryTables = mutableMapOf<NodeCategory, Table>()
+    val categoryStates = mutableMapOf<NodeCategory, Boolean>()
 
     var currentScroll = 0f
     var nextScroll: Float? = null
@@ -64,7 +64,7 @@ class Headers(
 
         isHeaderHovered = false
 
-        for (category in Category.entries) {
+        for (category in NodeCategory.entries) {
             if (nodesSupplier().containsKey(category)) {
                 if (!categoryTables.containsKey(category)) {
                     categoryTables[category] = Table()

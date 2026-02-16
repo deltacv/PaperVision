@@ -20,9 +20,7 @@ package io.github.deltacv.papervision.node.code
 
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
-import io.github.deltacv.papervision.node.Category
 import io.github.deltacv.papervision.node.DrawNode
-import io.github.deltacv.papervision.node.PaperNode
 
 /* @PaperNode(
     name = "nod_codesnippet",

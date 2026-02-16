@@ -34,7 +34,7 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Size
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
-import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.util.Range2i
@@ -45,7 +45,7 @@ enum class Shape(val sides: Int?) {
 
 @PaperNode(
     name = "nod_groupcontours_byshape",
-    category = Category.CLASSIFICATION,
+    category = NodeCategory.CLASSIFICATION,
     description = "des_groupcontours_byshape"
 )
 class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() {

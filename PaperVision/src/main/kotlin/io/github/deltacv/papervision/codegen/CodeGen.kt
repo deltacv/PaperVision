@@ -76,7 +76,7 @@ class CodeGen(
     fun gen(): String {
         val raw = language.gen(this)
 
-        return placeholderResolver.resolve(raw, IdContainerStacks.local.peekNonNull<Resolvable.Placeholder<*>>())
+        return placeholderResolver.resolve(raw)
     }
 
     fun addFlag(flag: String) = if(!flags.contains(flag)) flags.add(flag) else false

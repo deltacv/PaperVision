@@ -217,7 +217,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         engine.setMessageHandlerOf<InputSourceListChangeListenerMessage> {
             val currentSourceAmount = eocvSimApi.inputSourceManagerApi.allSources.size
 
-            eocvSimApi.mainLoopHook.once {
+            eocvSimApi.mainLoopHook {
                 if (eocvSimApi.inputSourceManagerApi.allSources.size > currentSourceAmount) {
                     respond(InputSourcesListResponse(inputSourcesToData()))
                 }

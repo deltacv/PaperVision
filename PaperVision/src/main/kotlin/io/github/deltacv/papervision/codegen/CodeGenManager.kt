@@ -132,7 +132,7 @@ class CodeGenManager(val paperVision: PaperVision) {
     }
 
     private fun showError(codeGen: CodeGen, node: Node<*>, message: String) {
-        if(!codeGen.isForPreviz) {
+        if(!codeGen.isForPreviz) { // dont scroll if we're on an active previz session as there's a new gen triggered on every change
             paperVision.nodeEditor.editorPanning.x = (-node.gridPosition.x) - (node.size.x / 2) + ImGui.getMainViewport().size.x / 2
             paperVision.nodeEditor.editorPanning.y = (-node.gridPosition.y) - (node.size.y / 2) + ImGui.getMainViewport().size.y / 2
         }

@@ -166,6 +166,8 @@ open class IdContainer<T : IdElement> : Iterable<T> {
      * NON-LAZY: Request id and immediately assign element.
      */
     open fun requestId(element: T, id: Int): Int {
+        if(has(id, element)) return id
+
         if (shouldEnableHashMapping(id)) {
             useHashMapping = true
         }

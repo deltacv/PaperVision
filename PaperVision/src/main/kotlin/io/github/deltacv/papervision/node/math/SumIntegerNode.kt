@@ -25,8 +25,6 @@ import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.node.PaperNode
-import io.github.deltacv.papervision.node.Category
 
 /*
 @PaperNode(

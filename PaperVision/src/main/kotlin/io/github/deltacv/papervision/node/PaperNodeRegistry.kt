@@ -51,7 +51,7 @@ object PaperNodeRegistry {
         }
     }
 
-    fun registerNode(nodeClass: Class<out Node<*>>, category: Category) {
+    fun registerNode(nodeClass: Class<out Node<*>>, category: NodeCategory) {
         val list = nodes[category]
 
         val mutableNodes = nodes as MutableMap

@@ -27,7 +27,7 @@ open class ButtonWindow(
         ImGuiWindowFlags.AlwaysAutoResize
     )
 
-    var hovered = false
+    var buttonHovered = false
         private set
     private var lastPressed = false
 
@@ -47,7 +47,7 @@ open class ButtonWindow(
 
         val color = when {
             isPressed -> style.getColor(ImGuiCol.ButtonActive)
-            hovered -> style.getColor(ImGuiCol.ButtonHovered)
+            buttonHovered -> style.getColor(ImGuiCol.ButtonHovered)
             else -> style.getColor(ImGuiCol.Button)
         }
 
@@ -63,10 +63,10 @@ open class ButtonWindow(
         // ---- interactive region ----
         ImGui.invisibleButton("##$id", size.x.coerceAtLeast(1f), size.y.coerceAtLeast(1f))
 
-        hovered = ImGui.isItemHovered()
+        buttonHovered = ImGui.isItemHovered()
         val held = ImGui.isItemActive()
 
-        if(hovered) {
+        if(buttonHovered) {
             buttonTooltip?.let { text ->
                 if(hoveringTime.seconds >= hoveringTimeForTooltipSecs) {
                     buttonTooltipFont?.imfont?.let { ImGui.pushFont(it) }
@@ -83,7 +83,7 @@ open class ButtonWindow(
         }
 
         // Check if button was released while hovered (proper button behavior)
-        val released = lastPressed && !held && hovered
+        val released = lastPressed && !held && buttonHovered
 
         isPressed = held
 

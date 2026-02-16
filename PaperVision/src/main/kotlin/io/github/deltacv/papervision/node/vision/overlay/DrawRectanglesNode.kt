@@ -37,13 +37,13 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
-import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 
 @PaperNode(
     name = "nod_drawrects",
-    category = Category.OVERLAY,
+    category = NodeCategory.OVERLAY,
     description = "des_drawrects"
 )
 open class DrawRectanglesNode
@@ -246,7 +246,7 @@ open class DrawRectanglesNode
 
 @PaperNode(
     name = "nod_drawrects_onimage",
-    category = Category.OVERLAY,
+    category = NodeCategory.OVERLAY,
     description = "des_drawrects_onimage",
     showInList = false // executive decision
 )

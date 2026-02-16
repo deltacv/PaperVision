@@ -15,6 +15,7 @@ cat_image_proc,Image Processing,Procesamiento de Imagen
 cat_feature_det,Feature Detection,Deteccion de Caracteristicas
 cat_overlay,Overlay,Overlay
 cat_class,"Classification, Filtering and Exporting","Clasificación, Filtrado y Exportación"
+cat_transform,Transform,Transformacion
 cat_math,Math,Matematicas
 cat_misc,Miscellaneous,Miscelaneo
 nod_previewdisplay,Preview,Previsualizacion
@@ -165,6 +166,7 @@ des_drawkeypoints,Draws the key points on a copy of the<br>given image and outpu
 des_cannyedge,Filters edges in the input<br>image using the Canny algorithm.,Filtra bordes en la imagen de<br>entrada usando el algoritmo Canny.
 des_blobdetector,Detects blobs in an image<br>using OpenCV's Simple Blob Detector.,Detecta blobs en una imagen<br>usando el Detector de Blobs Simple de OpenCV.
 des_keypointsto_rects,Converts key points to<br>bounding rectangles.,Convierte puntos clave a<br>rectángulos delimitadores.
+des_circlesto_rects,Converts circles to<br>bounding rectangles.,Convierte círculos a<br>rectángulos delimitadores.
 des_vector2,Composes a Vector in two dimensions,Compone un Vector en dos dimensiones
 err_bitwiseor_binary,"Both inputs must be of the same type, binary or not","Ambas entradas deben ser del mismo tipo, binario o no"
 err_grayscale_required,"Grayscale image required","Se requiere una imagen en escala de grises"
@@ -179,6 +181,8 @@ mis_input,Input,Entrada
 mis_output,Output,Salida
 mis_nodeslist_open,Press SPACE to open the nodes list,Presiona ESPACIO para abrir la lista de nodos
 mis_nodeslist_close,Press ESCAPE to close the nodes list,Presiona ESCAPE para cerrar la lista de nodos
+mis_doubleclick_tomaximize,Double-Click to maximize,Doble-Clic para maximizar
+mis_doubleclick_tominimize,Double-Click to minimize,Doble-Clic para minimizar
 mis_searchingnodes_pleasewait,"Searching for nodes, please wait...","Buscando nodos, por favor espera..."
 mis_welcomelanguage,Choose a language to proceed<br>Elige un lenguaje para continuar,Choose a language to proceed<br>Elige un lenguaje para continuar
 mis_welcome1,Welcome to PaperVision! This is a visual programming tool for OpenCV.,Bienvenido a PaperVision! Esta es una herramienta visual para OpenCV.

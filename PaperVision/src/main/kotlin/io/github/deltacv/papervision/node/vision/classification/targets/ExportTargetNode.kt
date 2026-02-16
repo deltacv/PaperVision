@@ -26,14 +26,14 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.dsl.jvm.jvmTargets
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
-import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 
 
 @PaperNode(
     name = "nod_exportrect_target",
-    category = Category.CLASSIFICATION,
+    category = NodeCategory.CLASSIFICATION,
     description = "des_exportrect_target"
 )
 class ExportTargetNode : DrawNode<NoSession>() {
@@ -68,7 +68,7 @@ class ExportTargetNode : DrawNode<NoSession>() {
 
 @PaperNode(
     name = "nod_exportrot_recttarget",
-    category = Category.CLASSIFICATION,
+    category = NodeCategory.CLASSIFICATION,
     description = "des_exportrot_recttarget"
 )
 class ExportRotTarget : DrawNode<NoSession>() {

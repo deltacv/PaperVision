@@ -22,6 +22,8 @@ import imgui.ImGui
 import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.engine.previz.ClientPrevizStream
 import io.github.deltacv.papervision.id.DrawableIdElementBase
+import io.github.deltacv.papervision.util.ElapsedTime
+import org.deltacv.mai18n.tr
 
 class ImageDisplay(
     var clientPrevizStream: ClientPrevizStream
@@ -29,15 +31,29 @@ class ImageDisplay(
 
     override val idContainer get() = IdContainerStacks.local.peekNonNull<ImageDisplay>()
 
+    private val hoverTimer = ElapsedTime()
+
     override fun draw() {
         clientPrevizStream.textureOf(id)?.draw()
 
-        if (ImGui.isItemHovered() && ImGui.isMouseDoubleClicked(0)) {
-            if(clientPrevizStream.sizing == ClientPrevizStream.Sizing.MINIMIZED) {
-                clientPrevizStream.maximize()
-            } else {
-                clientPrevizStream.minimize()
+        if(ImGui.isItemHovered()) {
+            if(hoverTimer.seconds >= 0.5) {
+                 ImGui.setTooltip(if(clientPrevizStream.sizing == ClientPrevizStream.Sizing.MINIMIZED) {
+                     tr("mis_doubleclick_tomaximize")
+                 } else {
+                     tr("mis_doubleclick_tominimize")
+                 })
             }
+
+            if(ImGui.isMouseDoubleClicked(0)) {
+                if(clientPrevizStream.sizing == ClientPrevizStream.Sizing.MINIMIZED) {
+                    clientPrevizStream.maximize()
+                } else {
+                    clientPrevizStream.minimize()
+                }
+            }
+        } else {
+            hoverTimer.reset()
         }
     }
 }

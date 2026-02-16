@@ -33,14 +33,14 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
-import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.vision.ColorSpace
 
 @PaperNode(
     name = "nod_cvtcolor",
-    category = Category.IMAGE_PROC,
+    category = NodeCategory.IMAGE_PROC,
     description = "des_cvtcolor"
 )
 class CvtColorNode : DrawNode<CvtColorNode.Session>() {

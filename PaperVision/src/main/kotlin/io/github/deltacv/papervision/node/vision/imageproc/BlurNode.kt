@@ -35,7 +35,7 @@ import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguag
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage.tuple
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
-import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 
@@ -43,7 +43,7 @@ enum class BlurAlgorithm { Gaussian, Box, Median, Bilateral }
 
 @PaperNode(
     name = "nod_blur",
-    category = Category.IMAGE_PROC,
+    category = NodeCategory.IMAGE_PROC,
     description = "des_blur"
 )
 class BlurNode : DrawNode<BlurNode.Session>() {

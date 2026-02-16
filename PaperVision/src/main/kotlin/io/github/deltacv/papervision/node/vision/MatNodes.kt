@@ -37,14 +37,14 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
-import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.serialization.data.SerializeData
 
 @PaperNode(
     name = "nod_pipelineinput",
-    category = Category.FLOW,
+    category = NodeCategory.FLOW,
     showInList = false
 )
 class InputMatNode @JvmOverloads constructor(
@@ -119,7 +119,7 @@ class InputMatNode @JvmOverloads constructor(
 
 @PaperNode(
     name = "nod_pipelineoutput",
-    category = Category.FLOW,
+    category = NodeCategory.FLOW,
     showInList = false
 )
 class OutputMatNode @JvmOverloads constructor(

@@ -34,7 +34,7 @@ import org.deltacv.mai18n.tr
 
 class InputSourceWindow(
     val client: PaperVisionEngineClient
-) : Window(){
+) : Window() {
     var inputSources = arrayOf<IpcInputSourceData>()
 
     private var previousInputSource: String? = null
@@ -46,6 +46,7 @@ class InputSourceWindow(
         ImGuiWindowFlags.AlwaysAutoResize,
     )
 
+    override val focusOnHover = true
     override val isCloseable = false
 
     private var initialPosition: ImVec2? = null
@@ -64,18 +65,10 @@ class InputSourceWindow(
 
         client.sendMessage(InputSourceListChangeListenerMessage().onResponseWith<InputSourcesListResponse> {
             inputSources = it.sources
-        })
+        }) // subscribe to input source list changes
 
         onDraw.once {
             initialPosition = ImVec2(position.x, position.y)
-        }
-    }
-
-    override fun preDrawContents() {
-        if(initialPosition != null) {
-            position = ImVec2(
-                ImGui.getMainViewport().size.x - size.x - initialPosition!!.y, initialPosition!!.y
-            )
         }
     }
 

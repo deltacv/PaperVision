@@ -150,7 +150,7 @@ abstract class DrawNode<S: CodeGenSession>(
 
     data class AnnotationData(val name: String,
                               val description: String,
-                              val category: Category,
+                              val category: NodeCategory,
                               val showInList: Boolean)
 
 }

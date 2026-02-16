@@ -49,6 +49,8 @@ abstract class Window(
 
     open val isCloseable = true
 
+    open val focusOnHover = false
+
     private var imFocus = false
     private var requestedFocus = false
 
@@ -71,6 +73,9 @@ abstract class Window(
     private var imSize = ImVec2()
 
     var collapsed = false
+        private set
+
+    var hovered = false
         private set
 
     var size: ImVec2
@@ -146,6 +151,8 @@ abstract class Window(
 
         // --- position / size / focus hints ---
 
+        preDrawContents()
+
         if(isModal) {
             val cx = viewport.posX + viewport.sizeX / 2f
             val cy = viewport.posY + viewport.sizeY / 2f
@@ -160,23 +167,21 @@ abstract class Window(
             requestedSize = null
         }
 
-        if(requestedFocus || (isModal && firstDraw)) {
+        if(requestedFocus || (isModal && firstDraw) || (focusOnHover && hovered && !imFocus)) {
             ImGui.setNextWindowFocus()
             requestedFocus = false
         }
 
-        preDrawContents()
-
         val open = ImGui.begin(titleId, if(isCloseable) imOpen else null, windowFlags)
 
         collapsed = ImGui.isWindowCollapsed()
+        hovered = ImGui.isWindowHovered()
+        ImGui.getWindowPos(imPosition)
+        ImGui.getWindowSize(imSize)
+        imFocus = ImGui.isWindowFocused()
 
         if(open) {
             drawContents()
-
-            ImGui.getWindowPos(imPosition)
-            ImGui.getWindowSize(imSize)
-            imFocus = ImGui.isWindowFocused()
         }
 
         ImGui.end()
@@ -217,3 +222,4 @@ abstract class Window(
 }
 
 val Window.Companion.isModalWindowOpen get() = IdContainerStacks.local.peekNonNull<Window>().inmutable.any { it.isModal && it.isEnabled }
+val Window.Companion.isAnyWindowHovered get() = IdContainerStacks.local.peekNonNull<Window>().inmutable.any { it.hovered }

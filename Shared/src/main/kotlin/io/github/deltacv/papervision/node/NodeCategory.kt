@@ -21,9 +21,9 @@ package io.github.deltacv.papervision.node
 import io.github.deltacv.papervision.gui.style.CurrentStyles.imnodesStyle
 import io.github.deltacv.papervision.gui.style.hexColor
 
-enum class Category(val properName: String,
-                    val color: Int = imnodesStyle.titleBar,
-                    val colorSelected: Int = imnodesStyle.titleBarHovered) {
+enum class NodeCategory(val properName: String,
+                        val color: Int = imnodesStyle.titleBar,
+                        val colorSelected: Int = imnodesStyle.titleBarHovered) {
 
     FLOW("cat_pipeline_flow",
         hexColor("#00838f"), // material cyan
@@ -47,6 +47,10 @@ enum class Category(val properName: String,
     OVERLAY("cat_overlay",
         hexColor("#00695c"), // material teal 800
         hexColor("#00897b")),  // material teal 600
+
+    TRANSFORM("cat_transform",
+        hexColor("#c62828"), // material red 800
+        hexColor("#d32f2f")), // material red 600
 
     MATH("cat_math"),
     MISC("cat_misc")

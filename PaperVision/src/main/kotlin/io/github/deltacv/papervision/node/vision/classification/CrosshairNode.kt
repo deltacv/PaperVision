@@ -38,13 +38,13 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
-import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 
 @PaperNode(
     name = "nod_crosshair",
-    category = Category.CLASSIFICATION,
+    category = NodeCategory.CLASSIFICATION,
     description = "des_crosshair"
 )
 class CrosshairNode : DrawNode<CrosshairNode.Session>() {

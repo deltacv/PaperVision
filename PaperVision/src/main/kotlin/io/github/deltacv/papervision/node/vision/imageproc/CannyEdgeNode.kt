@@ -32,14 +32,14 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
-import io.github.deltacv.papervision.node.Category
+import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.vision.ColorSpace
 
 @PaperNode(
     name = "nod_cannyedge",
-    category = Category.IMAGE_PROC,
+    category = NodeCategory.IMAGE_PROC,
     description = "des_cannyedge"
 )
 class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
@@ -91,7 +91,7 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
 
                 current.scope {
                     nameComment()
-1
+
                     JvmOpenCvTypes.Imgproc("Canny", input.value.v, output, firstThresholdVariable, secondThresholdVariable)
                     outputMat.streamIfEnabled(output, input.color)
                 }
