@@ -22,6 +22,7 @@ import com.google.gson.JsonObject
 import imgui.ImGui
 import imgui.flag.ImGuiCol
 import io.github.deltacv.papervision.action.editor.CreateLinkAction
+import io.github.deltacv.papervision.attribute.AnyAttribute
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
@@ -202,11 +203,19 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
 
         lastHasLink = hasLink
     }
+    // accept either another ListAttribute with the same element type
+    // or a TypedAttribute with the same type as the element type
+    override fun acceptLink(other: Attribute): LinkAcceptance {
+        val sameListType = other is ListAttribute<*, *> && other.elementAttributeType == elementAttributeType
+        val sameTypedAttribute = other is TypedAttribute<*> && other.attributeType == elementAttributeType
+        val anyAttribute = mode == AttributeMode.OUTPUT && other is AnyAttribute
 
-    // accept either another ListAttribute with the same element type or a TypedAttribute with the same type as the element type
-    override fun acceptLink(other: Attribute) =
-        (other is ListAttribute<*, *> && other.elementAttributeType == elementAttributeType) ||
-                (other is TypedAttribute<*> && other.attributeType == elementAttributeType)
+        return if(sameListType || sameTypedAttribute || anyAttribute) {
+            LinkAcceptance.Accept
+        } else {
+            LinkAcceptance.Reject
+        }
+    }
 
     open fun drawAttributeText(index: Int, attrib: Attribute): Boolean = false
 

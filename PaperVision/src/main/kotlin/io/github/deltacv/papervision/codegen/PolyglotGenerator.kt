@@ -1,14 +1,31 @@
 package io.github.deltacv.papervision.codegen
 
-import io.github.deltacv.papervision.codegen.language.Language
-
 interface PolyglotGenerator<I, S: CodeGenSession> : Generator<I, S> {
-    val generators: Map<Language, Generator<I, S>>
+    val generators: Map<PolyglotMapping, Generator<I, S>>
 
     override fun genCode(input: I, current: CodeGen.Current): S {
-        val generator = generators[current.language]
-            ?: throw NoSuchElementException("No generator found for language ${current.language.javaClass.simpleName} at node ${this::class.simpleName}")
+        var currentCloseness = Int.MAX_VALUE
+        var closestGenerator: Generator<I, S>? = null
 
-        return generator.genCode(input, current)
+        for((mapping, gen) in generators) {
+            // closeness < 0 is complete discard, 0 is perfect match, higher is worse match
+            val closeness = mapping.match(current.language)
+
+            if(closeness < 0) continue // dont even consider it
+
+            if(closeness == 0) {
+                closestGenerator = gen
+                break
+            }
+
+            if((closeness > 0 && closestGenerator == null) || (closeness <= currentCloseness)) {
+                currentCloseness = closeness
+                closestGenerator = gen
+            }
+        }
+
+        return closestGenerator?.genCode(input, current) ?: throw NoSuchElementException(
+            "No generator found for language ${current.language.javaClass.simpleName} at node ${this::class.simpleName}"
+        )
     }
 }

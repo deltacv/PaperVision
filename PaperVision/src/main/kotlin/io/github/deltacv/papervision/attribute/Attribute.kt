@@ -52,7 +52,7 @@ class EmptyInputAttribute(
     override fun drawAttribute() {
     }
 
-    override fun acceptLink(other: Attribute) = true
+    override fun acceptLink(other: Attribute) = LinkAcceptance.Accept
 
     override fun genValue(current: CodeGen.Current): GenValue {
         throw NotImplementedError("value() is not implemented for EmptyInputAttribute")
@@ -104,6 +104,9 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         }
     }
     val onDelete = PaperEventHandler("OnDelete-${this::class.simpleName}")
+
+    val onLink = PaperEventHandler("OnLink-${this::class.simpleName}")
+    val onUnlink = PaperEventHandler("OnUnlink-${this::class.simpleName}")
 
     val position = ImVec2()
     val editorPosition = ImVec2()
@@ -228,7 +231,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         }
     }
 
-    abstract fun acceptLink(other: Attribute): Boolean
+    abstract fun acceptLink(other: Attribute): LinkAcceptance
 
     abstract fun genValue(current: CodeGen.Current): GenValue
 
@@ -279,6 +282,15 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     override fun hasChanged() = changeQueue.poll() ?: false
 
     override fun toString() = "Attribute(type=${this::class.java.typeName}, id=$id)"
+
+    sealed class LinkAcceptance(val accepted: Boolean) {
+        companion object {
+            val Reject = Reject()
+        }
+
+        object Accept: LinkAcceptance(true)
+        class Reject(val reason: String = "err_couldntlink_didntmatch"): LinkAcceptance(false)
+    }
 
 }
 

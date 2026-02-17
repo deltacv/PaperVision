@@ -20,16 +20,80 @@ package io.github.deltacv.papervision.codegen.dsl
 
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.Generator
+import io.github.deltacv.papervision.codegen.PolyglotMapping
 import io.github.deltacv.papervision.codegen.language.Language
+import kotlin.reflect.KClass
 
 class GeneratorsBuilderContext<I, S: CodeGenSession> {
-    val generators = mutableMapOf<Language, Generator<I, S>>()
 
-    fun generatorFor(language: Language, init: GeneratorContext<I, S>.() -> S) = generatorFor<I, S>(language, init).apply { generators[first] = second }
-    fun generatorFor(vararg languages: Language, init: GeneratorContext<I, S>.() -> S) = generatorFor<I, S>(*languages, init = init).apply { forEach { generators[it.key] = it.value } }
+    val generators = mutableMapOf<PolyglotMapping, Generator<I, S>>()
 
-    fun generatorFor(language: Language, generator: Generator<I, S>) = generators.put(language, generator)
-    fun generatorFor(vararg languages: Language, generator: Generator<I, S>) = languages.forEach { generators[it] = generator }
+    /* ---------- INSTANCE LANGUAGES ---------- */
+
+    fun generatorFor(vararg languages: Language, init: GeneratorContext<I, S>.() -> S) =
+        generator(init).also {
+            generators[PolyglotMapping.LanguagesInst(languages.toList())] = it
+        }
+
+    fun generatorFor(vararg languages: Language, generator: Generator<I, S>) =
+        generators.put(PolyglotMapping.LanguagesInst(languages.toList()), generator)
+
+
+    /* ---------- CLASS LANGUAGES ---------- */
+
+    @JvmName("generatorForSingleClassLanguage")
+    inline fun <reified L: Language> generatorFor(noinline init: GeneratorContext<I, S>.() -> S) =
+        generator(init).also {
+            generators[PolyglotMapping.LanguagesClass(listOf(L::class))] = it
+        }
+
+    inline fun <reified L: Language> generatorFor(generator: Generator<I, S>) =
+        generators.put(
+            PolyglotMapping.LanguagesClass(listOf(L::class)),
+            generator
+        )
+
+    @JvmName("generatorForTwoClassLanguages")
+    inline fun <reified L1: Language, reified L2: Language>
+            generatorFor(noinline init: GeneratorContext<I, S>.() -> S) =
+        generator(init).also {
+            generators[
+                PolyglotMapping.LanguagesClass(
+                    listOf(L1::class, L2::class)
+                )
+            ] = it
+        }
+
+    /* ---------- CLASS LANGUAGES (VARARG) ---------- */
+
+    fun generatorFor(
+        vararg languageClasses: KClass<out Language>,
+        init: GeneratorContext<I, S>.() -> S
+    ) =
+        generator(init).also {
+            generators[
+                PolyglotMapping.LanguagesClass(languageClasses.toList())
+            ] = it
+        }
+
+    fun generatorFor(
+        vararg languageClasses: KClass<out Language>,
+        generator: Generator<I, S>
+    ) =
+        generators.put(
+            PolyglotMapping.LanguagesClass(languageClasses.toList()),
+            generator
+        )
+
+    /* ---------- ANY ---------- */
+
+    fun generatorForAny(init: GeneratorContext<I, S>.() -> S) =
+        generator(init).also {
+            generators[PolyglotMapping.AnyLanguage] = it
+        }
+
+    fun generatorForAny(generator: Generator<I, S>) =
+        generators.put(PolyglotMapping.AnyLanguage, generator)
 }
 
 inline fun <I, S: CodeGenSession> generatorsBuilder(init: GeneratorsBuilderContext<I, S>.() -> Unit) = GeneratorsBuilderContext<I, S>().run {

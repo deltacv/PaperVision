@@ -3,11 +3,12 @@ package io.github.deltacv.papervision.attribute.decomp
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.CodeGenSession
+import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.GenValueMapper
 import io.github.deltacv.papervision.codegen.PolyglotGenerator
 import io.github.deltacv.papervision.node.Node
 
-abstract class AttributeDecomposer<T: Attribute, S: CodeGenSession>(val decomposerNode: Node<*>) : PolyglotGenerator<T, S>, GenValueMapper {
+abstract class AttributeDecomposer<S: CodeGenSession>(val decomposerNode: Node<*>) : PolyglotGenerator<GenValue, S>, GenValueMapper {
 
     companion object {
         val INPUT = AttributeMode.INPUT
@@ -23,7 +24,10 @@ abstract class AttributeDecomposer<T: Attribute, S: CodeGenSession>(val decompos
     }
 
     fun disable() {
-        outputAttributes.forEach { decomposerNode.removeAttribute(it) }
+        outputAttributes.forEach {
+            decomposerNode.removeAttribute(it)
+            it.delete()
+        }
         outputAttributes.clear()
     }
 

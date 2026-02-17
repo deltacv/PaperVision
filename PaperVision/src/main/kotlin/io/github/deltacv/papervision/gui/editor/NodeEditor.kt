@@ -42,7 +42,6 @@ import io.github.deltacv.papervision.gui.TooltipPopup
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.WindowGroup
 import io.github.deltacv.papervision.gui.editor.menu.RightClickMenuPopup
-import io.github.deltacv.papervision.gui.isAnyWindowHovered
 import io.github.deltacv.papervision.gui.isModalWindowOpen
 import io.github.deltacv.papervision.id.DrawableIdElement
 import io.github.deltacv.papervision.io.KeyManager
@@ -727,8 +726,19 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             return false // Same mode not allowed
         }
 
-        if (!startAttrib.acceptLink(endAttrib) || !endAttrib.acceptLink(startAttrib)) {
-            TooltipPopup.showWarning("err_couldntlink_didntmatch")
+        val startAttribAcceptance = startAttrib.acceptLink(endAttrib)
+        if(!startAttribAcceptance.accepted) {
+            if(startAttribAcceptance is Attribute.LinkAcceptance.Reject) {
+                TooltipPopup.showWarning(startAttribAcceptance.reason)
+            }
+            return false
+        }
+
+        val endAttribAcceptance = endAttrib.acceptLink(startAttrib)
+        if(!endAttribAcceptance.accepted) {
+            if(endAttribAcceptance is Attribute.LinkAcceptance.Reject) {
+                TooltipPopup.showWarning(endAttribAcceptance.reason)
+            }
             return false
         }
 

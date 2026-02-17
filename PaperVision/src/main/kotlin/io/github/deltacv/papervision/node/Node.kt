@@ -78,7 +78,7 @@ abstract class Node<S: CodeGenSession>(
     val position = ImVec2()
     val size = ImVec2()
 
-    override val generators = mutableMapOf<Language, Generator<Unit, S>>()
+    override val generators = mutableMapOf<PolyglotMapping, Generator<Unit, S>>()
 
     override val genOptions = CodeGenOptions()
 

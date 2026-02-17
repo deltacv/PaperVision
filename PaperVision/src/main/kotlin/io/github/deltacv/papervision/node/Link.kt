@@ -48,10 +48,14 @@ class Link(
     fun getOtherAttribute(me: Attribute) = if(me == aAttrib) bAttrib else aAttrib
 
     override fun draw() {
-        if(aAttrib?.links?.contains(this) == false)
+        if(aAttrib?.links?.contains(this) == false) {
             aAttrib?.links?.add(this)
-        if(bAttrib?.links?.contains(this) == false)
+            aAttrib?.onLink?.run()
+        }
+        if(bAttrib?.links?.contains(this) == false) {
             bAttrib?.links?.add(this)
+            aAttrib?.onLink?.run()
+        }
 
         if(aAttrib == null || bAttrib == null) {
             delete()
@@ -85,6 +89,9 @@ class Link(
     override fun delete() {
         idContainer.removeId(id)
         triggerOnChange()
+
+        aAttrib?.onUnlink?.run()
+        bAttrib?.onUnlink?.run()
     }
 
     override fun restore() {

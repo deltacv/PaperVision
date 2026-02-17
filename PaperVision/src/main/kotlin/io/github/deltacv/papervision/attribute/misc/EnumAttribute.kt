@@ -66,7 +66,11 @@ class EnumAttribute<T: Enum<T>>(
         checkChange()
     }
 
-    override fun acceptLink(other: Attribute) = other is EnumAttribute<*> && values[0]::class == other.values[0]::class
+    override fun acceptLink(other: Attribute) = if(super.acceptLink(other).accepted && other is EnumAttribute<*> && values[0]::class == other.values[0]::class) {
+        LinkAcceptance.Accept
+    } else {
+        LinkAcceptance.Reject
+    }
 
     override fun readEditorValue() = values[currentIndex.get()]
 

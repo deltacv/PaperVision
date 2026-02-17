@@ -51,7 +51,7 @@ interface AttributeType<A: TypedAttribute<*>> {
         throw UnsupportedOperationException("Cannot instantiate this attribute with new")
     }
 
-    fun decomposer(decomposerNode: Node<*>): AttributeDecomposer<A, *>? = null
+    fun decomposer(decomposerNode: Node<*>): AttributeDecomposer<*>? = null
 }
 
 abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) : Attribute() {
@@ -206,13 +206,37 @@ abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) 
     }
 
     // acceptLink is overridden to allow for ListAttribute to accept TypedAttribute
-    override fun acceptLink(other: Attribute) =
-        (other is TypedAttribute<*> && other.attributeType == attributeType) ||
-            this::class == other::class ||
-                (other is AnyAttribute) ||
-                // allow linking to ListAttribute if the types are the same so it becomes an element of the list
-                // ONLY IF THIS ELEMENT IS OUTPUT otherwise it allows to link a list output to an individual input
-                (other is ListAttribute<*, *> && other.elementAttributeType == attributeType && mode == AttributeMode.OUTPUT)
+    override fun acceptLink(other: Attribute): LinkAcceptance {
+        // basic type check
+        val sameTypedAttribute =
+            other is TypedAttribute<*> && other.attributeType == attributeType
+
+        val sameClass =
+            this::class == other::class
+
+        // we'll let the AnyAttribute determine if it can link or not
+        val outputToAny =
+            mode == AttributeMode.OUTPUT && other is AnyAttribute
+
+        // allow linking to ListAttribute if the types are the same so it becomes an element of the list
+        // ONLY IF THIS ELEMENT IS OUTPUT otherwise it allows to link a list output to an individual input
+        val outputToMatchingList =
+            mode == AttributeMode.OUTPUT &&
+                    other is ListAttribute<*, *> &&
+                    other.elementAttributeType == attributeType
+
+        return if (
+            sameTypedAttribute ||
+            sameClass ||
+            outputToAny ||
+            outputToMatchingList
+        ) {
+            LinkAcceptance.Accept
+        } else {
+            LinkAcceptance.Reject()
+        }
+    }
+
 
     protected fun changed() {
         if (!isFirstDraw && !isSecondDraw) onChange.run()

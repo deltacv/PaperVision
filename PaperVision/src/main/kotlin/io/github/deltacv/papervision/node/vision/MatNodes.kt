@@ -34,6 +34,7 @@ import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
 import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
+import io.github.deltacv.papervision.codegen.language.LanguageBase
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
@@ -106,7 +107,7 @@ class InputMatNode @JvmOverloads constructor(
     }
 
     override val generators = generatorsBuilder {
-        generatorFor(JavaLanguage, CPythonLanguage) { NoSession }
+        generatorForAny { NoSession }
     }
 
     override fun getGenValueOf(current: CodeGen.Current,
@@ -187,7 +188,7 @@ class OutputMatNode @JvmOverloads constructor(
     }
 
     override val generators = generatorsBuilder {
-        generatorFor(JavaLanguage) {
+        generatorFor<LanguageBase> {
             current {
                 val inputValue = input.genValue(current)
 

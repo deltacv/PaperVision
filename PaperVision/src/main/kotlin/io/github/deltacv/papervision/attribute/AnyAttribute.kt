@@ -7,7 +7,7 @@ import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 class AnyAttribute(
     override val mode: AttributeMode,
     override var variableName: String?,
-    private val linkAcceptor: (Attribute) -> Boolean = { true }
+    private val linkAcceptor: (Attribute) -> LinkAcceptance = { LinkAcceptance.Accept }
 ) : TypedAttribute<GenValue>(Companion) {
 
     companion object: AttributeType<AnyAttribute> {
