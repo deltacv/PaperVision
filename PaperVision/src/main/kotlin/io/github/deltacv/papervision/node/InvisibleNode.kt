@@ -47,6 +47,6 @@ open class InvisibleNode : Node<NoSession>(allowDelete = false) {
         }
     }
 
-    override fun genCode(current: CodeGen.Current) = NoSession
+    override fun genCode(input: Unit, current: CodeGen.Current) = NoSession
 
 }

@@ -117,8 +117,6 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        genCodeIfNecessary(current)
-
         if(attrib == outputPoints) {
             return GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.contoursList }
         }

@@ -23,6 +23,8 @@ import imgui.flag.ImGuiCol
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
+import io.github.deltacv.papervision.attribute.decomp.AttributeDecomposer
+import io.github.deltacv.papervision.attribute.decomp.vision.MatAttributeDecomposer
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
@@ -30,6 +32,7 @@ import io.github.deltacv.papervision.gui.display.ImageDisplayNode
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.gui.util.ImGuiEx
 import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.serialization.data.SerializeIgnore
 
 class MatAttribute(
@@ -45,6 +48,8 @@ class MatAttribute(
         override val styleHoveredColor = rgbaColor(0, 151, 167, 255)
 
         override fun new(mode: AttributeMode, variableName: String) = MatAttribute(mode, variableName)
+
+        override fun decomposer(decomposerNode: Node<*>) = MatAttributeDecomposer(decomposerNode)
     }
 
     @SerializeIgnore

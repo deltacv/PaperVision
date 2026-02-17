@@ -23,6 +23,7 @@ import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.flag.ImNodesCol
 import io.github.deltacv.papervision.PaperVision
+import io.github.deltacv.papervision.attribute.decomp.AttributeDecomposer
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import org.deltacv.mai18n.tr
@@ -30,6 +31,7 @@ import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValueMessage
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValuesMessage
 import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.node.Node
 
 interface AttributeType<A: TypedAttribute<*>> {
     val icon: String
@@ -46,8 +48,10 @@ interface AttributeType<A: TypedAttribute<*>> {
             && listStyleHoveredColor == PaperVision.imnodesStyle.pinHovered
 
     fun new(mode: AttributeMode, variableName: String): A {
-        throw UnsupportedOperationException("Cannot instantiate a List attribute with new")
+        throw UnsupportedOperationException("Cannot instantiate this attribute with new")
     }
+
+    fun decomposer(decomposerNode: Node<*>): AttributeDecomposer<A, *>? = null
 }
 
 abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) : Attribute() {
@@ -205,6 +209,7 @@ abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) 
     override fun acceptLink(other: Attribute) =
         (other is TypedAttribute<*> && other.attributeType == attributeType) ||
             this::class == other::class ||
+                (other is AnyAttribute) ||
                 // allow linking to ListAttribute if the types are the same so it becomes an element of the list
                 // ONLY IF THIS ELEMENT IS OUTPUT otherwise it allows to link a list output to an individual input
                 (other is ListAttribute<*, *> && other.elementAttributeType == attributeType && mode == AttributeMode.OUTPUT)

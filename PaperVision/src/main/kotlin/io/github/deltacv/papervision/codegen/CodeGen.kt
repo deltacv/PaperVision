@@ -58,8 +58,8 @@ class CodeGen(
     val viewportTappedScope = Scope(2, language, importScope, isForPreviz)
     val currViewportTapped  = Current(this, viewportTappedScope, isForPreviz)
 
-    val sessions = mutableMapOf<GenNode<*>, CodeGenSession>()
-    val busyNodes = mutableListOf<GenNode<*>>()
+    val sessions = mutableMapOf<Generator<*, *>, CodeGenSession>()
+    val busyNodes = mutableListOf<Generator<*, *>>()
 
     val endingNodes = mutableListOf<GenNode<*>>()
 
@@ -91,10 +91,13 @@ class CodeGen(
         val language get() = codeGen.language
 
         @Suppress("UNCHECKED_CAST")
-        fun <S: CodeGenSession> sessionOf(node: GenNode<S>) = codeGen.sessions[node] as S?
+        fun <S: CodeGenSession> sessionOf(node: Generator<Unit, S>) = codeGen.sessions[node] as S?
 
-        fun <S: CodeGenSession> nonNullSessionOf(node: GenNode<S>) = sessionOf(node) ?: run {
-            node.genCodeIfNecessary(this)
+        fun <S: CodeGenSession> nonNullSessionOf(node: Generator<Unit, S>) = sessionOf(node) ?: run {
+            if(node is GenNode<*>) {
+                node.genCodeIfNecessary(this)
+            }
+
             this@Current.sessionOf(node)
                 ?: throw IllegalStateException("Node ${node::class.simpleName} did not generate a session when requested")
         }

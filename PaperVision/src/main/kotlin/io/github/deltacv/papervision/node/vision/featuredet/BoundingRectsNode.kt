@@ -146,8 +146,6 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        genCodeIfNecessary(current)
-
         if (attrib == outputRects) {
             return GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.outputRects }
         }

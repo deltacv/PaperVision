@@ -18,15 +18,13 @@
 
 package io.github.deltacv.papervision.codegen
 
-import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.build.Scope
 import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.util.loggerForThis
 
-interface GenNode<S: CodeGenSession> : Generator<S> {
+interface GenNode<S: CodeGenSession> : PolyglotGenerator<Unit, S> {
 
     val genOptions: CodeGenOptions
-    var lastGenSession: S?
 
     val genNodeName: String?
         get() = null
@@ -46,7 +44,7 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
 
         if(genOptions.genAtTheEnd && codeGen.stage != CodeGen.Stage.END_GEN) {
             if(!codeGen.endingNodes.contains(this)) {
-                logger.debug("Marked $this as an ending node")
+                logger.debug("Marked {} as an ending node", this)
                 codeGen.endingNodes.add(this)
             }
 
@@ -65,9 +63,7 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
 
                 logger.info("Generating code for ${name ?: this}")
 
-                lastGenSession = genCode(current)
-
-                codeGen.sessions[this] = lastGenSession!!
+                codeGen.sessions[this] = genCode(Unit, current)
 
                 codeGen.busyNodes.remove(this)
 
@@ -75,8 +71,6 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
 
                 codeGenPropagate(current)
             }
-        } else {
-            lastGenSession = session as S
         }
     }
 
@@ -88,7 +82,5 @@ interface GenNode<S: CodeGenSession> : Generator<S> {
     }
 
     fun ScopeContext.nameComment() = scope.nameComment()
-
-    fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue
 
 }

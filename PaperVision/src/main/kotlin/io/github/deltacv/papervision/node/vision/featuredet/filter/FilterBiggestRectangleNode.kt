@@ -191,8 +191,6 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        genCodeIfNecessary(current)
-
         if(attrib == output) {
             return GenValue.GRect.RuntimeRect.defer { current.sessionOf(this)?.biggestRect }
         }

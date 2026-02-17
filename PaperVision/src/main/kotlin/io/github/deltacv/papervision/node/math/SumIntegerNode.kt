@@ -25,6 +25,8 @@ import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
+import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 
 /*
 @PaperNode(
@@ -42,17 +44,17 @@ class SumIntegerNode : DrawNode<SumIntegerNode.Session>() {
         + result
     }
 
-    override fun genCode(current: CodeGen.Current) = current {
-        val session = Session()
+    override val generators = generatorsBuilder {
+        generatorFor(JavaLanguage) {
+            val session = Session()
 
-        session
+            session
+        }
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        genCodeIfNecessary(current)
-
         if(attrib == result) {
-            return lastGenSession!!.result
+            // return lastGenSession!!.result
         }
 
         noValue(attrib)

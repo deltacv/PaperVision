@@ -171,8 +171,6 @@ class BlurNode : DrawNode<BlurNode.Session>() {
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        genCodeIfNecessary(current)
-
         if(attrib == output) {
             return GenValue.Mat.defer { current.sessionOf(this)?.outputMatValue }
         }

@@ -22,17 +22,20 @@ import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.Generator
 import io.github.deltacv.papervision.codegen.language.Language
 
-class GeneratorsBuilderContext<S: CodeGenSession> {
-    val generators = mutableMapOf<Language, Generator<S>>()
+class GeneratorsBuilderContext<I, S: CodeGenSession> {
+    val generators = mutableMapOf<Language, Generator<I, S>>()
 
-    fun generatorFor(language: Language, init: GeneratorContext<S>.() -> S) = generatorFor<S>(language, init).apply { generators[first] = second }
-    fun generatorFor(vararg languages: Language, init: GeneratorContext<S>.() -> S) = generatorFor<S>(*languages, init = init).apply { forEach { generators[it.key] = it.value } }
+    fun generatorFor(language: Language, init: GeneratorContext<I, S>.() -> S) = generatorFor<I, S>(language, init).apply { generators[first] = second }
+    fun generatorFor(vararg languages: Language, init: GeneratorContext<I, S>.() -> S) = generatorFor<I, S>(*languages, init = init).apply { forEach { generators[it.key] = it.value } }
 
-    fun generatorFor(language: Language, generator: Generator<S>) = generators.put(language, generator)
-    fun generatorFor(vararg languages: Language, generator: Generator<S>) = languages.forEach { generators[it] = generator }
+    fun generatorFor(language: Language, generator: Generator<I, S>) = generators.put(language, generator)
+    fun generatorFor(vararg languages: Language, generator: Generator<I, S>) = languages.forEach { generators[it] = generator }
 }
 
-inline fun <S: CodeGenSession> generatorsBuilder(init: GeneratorsBuilderContext<S>.() -> Unit) = GeneratorsBuilderContext<S>().run {
+inline fun <I, S: CodeGenSession> generatorsBuilder(init: GeneratorsBuilderContext<I, S>.() -> Unit) = GeneratorsBuilderContext<I, S>().run {
     init()
     generators
 }
+
+@JvmName("generatorsBuilderUnit")
+inline fun <S: CodeGenSession> generatorsBuilder(init: GeneratorsBuilderContext<Unit, S>.() -> Unit) = generatorsBuilder<Unit, S>(init)

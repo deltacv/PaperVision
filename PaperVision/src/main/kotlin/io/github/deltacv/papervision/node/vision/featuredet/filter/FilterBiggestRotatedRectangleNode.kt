@@ -196,8 +196,6 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        genCodeIfNecessary(current)
-
         if (attrib == output) {
             return GenValue.GRect.Rotated.RuntimeRotatedRect.defer { current.sessionOf(this)?.biggestRect }
         }

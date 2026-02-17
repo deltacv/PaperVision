@@ -23,13 +23,13 @@ import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.Generator
 import io.github.deltacv.papervision.codegen.language.Language
 
-class GeneratorContext<S: CodeGenSession>(val current: CodeGen.Current)
+class GeneratorContext<I, S: CodeGenSession>(val genInput: I, val current: CodeGen.Current)
 
-fun <S: CodeGenSession> generator(init: GeneratorContext<S>.() -> S) =
-    Generator { current -> init(GeneratorContext(current)) }
+fun <I, S: CodeGenSession> generator(init: GeneratorContext<I, S>.() -> S) =
+    Generator<I, S> { input, current -> init(GeneratorContext(input, current)) }
 
-fun <S: CodeGenSession> generatorFor(language: Language, init: GeneratorContext<S>.() -> S) =
+fun <I, S: CodeGenSession> generatorFor(language: Language, init: GeneratorContext<I, S>.() -> S) =
     language to generator(init)
 
-fun <S: CodeGenSession> generatorFor(vararg languages: Language, init: GeneratorContext<S>.() -> S) =
+fun <I, S: CodeGenSession> generatorFor(vararg languages: Language, init: GeneratorContext<I, S>.() -> S) =
     languages.associateWith { generator(init) }

@@ -87,8 +87,6 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        genCodeIfNecessary(current)
-
         if(attrib == result) {
             return current.nonNullSessionOf(this).vector2
         }

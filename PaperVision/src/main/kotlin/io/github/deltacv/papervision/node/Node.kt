@@ -21,7 +21,6 @@ package io.github.deltacv.papervision.node
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
-import io.github.deltacv.papervision.codegen.GeneratorsGenNode
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.*
@@ -47,7 +46,7 @@ interface Type {
 abstract class Node<S: CodeGenSession>(
     allowDelete: Boolean = true,
     val joinActionStack: Boolean = true
-) : DrawableIdElementBase<Node<*>>(), GeneratorsGenNode<S>, DataSerializable<NodeSerializationData> {
+) : DrawableIdElementBase<Node<*>>(), GenNode<S>, GenValueMapper, DataSerializable<NodeSerializationData> {
 
     override val idContainer = IdContainerStacks.local.peekNonNull<Node<*>>()
     override val requestedId get() = if(forgetSerializedId) null else serializedId
@@ -79,11 +78,9 @@ abstract class Node<S: CodeGenSession>(
     val position = ImVec2()
     val size = ImVec2()
 
-    override val generators = mutableMapOf<Language, Generator<S>>()
+    override val generators = mutableMapOf<Language, Generator<Unit, S>>()
 
     override val genOptions = CodeGenOptions()
-
-    override var lastGenSession: S? = null
 
     val onChange = PaperEventHandler("${this::class.java.simpleName}-OnChange")
     val onDelete = PaperEventHandler("OnDelete-${this::class.simpleName}")
@@ -165,7 +162,7 @@ abstract class Node<S: CodeGenSession>(
     operator fun Attribute.unaryPlus() = addAttribute(this)
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        raise("Node doesn't have output attributes")
+        raise("Node does not have output attributes ('getGenValueOf' was not overridden)")
     }
 
     fun hasDeadEnd(initialNode: Node<*> = this): Boolean {
