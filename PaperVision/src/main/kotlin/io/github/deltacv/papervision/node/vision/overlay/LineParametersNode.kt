@@ -75,7 +75,7 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
                     public(lineThicknessVar, lineThickness.label())
                 }
 
-                session.lineParameters = GenValue.LineParameters.RuntimeLine(lineColorVar.resolved(), lineThicknessVar.resolved())
+                session.lineParameters = GenValue.LineParameters.Runtime(lineColorVar.resolved(), lineThicknessVar.resolved())
             }
 
             session
@@ -84,7 +84,7 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            session.lineParameters = GenValue.LineParameters.Line(
+            session.lineParameters = GenValue.LineParameters.Actual(
                 lineColor.genValue(current),
                 lineThickness.genValue(current)
             )

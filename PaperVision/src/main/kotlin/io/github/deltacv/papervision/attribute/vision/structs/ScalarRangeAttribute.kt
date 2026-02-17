@@ -68,7 +68,7 @@ class ScalarRangeAttribute(
     }
 
     override fun genValue(current: CodeGen.Current): GenValue.ScalarRange {
-        val values = super.genValue(current).toListOrNull()!!.elements
+        val values = super.genValue(current).toActualOrNull()!!.elements
 
         val range = GenValue.ScalarRange(
             values.getOrElse(0) { GenValue.Range.ZERO },

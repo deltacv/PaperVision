@@ -171,7 +171,7 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
                     }
                 }
 
-                session.circles = GenValue.GList.RuntimeListOf(circlesListVar.resolved(), GenValue.GCircle.RuntimeCircle::class.resolved())
+                session.circles = GenValue.List.Runtime(circlesListVar.resolved(), GenValue.Circle.Runtime::class.resolved())
             }
 
             session
@@ -214,7 +214,7 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
                         circles set circles[csv(0.v, CPythonLanguage.sliceValue()), CPythonLanguage.NoType] // "[0, :]"
                     }
 
-                    session.circles = GenValue.GList.RuntimeListOf(circles.resolved(), GenValue.GCircle.RuntimeCircle::class.resolved())
+                    session.circles = GenValue.List.Runtime(circles.resolved(), GenValue.Circle.Runtime::class.resolved())
                 }
             }
 
@@ -224,12 +224,12 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when (attrib) {
-            output -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.circles }
+            output -> GenValue.List.Runtime.defer { current.sessionOf(this)?.circles }
             else -> noValue(attrib)
         }
     }
 
     class Session : CodeGenSession {
-        lateinit var circles: GenValue.GList.RuntimeListOf<GenValue.GCircle.RuntimeCircle>
+        lateinit var circles: GenValue.List.Runtime<GenValue.Circle.Runtime>
     }
 }

@@ -7,6 +7,7 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.GenValueMapper
 import io.github.deltacv.papervision.codegen.PolyglotGenerator
 import io.github.deltacv.papervision.node.Node
+import org.deltacv.mai18n.tr
 
 abstract class AttributeDecomposer<S: CodeGenSession>(val decomposerNode: Node<*>) : PolyglotGenerator<GenValue, S>, GenValueMapper {
 
@@ -41,4 +42,5 @@ abstract class AttributeDecomposer<S: CodeGenSession>(val decomposerNode: Node<*
         decomposerNode.addAttribute(attribute)
     }
 
+    protected fun noValue(attrib: Attribute): Nothing = decomposerNode.noValue(attrib)
 }

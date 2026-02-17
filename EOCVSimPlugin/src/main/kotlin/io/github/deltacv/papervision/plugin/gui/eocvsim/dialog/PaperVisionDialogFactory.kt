@@ -22,7 +22,6 @@ import io.github.deltacv.papervision.plugin.project.recovery.RecoveredProject
 import java.awt.Dialog
 import java.awt.Window
 import javax.swing.JDialog
-import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 

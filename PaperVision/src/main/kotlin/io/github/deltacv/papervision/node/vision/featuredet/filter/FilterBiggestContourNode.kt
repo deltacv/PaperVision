@@ -70,7 +70,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
 
                     biggestContour instanceSet biggestContour.nullValue
 
-                    if(contoursList is GenValue.GList.RuntimeListOf<*>) {
+                    if(contoursList is GenValue.List.Runtime<*>) {
                         foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), contoursList.value.v) { contour ->
                             val contourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, contour)
                             val biggestContourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, biggestContour)
@@ -82,10 +82,10 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                             }
                         }
                     } else {
-                        for(element in (contoursList as GenValue.GList.ListOf<*>).elements) {
+                        for(element in (contoursList as GenValue.List.Actual<*>).elements) {
                             separate()
 
-                            val contour = if(element is GenValue.GPoints.RuntimePoints) {
+                            val contour = if(element is GenValue.Points.Runtime) {
                                 element.value.v
                             } else {
                                 raise("Invalid element in contours list")
@@ -105,7 +105,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                     }
                 }
 
-                session.biggestContour = GenValue.GPoints.RuntimePoints(biggestContour.resolved())
+                session.biggestContour = GenValue.Points.Runtime(biggestContour.resolved())
 
                 session
             }
@@ -120,14 +120,14 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                 current.scope {
                     nameComment()
 
-                    val contoursList = if(inputValue is GenValue.GList.RuntimeListOf<*>) {
+                    val contoursList = if(inputValue is GenValue.List.Runtime<*>) {
                         inputValue.value.v
                     } else {
                         val list = uniqueVariable("contours_list", CPythonLanguage.NoType.newArray())
                         local(list)
 
-                        for(element in (inputValue as GenValue.GList.ListOf<*>).elements) {
-                            if(element is GenValue.GPoints.RuntimePoints) {
+                        for(element in (inputValue as GenValue.List.Actual<*>).elements) {
+                            if(element is GenValue.Points.Runtime) {
                                 ifCondition(element.value.v notEqualsTo language.nullValue) {
                                     list("append", element.value.v)
                                 }
@@ -158,7 +158,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                         )
                     }
 
-                    session.biggestContour = GenValue.GPoints.RuntimePoints(biggestContour.resolved())
+                    session.biggestContour = GenValue.Points.Runtime(biggestContour.resolved())
                 }
 
                 session
@@ -168,14 +168,14 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         if(attrib == output) {
-            return GenValue.GPoints.RuntimePoints.defer { current.sessionOf(this)?.biggestContour }
+            return GenValue.Points.Runtime.defer { current.sessionOf(this)?.biggestContour }
         }
 
         noValue(attrib)
     }
 
     class Session : CodeGenSession {
-        lateinit var biggestContour: GenValue.GPoints.RuntimePoints
+        lateinit var biggestContour: GenValue.Points.Runtime
     }
 
 }

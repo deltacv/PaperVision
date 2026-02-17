@@ -100,7 +100,7 @@ open class DrawContoursNode
                         input.value.v("copyTo", drawMat)
                     }
 
-                    if(contoursList is GenValue.GList.RuntimeListOf<*>) {
+                    if(contoursList is GenValue.List.Runtime<*>) {
                         Imgproc("drawContours", drawMat, contoursList.value.v, (-1).v,
                             lineParams.colorScalarValue.v,
                             lineParams.thicknessValue.v
@@ -111,8 +111,8 @@ open class DrawContoursNode
                         val list = DeclarableVariable("contoursList", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
                         local(list)
 
-                        for (contour in (contoursList as GenValue.GList.ListOf<*>).elements) {
-                            if (contour is GenValue.GPoints.RuntimePoints) {
+                        for (contour in (contoursList as GenValue.List.Actual<*>).elements) {
+                            if (contour is GenValue.Points.Runtime) {
                                 ifCondition(contour.value.v notEqualsTo language.nullValue) {
                                     list("add", contour.value.v)
                                 }
@@ -149,7 +149,7 @@ open class DrawContoursNode
 
                 val contoursList = contours.genValue(current)
 
-                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Line
+                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Actual
 
                 current.scope {
                     nameComment()
@@ -170,7 +170,7 @@ open class DrawContoursNode
                         output
                     }
 
-                    if(contoursList is GenValue.GList.RuntimeListOf<*>) {
+                    if(contoursList is GenValue.List.Runtime<*>) {
                         cv2("drawContours", target, contoursList.value.v, (-1).v, colorScalar, thickness.v)
                     } else {
                         separate()
@@ -178,8 +178,8 @@ open class DrawContoursNode
                         val list = uniqueVariable("contoursList", CPythonLanguage.NoType.newArray())
                         local(list)
 
-                        for(contour in (contoursList as GenValue.GList.ListOf<*>).elements) {
-                            if(contour is GenValue.GPoints.RuntimePoints) {
+                        for(contour in (contoursList as GenValue.List.Actual<*>).elements) {
+                            if(contour is GenValue.Points.Runtime) {
                                 ifCondition(contour.value.v notEqualsTo CPythonLanguage.nullValue) {
                                     list("append", contour.value.v)
                                 }

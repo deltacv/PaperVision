@@ -79,7 +79,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
                     Imgproc("findContours", input.value.v, list, hierarchyMat, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE)
                 }
 
-                session.contoursList = GenValue.GList.RuntimeListOf(list.resolved(), GenValue.GPoints.Points::class.resolved())
+                session.contoursList = GenValue.List.Runtime(list.resolved(), GenValue.Points.Actual::class.resolved())
 
                 session
             }
@@ -108,7 +108,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
 
                     local(result)
 
-                    session.contoursList = GenValue.GList.RuntimeListOf(result.get(contours).resolved(), GenValue.GPoints.Points::class.resolved())
+                    session.contoursList = GenValue.List.Runtime(result.get(contours).resolved(), GenValue.Points.Actual::class.resolved())
                 }
 
                 session
@@ -118,14 +118,14 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         if(attrib == outputPoints) {
-            return GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.contoursList }
+            return GenValue.List.Runtime.defer { current.sessionOf(this)?.contoursList }
         }
 
         noValue(attrib)
     }
 
     class Session : CodeGenSession {
-        lateinit var contoursList: GenValue.GList.RuntimeListOf<GenValue.GPoints.Points>
+        lateinit var contoursList: GenValue.List.Runtime<GenValue.Points.Actual>
     }
 
 }

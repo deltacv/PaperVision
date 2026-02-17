@@ -91,7 +91,7 @@ class CodeGen(
         val language get() = codeGen.language
 
         @Suppress("UNCHECKED_CAST")
-        fun <S: CodeGenSession> sessionOf(node: Generator<Unit, S>) = codeGen.sessions[node] as S?
+        fun <S: CodeGenSession> sessionOf(node: Generator<*, S>) = codeGen.sessions[node] as S?
 
         fun <S: CodeGenSession> nonNullSessionOf(node: Generator<Unit, S>) = sessionOf(node) ?: run {
             if(node is GenNode<*>) {

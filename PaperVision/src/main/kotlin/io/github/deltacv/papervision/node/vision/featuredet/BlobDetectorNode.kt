@@ -195,7 +195,7 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
                     detector("detect", inputValue.v, keyPoints)
                 }
 
-                session.output = GenValue.GList.RuntimeListOf(keyPoints.resolved(), GenValue.GKeyPoint.RuntimeKeyPoint::class.resolved())
+                session.output = GenValue.List.Runtime(keyPoints.resolved(), GenValue.KeyPoint.Runtime::class.resolved())
             }
 
             session
@@ -263,7 +263,7 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
 
                     local(keyPoints)
 
-                    session.output = GenValue.GList.RuntimeListOf(keyPoints.resolved(), GenValue.GKeyPoint.RuntimeKeyPoint::class.resolved())
+                    session.output = GenValue.List.Runtime(keyPoints.resolved(), GenValue.KeyPoint.Runtime::class.resolved())
                 }
             }
 
@@ -273,12 +273,12 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when(attrib) {
-            output -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.output }
+            output -> GenValue.List.Runtime.defer { current.sessionOf(this)?.output }
             else -> noValue(attrib)
         }
     }
 
     class Session : CodeGenSession {
-        lateinit var output: GenValue.GList.RuntimeListOf<GenValue.GKeyPoint.RuntimeKeyPoint>
+        lateinit var output: GenValue.List.Runtime<GenValue.KeyPoint.Runtime>
     }
 }

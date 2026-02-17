@@ -79,7 +79,7 @@ open class DrawKeyPointsNode
                 val input = inputMat.genValue(current)
 
                 val keypointsValue = keypoints.genValue(current)
-                if(keypointsValue !is GenValue.GList.RuntimeListOf<*>) {
+                if(keypointsValue !is GenValue.List.Runtime<*>) {
                     raise("Only runtime lists are supported for now")
                 }
 
@@ -132,7 +132,7 @@ open class DrawKeyPointsNode
 
                 val input = inputMat.genValue(current)
                 val keypointsValue = keypoints.genValue(current)
-                if(keypointsValue !is GenValue.GList.RuntimeListOf<*>) {
+                if(keypointsValue !is GenValue.List.Runtime<*>) {
                     raise("Only runtime lists are supported for now")
                 }
 

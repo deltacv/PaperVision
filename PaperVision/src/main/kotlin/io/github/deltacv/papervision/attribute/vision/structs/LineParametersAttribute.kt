@@ -71,9 +71,9 @@ class LineParametersAttribute(
     }
 
     override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.LineParameters>(
-        current, GenValue.LineParameters.Line(
-            GenValue.Scalar(GenValue.Double.ZERO, GenValue.Double(255.0.resolved()), GenValue.Double.ZERO, GenValue.Double.ZERO),
-            GenValue.Int(3.resolved())
+        current, GenValue.LineParameters.Actual(
+            GenValue.Scalar(GenValue.Double.ZERO, GenValue.Double.Actual(255.0.resolved()), GenValue.Double.ZERO, GenValue.Double.ZERO),
+            GenValue.Int.Actual(3.resolved())
         )
     )
 

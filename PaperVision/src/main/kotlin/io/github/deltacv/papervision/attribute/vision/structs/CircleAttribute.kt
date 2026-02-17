@@ -29,7 +29,7 @@ import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 class CircleAttribute(
     override val mode: AttributeMode,
     override var variableName: String?
-) : TypedAttribute<GenValue.GCircle>(Companion) {
+) : TypedAttribute<GenValue.Circle>(Companion) {
 
     companion object : AttributeType<CircleAttribute> {
         override val icon = FontAwesomeIcons.Circle
@@ -43,5 +43,5 @@ class CircleAttribute(
         override fun new(mode: AttributeMode, variableName: String) = CircleAttribute(mode, variableName)
     }
 
-    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.GCircle>(current)
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Circle>(current)
 }

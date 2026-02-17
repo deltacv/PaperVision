@@ -61,7 +61,7 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
                 val Circle = JvmOpenCvTypes.getCircleType(current)
 
                 val circles = circles.genValue(current)
-                if (circles !is GenValue.GList.RuntimeListOf<*>) {
+                if (circles !is GenValue.List.Runtime<*>) {
                     raise("Only runtime lists are supported for now")
                 }
 
@@ -93,7 +93,7 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
                 }
 
                 session.outputRects =
-                    GenValue.GList.RuntimeListOf(rects.resolved(), GenValue.GRect.RuntimeRect::class.resolved())
+                    GenValue.List.Runtime(rects.resolved(), GenValue.Rect.Runtime::class.resolved())
             }
 
             session
@@ -104,7 +104,7 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
 
             current {
                 val circles = circles.genValue(current)
-                if (circles !is GenValue.GList.RuntimeListOf<*>) {
+                if (circles !is GenValue.List.Runtime<*>) {
                     raise("Only runtime lists are supported for now")
                 }
 
@@ -130,7 +130,7 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
                     }
 
                     session.outputRects =
-                        GenValue.GList.RuntimeListOf(rects.resolved(), GenValue.GRect.RuntimeRect::class.resolved())
+                        GenValue.List.Runtime(rects.resolved(), GenValue.Rect.Runtime::class.resolved())
                 }
             }
 
@@ -140,13 +140,13 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         if (attrib == output) {
-            return GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.outputRects }
+            return GenValue.List.Runtime.defer { current.sessionOf(this)?.outputRects }
         }
 
         noValue(attrib)
     }
 
     class Session : CodeGenSession {
-        lateinit var outputRects: GenValue.GList.RuntimeListOf<GenValue.GRect.RuntimeRect>
+        lateinit var outputRects: GenValue.List.Runtime<GenValue.Rect.Runtime>
     }
 }

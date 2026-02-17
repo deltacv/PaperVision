@@ -24,7 +24,6 @@ import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.*
-import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.exception.NodeGenException
 import io.github.deltacv.papervision.gui.editor.NodeEditor
 import io.github.deltacv.papervision.id.DrawableIdElementBase
@@ -36,6 +35,7 @@ import io.github.deltacv.papervision.serialization.NodeSerializationData
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.event.PaperEventListenerId
 import io.github.deltacv.papervision.util.loggerFor
+import org.deltacv.mai18n.tr
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -238,6 +238,10 @@ abstract class Node<S: CodeGenSession>(
         data.nodePos = ImNodes.getNodeEditorSpacePos(id)
 
         return data
+    }
+
+    fun noValue(attrib: Attribute): Nothing {
+        raise(tr("err_attrib_nothandled_bythis", attrib))
     }
 
     fun raise(message: String): Nothing = throw NodeGenException(this, message)

@@ -140,10 +140,6 @@ abstract class DrawNode<S: CodeGenSession>(
         lastPinToMouse = pinToMouse
     }
 
-    protected fun noValue(attrib: Attribute): Nothing {
-        raise(tr("err_attrib_nothandled_bythis", attrib))
-    }
-
     open fun drawNode() { }
 
     override fun hasChanged() = changeQueue.poll() ?: false

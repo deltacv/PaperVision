@@ -89,7 +89,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
             val inputPoints = input.genValue(current)
 
-            if (inputPoints !is GenValue.GList.RuntimeListOf<*>) {
+            if (inputPoints !is GenValue.List.Runtime<*>) {
                 raise("") // TODO: Handle non-runtime lists
             }
 
@@ -128,7 +128,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                             val rows = drawOnValue.callValue("rows", IntType)
                             val cols = drawOnValue.callValue("cols", IntType)
 
-                            JvmOpenCvTypes.Point.new((double(cols) / 2.v) + crosshairPositionVector.xValue.v, (double(rows) / 2.v) + crosshairPositionVector.yValue.v)
+                            JvmOpenCvTypes.Point.new((double(cols) / 2.v) + crosshairPositionVector.xValue.value.v, (double(rows) / 2.v) + crosshairPositionVector.yValue.value.v)
                         }
                     )
 
@@ -164,7 +164,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                             crosshairPoint.propertyValue("y", DoubleType)
                         ),
                         crosshairCol.v,
-                        crosshairThickness.v
+                        crosshairThickness.value.v
                     )
 
                     Imgproc(
@@ -179,7 +179,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                             crosshairPoint.propertyValue("y", DoubleType) + adjustedCrosshairSize
                         ),
                         crosshairCol.v,
-                        crosshairThickness.v
+                        crosshairThickness.value.v
                     )
 
                     separate()
@@ -257,7 +257,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     outputCrosshairImage.streamIfEnabled(crosshairImage, drawOn.color)
 
-                    session.outputCrosshair = GenValue.GList.RuntimeListOf(crosshair.resolved(), GenValue.GPoints.RuntimePoints::class.resolved())
+                    session.outputCrosshair = GenValue.List.Runtime(crosshair.resolved(), GenValue.Points.Runtime::class.resolved())
                     session.outputCrosshairImage = GenValue.Mat(crosshairImage.resolved(), drawOn.color, drawOn.isBinary)
                 }
             }
@@ -270,15 +270,15 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
             val inputPoints = input.genValue(current)
 
-            if (inputPoints !is GenValue.GList.RuntimeListOf<*>) {
+            if (inputPoints !is GenValue.List.Runtime<*>) {
                 raise("") // TODO: Handle non-runtime lists
             }
 
-            val crosshairPositionVector = crosshairPosition.genValue(current) as GenValue.Vec2.Vector2
+            val crosshairPositionVector = crosshairPosition.genValue(current) as GenValue.Vec2.Actual
 
             val drawOn = drawCrosshairOn.genValue(current)
 
-            val crosshairLineParams = crosshairLineParams.genValue(current) as GenValue.LineParameters.Line
+            val crosshairLineParams = crosshairLineParams.genValue(current) as GenValue.LineParameters.Actual
             val crosshairSizeValue = crosshairScale.genValue(current).value
 
             current {
@@ -391,7 +391,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                         }
                     }
 
-                    session.outputCrosshair = GenValue.GList.RuntimeListOf(crosshair.resolved(), GenValue.GPoints.RuntimePoints::class.resolved())
+                    session.outputCrosshair = GenValue.List.Runtime(crosshair.resolved(), GenValue.Points.Runtime::class.resolved())
                     session.outputCrosshairImage = GenValue.Mat(crosshairImage.resolved(), drawOn.color, drawOn.isBinary)
                 }
             }
@@ -402,14 +402,14 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when (attrib) {
-            outputCrosshair -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.outputCrosshair }
+            outputCrosshair -> GenValue.List.Runtime.defer { current.sessionOf(this)?.outputCrosshair }
             outputCrosshairImage -> GenValue.Mat.defer { current.sessionOf(this)?.outputCrosshairImage }
             else -> noValue(attrib)
         }
     }
 
     class Session : CodeGenSession {
-        lateinit var outputCrosshair: GenValue.GList.RuntimeListOf<GenValue.GPoints.RuntimePoints>
+        lateinit var outputCrosshair: GenValue.List.Runtime<GenValue.Points.Runtime>
         lateinit var outputCrosshairImage: GenValue.Mat
     }
 

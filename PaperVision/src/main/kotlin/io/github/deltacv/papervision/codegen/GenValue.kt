@@ -51,16 +51,16 @@ sealed class GenValue {
         }
     }
 
-    sealed class GKeyPoint : GenValue() {
-        data class KeyPoint(
+    sealed class KeyPoint : GenValue() {
+        data class Actual(
             val x: Resolvable<Double>,
             val y: Resolvable<Double>,
             val size: Resolvable<Double>
-        ) : GKeyPoint()
+        ) : GenValue.KeyPoint()
 
-        data class RuntimeKeyPoint(val value: Resolvable<Value>) : GKeyPoint() {
+        data class Runtime(val value: Resolvable<Value>) : GenValue.KeyPoint() {
             companion object {
-                fun defer(genValueResolver: () -> RuntimeKeyPoint?) = RuntimeKeyPoint(
+                fun defer(genValueResolver: () -> Runtime?) = Runtime(
                     Resolvable.from { genValueResolver()?.value }
                 )
             }
@@ -69,50 +69,50 @@ sealed class GenValue {
 
     data class Point(val x: Resolvable<Double>, val y: Resolvable<Double>) : GenValue()
 
-    sealed class GPoints : GenValue() {
-        data class Points(val points: Resolvable<Array<Point>>) : GPoints()
-        data class RuntimePoints(val value: Resolvable<Value>) : GPoints() {
+    sealed class Points : GenValue() {
+        data class Actual(val points: Resolvable<Array<Point>>) : Points()
+        data class Runtime(val value: Resolvable<Value>) : Points() {
             companion object {
-                fun defer(genValueResolver: () -> RuntimePoints?) = RuntimePoints(
+                fun defer(genValueResolver: () -> Runtime?) = Runtime(
                     Resolvable.from { genValueResolver()?.value }
                 )
             }
         }
     }
 
-    sealed class GCircle : GenValue() {
-        data class Circle(val x: Double, val y: Double,  val r: Double) : GCircle()
+    sealed class Circle : GenValue() {
+        data class Actual(val x: Double, val y: Double, val r: Double) : Circle()
 
-        data class RuntimeCircle(val value: Resolvable<Value>) : GCircle() {
+        data class Runtime(val value: Resolvable<Value>) : Circle() {
             companion object {
-                fun defer(genValueResolver: () -> RuntimeCircle?) = RuntimeCircle(
+                fun defer(genValueResolver: () -> Runtime?) = Runtime(
                     Resolvable.from { genValueResolver()?.value }
                 )
             }
         }
     }
 
-    sealed class GRect : GenValue() {
-        data class Rect(val x: Double, val y: Double, val w: Double, val h: Double) : GRect()
+    sealed class Rect : GenValue() {
+        data class Actual(val x: Double, val y: Double, val w: Double, val h: Double) : Rect()
 
-        data class RuntimeRect(val value: Resolvable<Value>) : GRect() {
+        data class Runtime(val value: Resolvable<Value>) : Rect() {
             companion object {
-                fun defer(genValueResolver: () -> RuntimeRect?) = RuntimeRect(
+                fun defer(genValueResolver: () -> Runtime?) = Runtime(
                     Resolvable.from { genValueResolver()?.value }
                 )
             }
         }
 
-        sealed class Rotated : GRect() {
-            data class RotatedRect(
+        sealed class Rotated : Rect() {
+            data class Actual(
                 val x: Double, val y: Double,
                 val w: Double, val h: Double,
                 val angle: Double
             ) : Rotated()
 
-            data class RuntimeRotatedRect(val value: Resolvable<Value>) : Rotated() {
+            data class Runtime(val value: Resolvable<Value>) : Rotated() {
                 companion object {
-                    fun defer(genValueResolver: () -> RuntimeRotatedRect?) = RuntimeRotatedRect(
+                    fun defer(genValueResolver: () -> Runtime?) = Runtime(
                         Resolvable.from { genValueResolver()?.value }
                     )
                 }
@@ -122,58 +122,97 @@ sealed class GenValue {
 
     data class Enum<E : kotlin.Enum<E>>(val value: E) : GenValue()
 
-    data class Int(val value: Resolvable<kotlin.Int>) : GenValue(){
-        companion object {
-            val ZERO = Int(0.resolved())
+    sealed class Int : GenValue(){
+        data class Actual(val value: Resolvable<kotlin.Int>) : Int() {
+            companion object {
+                fun defer(genValueResolver: () -> Actual?) = Actual(
+                    Resolvable.from { genValueResolver()?.value }
+                )
+            }
+        }
 
-            fun defer(genValueResolver: () -> Int?) = Int(
-                Resolvable.from { genValueResolver()?.value }
-            )
+        data class Runtime(val value: Resolvable<Value>) : Int() {
+            companion object {
+                fun defer(genValueResolver: () -> Runtime?) = Runtime(
+                    Resolvable.from { genValueResolver()?.value }
+                )
+            }
+        }
+
+        companion object {
+            val ZERO = Actual(0.resolved())
         }
     }
-    data class Float(val value: Resolvable<kotlin.Float>) : GenValue() {
-        companion object {
-            val ZERO = Float(Resolvable.Now(0.0f))
 
-            fun defer(genValueResolver: () -> Float?) = Float(
-                Resolvable.from { genValueResolver()?.value }
-            )
+    sealed class Float : GenValue() {
+        data class Actual(val value: Resolvable<kotlin.Float>) : Float() {
+            companion object {
+                fun defer(genValueResolver: () -> Actual?) = Actual(
+                    Resolvable.from { genValueResolver()?.value }
+                )
+            }
+        }
+
+        data class Runtime(val value: Resolvable<Value>) : Float() {
+            companion object {
+                fun defer(genValueResolver: () -> Runtime?) = Runtime(
+                    Resolvable.from { genValueResolver()?.value }
+                )
+            }
+        }
+
+        companion object {
+            val ZERO = Actual(Resolvable.Now(0.0f))
         }
     }
-    data class Double(val value: Resolvable<kotlin.Double>) : GenValue() {
-        companion object {
-            val ZERO = Double(0.0.resolved())
 
-            fun defer(genValueResolver: () -> Double?) = Double(
-                Resolvable.from { genValueResolver()?.value }
-            )
+    sealed class Double : GenValue() {
+        data class Actual(val value: Resolvable<kotlin.Double>) : Double() {
+            companion object {
+                fun defer(genValueResolver: () -> Actual?) = Actual(
+                    Resolvable.from { genValueResolver()?.value }
+                )
+            }
+        }
+
+        data class Runtime(val value: Resolvable<Value>) : Double() {
+            companion object {
+                fun defer(genValueResolver: () -> Runtime?) = Runtime(
+                    Resolvable.from { genValueResolver()?.value }
+                )
+            }
+        }
+
+        companion object {
+            val ZERO = Actual(0.0.resolved())
         }
     }
 
     data class String(val value: Resolvable<kotlin.String>) : GenValue()
 
     sealed class LineParameters : GenValue() {
-        data class Line(val color: Scalar, val thickness: Int) : LineParameters() {
+        data class Actual(val color: Scalar, val thickness: Int.Actual) : LineParameters() {
             companion object {
-                fun defer(genValueResolver: () -> Line?) = Line(
+                fun defer(genValueResolver: () -> Actual?) = Actual(
                     Scalar.defer { genValueResolver()?.color },
-                    Int.defer { genValueResolver()?.thickness }
-                )
-            }
-        }
-        data class RuntimeLine(val colorScalarValue: Resolvable<Value>, val thicknessValue: Resolvable<Value>) : LineParameters() {
-            companion object {
-                fun defer(genValueResolver: () -> RuntimeLine?) = RuntimeLine(
-                    Resolvable.from { genValueResolver()?.colorScalarValue },
-                    Resolvable.from { genValueResolver()?.thicknessValue }
+                    Int.Actual.defer { genValueResolver()?.thickness }
                 )
             }
         }
 
-        fun ensureRuntimeLineJvm(current: CodeGen.Current): RuntimeLine {
+        data class Runtime(val colorScalarValue: Resolvable<Value>, val thicknessValue: Int.Runtime) : LineParameters() {
+            companion object {
+                fun defer(genValueResolver: () -> Runtime?) = Runtime(
+                    Resolvable.from { genValueResolver()?.colorScalarValue },
+                    Int.Runtime.defer { genValueResolver()?.thicknessValue }
+                )
+            }
+        }
+
+        fun ensureRuntimeLineJvm(current: CodeGen.Current): Runtime {
             return current {
                 when (val lineParams = this@LineParameters) {
-                    is Line -> {
+                    is Actual -> {
                         val color = uniqueVariable(
                             "lineColor", JvmOpenCvTypes.Scalar.new(
                                 lineParams.color.a.value.v,
@@ -190,41 +229,41 @@ sealed class GenValue {
                             public(thickness)
                         }
 
-                        RuntimeLine(Resolvable.Now(color), Resolvable.Now(thickness))
+                        Runtime(Resolvable.Now(color), Int.Runtime(Resolvable.Now(thickness)))
                     }
 
-                    is RuntimeLine -> lineParams
+                    is Runtime -> lineParams
                 }
             }
         }
     }
 
     data class Scalar(
-        val a: Double,
-        val b: Double,
-        val c: Double,
-        val d: Double
-    ) : GList.ListOf<Double>(listOf(a, b, c, d)) {
+        val a: Double.Actual,
+        val b: Double.Actual,
+        val c: Double.Actual,
+        val d: Double.Actual
+    ) : List.Actual<Double.Actual>(listOf(a, b, c, d)) {
         companion object {
             val ZERO = Scalar(Double.ZERO, Double.ZERO, Double.ZERO, Double.ZERO)
 
             fun defer(genValueResolver: () -> Scalar?) = Scalar(
-                Double.defer { genValueResolver()?.a },
-                Double.defer { genValueResolver()?.b },
-                Double.defer { genValueResolver()?.c },
-                Double.defer { genValueResolver()?.d }
+                Double.Actual.defer { genValueResolver()?.a },
+                Double.Actual.defer { genValueResolver()?.b },
+                Double.Actual.defer { genValueResolver()?.c },
+                Double.Actual.defer { genValueResolver()?.d }
             )
         }
     }
 
     sealed class Vec2 : GenValue() {
-        data class Vector2(val x: Double, val y: Double) : Vec2()
-        data class RuntimeVector2(val xValue: Resolvable<Value>, val yValue: Resolvable<Value>) : Vec2()
+        data class Actual(val x: Double.Actual, val y: Double.Actual) : Vec2()
+        data class Runtime(val xValue: Double.Runtime, val yValue: Double.Runtime) : Vec2()
 
-        fun ensureRuntimeVector2Java(current: CodeGen.Current): RuntimeVector2 {
+        fun ensureRuntimeVector2Java(current: CodeGen.Current): Runtime {
             return current {
                 when (val vec = this@Vec2) {
-                    is Vector2 -> {
+                    is Actual -> {
                         val x = uniqueVariable("vectorX", vec.x.value.v)
                         val y = uniqueVariable("vectorY", vec.y.value.v)
 
@@ -233,10 +272,10 @@ sealed class GenValue {
                             public(y)
                         }
 
-                        RuntimeVector2(Resolvable.Now(x), Resolvable.Now(y))
+                        Runtime(Double.Runtime(Resolvable.Now(x)), Double.Runtime(Resolvable.Now(y)))
                     }
 
-                    is RuntimeVector2 -> vec
+                    is Runtime -> vec
                 }
             }
         }
@@ -244,12 +283,12 @@ sealed class GenValue {
 
     data class Range(val min: Double, val max: Double) : GenValue() {
         companion object {
-            val ZERO = Range(Double(Resolvable.Now(0.0)), Double(Resolvable.Now(0.0)))
+            val ZERO = Range(Double.ZERO, Double.ZERO)
         }
     }
 
     data class ScalarRange(val a: Range, val b: Range, val c: Range, val d: Range) :
-        GList.ListOf<Range>(listOf(a, b, c, d)) {
+        List.Actual<Range>(listOf(a, b, c, d)) {
         companion object {
             val ZERO = ScalarRange(Range.ZERO, Range.ZERO, Range.ZERO, Range.ZERO)
         }
@@ -266,26 +305,26 @@ sealed class GenValue {
         }
     }
 
-    sealed class GList<E: GenValue> : GenValue() {
+    sealed class List<E: GenValue> : GenValue() {
         companion object {
-            inline fun <reified T : GenValue> RuntimeListOf(value: Resolvable<Value>): RuntimeListOf<T> =
-                RuntimeListOf(value, Resolvable.Now(T::class))
+            inline fun <reified T : GenValue> Runtime(value: Resolvable<Value>): Runtime<T> =
+                Runtime(value, Resolvable.Now(T::class))
         }
 
-        fun toListOrNull(): ListOf<E>? {
+        fun toActualOrNull(): Actual<E>? {
             return when (this) {
-                is ListOf -> this
-                is RuntimeListOf -> null
+                is Actual -> this
+                is Runtime -> null
             }
         }
 
-        open class ListOf<E : GenValue>(val elements: List<E>) : GList<E>()
+        open class Actual<E : GenValue>(val elements: kotlin.collections.List<E>) : List<E>()
 
-        data class RuntimeListOf<E : GenValue>(val value: Resolvable<Value>, val typeClass: Resolvable<KClass<E>>) : GList<E>() {
+        data class Runtime<E : GenValue>(val value: Resolvable<Value>, val typeClass: Resolvable<KClass<E>>) : List<E>() {
             companion object {
                 fun <E : GenValue> defer(
-                    genValueResolver: () -> RuntimeListOf<E>?
-                ): RuntimeListOf<E> = RuntimeListOf(
+                    genValueResolver: () -> Runtime<E>?
+                ): Runtime<E> = Runtime(
                     Resolvable.from { genValueResolver()?.value },
                     Resolvable.from { genValueResolver()?.typeClass }
                 )

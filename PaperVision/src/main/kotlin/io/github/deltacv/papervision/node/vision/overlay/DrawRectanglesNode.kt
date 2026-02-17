@@ -97,9 +97,9 @@ open class DrawRectanglesNode
                         input.value.v("copyTo", drawMat)
                     }
 
-                    if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
-                        for (rectangle in (rectanglesList as GenValue.GList.ListOf<*>).elements) {
-                            if (rectangle is GenValue.GRect.Rect) {
+                    if (rectanglesList !is GenValue.List.Runtime<*>) {
+                        for (rectangle in (rectanglesList as GenValue.List.Actual<*>).elements) {
+                            if (rectangle is GenValue.Rect.Actual) {
                                 Imgproc(
                                     "rectangle", drawMat,
                                     JvmOpenCvTypes.Rect.new(
@@ -109,7 +109,7 @@ open class DrawRectanglesNode
                                     lineParams.colorScalarValue.v,
                                     lineParams.thicknessValue.v
                                 )
-                            } else if (rectangle is GenValue.GRect.RuntimeRect) {
+                            } else if (rectangle is GenValue.Rect.Runtime) {
                                 ifCondition(
                                     rectangle.value.v notEqualsTo language.nullValue and
                                             (drawMat notEqualsTo language.nullValue) and
@@ -154,7 +154,7 @@ open class DrawRectanglesNode
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)
 
-                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Line
+                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Actual
 
                 current.scope {
                     nameComment()
@@ -199,9 +199,9 @@ open class DrawRectanglesNode
                         }
                     }
 
-                    if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
-                        for (rectangle in (rectanglesList as GenValue.GList.ListOf<*>).elements) {
-                            if (rectangle is GenValue.GRect.Rect) {
+                    if (rectanglesList !is GenValue.List.Runtime<*>) {
+                        for (rectangle in (rectanglesList as GenValue.List.Actual<*>).elements) {
+                            if (rectangle is GenValue.Rect.Actual) {
                                 cv2(
                                     "rectangle", target,
                                     CPythonLanguage.tuple(rectangle.x.value.v, rectangle.y.value.v),
@@ -212,7 +212,7 @@ open class DrawRectanglesNode
                                     colorScalar,
                                     thickness.v
                                 )
-                            } else if (rectangle is GenValue.GRect.RuntimeRect) {
+                            } else if (rectangle is GenValue.Rect.Runtime) {
                                 runtimeRect(rectangle.value.v)
                             }
                         }

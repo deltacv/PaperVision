@@ -27,10 +27,11 @@ class MatAttributeDecomposer(
         generatorFor(JavaLanguage) {
             val session = Session()
 
-
+            genInput as GenValue.Mat
 
             current.scope {
-                // session.rows = GenValue.Int(genInput.value.v.callValue("rows", IntType).resolved())
+                session.rows = GenValue.Int.Runtime(genInput.value.v.callValue("rows", IntType).resolved())
+                session.columns = GenValue.Int.Runtime(genInput.value.v.callValue("cols", IntType).resolved())
             }
 
             session
@@ -40,12 +41,14 @@ class MatAttributeDecomposer(
     override fun getGenValueOf(
         current: CodeGen.Current,
         attrib: Attribute
-    ): GenValue {
-        TODO("")
+    ) = when(attrib) {
+        rows -> GenValue.Int.Runtime.defer { current.sessionOf(this)?.rows }
+        cols -> GenValue.Int.Runtime.defer { current.sessionOf(this)?.columns }
+        else -> noValue(attrib)
     }
 
     class Session : CodeGenSession {
-        lateinit var rows: GenValue.Int
-        lateinit var columns: GenValue.Int
+        lateinit var rows: GenValue.Int.Runtime
+        lateinit var columns: GenValue.Int.Runtime
     }
 }

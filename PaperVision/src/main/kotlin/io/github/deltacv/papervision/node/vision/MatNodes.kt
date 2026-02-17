@@ -36,7 +36,6 @@ import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.LanguageBase
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
-import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
@@ -271,11 +270,11 @@ class OutputMatNode @JvmOverloads constructor(
 
                 current.scope {
                     val llpython = uniqueVariable("llpython", when (dataValue) {
-                        is GenValue.GList.RuntimeListOf<*> -> {
+                        is GenValue.List.Runtime<*> -> {
                             dataValue.value.v
                         }
 
-                        is GenValue.GList.ListOf<*> -> {
+                        is GenValue.List.Actual<*> -> {
                             val data = mutableListOf<Value>()
 
                             for (d in dataValue.elements) {

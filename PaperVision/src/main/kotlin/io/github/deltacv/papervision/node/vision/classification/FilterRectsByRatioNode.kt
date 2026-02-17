@@ -69,7 +69,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
 
             val rects = input.genValue(current)
 
-            if(rects !is GenValue.GList.RuntimeListOf<*>) {
+            if(rects !is GenValue.List.Runtime<*>) {
                 raise("Input contours must be a runtime list") // TODO: support other types
             }
 
@@ -104,7 +104,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
                     }
                 }
 
-                session.output = GenValue.GList.RuntimeListOf(rectsVar.resolved(), GenValue.GRect.RuntimeRect::class.resolved())
+                session.output = GenValue.List.Runtime(rectsVar.resolved(), GenValue.Rect.Runtime::class.resolved())
             }
 
             session
@@ -115,7 +115,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
 
             val rects = input.genValue(current)
 
-            if(rects !is GenValue.GList.RuntimeListOf<*>) {
+            if(rects !is GenValue.List.Runtime<*>) {
                 raise("Input must be a runtime list") // TODO: support other types
             }
 
@@ -142,7 +142,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
                     }
                 }
 
-                session.output = GenValue.GList.RuntimeListOf(rectsVar.resolved(), GenValue.GPoints.RuntimePoints::class.resolved())
+                session.output = GenValue.List.Runtime(rectsVar.resolved(), GenValue.Points.Runtime::class.resolved())
             }
 
             session
@@ -151,13 +151,13 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when(attrib) {
-            output -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.output }
+            output -> GenValue.List.Runtime.defer { current.sessionOf(this)?.output }
             else -> noValue(attrib)
         }
     }
 
     class Session : CodeGenSession {
-        lateinit var output: GenValue.GList.RuntimeListOf<*>
+        lateinit var output: GenValue.List.Runtime<*>
     }
 
 }

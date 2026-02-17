@@ -55,7 +55,7 @@ class ExportTargetsNode : DrawNode<NoSession>() {
             current {
                 val targetsValue = inputTargets.genValue(current)
 
-                if(targetsValue !is GenValue.GList.RuntimeListOf<*>) {
+                if(targetsValue !is GenValue.List.Runtime<*>) {
                     raise("") // TODO: Handle non-runtime lists
                 }
 
@@ -108,7 +108,7 @@ class ExportRotTargetsNode : DrawNode<NoSession>() {
             current {
                 val targetsValue = inputTargets.genValue(current)
 
-                if(targetsValue !is GenValue.GList.RuntimeListOf<*>) {
+                if(targetsValue !is GenValue.List.Runtime<*>) {
                     raise("") // TODO: Handle non-runtime lists
                 }
 

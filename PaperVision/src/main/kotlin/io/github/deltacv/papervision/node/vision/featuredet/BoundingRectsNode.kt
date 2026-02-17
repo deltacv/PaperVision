@@ -60,7 +60,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
                 val input = inputContours.genValue(current)
 
-                val listName = if (input is GenValue.GList.RuntimeListOf<*>) {
+                val listName = if (input is GenValue.List.Runtime<*>) {
                     "${input.value.v}Rects"
                 } else "rects"
 
@@ -75,13 +75,13 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
                     rectsList("clear")
 
-                    if (input is GenValue.GList.RuntimeListOf<*>) {
+                    if (input is GenValue.List.Runtime<*>) {
                         foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value.v) {
                             rectsList("add", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, it))
                         }
                     } else {
-                        for (points in (input as GenValue.GList.ListOf<*>).elements) {
-                            if (points is GenValue.GPoints.RuntimePoints) {
+                        for (points in (input as GenValue.List.Actual<*>).elements) {
+                            if (points is GenValue.Points.Runtime) {
                                 ifCondition(points.value.v notEqualsTo language.nullValue) {
                                     rectsList(
                                         "add",
@@ -95,7 +95,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                     }
                 }
 
-                session.outputRects = GenValue.GList.RuntimeListOf(rectsList.resolved(), GenValue.GRect.RuntimeRect::class.resolved())
+                session.outputRects = GenValue.List.Runtime(rectsList.resolved(), GenValue.Rect.Runtime::class.resolved())
 
                 session
             }
@@ -107,7 +107,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
                 val input = inputContours.genValue(current)
 
-                val listName = if (input is GenValue.GList.RuntimeListOf<*>) {
+                val listName = if (input is GenValue.List.Runtime<*>) {
                     "${input.value.v}_rects"
                 } else "rects"
 
@@ -118,13 +118,13 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
                     local(rectsList)
 
-                    if (input is GenValue.GList.RuntimeListOf<*>) {
+                    if (input is GenValue.List.Runtime<*>) {
                         foreach(variable(CPythonLanguage.NoType, "points"), input.value.v) { points ->
                             rectsList("append", cv2.callValue("boundingRect", CPythonLanguage.NoType, points))
                         }
                     } else {
-                        for (points in (input as GenValue.GList.ListOf<*>).elements) {
-                            if (points is GenValue.GPoints.RuntimePoints) {
+                        for (points in (input as GenValue.List.Actual<*>).elements) {
+                            if (points is GenValue.Points.Runtime) {
                                 ifCondition(points.value.v notEqualsTo language.nullValue) {
                                     rectsList(
                                         "append",
@@ -138,7 +138,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                     }
                 }
 
-                session.outputRects = GenValue.GList.RuntimeListOf(rectsList.resolved(), GenValue.GRect.RuntimeRect::class.resolved())
+                session.outputRects = GenValue.List.Runtime(rectsList.resolved(), GenValue.Rect.Runtime::class.resolved())
 
                 session
             }
@@ -147,14 +147,14 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         if (attrib == outputRects) {
-            return GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.outputRects }
+            return GenValue.List.Runtime.defer { current.sessionOf(this)?.outputRects }
         }
 
         noValue(attrib)
     }
 
     class Session : CodeGenSession {
-        lateinit var outputRects: GenValue.GList.RuntimeListOf<GenValue.GRect.RuntimeRect>
+        lateinit var outputRects: GenValue.List.Runtime<GenValue.Rect.Runtime>
     }
 
 }

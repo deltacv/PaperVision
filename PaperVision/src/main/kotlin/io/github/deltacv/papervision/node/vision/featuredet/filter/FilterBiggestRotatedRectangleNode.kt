@@ -83,13 +83,13 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                         }
                     }
 
-                    if (rectsList is GenValue.GList.RuntimeListOf<*>) {
+                    if (rectsList is GenValue.List.Runtime<*>) {
                         foreach(variable(JvmOpenCvTypes.RotatedRect, "rect"), rectsList.value.v) { rect ->
                             withRuntimeRect(rect)
                         }
                     } else {
-                        for (element in (rectsList as GenValue.GList.ListOf<*>).elements) {
-                            if (element is GenValue.GRect.Rotated.RotatedRect) {
+                        for (element in (rectsList as GenValue.List.Actual<*>).elements) {
+                            if (element is GenValue.Rect.Rotated.Actual) {
                                 separate()
                                 val rect = DeclarableVariable(
                                     "rect",
@@ -110,7 +110,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                                 ) {
                                     biggestRect instanceSet rect
                                 }
-                            } else if (element is GenValue.GRect.RuntimeRect) {
+                            } else if (element is GenValue.Rect.Runtime) {
                                 separate()
                                 withRuntimeRect(element.value.v)
                             }
@@ -118,7 +118,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                     }
                 }
 
-                session.biggestRect = GenValue.GRect.Rotated.RuntimeRotatedRect(biggestRect.resolved())
+                session.biggestRect = GenValue.Rect.Rotated.Runtime(biggestRect.resolved())
 
                 session
             }
@@ -152,13 +152,13 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                         }
                     }
 
-                    if (rectsList is GenValue.GList.RuntimeListOf<*>) {
+                    if (rectsList is GenValue.List.Runtime<*>) {
                         foreach(variable(CPythonLanguage.NoType, "rect"), rectsList.value.v) { rect ->
                             withRuntimeRect(rect)
                         }
                     } else {
-                        for (element in (rectsList as GenValue.GList.ListOf<*>).elements) {
-                            if (element is GenValue.GRect.Rotated.RotatedRect) {
+                        for (element in (rectsList as GenValue.List.Actual<*>).elements) {
+                            if (element is GenValue.Rect.Rotated.Actual) {
                                 separate()
 
                                 val rect = uniqueVariable(
@@ -180,7 +180,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                                 ) {
                                     biggestRect instanceSet rect
                                 }
-                            } else if (element is GenValue.GRect.Rotated.RuntimeRotatedRect) {
+                            } else if (element is GenValue.Rect.Rotated.Runtime) {
                                 separate()
                                 withRuntimeRect(element.value.v)
                             }
@@ -188,7 +188,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                     }
                 }
 
-                session.biggestRect = GenValue.GRect.Rotated.RuntimeRotatedRect(biggestRect.resolved())
+                session.biggestRect = GenValue.Rect.Rotated.Runtime(biggestRect.resolved())
 
                 session
             }
@@ -197,14 +197,14 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         if (attrib == output) {
-            return GenValue.GRect.Rotated.RuntimeRotatedRect.defer { current.sessionOf(this)?.biggestRect }
+            return GenValue.Rect.Rotated.Runtime.defer { current.sessionOf(this)?.biggestRect }
         }
 
         noValue(attrib)
     }
 
     class Session : CodeGenSession {
-        lateinit var biggestRect: GenValue.GRect.Rotated.RuntimeRotatedRect
+        lateinit var biggestRect: GenValue.Rect.Rotated.Runtime
     }
 
 }

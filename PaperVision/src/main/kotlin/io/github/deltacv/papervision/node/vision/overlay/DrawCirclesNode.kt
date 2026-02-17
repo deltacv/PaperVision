@@ -73,7 +73,7 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
                 val line = line.genValue(current).ensureRuntimeLineJvm(current)
 
                 val input = inputMat.genValue(current)
-                val circlesValue = circles.genValue(current) as? GenValue.GList.RuntimeListOf<*>
+                val circlesValue = circles.genValue(current) as? GenValue.List.Runtime<*>
                     ?: raise("") // TODO: handle non-runtime lists
 
                 val output = uniqueVariable("${input.value.v}Circles", Mat.new())
@@ -112,10 +112,10 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
 
             current {
                 val input = inputMat.genValue(current)
-                val circlesValue = circles.genValue(current) as? GenValue.GList.RuntimeListOf<*>
+                val circlesValue = circles.genValue(current) as? GenValue.List.Runtime<*>
                     ?: raise("") // TODO: handle non-runtime lists
 
-                val line = line.genValue(current) as GenValue.LineParameters.Line
+                val line = line.genValue(current) as GenValue.LineParameters.Actual
 
                 current.scope {
                     nameComment()

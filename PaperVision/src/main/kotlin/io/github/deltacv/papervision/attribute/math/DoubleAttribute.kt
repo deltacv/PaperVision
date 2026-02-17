@@ -38,7 +38,7 @@ class DoubleAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null,
     initialValue: Double = 0.0
-) : TypedAttribute<GenValue.Double>(Companion) {
+) : TypedAttribute<GenValue.Double.Actual>(Companion) {
 
     companion object : AttributeType<DoubleAttribute> {
         override val icon = FontAwesomeIcons.SquareRootAlt
@@ -131,7 +131,7 @@ class DoubleAttribute(
     override fun readEditorValue() = value.get()
 
     override fun genValue(current: CodeGen.Current) = readGenValue(
-        current, GenValue.Double(value.get().resolved())
+        current, GenValue.Double.Actual(value.get().resolved())
     )
 
     override fun makeSerializationData() = Data(value.get())

@@ -69,7 +69,7 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
                     public(y, yAttribute.label())
                 }
 
-                session.vector2 = GenValue.Vec2.RuntimeVector2(x.resolved(), y.resolved())
+                session.vector2 = GenValue.Vec2.Runtime(GenValue.Double.Runtime(x.resolved()), GenValue.Double.Runtime(y.resolved()))
             }
 
             session
@@ -78,9 +78,9 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            session.vector2 = GenValue.Vec2.Vector2(
-                GenValue.Double(xAttribute.genValue(current).value.map { it.toDouble() }),
-                GenValue.Double(yAttribute.genValue(current).value.map { it.toDouble() })
+            session.vector2 = GenValue.Vec2.Actual(
+                GenValue.Double.Actual(xAttribute.genValue(current).value.map { it.toDouble() }),
+                GenValue.Double.Actual(yAttribute.genValue(current).value.map { it.toDouble() })
             )
             session
         }

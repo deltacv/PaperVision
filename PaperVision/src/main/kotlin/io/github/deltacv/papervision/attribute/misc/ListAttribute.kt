@@ -43,7 +43,7 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
     override var variableName: String? = null,
     length: Int? = null,
     val allowAddOrDelete: Boolean = true
-) : TypedAttribute<GenValue.GList<ER>>(Companion) {
+) : TypedAttribute<GenValue.List<ER>>(Companion) {
 
     companion object : AttributeType<ListAttribute<*, *>> {
         override val icon = FontAwesomeIcons.List
@@ -220,7 +220,7 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
     open fun drawAttributeText(index: Int, attrib: Attribute): Boolean = false
 
     @Suppress("UNCHECKED_CAST")
-    override fun genValue(current: CodeGen.Current): GenValue.GList<ER> {
+    override fun genValue(current: CodeGen.Current): GenValue.List<ER> {
         return if (mode == AttributeMode.INPUT) {
             if (hasLink) {
                 val linkedAttrib = availableLinkedAttribute
@@ -235,27 +235,27 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
                 val value = linkedAttrib.genValue(current)
 
                 raiseAssert(
-                    value is GenValue.GList<*>,
+                    value is GenValue.List<*>,
                     "Attribute attached is not a list"
                 )
 
-                value as GenValue.GList<ER>
+                value as GenValue.List<ER>
             } else {
                 validateAttributes() // we can safely do an unchecked cast after validating the attributes
 
                 // get the values of all the attributes and return a
                 // GenValue.List with the attribute values in an array
-                GenValue.GList.ListOf(listAttributes.map { it.genValue(current) }) as GenValue.GList<ER>
+                GenValue.List.Actual(listAttributes.map { it.genValue(current) }) as GenValue.List<ER>
             }
         } else {
             parentNode.genCodeIfNecessary(current)
             val value = getGenValueFromNode(current)
             raiseAssert(
-                value is GenValue.GList<*>,
+                value is GenValue.List<*>,
                 "Value returned from the node is not a list"
             )
 
-            value as GenValue.GList<ER>
+            value as GenValue.List<ER>
         }
     }
 

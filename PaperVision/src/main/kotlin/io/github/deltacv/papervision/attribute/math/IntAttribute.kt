@@ -35,7 +35,7 @@ class IntAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null,
     initialValue: Int = 0
-) : TypedAttribute<GenValue.Int>(Companion) {
+) : TypedAttribute<GenValue.Int.Actual>(Companion) {
 
     companion object: AttributeType<IntAttribute> {
         override val icon = FontAwesomeIcons.Hashtag
@@ -98,7 +98,7 @@ class IntAttribute(
     override fun readEditorValue() = value.get()
 
     override fun genValue(current: CodeGen.Current) = readGenValue(
-        current, GenValue.Int(value.get().resolved())
+        current, GenValue.Int.Actual(value.get().resolved())
     )
 
     override fun makeSerializationData() = Data(value.get())

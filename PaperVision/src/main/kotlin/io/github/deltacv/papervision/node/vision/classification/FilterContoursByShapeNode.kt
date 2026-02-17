@@ -119,7 +119,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
 
                 val inputContours = input.genValue(current)
 
-                if(inputContours !is GenValue.GList.RuntimeListOf<*>){
+                if(inputContours !is GenValue.List.Runtime<*>){
                     raise("")
                 }
 
@@ -168,7 +168,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
                     }
                 }
 
-                session.output = GenValue.GList.RuntimeListOf(list.resolved(), GenValue.GPoints.RuntimePoints::class.resolved())
+                session.output = GenValue.List.Runtime(list.resolved(), GenValue.Points.Runtime::class.resolved())
 
                 session
             }
@@ -177,7 +177,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         if(attrib == output) {
-            return GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.output }
+            return GenValue.List.Runtime.defer { current.sessionOf(this)?.output }
         }
 
         noValue(attrib)
@@ -189,7 +189,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
     }
 
     class Session : CodeGenSession {
-        lateinit var output: GenValue.GList.RuntimeListOf<GenValue.GPoints.RuntimePoints>
+        lateinit var output: GenValue.List.Runtime<GenValue.Points.Runtime>
     }
 
 }

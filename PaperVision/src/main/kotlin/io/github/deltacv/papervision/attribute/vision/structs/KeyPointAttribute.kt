@@ -28,7 +28,7 @@ import io.github.deltacv.papervision.gui.style.rgbaColor
 
 class KeyPointAttribute(override val mode: AttributeMode,
                         override var variableName: String? = null
-) : TypedAttribute<GenValue.GKeyPoint>(Companion) {
+) : TypedAttribute<GenValue.KeyPoint>(Companion) {
 
     companion object : AttributeType<KeyPointAttribute> {
         override val icon = FontAwesomeIcons.PlusCircle
@@ -42,6 +42,6 @@ class KeyPointAttribute(override val mode: AttributeMode,
         override fun new(mode: AttributeMode, variableName: String) = KeyPointAttribute(mode, variableName)
     }
 
-    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.GKeyPoint.RuntimeKeyPoint>(current)
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.KeyPoint.Runtime>(current)
 
 }

@@ -62,7 +62,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
             current {
                 val input = contours.genValue(current)
 
-                val name = if(input is GenValue.GList.RuntimeListOf<*>) {
+                val name = if(input is GenValue.List.Runtime<*>) {
                     input.value.v
                 } else null
 
@@ -88,13 +88,13 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                         rectsList("add", Imgproc.callValue("minAreaRect", JvmOpenCvTypes.RotatedRect, points2f))
                     }
 
-                    if(input is GenValue.GList.RuntimeListOf<*>) {
+                    if(input is GenValue.List.Runtime<*>) {
                         foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value.v) {
                             withPoints(it)
                         }
                     } else {
-                        for(element in (input as GenValue.GList.ListOf<*>).elements) {
-                            if(element is GenValue.GPoints.RuntimePoints) {
+                        for(element in (input as GenValue.List.Actual<*>).elements) {
+                            if(element is GenValue.Points.Runtime) {
                                 withPoints(element.value.v)
                             } else {
                                 raise("Invalid input type for contours")
@@ -103,7 +103,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                     }
                 }
 
-                session.rects = GenValue.GList.RuntimeListOf(rectsList.resolved(), GenValue.GRect.Rotated.RuntimeRotatedRect::class.resolved())
+                session.rects = GenValue.List.Runtime(rectsList.resolved(), GenValue.Rect.Rotated.Runtime::class.resolved())
             }
 
             session
@@ -115,7 +115,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
             current {
                 val input = contours.genValue(current)
 
-                val name = if(input is GenValue.GList.RuntimeListOf<*>) {
+                val name = if(input is GenValue.List.Runtime<*>) {
                     input.value.v.toString() + "_r"
                 } else null
 
@@ -130,13 +130,13 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                         rectsList("append", cv2.callValue("minAreaRect", CPythonLanguage.NoType, points))
                     }
 
-                    if(input is GenValue.GList.RuntimeListOf<*>) {
+                    if(input is GenValue.List.Runtime<*>) {
                         foreach(variable(CPythonLanguage.NoType, "points"), input.value.v) {
                             withPoints(it)
                         }
                     } else {
-                        for(element in (input as GenValue.GList.ListOf<*>).elements) {
-                            if(element is GenValue.GPoints.RuntimePoints) {
+                        for(element in (input as GenValue.List.Actual<*>).elements) {
+                            if(element is GenValue.Points.Runtime) {
                                 withPoints(element.value.v)
                             } else {
                                 raise("Invalid input type for contours")
@@ -145,7 +145,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                     }
                 }
 
-                session.rects = GenValue.GList.RuntimeListOf(rectsList.resolved(), GenValue.GRect.Rotated.RuntimeRotatedRect::class.resolved())
+                session.rects = GenValue.List.Runtime(rectsList.resolved(), GenValue.Rect.Rotated.Runtime::class.resolved())
             }
 
             session
@@ -160,6 +160,6 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
     }
 
     class Session : CodeGenSession {
-        lateinit var rects: GenValue.GList.RuntimeListOf<GenValue.GRect.Rotated.RuntimeRotatedRect>
+        lateinit var rects: GenValue.List.Runtime<GenValue.Rect.Rotated.Runtime>
     }
 }

@@ -29,7 +29,7 @@ import io.github.deltacv.papervision.gui.style.rgbaColor
 class RectAttribute (
     override val mode: AttributeMode,
     override var variableName: String? = null
-) : TypedAttribute<GenValue.GRect>(Companion) {
+) : TypedAttribute<GenValue.Rect>(Companion) {
 
     companion object : AttributeType<RectAttribute> {
         override val icon = FontAwesomeIcons.Square
@@ -43,5 +43,5 @@ class RectAttribute (
         override fun new(mode: AttributeMode, variableName: String) = RectAttribute(mode, variableName)
     }
 
-    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.GRect.RuntimeRect>(current)
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Rect.Runtime>(current)
 }

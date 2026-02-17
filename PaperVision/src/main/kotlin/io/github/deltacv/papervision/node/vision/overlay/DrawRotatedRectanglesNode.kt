@@ -128,11 +128,11 @@ open class DrawRotatedRectanglesNode
                         }
                     }
 
-                    if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
-                        for (rectangle in (rectanglesList as GenValue.GList.ListOf<*>).elements) {
-                            if (rectangle is GenValue.GRect.Rotated.RotatedRect) {
+                    if (rectanglesList !is GenValue.List.Runtime<*>) {
+                        for (rectangle in (rectanglesList as GenValue.List.Actual<*>).elements) {
+                            if (rectangle is GenValue.Rect.Rotated.Actual) {
                                 TODO("")
-                            } else if (rectangle is GenValue.GRect.Rotated.RuntimeRotatedRect) {
+                            } else if (rectangle is GenValue.Rect.Rotated.Runtime) {
                                 drawRuntimeRect(rectangle.value.v)
                             }
                         }
@@ -160,7 +160,7 @@ open class DrawRotatedRectanglesNode
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)
 
-                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Line
+                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Actual
 
                 current.scope {
                     nameComment()
@@ -192,11 +192,11 @@ open class DrawRotatedRectanglesNode
                         }
                     }
 
-                    if (rectanglesList !is GenValue.GList.RuntimeListOf<*>) {
-                        for (rectangle in (rectanglesList as GenValue.GList.ListOf<*>).elements) {
-                            if (rectangle is GenValue.GRect.Rotated.RotatedRect) {
+                    if (rectanglesList !is GenValue.List.Runtime<*>) {
+                        for (rectangle in (rectanglesList as GenValue.List.Actual<*>).elements) {
+                            if (rectangle is GenValue.Rect.Rotated.Actual) {
                                 raise("RotatedRects are not supported")
-                            } else if (rectangle is GenValue.GRect.RuntimeRect) {
+                            } else if (rectangle is GenValue.Rect.Runtime) {
                                 runtimeRect(rectangle.value.v)
                             }
                         }

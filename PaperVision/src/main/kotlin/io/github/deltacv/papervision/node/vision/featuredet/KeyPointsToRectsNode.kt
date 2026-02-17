@@ -62,7 +62,7 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
                 input.requireAttachedAttribute()
                 val keypoints = input.genValue(current)
 
-                if(keypoints !is GenValue.GList.RuntimeListOf<*>) {
+                if(keypoints !is GenValue.List.Runtime<*>) {
                     raise("Only runtime lists are supported for now")
                 }
 
@@ -88,7 +88,7 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
                         ))
                     }
 
-                    session.output = GenValue.GList.RuntimeListOf<GenValue.GRect.RuntimeRect>(rects.resolved())
+                    session.output = GenValue.List.Runtime<GenValue.Rect.Runtime>(rects.resolved())
                 }
             }
 
@@ -100,7 +100,7 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
 
             val keypoints = input.genValue(current)
 
-            if(keypoints !is GenValue.GList.RuntimeListOf<*>) {
+            if(keypoints !is GenValue.List.Runtime<*>) {
                 raise("Only runtime lists are supported for now")
             }
 
@@ -123,7 +123,7 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
                     }
                 }
 
-                session.output = GenValue.GList.RuntimeListOf<GenValue.GRect.RuntimeRect>(rects.resolved())
+                session.output = GenValue.List.Runtime<GenValue.Rect.Runtime>(rects.resolved())
             }
 
             session
@@ -132,12 +132,12 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         return when (attrib) {
-            output -> GenValue.GList.RuntimeListOf.defer { current.sessionOf(this)?.output }
+            output -> GenValue.List.Runtime.defer { current.sessionOf(this)?.output }
             else -> noValue(attrib)
         }
     }
 
     class Session : CodeGenSession {
-        lateinit var output: GenValue.GList.RuntimeListOf<GenValue.GRect.RuntimeRect>
+        lateinit var output: GenValue.List.Runtime<GenValue.Rect.Runtime>
     }
 }
