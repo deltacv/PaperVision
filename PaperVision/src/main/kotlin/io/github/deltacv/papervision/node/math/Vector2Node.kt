@@ -61,8 +61,8 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
             val session = Session()
 
             current {
-                val x = uniqueVariable("vectorX", xAttribute.genValue(current).value.v)
-                val y = uniqueVariable("vectorY", yAttribute.genValue(current).value.v)
+                val x = uniqueVariable("vectorX", int(xAttribute.genValue(current)).v)
+                val y = uniqueVariable("vectorY", int(yAttribute.genValue(current)).v)
 
                 group {
                     public(x, xAttribute.label())
@@ -78,10 +78,14 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            session.vector2 = GenValue.Vec2.Actual(
-                GenValue.Double.Actual(xAttribute.genValue(current).value.map { it.toDouble() }),
-                GenValue.Double.Actual(yAttribute.genValue(current).value.map { it.toDouble() })
-            )
+            current.scope {
+                session.vector2 = GenValue.Vec2.wrap(
+                    xAttribute.genValue(current).toDouble(current),
+                    yAttribute.genValue(current).toDouble(current),
+                    current
+                )
+            }
+
             session
         }
     }

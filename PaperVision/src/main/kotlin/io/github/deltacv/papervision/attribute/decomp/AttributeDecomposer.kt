@@ -7,7 +7,8 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.GenValueMapper
 import io.github.deltacv.papervision.codegen.PolyglotGenerator
 import io.github.deltacv.papervision.node.Node
-import org.deltacv.mai18n.tr
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 abstract class AttributeDecomposer<S: CodeGenSession>(val decomposerNode: Node<*>) : PolyglotGenerator<GenValue, S>, GenValueMapper {
 
@@ -43,4 +44,15 @@ abstract class AttributeDecomposer<S: CodeGenSession>(val decomposerNode: Node<*
     }
 
     protected fun noValue(attrib: Attribute): Nothing = decomposerNode.noValue(attrib)
+
+    @OptIn(ExperimentalContracts::class)
+    protected inline fun <reified T: GenValue> assertGenValueType(value: GenValue) {
+        contract {
+            returns() implies (value is T)
+        }
+
+        if(value !is T) {
+            decomposerNode.raise("Decomposer received invalid GenValue type (expected ${T::class.simpleName} received ${value::class.simpleName})")
+        }
+    }
 }

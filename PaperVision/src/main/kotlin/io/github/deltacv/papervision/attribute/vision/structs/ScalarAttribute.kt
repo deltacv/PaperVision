@@ -35,7 +35,7 @@ class ScalarAttribute(
     mode: AttributeMode,
     color: ColorSpace,
     variableName: String? = null
-) : ListAttribute<DoubleAttribute, GenValue.Double.Actual>(mode, DoubleAttribute, variableName, color.channels) {
+) : ListAttribute<DoubleAttribute, GenValue.Double>(mode, DoubleAttribute, variableName, color.channels) {
 
     var color = color
         set(value) {
@@ -75,13 +75,14 @@ class ScalarAttribute(
     }
 
     override fun genValue(current: CodeGen.Current): GenValue.Scalar {
-        val values = super.genValue(current).toActualOrNull()!!.elements
+        val values = super.genValue(current).toActualOrNull()?.elements ?: parentNode.noValue(this)
 
-        val value = GenValue.Scalar(
-            GenValue.Double.Actual(values.getOrElse(0) { GenValue.Double.ZERO }.value),
-            GenValue.Double.Actual(values.getOrElse(1) { GenValue.Double.ZERO }.value),
-            GenValue.Double.Actual(values.getOrElse(2) { GenValue.Double.ZERO }.value),
-            GenValue.Double.Actual(values.getOrElse(3) { GenValue.Double.ZERO }.value),
+        val value = GenValue.Scalar.wrap(
+            values.getOrElse(0) { GenValue.Double.ZERO },
+            values.getOrElse(1) { GenValue.Double.ZERO },
+            values.getOrElse(2) { GenValue.Double.ZERO },
+            values.getOrElse(3) { GenValue.Double.ZERO },
+            current
         )
 
         return readGenValue(current, value)

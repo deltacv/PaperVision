@@ -72,10 +72,10 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                 input.requireBinary(inputMat)
 
                 val erodeVal = erodeValue.genValue(current)
-                val erodeValVariable = uniqueVariable("erodeValue", int(erodeVal.value.v))
+                val erodeValVariable = uniqueVariable("erodeValue", int(erodeVal.v))
 
                 val dilateVal = erodeValue.genValue(current)
-                val dilateValVariable = uniqueVariable("dilateValue", int(dilateVal.value.v))
+                val dilateValVariable = uniqueVariable("dilateValue", int(dilateVal.v))
 
                 val element = uniqueVariable("element", JvmOpenCvTypes.Mat.nullValue)
 
@@ -153,7 +153,7 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                     "getStructuringElement",
                     CPythonLanguage.NoType,
                     cv2.MORPH_RECT,
-                    CPythonLanguage.tuple(erodeVal.value.v, erodeVal.value.v)
+                    CPythonLanguage.tuple(erodeVal.v, erodeVal.v)
                 ))
                 public(elementErode)
 
@@ -161,7 +161,7 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                     "getStructuringElement",
                     CPythonLanguage.NoType,
                     cv2.MORPH_RECT,
-                    CPythonLanguage.tuple(dilateVal.value.v, dilateVal.value.v)
+                    CPythonLanguage.tuple(dilateVal.v, dilateVal.v)
                 ))
                 public(elementDilate)
 

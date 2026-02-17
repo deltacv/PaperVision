@@ -65,17 +65,17 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
                 val lineColorValue = lineColor.genValue(current)
 
                 val lineColorVar = uniqueVariable("lineColor", JvmOpenCvTypes.Scalar.new(
-                    lineColorValue.a.value.v, lineColorValue.b.value.v, lineColorValue.c.value.v, lineColorValue.d.value.v
+                    lineColorValue.a.v.v, lineColorValue.b.v.v, lineColorValue.c.v.v, lineColorValue.d.v.v
                 ))
 
-                val lineThicknessVar = uniqueVariable("lineThickness", lineThickness.genValue(current).value.v)
+                val lineThicknessVar = uniqueVariable("lineThickness", lineThickness.genValue(current).v.v)
 
                 group {
                     public(lineColorVar, lineColor.label())
                     public(lineThicknessVar, lineThickness.label())
                 }
 
-                session.lineParameters = GenValue.LineParameters.Runtime(lineColorVar.resolved(), lineThicknessVar.resolved())
+                session.lineParameters = GenValue.LineParameters.Runtime(lineColorVar.resolved(), GenValue.Int.Runtime(lineThicknessVar.resolved()))
             }
 
             session

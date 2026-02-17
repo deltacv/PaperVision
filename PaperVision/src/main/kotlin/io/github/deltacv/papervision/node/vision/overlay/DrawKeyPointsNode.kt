@@ -94,10 +94,10 @@ open class DrawKeyPointsNode
                 val colorScalar = uniqueVariable(
                     "keypointColor",
                     JvmOpenCvTypes.Scalar.new(
-                        color.a.value.v,
-                        color.b.value.v,
-                        color.c.value.v,
-                        color.d.value.v
+                        color.a.v.v,
+                        color.b.v.v,
+                        color.c.v.v,
+                        color.d.v.v
                     )
                 )
 
@@ -148,7 +148,7 @@ open class DrawKeyPointsNode
                             CPythonOpenCvTypes.np.callValue("array",
                                 CPythonLanguage.NoType, CPythonLanguage.newArrayOf(CPythonLanguage.NoType, 0.v)
                             ),
-                            CPythonLanguage.tuple(color.a.value.v, color.b.value.v, color.c.value.v)
+                            CPythonLanguage.tuple(color.a.v.v, color.b.v.v, color.c.v.v)
                         )
                     )
 

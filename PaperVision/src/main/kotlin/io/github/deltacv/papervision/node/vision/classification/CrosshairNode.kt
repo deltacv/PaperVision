@@ -97,14 +97,14 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
             val crosshairLineParams = crosshairLineParams.genValue(current).ensureRuntimeLineJvm(current)
 
-            val crosshairSizeValue = crosshairScale.genValue(current).value
+            val crosshairSizeValue = crosshairScale.genValue(current)
 
             current {
                 val drawOnValue = drawOn.value.v
 
                 val crosshair = uniqueVariable("crosshair", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
                 val crosshairImage = uniqueVariable("crosshairImage", JvmOpenCvTypes.Mat.new())
-                val crosshairSize = uniqueVariable("crosshairSize", crosshairSizeValue.v)
+                val crosshairSize = uniqueVariable("crosshairSize", int(crosshairSizeValue).v)
 
                 group {
                     private(crosshair)
@@ -128,7 +128,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                             val rows = drawOnValue.callValue("rows", IntType)
                             val cols = drawOnValue.callValue("cols", IntType)
 
-                            JvmOpenCvTypes.Point.new((double(cols) / 2.v) + crosshairPositionVector.xValue.value.v, (double(rows) / 2.v) + crosshairPositionVector.yValue.value.v)
+                            JvmOpenCvTypes.Point.new((double(cols) / 2.v) + double(crosshairPositionVector.xValue).v, (double(rows) / 2.v) + double(crosshairPositionVector.yValue).v)
                         }
                     )
 
@@ -279,7 +279,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
             val drawOn = drawCrosshairOn.genValue(current)
 
             val crosshairLineParams = crosshairLineParams.genValue(current) as GenValue.LineParameters.Actual
-            val crosshairSizeValue = crosshairScale.genValue(current).value
+            val crosshairSizeValue = crosshairScale.genValue(current)
 
             current {
                 val drawOnValue = drawOn.value.v
@@ -323,12 +323,12 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     // Adjust crosshairSize based on the scale factor
                     val adjustedCrosshairSize =
-                        uniqueVariable("adjusted_crosshair_size", crosshairSizeValue.v * scaleFactor / 100.v)
+                        uniqueVariable("adjusted_crosshair_size", int(crosshairSizeValue).v * scaleFactor / 100.v)
                     local(adjustedCrosshairSize)
 
                     separate()
 
-                    val crosshairCol = crosshairLineParams.color.elements.map { it.value.v }.toTypedArray()
+                    val crosshairCol = crosshairLineParams.color.elements.map { it.v.v }.toTypedArray()
                     val crosshairThickness = crosshairLineParams.thickness.value.v
 
                     CPythonOpenCvTypes.cv2(

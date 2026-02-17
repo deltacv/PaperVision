@@ -38,7 +38,7 @@ class DoubleAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null,
     initialValue: Double = 0.0
-) : TypedAttribute<GenValue.Double.Actual>(Companion) {
+) : TypedAttribute<GenValue.Double>(Companion) {
 
     companion object : AttributeType<DoubleAttribute> {
         override val icon = FontAwesomeIcons.SquareRootAlt
@@ -130,7 +130,7 @@ class DoubleAttribute(
 
     override fun readEditorValue() = value.get()
 
-    override fun genValue(current: CodeGen.Current) = readGenValue(
+    override fun genValue(current: CodeGen.Current): GenValue.Double = readGenValue(
         current, GenValue.Double.Actual(value.get().resolved())
     )
 

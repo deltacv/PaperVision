@@ -77,8 +77,8 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
             val maxRatioVal = maxRatio.genValue(current)
 
             current {
-                val minRatioVar = uniqueVariable("minRatio", minRatioVal.value.v)
-                val maxRatioVar = uniqueVariable("maxRatio", maxRatioVal.value.v)
+                val minRatioVar = uniqueVariable("minRatio", minRatioVal.v.v)
+                val maxRatioVar = uniqueVariable("maxRatio", maxRatioVal.v.v)
 
                 val rectsVar = uniqueVariable("${rects.value.v}ByRatio", JavaTypes.ArrayList(JvmOpenCvTypes.Rect).new())
 
@@ -136,7 +136,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
                         val ratioVar = uniqueVariable("ratio", (rect[2.v, IntType] / rect[3.v, IntType]))
                         local(ratioVar)
 
-                        ifCondition((ratioVar greaterOrEqualThan (minRatioVal.value.v / 100.0.v)) and (ratioVar lessOrEqualThan (maxRatioVal.value.v / 100.0.v))) {
+                        ifCondition((ratioVar greaterOrEqualThan (minRatioVal.v.v / 100.0.v)) and (ratioVar lessOrEqualThan (maxRatioVal.v.v / 100.0.v))) {
                             rectsVar("append", rect)
                         }
                     }

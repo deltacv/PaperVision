@@ -18,19 +18,23 @@
 
 package io.github.deltacv.papervision.codegen.dsl
 
+import io.github.deltacv.papervision.codegen.CodeGen
+import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolve.Resolvable
 import io.github.deltacv.papervision.codegen.build.*
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.node.vision.ColorSpace
 
 @Suppress("UNUSED")
-open class LanguageContext(val language: Language) {
+open class LanguageContext(override val language: Language): CodeGen.LanguageHolder {
 
     val Int.v get() = ConValue(language.IntType, toString())
     val Long.v get() = ConValue(language.LongType, toString())
     val Float.v get() = ConValue(language.FloatType, toString())
     val Double.v get() = ConValue(language.DoubleType, toString())
     val String.v get() = ConValue(Type.NONE, this)
+
+    val GenValue.Number.v get() = value(this@LanguageContext)
 
     val Resolvable<Double>.v @JvmName("vRDouble") get() = tryReturn({ it.v }, { it.v })
     val Resolvable<Int>.v @JvmName("vRInt") get() = tryReturn({ it.v }, { it.v })
@@ -107,15 +111,18 @@ open class LanguageContext(val language: Language) {
 
     fun boolean(value: Boolean) = language.boolean(value)
 
+    fun int(value: GenValue.Int) = language.int(value)
     fun int(value: Value) = language.int(value)
     fun int(value: Int) = language.int(value)
 
     fun long(value: Value) = language.long(value)
     fun long(value: Long) = language.long(value)
 
+    fun float(value: GenValue.Float) = language.float(value)
     fun float(value: Value) = language.float(value)
     fun float(value: Float) = language.float(value)
 
+    fun double(value: GenValue.Double) = language.double(value)
     fun double(value: Value) = language.double(value)
     fun double(value: Double) = language.double(value)
 

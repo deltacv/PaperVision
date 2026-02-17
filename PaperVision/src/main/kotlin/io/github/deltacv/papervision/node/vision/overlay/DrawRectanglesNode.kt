@@ -103,8 +103,8 @@ open class DrawRectanglesNode
                                 Imgproc(
                                     "rectangle", drawMat,
                                     JvmOpenCvTypes.Rect.new(
-                                        double(rectangle.x.value.v), double(rectangle.y.value.v),
-                                        double(rectangle.w.value.v), double(rectangle.h.value.v)
+                                        double(rectangle.x.v), double(rectangle.y.v),
+                                        double(rectangle.w.v), double(rectangle.h.v)
                                     ),
                                     lineParams.colorScalarValue.v,
                                     lineParams.thicknessValue.v
@@ -204,10 +204,10 @@ open class DrawRectanglesNode
                             if (rectangle is GenValue.Rect.Actual) {
                                 cv2(
                                     "rectangle", target,
-                                    CPythonLanguage.tuple(rectangle.x.value.v, rectangle.y.value.v),
+                                    CPythonLanguage.tuple(rectangle.x.v, rectangle.y.v),
                                     CPythonLanguage.tuple(
-                                        rectangle.x.value.v + rectangle.w.value.v,
-                                        rectangle.y.value.v + rectangle.h.value.v
+                                        rectangle.x.v + rectangle.w.v,
+                                        rectangle.y.v + rectangle.h.v
                                     ),
                                     colorScalar,
                                     thickness.v

@@ -90,8 +90,8 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
             val mode = boundingMode.genValue(current).value
 
             current {
-                val minRatioVar = uniqueVariable("minRatio", minRatioVal.value.v)
-                val maxRatioVar = uniqueVariable("maxRatio", maxRatioVal.value.v)
+                val minRatioVar = uniqueVariable("minRatio", int(minRatioVal).v)
+                val maxRatioVar = uniqueVariable("maxRatio", int(maxRatioVal).v)
 
                 val contoursVarName = contours.value.map { it.value ?: "contours" }
                 val contoursVar = uniqueVariable("${contoursVarName.v}ByRatio", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
@@ -197,7 +197,7 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
 
                         separate()
 
-                        ifCondition((ratioVar greaterOrEqualThan (minRatioVal.value.v / 100.0.v)) and (ratioVar lessOrEqualThan (maxRatioVal.value.v / 100.0.v))) {
+                        ifCondition((ratioVar greaterOrEqualThan (int(minRatioVal).v / 100.0.v)) and (ratioVar lessOrEqualThan (int(maxRatioVal).v / 100.0.v))) {
                             contoursVar("append", contour)
                         }
                     }

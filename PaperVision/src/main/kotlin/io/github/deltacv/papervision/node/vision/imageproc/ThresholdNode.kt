@@ -55,7 +55,7 @@ import io.github.deltacv.papervision.serialization.data.SerializeData
 class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
     val input = MatAttribute(INPUT, "$[att_input]")
-    val scalar = ScalarRangeAttribute(INPUT, ColorSpace.values()[0], "$[att_threshold]")
+    val scalar = ScalarRangeAttribute(INPUT, ColorSpace.entries[0], "$[att_threshold]")
 
     val output = MatAttribute(OUTPUT, "$[att_binaryoutput]")
 
@@ -85,7 +85,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         ImGui.text(tr("att_colorspace"))
 
         ImGui.pushItemWidth(110.0f)
-        val color = ImGuiEx.enumCombo(ColorSpace.values(), colorValue)
+        val color = ImGuiEx.enumCombo(ColorSpace.entries.toTypedArray(), colorValue)
         ImGui.popItemWidth()
 
         ImGui.newLine()
@@ -118,19 +118,19 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
                 val lowerScalar = uniqueVariable("lower${targetColor.name}",
                     Scalar.new(
-                        range.a.min.value.v,
-                        range.b.min.value.v,
-                        range.c.min.value.v,
-                        range.d.min.value.v,
+                        range.a.min.v,
+                        range.b.min.v,
+                        range.c.min.v,
+                        range.d.min.v,
                     )
                 )
 
                 val upperScalar = uniqueVariable("upper${targetColor.name}",
                     Scalar.new(
-                        range.a.max.value.v,
-                        range.b.max.value.v,
-                        range.c.max.value.v,
-                        range.d.max.value.v,
+                        range.a.max.v,
+                        range.b.max.v,
+                        range.c.max.v,
+                        range.d.max.v,
                     )
                 )
 
@@ -193,8 +193,8 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
                     val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}_thresh",
                         cv2.callValue("inRange", CPythonLanguage.NoType, target,
-                            CPythonLanguage.tuple(range.a.min.value.v, range.b.min.value.v, range.c.min.value.v, range.d.min.value.v),
-                            CPythonLanguage.tuple(range.a.max.value.v, range.b.max.value.v, range.c.max.value.v, range.d.max.value.v)
+                            CPythonLanguage.tuple(range.a.min.v, range.b.min.v, range.c.min.v, range.d.min.v),
+                            CPythonLanguage.tuple(range.a.max.v, range.b.max.v, range.c.max.v, range.d.max.v)
                         )
                     )
 

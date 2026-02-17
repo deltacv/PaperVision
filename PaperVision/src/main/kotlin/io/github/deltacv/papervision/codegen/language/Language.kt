@@ -19,12 +19,16 @@
 package io.github.deltacv.papervision.codegen.language
 
 import io.github.deltacv.papervision.codegen.CodeGen
+import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
 import io.github.deltacv.papervision.codegen.build.type.StandardTypes
 import io.github.deltacv.papervision.codegen.csv
+import io.github.deltacv.papervision.codegen.dsl.LanguageContext
+import io.github.deltacv.papervision.codegen.resolve.Resolvable
+import io.github.deltacv.papervision.exception.GenException
 
-interface Language : ValueBuilder {
+interface Language : ValueBuilder, CodeGen.LanguageHolder {
 
     val excludedImports: List<Type>
 
@@ -43,6 +47,8 @@ interface Language : ValueBuilder {
 
     val nullValue get() = ConValue(VoidType, "null")
 
+    operator fun <R> invoke(block: LanguageContext.() -> R) = LanguageContext(this).block()
+
     fun newImportBuilder(): ImportBuilder
 
     fun Array<out Parameter>.csv(): String {
@@ -54,23 +60,108 @@ interface Language : ValueBuilder {
 
     fun isImportExcluded(import: Type) = excludedImports.contains(import)
 
-    fun boolean(value: Boolean) = if(value) trueValue else falseValue
+    fun boolean(value: Boolean) = if (value) trueValue else falseValue
 
-    fun int(value: Value) = castValue(value, language.IntType)
+    fun int(value: GenValue.Int): Resolvable<Value> = when (value) {
+        is GenValue.Int.Actual -> value.value.map { int(it) }
+        is GenValue.Int.Runtime -> value.value.map { int(it) }
+    }
+
+    fun int(value: Value) = when (value.type) {
+        FloatType -> {
+            val float = value.value?.toFloatOrNull()
+            if (float == null) {
+                castValue(value, language.IntType)
+            } else {
+                int(float.toInt())
+            }
+        }
+
+        DoubleType -> {
+            val double = value.value?.toDoubleOrNull()
+            if (double == null) {
+                castValue(value, language.IntType)
+            } else {
+                int(double.toInt())
+            }
+        }
+
+        IntType -> value
+
+        else -> throw GenException("Cannot convert value of type ${value.type} to Int")
+    }
+
     fun int(value: Int) = ConValue(language.IntType, value.toString())
 
     fun long(value: Value) = castValue(value, language.LongType)
     fun long(value: Long) = ConValue(LongType, value.toString())
 
-    fun float(value: Value) = castValue(value, language.FloatType)
+    fun float(value: GenValue.Float): Resolvable<Value> = when (value) {
+        is GenValue.Float.Actual -> value.value.map { float(it) }
+        is GenValue.Float.Runtime -> value.value.map { float(it) }
+    }
+
+    fun float(value: Value) = when (value.type) {
+        IntType -> {
+            val int = value.value?.toIntOrNull()
+            if (int == null) {
+                castValue(value, language.FloatType)
+            } else {
+                float(int.toFloat())
+            }
+        }
+
+        DoubleType -> {
+            val double = value.value?.toDoubleOrNull()
+            if (double == null) {
+                castValue(value, language.FloatType)
+            } else {
+                float(double.toFloat())
+            }
+        }
+
+        FloatType -> value
+
+        else -> throw GenException("Cannot convert value of type ${value.type} to Float")
+    }
+
     fun float(value: Float) = ConValue(FloatType, value.toString())
 
-    fun double(value: Value) = castValue(value, language.DoubleType)
+    fun double(value: GenValue.Double): Resolvable<Value> = when (value) {
+        is GenValue.Double.Actual -> value.value.map { double(it) }
+        is GenValue.Double.Runtime -> value.value.map { double(it) }
+    }
+
+    fun double(value: Value) = when (value.type) {
+        IntType -> {
+            val int = value.value?.toIntOrNull()
+            if (int == null) {
+                castValue(value, language.DoubleType)
+            } else {
+                double(int.toDouble())
+            }
+        }
+
+        FloatType -> {
+            val float = value.value?.toFloatOrNull()
+            if (float == null) {
+                castValue(value, language.DoubleType)
+            } else {
+                double(float.toDouble())
+            }
+        }
+
+        DoubleType -> value
+
+        else -> throw GenException("Cannot convert value of type ${value.type} to Double")
+    }
+
     fun double(value: Double) = ConValue(DoubleType, value.toString())
 
     fun instanceVariableDeclaration(
         vis: Visibility, variable: DeclarableVariable, label: String? = null,
-        isStatic: Boolean = false, isFinal: Boolean = false): Pair<String?, String>
+        isStatic: Boolean = false, isFinal: Boolean = false
+    ): Pair<String?, String>
 
     fun localVariableDeclaration(variable: DeclarableVariable, isFinal: Boolean = false): String
 
@@ -87,8 +178,14 @@ interface Language : ValueBuilder {
     fun constructorDeclaration(vis: Visibility, className: String, vararg parameters: Parameter): String
 
     fun methodDeclaration(
-        vis: Visibility, returnType: Type, name: String, vararg parameters: Parameter,
-        isStatic: Boolean = false, isFinal: Boolean = false, isSynchronized: Boolean = false, isOverride: Boolean = false
+        vis: Visibility,
+        returnType: Type,
+        name: String,
+        vararg parameters: Parameter,
+        isStatic: Boolean = false,
+        isFinal: Boolean = false,
+        isSynchronized: Boolean = false,
+        isOverride: Boolean = false
     ): Pair<String?, String>
 
     fun returnDeclaration(value: Value? = null): String
@@ -99,9 +196,11 @@ interface Language : ValueBuilder {
     fun foreachLoopDeclaration(variable: Value, iterable: Value): String
     fun whileLoopDeclaration(condition: Condition): String
 
-    fun classDeclaration(vis: Visibility, name: String, body: Scope,
-              extends: Type? = null, vararg implements: Type,
-              isStatic: Boolean = false, isFinal: Boolean = false) : String
+    fun classDeclaration(
+        vis: Visibility, name: String, body: Scope,
+        extends: Type? = null, vararg implements: Type,
+        isStatic: Boolean = false, isFinal: Boolean = false
+    ): String
 
     fun enumClassDeclaration(name: String, vararg values: String): String
 

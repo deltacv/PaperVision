@@ -279,7 +279,10 @@ class OutputMatNode @JvmOverloads constructor(
 
                             for (d in dataValue.elements) {
                                 if (d is GenValue.Double) {
-                                    data.add(d.value.v)
+                                    when(d) {
+                                        is GenValue.Double.Actual -> data.add(d.value.v)
+                                        is GenValue.Double.Runtime -> data.add(d.value.v)
+                                    }
                                 }
                             }
 

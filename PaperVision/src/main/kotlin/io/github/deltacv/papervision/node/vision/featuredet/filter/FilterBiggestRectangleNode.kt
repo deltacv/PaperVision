@@ -92,10 +92,10 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                                 val rect = DeclarableVariable(
                                     "rect",
                                     JvmOpenCvTypes.Rect.new(
-                                        element.x.value.v,
-                                        element.y.value.v,
-                                        element.w.value.v,
-                                        element.h.value.v
+                                        element.x.v,
+                                        element.y.v,
+                                        element.w.v,
+                                        element.h.v
                                     )
                                 )
 
@@ -114,7 +114,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                     }
                 }
 
-                session.biggestRect = GenValue.Rect.GenValue.Rect.Runtime(biggestRect.resolved())
+                session.biggestRect = GenValue.Rect.Runtime(biggestRect.resolved())
 
                 session
             }
@@ -159,10 +159,10 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                                 val rect = uniqueVariable(
                                     "rect",
                                     CPythonLanguage.tuple(
-                                        element.x.value.v,
-                                        element.y.value.v,
-                                        element.w.value.v,
-                                        element.h.value.v
+                                        element.x.v,
+                                        element.y.v,
+                                        element.w.v,
+                                        element.h.v
                                     )
                                 )
                                 local(rect)
@@ -183,7 +183,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                     }
                 }
 
-                session.biggestRect = GenValue.Rect.GenValue.Rect.Runtime(biggestRect.resolved())
+                session.biggestRect = GenValue.Rect.Runtime(biggestRect.resolved())
 
                 session
             }

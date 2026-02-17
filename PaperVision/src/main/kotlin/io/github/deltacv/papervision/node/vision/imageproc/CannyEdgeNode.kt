@@ -76,10 +76,10 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
 
                 val output = uniqueVariable("${input.value.v}Canny", Mat.new())
 
-                val firstThresholdValue = firstThreshold.genValue(current).value.v
+                val firstThresholdValue = firstThreshold.genValue(current).v
                 val firstThresholdVariable = uniqueVariable("cannyFirstThreshold", int(firstThresholdValue))
 
-                val secondThresholdValue = secondThreshold.genValue(current).value.v
+                val secondThresholdValue = secondThreshold.genValue(current).v
                 val secondThresholdVariable = uniqueVariable("cannySecondThreshold", int(secondThresholdValue))
 
                 group {
@@ -119,7 +119,7 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                     nameComment()
 
                     val output = uniqueVariable("${input.value}_canny",
-                        cv2.callValue("Canny", CPythonLanguage.NoType, input.value.v, firstThreshold.genValue(current).value.v, secondThreshold.genValue(current).value.v)
+                        cv2.callValue("Canny", CPythonLanguage.NoType, input.value.v, firstThreshold.genValue(current).v, secondThreshold.genValue(current).v)
                     )
 
                     session.outputMat = GenValue.Mat(output.resolved(), input.color)

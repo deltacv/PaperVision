@@ -94,9 +94,9 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                                 val rect = DeclarableVariable(
                                     "rect",
                                     JvmOpenCvTypes.RotatedRect.new(
-                                        JvmOpenCvTypes.Point.new(element.x.value.v, element.y.value.v),
-                                        JvmOpenCvTypes.Size.new(element.w.value.v, element.h.value.v),
-                                        element.angle.value.v
+                                        JvmOpenCvTypes.Point.new(element.x.v, element.y.v),
+                                        JvmOpenCvTypes.Size.new(element.w.v, element.h.v),
+                                        element.angle.v
                                     )
                                 )
 
@@ -164,9 +164,9 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                                 val rect = uniqueVariable(
                                     "rect",
                                     CPythonLanguage.tuple(
-                                        CPythonLanguage.tuple(element.x.value.v, element.y.value.v),
-                                        CPythonLanguage.tuple(element.w.value.v, element.h.value.v),
-                                        element.angle.value.v
+                                        CPythonLanguage.tuple(element.x.v, element.y.v),
+                                        CPythonLanguage.tuple(element.w.v, element.h.v),
+                                        element.angle.v
                                     )
                                 )
                                 local(rect)

@@ -90,15 +90,15 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
 
             val inputValue = input.genValue(current).value
 
-            val minDistanceValue = minDistance.genValue(current).value
+            val minDistanceValue = minDistance.genValue(current)
 
-            val minRadiusValue = radiusRange.genValue(current).min.value
-            val maxRadiusValue = radiusRange.genValue(current).max.value
+            val minRadiusValue = radiusRange.genValue(current).min
+            val maxRadiusValue = radiusRange.genValue(current).max
 
-            val param1Value = param1.genValue(current).value
-            val param2Value = param2.genValue(current).value
+            val param1Value = param1.genValue(current)
+            val param2Value = param2.genValue(current)
 
-            val downscaleValue = downscale.genValue(current).value
+            val downscaleValue = downscale.genValue(current)
 
             current {
                 val circlesMatVar = uniqueVariable("houghCirclesMat", JvmOpenCvTypes.Mat.new())
@@ -106,15 +106,15 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
                     JavaTypes.ArrayList(Circle).new()
                 )
 
-                val minDistanceVar = uniqueVariable("houghCirclesMinDistance", minDistanceValue.v)
+                val minDistanceVar = uniqueVariable("houghCirclesMinDistance", double(minDistanceValue).v)
 
-                val minRadiusVar = uniqueVariable("houghCirclesMinRadius", int(minRadiusValue.v))
-                val maxRadiusVar = uniqueVariable("houghCirclesMaxRadius", int(maxRadiusValue.v))
+                val minRadiusVar = uniqueVariable("houghCirclesMinRadius", int(minRadiusValue.toInt(current)).v)
+                val maxRadiusVar = uniqueVariable("houghCirclesMaxRadius", int(maxRadiusValue.toInt(current)).v)
 
-                val param1Var = uniqueVariable("houghCirclesParam1", param1Value.v)
-                val param2Var = uniqueVariable("houghCirclesParam2", param2Value.v)
+                val param1Var = uniqueVariable("houghCirclesParam1", double(param1Value).v)
+                val param2Var = uniqueVariable("houghCirclesParam2", double(param2Value).v)
 
-                val downscaleVar = uniqueVariable("houghCirclesDownscale", downscaleValue.v)
+                val downscaleVar = uniqueVariable("houghCirclesDownscale", double(downscaleValue).v)
 
                 group {
                     private(circlesMatVar)
@@ -182,15 +182,15 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
 
             val input = input.genValue(current).value
 
-            val minDistanceValue = minDistance.genValue(current).value
+            val minDistanceValue = minDistance.genValue(current)
 
-            val minRadiusValue = radiusRange.genValue(current).min.value
-            val maxRadiusValue = radiusRange.genValue(current).max.value
+            val minRadiusValue = radiusRange.genValue(current).min
+            val maxRadiusValue = radiusRange.genValue(current).max
 
-            val param1Value = param1.genValue(current).value
-            val param2Value = param2.genValue(current).value
+            val param1Value = param1.genValue(current)
+            val param2Value = param2.genValue(current)
 
-            val downscaleValue = downscale.genValue(current).value
+            val downscaleValue = downscale.genValue(current)
 
             current {
                 current.scope {
@@ -199,12 +199,12 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
                             CPythonLanguage.NoType,
                             input.v,
                             CPythonOpenCvTypes.cv2.HOUGH_GRADIENT,
-                            downscaleValue.v,
-                            minDistanceValue.v,
-                            param1Value.v,
-                            param2Value.v,
-                            minRadiusValue.v,
-                            maxRadiusValue.v
+                            double(downscaleValue).v,
+                            double(minDistanceValue).v,
+                            double(param1Value).v,
+                            double(param2Value).v,
+                            double(minRadiusValue).v,
+                            double(maxRadiusValue).v
                         )
                     )
 

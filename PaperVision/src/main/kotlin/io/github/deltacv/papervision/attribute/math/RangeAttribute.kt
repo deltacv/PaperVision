@@ -148,8 +148,8 @@ class RangeAttribute(
 
     override fun genValue(current: CodeGen.Current) = readGenValue(
         current, GenValue.Range(
-            GenValue.Double(valueMutator(minValue.get()).resolved()),
-            GenValue.Double(valueMutator(maxValue.get()).resolved())
+            GenValue.Double.Actual(valueMutator(minValue.get()).resolved()),
+            GenValue.Double.Actual(valueMutator(maxValue.get()).resolved())
         )
     )
 }

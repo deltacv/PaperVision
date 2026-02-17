@@ -122,8 +122,24 @@ sealed class GenValue {
 
     data class Enum<E : kotlin.Enum<E>>(val value: E) : GenValue()
 
-    sealed class Int : GenValue(){
+    sealed class Number : GenValue() {
+        abstract fun value(langHolder: CodeGen.LanguageHolder): Value
+
+        abstract fun toInt(langHolder: CodeGen.LanguageHolder): Int
+        abstract fun toDouble(langHolder: CodeGen.LanguageHolder): Double
+        abstract fun toFloat(langHolder: CodeGen.LanguageHolder): Float
+    }
+
+    sealed class Int : Number() {
+        override fun value(langHolder: CodeGen.LanguageHolder): Value = langHolder.language {
+            int(this@Int).v
+        }
+
         data class Actual(val value: Resolvable<kotlin.Int>) : Int() {
+            override fun toInt(langHolder: CodeGen.LanguageHolder) = this
+            override fun toDouble(langHolder: CodeGen.LanguageHolder) = Double.Actual(value.map { it.toDouble() })
+            override fun toFloat(langHolder: CodeGen.LanguageHolder) = Float.Actual(value.map { it.toFloat() })
+
             companion object {
                 fun defer(genValueResolver: () -> Actual?) = Actual(
                     Resolvable.from { genValueResolver()?.value }
@@ -132,6 +148,16 @@ sealed class GenValue {
         }
 
         data class Runtime(val value: Resolvable<Value>) : Int() {
+            override fun toInt(langHolder: CodeGen.LanguageHolder) = this
+
+            override fun toDouble(langHolder: CodeGen.LanguageHolder) = Double.Runtime(
+                value.map { langHolder.language.double(it) }
+            )
+
+            override fun toFloat(langHolder: CodeGen.LanguageHolder) = Float.Runtime(
+                value.map { langHolder.language.float(it) }
+            )
+
             companion object {
                 fun defer(genValueResolver: () -> Runtime?) = Runtime(
                     Resolvable.from { genValueResolver()?.value }
@@ -144,8 +170,16 @@ sealed class GenValue {
         }
     }
 
-    sealed class Float : GenValue() {
+    sealed class Float : Number() {
+        override fun value(langHolder: CodeGen.LanguageHolder): Value = langHolder.language {
+            float(this@Float).v
+        }
+
         data class Actual(val value: Resolvable<kotlin.Float>) : Float() {
+            override fun toInt(langHolder: CodeGen.LanguageHolder) = Int.Actual(value.map { it.toInt() })
+            override fun toDouble(langHolder: CodeGen.LanguageHolder) = Double.Actual(value.map { it.toDouble() })
+            override fun toFloat(langHolder: CodeGen.LanguageHolder) = this
+
             companion object {
                 fun defer(genValueResolver: () -> Actual?) = Actual(
                     Resolvable.from { genValueResolver()?.value }
@@ -154,6 +188,14 @@ sealed class GenValue {
         }
 
         data class Runtime(val value: Resolvable<Value>) : Float() {
+            override fun toInt(langHolder: CodeGen.LanguageHolder) = Int.Runtime(
+                value.map { langHolder.language.int(it) }
+            )
+            override fun toDouble(langHolder: CodeGen.LanguageHolder) = Double.Runtime(
+                value.map { langHolder.language.double(it) }
+            )
+            override fun toFloat(langHolder: CodeGen.LanguageHolder) = this
+
             companion object {
                 fun defer(genValueResolver: () -> Runtime?) = Runtime(
                     Resolvable.from { genValueResolver()?.value }
@@ -166,13 +208,23 @@ sealed class GenValue {
         }
     }
 
-    sealed class Double : GenValue() {
+    sealed class Double : Number() {
+        override fun value(langHolder: CodeGen.LanguageHolder) = langHolder.language {
+            double(this@Double).v
+        }
+
         data class Actual(val value: Resolvable<kotlin.Double>) : Double() {
             companion object {
                 fun defer(genValueResolver: () -> Actual?) = Actual(
                     Resolvable.from { genValueResolver()?.value }
                 )
             }
+
+            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = Runtime(value.map { langHolder.language.double(it) })
+
+            override fun toInt(langHolder: CodeGen.LanguageHolder) = Int.Actual(value.map { it.toInt() })
+            override fun toDouble(langHolder: CodeGen.LanguageHolder) = this
+            override fun toFloat(langHolder: CodeGen.LanguageHolder) = Float.Actual(value.map { it.toFloat() })
         }
 
         data class Runtime(val value: Resolvable<Value>) : Double() {
@@ -181,7 +233,19 @@ sealed class GenValue {
                     Resolvable.from { genValueResolver()?.value }
                 )
             }
+
+            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = this
+
+            override fun toInt(langHolder: CodeGen.LanguageHolder) = Int.Runtime(
+                value.map { langHolder.language.int(it) }
+            )
+            override fun toDouble(langHolder: CodeGen.LanguageHolder) = this
+            override fun toFloat(langHolder: CodeGen.LanguageHolder) = Float.Runtime(
+                value.map { langHolder.language.float(it) }
+            )
         }
+
+        abstract fun toRuntime(langHolder: CodeGen.LanguageHolder): Runtime
 
         companion object {
             val ZERO = Actual(0.0.resolved())
@@ -191,10 +255,10 @@ sealed class GenValue {
     data class String(val value: Resolvable<kotlin.String>) : GenValue()
 
     sealed class LineParameters : GenValue() {
-        data class Actual(val color: Scalar, val thickness: Int.Actual) : LineParameters() {
+        data class Actual(val color: Scalar.Actual, val thickness: Int.Actual) : LineParameters() {
             companion object {
                 fun defer(genValueResolver: () -> Actual?) = Actual(
-                    Scalar.defer { genValueResolver()?.color },
+                    Scalar.Actual.defer { genValueResolver()?.color },
                     Int.Actual.defer { genValueResolver()?.thickness }
                 )
             }
@@ -238,25 +302,64 @@ sealed class GenValue {
         }
     }
 
-    data class Scalar(
-        val a: Double.Actual,
-        val b: Double.Actual,
-        val c: Double.Actual,
-        val d: Double.Actual
-    ) : List.Actual<Double.Actual>(listOf(a, b, c, d)) {
+    sealed class Scalar(scalar: kotlin.collections.List<Double>) : List.Actual<Double>(scalar) {
         companion object {
-            val ZERO = Scalar(Double.ZERO, Double.ZERO, Double.ZERO, Double.ZERO)
+            fun wrap(a: Double, b: Double, c: Double, d: Double, languageHolder: CodeGen.LanguageHolder): Scalar {
+                return if(a is Double.Actual && b is Double.Actual && c is Double.Actual && d is Double.Actual) {
+                    Actual(a, b, c, d)
+                } else {
+                    Runtime(
+                        a.toRuntime(languageHolder), b.toRuntime(languageHolder), c.toRuntime(languageHolder), d.toRuntime(languageHolder)
+                    )
+                }
+            }
+        }
 
-            fun defer(genValueResolver: () -> Scalar?) = Scalar(
-                Double.Actual.defer { genValueResolver()?.a },
-                Double.Actual.defer { genValueResolver()?.b },
-                Double.Actual.defer { genValueResolver()?.c },
-                Double.Actual.defer { genValueResolver()?.d }
-            )
+        data class Actual(
+            val a: Double.Actual,
+            val b: Double.Actual,
+            val c: Double.Actual,
+            val d: Double.Actual
+        ) : Scalar(listOf(a, b, c, d)) {
+            companion object {
+                fun defer(genValueResolver: () -> Actual?) = Actual(
+                    Double.Actual.defer { genValueResolver()?.a },
+                    Double.Actual.defer { genValueResolver()?.b },
+                    Double.Actual.defer { genValueResolver()?.c },
+                    Double.Actual.defer { genValueResolver()?.d }
+                )
+            }
+        }
+
+        data class Runtime(
+            val a: Double.Runtime,
+            val b: Double.Runtime,
+            val c: Double.Runtime,
+            val d: Double.Runtime
+        ) : Scalar(listOf(a, b, c, d)) {
+            companion object {
+                fun defer(genValueResolver: () -> Runtime?) = Runtime(
+                    Double.Runtime.defer { genValueResolver()?.a },
+                    Double.Runtime.defer { genValueResolver()?.b },
+                    Double.Runtime.defer { genValueResolver()?.c },
+                    Double.Runtime.defer { genValueResolver()?.d }
+                )
+            }
         }
     }
 
+
     sealed class Vec2 : GenValue() {
+        companion object {
+            fun wrap(x: Double, y: Double, languageHolder: CodeGen.LanguageHolder): Vec2 {
+                return if(x is Double.Actual && y is Double.Actual) {
+                    Actual(x, y)
+                } else {
+                    Runtime(x.toRuntime(languageHolder), y.toRuntime(languageHolder))
+                }
+            }
+        }
+
         data class Actual(val x: Double.Actual, val y: Double.Actual) : Vec2()
         data class Runtime(val xValue: Double.Runtime, val yValue: Double.Runtime) : Vec2()
 

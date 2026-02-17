@@ -71,7 +71,7 @@ class BlurNode : DrawNode<BlurNode.Session>() {
                 val algo = blurAlgo.genValue(current).value
                 val blurVal = blurValue.genValue(current)
 
-                val blurValVariable = uniqueVariable("blurValue", int(blurVal.value.v))
+                val blurValVariable = uniqueVariable("blurValue", int(blurVal.v))
                 val outputMat = uniqueVariable("blur${algo.name}Mat", Mat.new())
 
                 group {
@@ -127,22 +127,22 @@ class BlurNode : DrawNode<BlurNode.Session>() {
 
                     val value = when (algo) {
                         BlurAlgorithm.Gaussian -> {
-                            val kernelSize = uniqueVariable("kernel", 6.v * int(blurVal.value.v) + 1.v)
+                            val kernelSize = uniqueVariable("kernel", 6.v * int(blurVal.v) + 1.v)
                             local(kernelSize)
                             val sizeBlurVal = tuple(kernelSize, kernelSize)
 
-                            cv2.callValue("GaussianBlur", CPythonLanguage.NoType, inputMat.value.v, sizeBlurVal, int(blurVal.value.v))
+                            cv2.callValue("GaussianBlur", CPythonLanguage.NoType, inputMat.value.v, sizeBlurVal, int(blurVal.v))
                         }
 
                         BlurAlgorithm.Box -> {
-                            val kernelSize = uniqueVariable("kernel", 2.v * int(blurVal.value.v) + 1.v)
+                            val kernelSize = uniqueVariable("kernel", 2.v * int(blurVal.v) + 1.v)
                             local(kernelSize)
 
                             cv2.callValue("blur", CPythonLanguage.NoType, inputMat.value.v, tuple(kernelSize, kernelSize))
                         }
 
                         BlurAlgorithm.Median -> {
-                            val kernelSize = 2.v * int(blurVal.value.v) + 1.v
+                            val kernelSize = 2.v * int(blurVal.v) + 1.v
                             cv2.callValue("medianBlur", CPythonLanguage.NoType, inputMat.value.v, kernelSize)
                         }
 
@@ -152,8 +152,8 @@ class BlurNode : DrawNode<BlurNode.Session>() {
                                 CPythonLanguage.NoType,
                                 inputMat.value.v,
                                 (-1).v,
-                                int(blurVal.value.v),
-                                int(blurVal.value.v)
+                                blurVal.v,
+                                blurVal.v
                             )
                         }
                     }

@@ -78,7 +78,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
                 sides.value.set(3)
                 shape.currentIndex.set(Shape.Triangle.ordinal)
             } else {
-                for ((i, shapeE) in Shape.values().withIndex()) {
+                for ((i, shapeE) in Shape.entries.withIndex()) {
                     if (sides.readEditorValue() == shapeE.sides) {
                         shape.currentIndex.set(i)
                         return@onChange
@@ -125,7 +125,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
 
                 val shapeValue = shape.genValue(current).value
                 val sidesValue = sides.genValue(current)
-                val accuracyValue = accuracy.genValue(current).value
+                val accuracyValue = accuracy.genValue(current)
 
                 val list = uniqueVariable("filtered${shapeValue.name}Contours", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
 
@@ -151,12 +151,12 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
 
                         separate()
 
-                        Imgproc("approxPolyDP", contours2f, approxPolyDp2f, ((double(100.0) - int(accuracyValue.v)) / double(100.0)) * Imgproc.callValue("arcLength", DoubleType, contours2f, trueValue), trueValue)
+                        Imgproc("approxPolyDP", contours2f, approxPolyDp2f, ((double(100.0) - accuracyValue.v) / double(100.0)) * Imgproc.callValue("arcLength", DoubleType, contours2f, trueValue), trueValue)
                         approxPolyDp2f("convertTo", approxPolyDp, cvTypeValue("CV_32S"))
 
                         separate()
 
-                        ifCondition(approxPolyDp.callValue("size", Size).propertyValue("height", IntType) equalsTo sidesValue.value.v) {
+                        ifCondition(approxPolyDp.callValue("size", Size).propertyValue("height", IntType) equalsTo sidesValue.v) {
                             list("add", it)
                         }
 

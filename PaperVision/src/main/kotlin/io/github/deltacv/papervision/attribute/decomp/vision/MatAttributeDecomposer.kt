@@ -25,9 +25,9 @@ class MatAttributeDecomposer(
 
     override val generators = generatorsBuilder<GenValue, Session> {
         generatorFor(JavaLanguage) {
-            val session = Session()
+            assertGenValueType<GenValue.Mat>(genInput)
 
-            genInput as GenValue.Mat
+            val session = Session()
 
             current.scope {
                 session.rows = GenValue.Int.Runtime(genInput.value.v.callValue("rows", IntType).resolved())

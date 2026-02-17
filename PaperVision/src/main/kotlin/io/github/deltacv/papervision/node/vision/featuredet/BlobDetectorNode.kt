@@ -111,20 +111,20 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
 
                 val pref = "blobDet"
 
-                val minThreshold = uniqueVariable("${pref}MinThreshold", float(thresholdRangeValue.min.value.v))
-                val maxThreshold = uniqueVariable("${pref}MaxThreshold", float(thresholdRangeValue.max.value.v))
+                val minThreshold = uniqueVariable("${pref}MinThreshold", thresholdRangeValue.min.toFloat(current).v)
+                val maxThreshold = uniqueVariable("${pref}MaxThreshold", thresholdRangeValue.max.toFloat(current).v)
 
-                val minArea = uniqueVariable("${pref}MinArea", float(areaRangeValue.min.value.v))
-                val maxArea = uniqueVariable("${pref}MaxArea", float(areaRangeValue.max.value.v))
+                val minArea = uniqueVariable("${pref}MinArea", areaRangeValue.min.toFloat(current).v)
+                val maxArea = uniqueVariable("${pref}MaxArea", areaRangeValue.max.toFloat(current).v)
 
-                val minCircularity = uniqueVariable("${pref}MinCircularity", float(circularityRangeValue.min.value.v))
-                val maxCircularity = uniqueVariable("${pref}MaxCircularity", float(circularityRangeValue.max.value.v))
+                val minCircularity = uniqueVariable("${pref}MinCircularity", circularityRangeValue.min.toFloat(current).v)
+                val maxCircularity = uniqueVariable("${pref}MaxCircularity", circularityRangeValue.max.toFloat(current).v)
 
-                val minConvexity = uniqueVariable("${pref}MinConvexity", float(convexityRangeValue.min.value.v))
-                val maxConvexity = uniqueVariable("${pref}MaxConvexity", float(convexityRangeValue.max.value.v))
+                val minConvexity = uniqueVariable("${pref}MinConvexity", convexityRangeValue.min.toFloat(current).v)
+                val maxConvexity = uniqueVariable("${pref}MaxConvexity", convexityRangeValue.max.toFloat(current).v)
 
-                val minInertia = uniqueVariable("${pref}MinInertia", float(inertiaRangeValue.min.value.v))
-                val maxInertia = uniqueVariable("${pref}MaxInertia", float(inertiaRangeValue.max.value.v))
+                val minInertia = uniqueVariable("${pref}MinInertia", inertiaRangeValue.min.toFloat(current).v)
+                val maxInertia = uniqueVariable("${pref}MaxInertia", inertiaRangeValue.max.toFloat(current).v)
 
                 group {
                     // fyi with the indices;
@@ -226,32 +226,32 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
 
                     separate()
 
-                    params.propertyVariable("minThreshold", CPythonLanguage.NoType) set float(thresholdRangeValue.min.value.v)
-                    params.propertyVariable("maxThreshold", CPythonLanguage.NoType) set float(thresholdRangeValue.max.value.v)
+                    params.propertyVariable("minThreshold", CPythonLanguage.NoType) set float(thresholdRangeValue.min.toFloat(current)).v
+                    params.propertyVariable("maxThreshold", CPythonLanguage.NoType) set float(thresholdRangeValue.max.toFloat(current)).v
 
                     separate()
 
                     params.propertyVariable("filterByArea", CPythonLanguage.NoType) set boolean(area.toggleValue.get())
-                    params.propertyVariable("minArea", CPythonLanguage.NoType) set float(areaRangeValue.min.value.v)
-                    params.propertyVariable("maxArea", CPythonLanguage.NoType) set float(areaRangeValue.max.value.v)
+                    params.propertyVariable("minArea", CPythonLanguage.NoType) set float(areaRangeValue.min.toFloat(current)).v
+                    params.propertyVariable("maxArea", CPythonLanguage.NoType) set float(areaRangeValue.max.toFloat(current)).v
 
                     separate()
 
                     params.propertyVariable("filterByCircularity", CPythonLanguage.NoType) set boolean(circularity.toggleValue.get())
-                    params.propertyVariable("minCircularity", CPythonLanguage.NoType) set float(circularityRangeValue.min.value.v)
-                    params.propertyVariable("maxCircularity", CPythonLanguage.NoType) set float(circularityRangeValue.max.value.v)
+                    params.propertyVariable("minCircularity", CPythonLanguage.NoType) set float(circularityRangeValue.min.toFloat(current)).v
+                    params.propertyVariable("maxCircularity", CPythonLanguage.NoType) set float(circularityRangeValue.max.toFloat(current)).v
 
                     separate()
 
                     params.propertyVariable("filterByConvexity", CPythonLanguage.NoType) set boolean(convexity.toggleValue.get())
-                    params.propertyVariable("minConvexity", CPythonLanguage.NoType) set float(convexityRangeValue.min.value.v)
-                    params.propertyVariable("maxConvexity", CPythonLanguage.NoType) set float(convexityRangeValue.max.value.v)
+                    params.propertyVariable("minConvexity", CPythonLanguage.NoType) set float(convexityRangeValue.min.toFloat(current)).v
+                    params.propertyVariable("maxConvexity", CPythonLanguage.NoType) set float(convexityRangeValue.max.toFloat(current)).v
 
                     separate()
 
                     params.propertyVariable("filterByInertia", CPythonLanguage.NoType) set boolean(inertia.toggleValue.get())
-                    params.propertyVariable("minInertiaRatio", CPythonLanguage.NoType) set float(inertiaRangeValue.min.value.v)
-                    params.propertyVariable("maxInertiaRatio", CPythonLanguage.NoType) set float(inertiaRangeValue.max.value.v)
+                    params.propertyVariable("minInertiaRatio", CPythonLanguage.NoType) set float(inertiaRangeValue.min.toFloat(current)).v
+                    params.propertyVariable("maxInertiaRatio", CPythonLanguage.NoType) set float(inertiaRangeValue.max.toFloat(current)).v
 
                     local(detector)
                 }

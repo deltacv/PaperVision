@@ -87,8 +87,16 @@ class CodeGen(
 
     operator fun <T> invoke(block: CodeGenContext.() -> T) = block(context)
 
-    data class Current(val codeGen: CodeGen, val scope: Scope, val isForPreviz: Boolean) {
-        val language get() = codeGen.language
+    interface LanguageHolder {
+        val language: Language
+    }
+
+    interface ScopeHolder {
+        val scope: Scope
+    }
+
+    data class Current(val codeGen: CodeGen, override val scope: Scope, val isForPreviz: Boolean) : LanguageHolder, ScopeHolder{
+        override val language get() = codeGen.language
 
         @Suppress("UNCHECKED_CAST")
         fun <S: CodeGenSession> sessionOf(node: Generator<*, S>) = codeGen.sessions[node] as S?

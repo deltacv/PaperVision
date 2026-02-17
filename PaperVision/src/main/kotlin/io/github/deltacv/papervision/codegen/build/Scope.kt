@@ -29,7 +29,9 @@ class Scope(
     val language: Language,
     val importScope: Scope? = null,
     val isForPreviz: Boolean = false
-) {
+) : CodeGen.ScopeHolder {
+
+    override val scope = this
 
     private var builder = StringBuilder()
 
@@ -322,17 +324,17 @@ class Scope(
 
     override fun toString() = get()
 
-    internal val context = ScopeContext(this)
-
     var appendWhiteline = true
 
-    operator fun invoke(block: ScopeContext.() -> Unit) {
-        block(context)
+    inline operator fun <R> invoke(crossinline block: ScopeContext.() -> R): R {
+        val result = block(ScopeContext(this))
 
         if(appendWhiteline) {
             newStatement()
         }
         appendWhiteline = true
+
+        return result
     }
 
 }

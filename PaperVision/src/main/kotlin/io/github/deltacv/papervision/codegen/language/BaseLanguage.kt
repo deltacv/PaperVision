@@ -41,6 +41,8 @@ open class LanguageBase(
 
     private val logger by loggerForThis()
 
+    override val language = this
+
     protected val mutableExcludedImports =  mutableListOf(
         JavaTypes.String
     )

@@ -26,6 +26,7 @@ import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.Resolvable
 import io.github.deltacv.papervision.exception.AttributeGenException
+import io.github.deltacv.papervision.exception.GenException
 import io.github.deltacv.papervision.exception.NodeGenException
 import io.github.deltacv.papervision.gui.ToastWindow
 import io.github.deltacv.papervision.gui.DialogMessageWindow
@@ -116,7 +117,7 @@ class CodeGenManager(val paperVision: PaperVision) {
                 font = Font.find("calcutta-big")
             ).enable()
 
-            logger.error("Code gen stopped due to unknown exception", ex)
+            logger.error("Code gen stopped due to ${if(ex is GenException) "gen" else "unknown"} exception", ex)
             return null
         }
 
