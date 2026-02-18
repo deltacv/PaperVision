@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.build.Value
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.resolve.Resolvable
 import io.github.deltacv.papervision.codegen.resolve.from
 import io.github.deltacv.papervision.codegen.resolve.resolved
@@ -123,6 +123,8 @@ sealed class GenValue {
     data class Enum<E : kotlin.Enum<E>>(val value: E) : GenValue()
 
     sealed class Number : GenValue() {
+        abstract fun toRuntime(langHolder: CodeGen.LanguageHolder): Number
+
         abstract fun value(langHolder: CodeGen.LanguageHolder): Value
 
         abstract fun toInt(langHolder: CodeGen.LanguageHolder): Int
@@ -136,6 +138,8 @@ sealed class GenValue {
         }
 
         data class Actual(val value: Resolvable<kotlin.Int>) : Int() {
+            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = Runtime(value.map { langHolder.language.int(it) })
+
             override fun toInt(langHolder: CodeGen.LanguageHolder) = this
             override fun toDouble(langHolder: CodeGen.LanguageHolder) = Double.Actual(value.map { it.toDouble() })
             override fun toFloat(langHolder: CodeGen.LanguageHolder) = Float.Actual(value.map { it.toFloat() })
@@ -148,6 +152,8 @@ sealed class GenValue {
         }
 
         data class Runtime(val value: Resolvable<Value>) : Int() {
+            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = this
+
             override fun toInt(langHolder: CodeGen.LanguageHolder) = this
 
             override fun toDouble(langHolder: CodeGen.LanguageHolder) = Double.Runtime(
@@ -165,6 +171,8 @@ sealed class GenValue {
             }
         }
 
+        abstract override fun toRuntime(langHolder: CodeGen.LanguageHolder): Runtime
+
         companion object {
             val ZERO = Actual(0.resolved())
         }
@@ -176,6 +184,8 @@ sealed class GenValue {
         }
 
         data class Actual(val value: Resolvable<kotlin.Float>) : Float() {
+            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = Runtime(value.map { langHolder.language.float(it) })
+
             override fun toInt(langHolder: CodeGen.LanguageHolder) = Int.Actual(value.map { it.toInt() })
             override fun toDouble(langHolder: CodeGen.LanguageHolder) = Double.Actual(value.map { it.toDouble() })
             override fun toFloat(langHolder: CodeGen.LanguageHolder) = this
@@ -188,6 +198,8 @@ sealed class GenValue {
         }
 
         data class Runtime(val value: Resolvable<Value>) : Float() {
+            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = this
+
             override fun toInt(langHolder: CodeGen.LanguageHolder) = Int.Runtime(
                 value.map { langHolder.language.int(it) }
             )
@@ -202,6 +214,8 @@ sealed class GenValue {
                 )
             }
         }
+
+        abstract override fun toRuntime(langHolder: CodeGen.LanguageHolder): Runtime
 
         companion object {
             val ZERO = Actual(Resolvable.Now(0.0f))
@@ -245,29 +259,48 @@ sealed class GenValue {
             )
         }
 
-        abstract fun toRuntime(langHolder: CodeGen.LanguageHolder): Runtime
+        abstract override fun toRuntime(langHolder: CodeGen.LanguageHolder): Runtime
 
         companion object {
             val ZERO = Actual(0.0.resolved())
+
+            fun defer(genValueResolver: () -> Actual?) = Actual(
+                Resolvable.from { genValueResolver()?.value }
+            )
         }
     }
 
     data class String(val value: Resolvable<kotlin.String>) : GenValue()
 
     sealed class LineParameters : GenValue() {
-        data class Actual(val color: Scalar.Actual, val thickness: Int.Actual) : LineParameters() {
-            companion object {
-                fun defer(genValueResolver: () -> Actual?) = Actual(
-                    Scalar.Actual.defer { genValueResolver()?.color },
-                    Int.Actual.defer { genValueResolver()?.thickness }
-                )
+        companion object {
+            fun wrap(color: Scalar, thickness: Int): LineParameters {
+                return when (color) {
+                    is Scalar.Components if thickness is Int.Actual -> {
+                        Actual(color, thickness)
+                    }
+
+                    is Scalar.Inst if thickness is Int.Runtime -> {
+                        Runtime(color, thickness)
+                    }
+
+                    else -> {
+                        throw IllegalArgumentException(
+                            "Invalid types for LineParameters wrap(): " +
+                                    "color must be either Scalar.Components or Scalar.Inst, " +
+                                    "thickness must be either Int.Actual or Int.Runtime"
+                        )
+                    }
+                }
             }
         }
 
-        data class Runtime(val colorScalarValue: Resolvable<Value>, val thicknessValue: Int.Runtime) : LineParameters() {
+        data class Actual(val color: Scalar.Components, val thickness: Int.Actual) : LineParameters()
+
+        data class Runtime(val color: Scalar.Inst, val thicknessValue: Int.Runtime) : LineParameters() {
             companion object {
                 fun defer(genValueResolver: () -> Runtime?) = Runtime(
-                    Resolvable.from { genValueResolver()?.colorScalarValue },
+                    Scalar.Inst.defer { genValueResolver()?.color },
                     Int.Runtime.defer { genValueResolver()?.thicknessValue }
                 )
             }
@@ -278,11 +311,11 @@ sealed class GenValue {
                 when (val lineParams = this@LineParameters) {
                     is Actual -> {
                         val color = uniqueVariable(
-                            "lineColor", JvmOpenCvTypes.Scalar.new(
-                                lineParams.color.a.value.v,
-                                lineParams.color.b.value.v,
-                                lineParams.color.c.value.v,
-                                lineParams.color.d.value.v
+                            "lineColor", JvmOpenCv.Scalar.new(
+                                lineParams.color.a.v,
+                                lineParams.color.b.v,
+                                lineParams.color.c.v,
+                                lineParams.color.d.v
                             )
                         )
 
@@ -293,7 +326,7 @@ sealed class GenValue {
                             public(thickness)
                         }
 
-                        Runtime(Resolvable.Now(color), Int.Runtime(Resolvable.Now(thickness)))
+                        Runtime(Scalar.Inst(Resolvable.Now(color)), Int.Runtime(Resolvable.Now(thickness)))
                     }
 
                     is Runtime -> lineParams
@@ -302,52 +335,22 @@ sealed class GenValue {
         }
     }
 
-    sealed class Scalar(scalar: kotlin.collections.List<Double>) : List.Actual<Double>(scalar) {
-        companion object {
-            fun wrap(a: Double, b: Double, c: Double, d: Double, languageHolder: CodeGen.LanguageHolder): Scalar {
-                return if(a is Double.Actual && b is Double.Actual && c is Double.Actual && d is Double.Actual) {
-                    Actual(a, b, c, d)
-                } else {
-                    Runtime(
-                        a.toRuntime(languageHolder), b.toRuntime(languageHolder), c.toRuntime(languageHolder), d.toRuntime(languageHolder)
-                    )
-                }
-            }
-        }
+    sealed class Scalar(actual: Actual<Double>? = null, runtime: Runtime<Double>? = null) : List.Either<Double>(actual, runtime) {
+        class Components(
+            val a: Double,
+            val b: Double,
+            val c: Double,
+            val d: Double
+        ) : Scalar(actual = Actual(listOf(a, b, c, d)))
 
-        data class Actual(
-            val a: Double.Actual,
-            val b: Double.Actual,
-            val c: Double.Actual,
-            val d: Double.Actual
-        ) : Scalar(listOf(a, b, c, d)) {
+        class Inst(val value: Resolvable<Value>) : Scalar(runtime = Runtime(value)) {
             companion object {
-                fun defer(genValueResolver: () -> Actual?) = Actual(
-                    Double.Actual.defer { genValueResolver()?.a },
-                    Double.Actual.defer { genValueResolver()?.b },
-                    Double.Actual.defer { genValueResolver()?.c },
-                    Double.Actual.defer { genValueResolver()?.d }
-                )
-            }
-        }
-
-        data class Runtime(
-            val a: Double.Runtime,
-            val b: Double.Runtime,
-            val c: Double.Runtime,
-            val d: Double.Runtime
-        ) : Scalar(listOf(a, b, c, d)) {
-            companion object {
-                fun defer(genValueResolver: () -> Runtime?) = Runtime(
-                    Double.Runtime.defer { genValueResolver()?.a },
-                    Double.Runtime.defer { genValueResolver()?.b },
-                    Double.Runtime.defer { genValueResolver()?.c },
-                    Double.Runtime.defer { genValueResolver()?.d }
+                fun defer(genValueResolver: () -> Inst?) = Inst(
+                    Resolvable.from { genValueResolver()?.value }
                 )
             }
         }
     }
-
 
     sealed class Vec2 : GenValue() {
         companion object {
@@ -414,11 +417,32 @@ sealed class GenValue {
                 Runtime(value, Resolvable.Now(T::class))
         }
 
+        fun <R> switch(
+            ifActual: (Actual<E>) -> R,
+            ifRuntime: (Runtime<E>) -> R,
+        ): R = when (this) {
+            is Actual -> ifActual(this)
+            is Runtime -> ifRuntime(this)
+            is Either -> if (isActual) ifActual(actual!!) else ifRuntime(runtime!!)
+        }
+
         fun toActualOrNull(): Actual<E>? {
             return when (this) {
                 is Actual -> this
+                is Either -> if (isActual) actual else null
                 is Runtime -> null
             }
+        }
+
+        open class Either<E: GenValue>(val actual: Actual<E>?, val runtime: Runtime<E>?) : List<E>() {
+            init {
+                if (actual == null && runtime == null) {
+                    throw IllegalArgumentException("Either actual or runtime must be provided, not both at the same time")
+                }
+            }
+
+            val isActual = actual != null
+            val isRuntime = runtime != null
         }
 
         open class Actual<E : GenValue>(val elements: kotlin.collections.List<E>) : List<E>()

@@ -27,7 +27,7 @@ import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
@@ -59,7 +59,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
 
                 val rectsList = input.genValue(current)
 
-                val biggestRect = uniqueVariable("biggestRect", JvmOpenCvTypes.Rect.nullValue)
+                val biggestRect = uniqueVariable("biggestRect", JvmOpenCv.Rect.nullValue)
 
                 group {
                     private(biggestRect)
@@ -82,7 +82,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                     }
 
                     if(rectsList is GenValue.List.Runtime<*>) {
-                        foreach(variable(JvmOpenCvTypes.Rect, "rect"), rectsList.value.v) { rect ->
+                        foreach(variable(JvmOpenCv.Rect, "rect"), rectsList.value.v) { rect ->
                             withRuntimeRect(rect)
                         }
                     } else {
@@ -91,7 +91,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                                 separate()
                                 val rect = DeclarableVariable(
                                     "rect",
-                                    JvmOpenCvTypes.Rect.new(
+                                    JvmOpenCv.Rect.new(
                                         element.x.v,
                                         element.y.v,
                                         element.w.v,

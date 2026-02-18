@@ -21,18 +21,18 @@ package io.github.deltacv.papervision.codegen.dsl.jvm
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.enableJavaTargets
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.enableJavaTargets
 import io.github.deltacv.papervision.codegen.dsl.LanguageContext
 import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 
 class JvmTargetsContext(context: LanguageContext) {
     val rectTargets = context.run {
-        DeclarableVariable("rectTargets", JavaTypes.HashMap(JavaTypes.String, JvmOpenCvTypes.Rect).new())
+        DeclarableVariable("rectTargets", JavaTypes.HashMap(JavaTypes.String, JvmOpenCv.Rect).new())
     }
     val rotRectTargets = context.run {
-        DeclarableVariable("rotRectTarget", JavaTypes.HashMap(JavaTypes.String, JvmOpenCvTypes.RotatedRect).new())
+        DeclarableVariable("rotRectTarget", JavaTypes.HashMap(JavaTypes.String, JvmOpenCv.RotatedRect).new())
     }
 
     fun ScopeContext.addRectTarget(label: Value, rect: Value) {

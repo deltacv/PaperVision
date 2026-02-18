@@ -16,11 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.codegen.build.type
+package io.github.deltacv.papervision.codegen.build.language.cpython
 
+import io.github.deltacv.papervision.codegen.CodeGen
+import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.ConValue
+import io.github.deltacv.papervision.codegen.build.Value
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 
-object CPythonOpenCvTypes {
+object CPythonOpenCv {
     object cv2 : CPythonType("cv2") {
         val RETR_LIST = ConValue(this, "cv2.RETR_LIST").apply {
             additionalImports(this)
@@ -52,4 +56,18 @@ object CPythonOpenCvTypes {
     val npArray = object: CPythonType("np.ndarray") {
         override var overridenImport = np
     }
+
+    fun scalarTuple(scalar: GenValue.Scalar, languageHolder: CodeGen.LanguageHolder) = languageHolder.language {
+        scalar.switch(
+            ifActual = { list ->
+                val elements = list.elements.map { it.v }.toTypedArray()
+                CPythonLanguage.tuple(*elements)
+            },
+
+            ifRuntime = { list ->
+                Value.derive(CPythonLanguage.NoType, list.value.v)
+            }
+        )
+    }
+
 }

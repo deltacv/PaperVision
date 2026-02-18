@@ -27,8 +27,8 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.AccessorVariable
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -77,10 +77,10 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
             val maxRatioVal = maxRatio.genValue(current)
 
             current {
-                val minRatioVar = uniqueVariable("minRatio", minRatioVal.v.v)
-                val maxRatioVar = uniqueVariable("maxRatio", maxRatioVal.v.v)
+                val minRatioVar = uniqueVariable("minRatio", minRatioVal.v)
+                val maxRatioVar = uniqueVariable("maxRatio", maxRatioVal.v)
 
-                val rectsVar = uniqueVariable("${rects.value.v}ByRatio", JavaTypes.ArrayList(JvmOpenCvTypes.Rect).new())
+                val rectsVar = uniqueVariable("${rects.value.v}ByRatio", JavaTypes.ArrayList(JvmOpenCv.Rect).new())
 
                 group {
                     public(minRatioVar, minRatio.label())
@@ -94,7 +94,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
 
                     rectsVar("clear")
 
-                    foreach(AccessorVariable(JvmOpenCvTypes.Rect, "rect"), rects.value.v) { rect ->
+                    foreach(AccessorVariable(JvmOpenCv.Rect, "rect"), rects.value.v) { rect ->
                         val ratioVar = uniqueVariable("ratio", rect.propertyValue("height", IntType).castTo(DoubleType) / rect.propertyValue("width", IntType).castTo(DoubleType))
                         local(ratioVar)
 
@@ -136,7 +136,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
                         val ratioVar = uniqueVariable("ratio", (rect[2.v, IntType] / rect[3.v, IntType]))
                         local(ratioVar)
 
-                        ifCondition((ratioVar greaterOrEqualThan (minRatioVal.v.v / 100.0.v)) and (ratioVar lessOrEqualThan (maxRatioVal.v.v / 100.0.v))) {
+                        ifCondition((ratioVar greaterOrEqualThan (minRatioVal.v / 100.0.v)) and (ratioVar lessOrEqualThan (maxRatioVal.v / 100.0.v))) {
                             rectsVar("append", rect)
                         }
                     }

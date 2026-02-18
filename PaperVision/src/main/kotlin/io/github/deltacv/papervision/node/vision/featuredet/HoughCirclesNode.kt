@@ -28,9 +28,9 @@ import io.github.deltacv.papervision.attribute.vision.structs.CircleAttribute
 import io.github.deltacv.papervision.codegen.*
 import io.github.deltacv.papervision.codegen.build.AccessorVariable
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -84,7 +84,7 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
     override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
             // Circle type needs to be lazily evaluated to gen its inner class
-            val Circle = JvmOpenCvTypes.getCircleType(current)
+            val Circle = JvmOpenCv.getCircleType(current)
 
             val session = Session()
 
@@ -101,7 +101,7 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
             val downscaleValue = downscale.genValue(current)
 
             current {
-                val circlesMatVar = uniqueVariable("houghCirclesMat", JvmOpenCvTypes.Mat.new())
+                val circlesMatVar = uniqueVariable("houghCirclesMat", JvmOpenCv.Mat.new())
                 val circlesListVar = uniqueVariable("houghCirclesList",
                     JavaTypes.ArrayList(Circle).new()
                 )
@@ -136,9 +136,9 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
 
                     separate()
 
-                    JvmOpenCvTypes.Imgproc("HoughCircles",
+                    JvmOpenCv.Imgproc("HoughCircles",
                         inputValue.v, circlesMatVar,
-                        JvmOpenCvTypes.Imgproc.HOUGH_GRADIENT,
+                        JvmOpenCv.Imgproc.HOUGH_GRADIENT,
                         downscaleVar,
                         minDistanceVar,
                         param1Var, param2Var,
@@ -155,7 +155,7 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
                         separate()
 
                         val p = DeclarableVariable("p",
-                            JvmOpenCvTypes.Point.new(
+                            JvmOpenCv.Point.new(
                                 int(circle[0.v, DoubleType]),
                                 int(circle[1.v, DoubleType])
                             )
@@ -195,10 +195,10 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
             current {
                 current.scope {
                     val circles = uniqueVariable("hough_circles",
-                        CPythonOpenCvTypes.cv2.callValue("HoughCircles",
+                        CPythonOpenCv.cv2.callValue("HoughCircles",
                             CPythonLanguage.NoType,
                             input.v,
-                            CPythonOpenCvTypes.cv2.HOUGH_GRADIENT,
+                            CPythonOpenCv.cv2.HOUGH_GRADIENT,
                             double(downscaleValue).v,
                             double(minDistanceValue).v,
                             double(param1Value).v,

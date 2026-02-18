@@ -26,10 +26,10 @@ import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Size
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Size
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage.tuple

@@ -16,14 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.codegen.build.type
+package io.github.deltacv.papervision.codegen.build.language
 
 import io.github.deltacv.papervision.codegen.build.Type
 
-open class CPythonType(
-    val module: String,
-    val name: String? = null,
-    val alias: String? = null
-) : Type(alias ?: name ?: module, module) {
-    override val shouldImport = true
+object StandardTypes {
+
+    val cboolean = Type("boolean", "boolean")
+
+    val cint = Type("int", "int")
+    val clong = Type("long", "long")
+    val cfloat = Type("float", "float")
+    val cdouble = Type("double", "double")
+
+    val cvoid = Type("void", "void")
+
 }

@@ -16,19 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.codegen.build.type
+package io.github.deltacv.papervision.codegen.build.language
 
 import io.github.deltacv.papervision.codegen.build.Type
 
-object StandardTypes {
+object KotlinTypes {
 
-    val cboolean = Type("boolean", "boolean")
+    val Boolean = Type("Boolean", "Boolean")
 
-    val cint = Type("int", "int")
-    val clong = Type("long", "long")
-    val cfloat = Type("float", "float")
-    val cdouble = Type("double", "double")
+    val Int = Type("Int", "Int")
+    val Long = Type("Long", "Long")
+    val Float = Type("Float", "Float")
+    val Double = Type("Double", "Double")
 
-    val cvoid = Type("void", "void")
+    val Unit = Type("Unit", "kotlin")
 
 }

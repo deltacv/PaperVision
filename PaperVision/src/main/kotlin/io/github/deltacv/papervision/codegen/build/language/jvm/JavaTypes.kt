@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.codegen.build.type
+package io.github.deltacv.papervision.codegen.build.language.jvm
 
 import io.github.deltacv.papervision.codegen.build.Type
 

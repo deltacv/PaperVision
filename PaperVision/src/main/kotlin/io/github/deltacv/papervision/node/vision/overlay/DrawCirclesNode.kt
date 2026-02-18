@@ -28,9 +28,9 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.AccessorVariable
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -66,7 +66,7 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
     override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
             current {
-                val Circle = JvmOpenCvTypes.getCircleType(current)
+                val Circle = JvmOpenCv.getCircleType(current)
 
                 val session = Session()
 
@@ -88,12 +88,12 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
                     input.value.v("copyTo", output)
 
                     foreach(AccessorVariable(Circle, "circle"), circlesValue.value.v) {
-                        JvmOpenCvTypes.Imgproc(
+                        JvmOpenCv.Imgproc(
                             "circle",
                             output,
-                            it.propertyValue("center", JvmOpenCvTypes.Point),
+                            it.propertyValue("center", JvmOpenCv.Point),
                             int(it.propertyValue("radius", FloatType)),
-                            line.colorScalarValue.v,
+                            JvmOpenCv.Scalar(line.color, current),
                             line.thicknessValue.v
                         )
                     }
@@ -127,14 +127,14 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
 
                     ifCondition(CPythonLanguage.valueIsNot(circlesValue.value.v, CPythonLanguage.NoType)) {
                         foreach(CPythonLanguage.accessorTupleVariable("x", "y", "r"), circlesValue.value.v) {
-                            CPythonOpenCvTypes.cv2("circle",
+                            CPythonOpenCv.cv2("circle",
                                 output,
                                 CPythonLanguage.tuple(int(it.get("x")), int(it.get("y"))),
                                 int(it.get("r")),
                                 CPythonLanguage.tuple(
-                                    line.color.a.value.v,
-                                    line.color.b.value.v,
-                                    line.color.c.value.v
+                                    line.color.a.v,
+                                    line.color.b.v,
+                                    line.color.c.v
                                 ),
                                 line.thickness.value.v
                             )

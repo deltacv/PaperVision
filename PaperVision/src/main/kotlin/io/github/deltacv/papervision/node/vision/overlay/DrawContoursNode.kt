@@ -28,11 +28,11 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -102,13 +102,13 @@ open class DrawContoursNode
 
                     if(contoursList is GenValue.List.Runtime<*>) {
                         Imgproc("drawContours", drawMat, contoursList.value.v, (-1).v,
-                            lineParams.colorScalarValue.v,
+                            JvmOpenCv.Scalar(lineParams.color, current),
                             lineParams.thicknessValue.v
                         )
                     } else {
                         separate()
 
-                        val list = DeclarableVariable("contoursList", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
+                        val list = DeclarableVariable("contoursList", JavaTypes.ArrayList(JvmOpenCv.MatOfPoint).new())
                         local(list)
 
                         for (contour in (contoursList as GenValue.List.Actual<*>).elements) {
@@ -124,7 +124,7 @@ open class DrawContoursNode
                         separate()
 
                         Imgproc("drawContours", drawMat, list, (-1).v,
-                            lineParams.colorScalarValue.v,
+                            JvmOpenCv.Scalar(lineParams.color, current),
                             lineParams.thicknessValue.v
                         )
                     }
@@ -157,7 +157,7 @@ open class DrawContoursNode
                     val color = lineParams.color
                     val thickness = lineParams.thickness.value
 
-                    val colorScalar = CPythonLanguage.tuple(color.a.value.v, color.b.value.v, color.c.value.v, color.d.value.v)
+                    val colorScalar = CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
 
                     val target = if(isDrawOnInput) {
                         input.value.v

@@ -26,10 +26,10 @@ import io.github.deltacv.papervision.attribute.vision.structs.RectAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -64,7 +64,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                     "${input.value.v}Rects"
                 } else "rects"
 
-                val rectsList = uniqueVariable(listName, JavaTypes.ArrayList(JvmOpenCvTypes.Rect).new())
+                val rectsList = uniqueVariable(listName, JavaTypes.ArrayList(JvmOpenCv.Rect).new())
 
                 group {
                     private(rectsList)
@@ -76,8 +76,8 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                     rectsList("clear")
 
                     if (input is GenValue.List.Runtime<*>) {
-                        foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value.v) {
-                            rectsList("add", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, it))
+                        foreach(variable(JvmOpenCv.MatOfPoint, "points"), input.value.v) {
+                            rectsList("add", Imgproc.callValue("boundingRect", JvmOpenCv.Rect, it))
                         }
                     } else {
                         for (points in (input as GenValue.List.Actual<*>).elements) {
@@ -85,7 +85,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                                 ifCondition(points.value.v notEqualsTo language.nullValue) {
                                     rectsList(
                                         "add",
-                                        Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, points.value.v)
+                                        Imgproc.callValue("boundingRect", JvmOpenCv.Rect, points.value.v)
                                     )
                                 }
                             } else {

@@ -16,19 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.codegen.build.type
+package io.github.deltacv.papervision.codegen.build.language.cpython
 
 import io.github.deltacv.papervision.codegen.build.Type
 
-object KotlinTypes {
-
-    val Boolean = Type("Boolean", "Boolean")
-
-    val Int = Type("Int", "Int")
-    val Long = Type("Long", "Long")
-    val Float = Type("Float", "Float")
-    val Double = Type("Double", "Double")
-
-    val Unit = Type("Unit", "kotlin")
-
+open class CPythonType(
+    val module: String,
+    val name: String? = null,
+    val alias: String? = null
+) : Type(alias ?: name ?: module, module) {
+    override val shouldImport = true
 }

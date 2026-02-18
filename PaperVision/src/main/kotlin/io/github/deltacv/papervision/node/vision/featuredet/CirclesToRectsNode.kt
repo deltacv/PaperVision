@@ -27,8 +27,8 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.AccessorVariable
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -58,14 +58,14 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
             val session = Session()
 
             current {
-                val Circle = JvmOpenCvTypes.getCircleType(current)
+                val Circle = JvmOpenCv.getCircleType(current)
 
                 val circles = circles.genValue(current)
                 if (circles !is GenValue.List.Runtime<*>) {
                     raise("Only runtime lists are supported for now")
                 }
 
-                val rects = uniqueVariable("circlesRects", JavaTypes.ArrayList(JvmOpenCvTypes.Rect).new())
+                val rects = uniqueVariable("circlesRects", JavaTypes.ArrayList(JvmOpenCv.Rect).new())
 
                 group {
                     private(rects)
@@ -75,14 +75,14 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
                     nameComment()
 
                     foreach(AccessorVariable(Circle, "circle"), circles.value.v) {
-                        val center = it.propertyValue("center", JvmOpenCvTypes.Point)
+                        val center = it.propertyValue("center", JvmOpenCv.Point)
                         val x = center.propertyValue("x", DoubleType)
                         val y = center.propertyValue("y", DoubleType)
 
                         val radius = it.propertyValue("radius", DoubleType)
 
                         rects("add",
-                            JvmOpenCvTypes.Rect.new(
+                            JvmOpenCv.Rect.new(
                                 int(x - it.propertyValue("radius", DoubleType)),
                                 int(y - it.propertyValue("radius", DoubleType)),
                                 int(radius * 2.v),

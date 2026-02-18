@@ -16,16 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.codegen.build.type
+package io.github.deltacv.papervision.codegen.build.language.jvm
 
 import io.github.deltacv.papervision.codegen.CodeGen
+import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.ConValue
 import io.github.deltacv.papervision.codegen.build.Parameter
 import io.github.deltacv.papervision.codegen.build.Type
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
+import io.github.deltacv.papervision.codegen.build.language.StandardTypes
+import io.github.deltacv.papervision.codegen.dsl.LanguageContext
 
-object JvmOpenCvTypes {
+object JvmOpenCv {
 
     val OpenCvPipeline = Type("OpenCvPipeline", "org.openftc.easyopencv")
     val StreamableOpenCvPipeline = Type("StreamableOpenCvPipeline", "io.github.deltacv.eocvsim.pipeline")
@@ -66,6 +69,13 @@ object JvmOpenCvTypes {
 
     val Size = Type("Size", "org.opencv.core")
     val Scalar = Type("Scalar", "org.opencv.core")
+
+    fun Scalar(genValue: GenValue.Scalar, langHolder: CodeGen.LanguageHolder) = langHolder.language {
+        when (genValue) {
+            is GenValue.Scalar.Inst -> ConValue(Scalar, genValue.value.v.value)
+            is GenValue.Scalar.Components -> Scalar.new(genValue.a.v, genValue.b.v, genValue.c.v, genValue.d.v)
+        }
+    }
 
     val Rect = Type("Rect", "org.opencv.core")
     val RotatedRect = Type("RotatedRect", "org.opencv.core")

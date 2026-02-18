@@ -25,6 +25,10 @@ abstract class Value {
 
     companion object {
         val NONE = ConValue(Type.NONE, null)
+
+        fun derive(type: Type, other: Value) = ConValue(type, other.value).apply {
+            additionalImports(other)
+        }
     }
 
     abstract val type: Type

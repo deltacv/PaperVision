@@ -21,8 +21,8 @@ package io.github.deltacv.papervision.codegen.language
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.util.loggerForThis
 import io.github.deltacv.papervision.util.toValidIdentifier
@@ -292,14 +292,14 @@ open class LanguageBase(
         if(init.isNotBlank()) {
             classBodyScope.method(
                 Visibility.PUBLIC, language.VoidType, "init", initScope,
-                Parameter(JvmOpenCvTypes.Mat, "input"), isOverride = true
+                Parameter(JvmOpenCv.Mat, "input"), isOverride = true
             )
             classBodyScope.newStatement()
         }
 
         classBodyScope.method(
-            Visibility.PUBLIC, JvmOpenCvTypes.Mat, "processFrame", processFrameScope,
-            Parameter(JvmOpenCvTypes.Mat, "input"), isOverride = true
+            Visibility.PUBLIC, JvmOpenCv.Mat, "processFrame", processFrameScope,
+            Parameter(JvmOpenCv.Mat, "input"), isOverride = true
         )
 
         val viewportTapped = viewportTappedScope.get()
@@ -317,7 +317,7 @@ open class LanguageBase(
             classBodyScope.scope(classEndScope)
         }
 
-        val pipelineClass = if(isForPreviz) JvmOpenCvTypes.StreamableOpenCvPipeline else JvmOpenCvTypes.OpenCvPipeline
+        val pipelineClass = if(isForPreviz) JvmOpenCv.StreamableOpenCvPipeline else JvmOpenCv.OpenCvPipeline
 
         if(genInClass) {
             importScope.importType(pipelineClass)

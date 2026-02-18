@@ -28,12 +28,12 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.Value
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.np
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.np
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
 import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
@@ -102,11 +102,11 @@ open class DrawRotatedRectanglesNode
 
                     fun ScopeContext.drawRuntimeRect(rectValue: Value) {
                         ifCondition(rectValue notEqualsTo language.nullValue) {
-                            val rectPoints = uniqueVariable("rectPoints", JvmOpenCvTypes.Point.newArray(4.v))
+                            val rectPoints = uniqueVariable("rectPoints", JvmOpenCv.Point.newArray(4.v))
                             local(rectPoints)
                             rectValue("points", rectPoints)
 
-                            val matOfPoint = uniqueVariable("matOfPoint", JvmOpenCvTypes.MatOfPoint.new(rectPoints))
+                            val matOfPoint = uniqueVariable("matOfPoint", JvmOpenCv.MatOfPoint.new(rectPoints))
                             local(matOfPoint)
 
                             separate()
@@ -117,11 +117,11 @@ open class DrawRotatedRectanglesNode
                                     "polylines", drawMat,
                                     JavaTypes.Collections.callValue(
                                         "singletonList",
-                                        JavaTypes.List(JvmOpenCvTypes.MatOfPoint),
+                                        JavaTypes.List(JvmOpenCv.MatOfPoint),
                                         matOfPoint
                                     ), // list of points forming the rotated rectangle
                                     trueValue, // closed polygon
-                                    lineParams.colorScalarValue.v,
+                                    lineParams.color.value.v,
                                     lineParams.thicknessValue.v
                                 )
                             }
@@ -137,7 +137,7 @@ open class DrawRotatedRectanglesNode
                             }
                         }
                     } else {
-                        foreach(variable(JvmOpenCvTypes.RotatedRect, "rect"), rectanglesList.value.v) {
+                        foreach(variable(JvmOpenCv.RotatedRect, "rect"), rectanglesList.value.v) {
                             drawRuntimeRect(it)
                         }
                     }
@@ -179,7 +179,7 @@ open class DrawRotatedRectanglesNode
                     val color = lineParams.color
                     val thickness = lineParams.thickness.value
 
-                    val colorScalar = CPythonLanguage.tuple(color.a.value.v, color.b.value.v, color.c.value.v, color.d.value.v)
+                    val colorScalar = CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
 
                     // TODO: Implement rotated rect drawing in python
 

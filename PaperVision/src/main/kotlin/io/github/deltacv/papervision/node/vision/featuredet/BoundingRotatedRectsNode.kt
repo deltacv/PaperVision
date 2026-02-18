@@ -27,10 +27,10 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.Value
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
@@ -66,8 +66,8 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                     input.value.v
                 } else null
 
-                val points2f = uniqueVariable("${name ?: "points"}2f", JvmOpenCvTypes.MatOfPoint2f.new())
-                val rectsList = uniqueVariable("${name?.run { this.value + "R"} ?: "r"}otRects", JavaTypes.ArrayList(JvmOpenCvTypes.RotatedRect).new())
+                val points2f = uniqueVariable("${name ?: "points"}2f", JvmOpenCv.MatOfPoint2f.new())
+                val rectsList = uniqueVariable("${name?.run { this.value + "R"} ?: "r"}otRects", JavaTypes.ArrayList(JvmOpenCv.RotatedRect).new())
 
                 group {
                     private(points2f)
@@ -85,11 +85,11 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
 
                         separate()
 
-                        rectsList("add", Imgproc.callValue("minAreaRect", JvmOpenCvTypes.RotatedRect, points2f))
+                        rectsList("add", Imgproc.callValue("minAreaRect", JvmOpenCv.RotatedRect, points2f))
                     }
 
                     if(input is GenValue.List.Runtime<*>) {
-                        foreach(variable(JvmOpenCvTypes.MatOfPoint, "points"), input.value.v) {
+                        foreach(variable(JvmOpenCv.MatOfPoint, "points"), input.value.v) {
                             withPoints(it)
                         }
                     } else {

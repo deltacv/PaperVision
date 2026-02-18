@@ -31,8 +31,8 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.codegen.build.AccessorVariable
 import io.github.deltacv.papervision.codegen.build.Value
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.LanguageBase
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
@@ -113,7 +113,7 @@ class InputMatNode @JvmOverloads constructor(
                                attrib: Attribute
     ) = when(current.language) {
         is CPythonLanguage -> GenValue.Mat(AccessorVariable(CPythonLanguage.NoType, "input").resolved(), ColorSpace.RGBA.resolved())
-        else -> GenValue.Mat(AccessorVariable(JvmOpenCvTypes.Mat, "input").resolved(), ColorSpace.RGBA.resolved())
+        else -> GenValue.Mat(AccessorVariable(JvmOpenCv.Mat, "input").resolved(), ColorSpace.RGBA.resolved())
     }
 }
 
@@ -196,19 +196,19 @@ class OutputMatNode @JvmOverloads constructor(
                         val crosshairValue = crosshair.genValue(current)
 
                         ifCondition((crosshairValue.value.v notEqualsTo nullValue)) {
-                            val boundingRect = uniqueVariable("boundingRect", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, crosshairValue.value.v))
+                            val boundingRect = uniqueVariable("boundingRect", Imgproc.callValue("boundingRect", JvmOpenCv.Rect, crosshairValue.value.v))
                             local(boundingRect)
 
                             separate()
 
                             // Calculate the centroid of the contour
                             val centroidX =
-                                uniqueVariable("centroidX", (boundingRect.callValue("tl", JvmOpenCvTypes.Point).propertyValue("x", DoubleType) +
-                                        boundingRect.callValue("br", JvmOpenCvTypes.Point)
+                                uniqueVariable("centroidX", (boundingRect.callValue("tl", JvmOpenCv.Point).propertyValue("x", DoubleType) +
+                                        boundingRect.callValue("br", JvmOpenCv.Point)
                                             .propertyValue("x", DoubleType)) / 2.v)
                             val centroidY =
-                                uniqueVariable("centroidY", (boundingRect.callValue("tl", JvmOpenCvTypes.Point).propertyValue("y", DoubleType) +
-                                        boundingRect.callValue("br", JvmOpenCvTypes.Point)
+                                uniqueVariable("centroidY", (boundingRect.callValue("tl", JvmOpenCv.Point).propertyValue("y", DoubleType) +
+                                        boundingRect.callValue("br", JvmOpenCv.Point)
                                             .propertyValue("y", DoubleType)) / 2.v)
 
                             local(centroidX)
@@ -216,7 +216,7 @@ class OutputMatNode @JvmOverloads constructor(
 
                             separate()
 
-                            val centroid = uniqueVariable("centroid", JvmOpenCvTypes.Point.new(centroidX, centroidY))
+                            val centroid = uniqueVariable("centroid", JvmOpenCv.Point.new(centroidX, centroidY))
                             local(centroid)
                             val contourArea = uniqueVariable("contourArea", Imgproc.callValue("contourArea", DoubleType, crosshairValue.value.v))
                             local(contourArea)
@@ -226,7 +226,7 @@ class OutputMatNode @JvmOverloads constructor(
                             val crosshairSize = 10.v
                             val crosshairThickness = 5.v
 
-                            val crosshairCol = uniqueVariable("crosshairCol", JvmOpenCvTypes.Scalar.new(0.0.v, 255.0.v, 0.0.v))
+                            val crosshairCol = uniqueVariable("crosshairCol", JvmOpenCv.Scalar.new(0.0.v, 255.0.v, 0.0.v))
                             local(crosshairCol)
 
                             // draw crosshair on the centroid
@@ -235,15 +235,15 @@ class OutputMatNode @JvmOverloads constructor(
 
                             Imgproc("line",
                                 inputValue.value.v,
-                                JvmOpenCvTypes.Point.new(centroidX - crosshairSize, centroidY),
-                                JvmOpenCvTypes.Point.new(centroidX + crosshairSize, centroidY),
+                                JvmOpenCv.Point.new(centroidX - crosshairSize, centroidY),
+                                JvmOpenCv.Point.new(centroidX + crosshairSize, centroidY),
                                 crosshairCol,
                                 crosshairThickness
                             )
                             Imgproc("line",
                                 inputValue.value.v,
-                                JvmOpenCvTypes.Point.new(centroidX, centroidY - crosshairSize),
-                                JvmOpenCvTypes.Point.new(centroidX, centroidY + crosshairSize),
+                                JvmOpenCv.Point.new(centroidX, centroidY - crosshairSize),
+                                JvmOpenCv.Point.new(centroidX, centroidY + crosshairSize),
                                 crosshairCol,
                                 crosshairThickness
                             )
@@ -288,6 +288,8 @@ class OutputMatNode @JvmOverloads constructor(
 
                             CPythonLanguage.newArrayOf(CPythonLanguage.NoType, *data.toTypedArray())
                         }
+
+                        is GenValue.List.Either<*> -> TODO("")
                     })
 
                     local(llpython)

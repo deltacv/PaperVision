@@ -25,10 +25,10 @@ import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -59,7 +59,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
 
                 val contoursList = input.genValue(current)
 
-                val biggestContour = uniqueVariable("biggestContour", JvmOpenCvTypes.MatOfPoint.nullValue) // TODO: huh???
+                val biggestContour = uniqueVariable("biggestContour", JvmOpenCv.MatOfPoint.nullValue)
 
                 group {
                     private(biggestContour)
@@ -71,9 +71,9 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                     biggestContour instanceSet biggestContour.nullValue
 
                     if(contoursList is GenValue.List.Runtime<*>) {
-                        foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), contoursList.value.v) { contour ->
-                            val contourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, contour)
-                            val biggestContourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, biggestContour)
+                        foreach(variable(JvmOpenCv.MatOfPoint, "contour"), contoursList.value.v) { contour ->
+                            val contourArea = Imgproc.callValue("contourArea", JvmOpenCv.MatOfPoint, contour)
+                            val biggestContourArea = Imgproc.callValue("contourArea", JvmOpenCv.MatOfPoint, biggestContour)
 
                             ifCondition(
                                 biggestContour equalsTo biggestContour.nullValue or (contourArea greaterThan biggestContourArea)
@@ -92,8 +92,8 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                             }
 
                             ifCondition(contour notEqualsTo language.nullValue) {
-                                val contourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, contour)
-                                val biggestContourArea = Imgproc.callValue("contourArea", JvmOpenCvTypes.MatOfPoint, biggestContour)
+                                val contourArea = Imgproc.callValue("contourArea", JvmOpenCv.MatOfPoint, contour)
+                                val biggestContourArea = Imgproc.callValue("contourArea", JvmOpenCv.MatOfPoint, biggestContour)
 
                                 ifCondition(
                                     biggestContour equalsTo biggestContour.nullValue or (contourArea greaterThan biggestContourArea)
@@ -143,7 +143,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
 
                     val biggestContour = uniqueVariable(
                         "biggest_contour",
-                        CPythonOpenCvTypes.np.callValue("array",
+                        CPythonOpenCv.np.callValue("array",
                             CPythonLanguage.NoType, CPythonLanguage.newArrayOf(CPythonLanguage.NoType, 0.v)
                         )
                     )

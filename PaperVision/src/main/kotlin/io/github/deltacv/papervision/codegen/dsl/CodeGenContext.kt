@@ -69,7 +69,7 @@ class CodeGenContext(val codeGen: CodeGen) : LanguageContext(codeGen.language) {
         scopeBlock: ScopeContext.() -> Unit
     ) {
         val s = Scope(2, codeGen.language)
-        scopeBlock(s.context)
+        scopeBlock(ScopeContext(s))
 
         codeGen.classEndScope.method(
             vis, returnType, this, s, *parameters,

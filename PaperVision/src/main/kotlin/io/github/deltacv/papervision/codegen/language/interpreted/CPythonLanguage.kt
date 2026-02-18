@@ -21,7 +21,7 @@ package io.github.deltacv.papervision.codegen.language.interpreted
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
-import io.github.deltacv.papervision.codegen.build.type.CPythonType
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonType
 import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.language.LanguageBase

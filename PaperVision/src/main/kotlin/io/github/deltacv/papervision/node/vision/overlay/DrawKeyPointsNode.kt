@@ -27,10 +27,10 @@ import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -93,12 +93,7 @@ open class DrawKeyPointsNode
 
                 val colorScalar = uniqueVariable(
                     "keypointColor",
-                    JvmOpenCvTypes.Scalar.new(
-                        color.a.v.v,
-                        color.b.v.v,
-                        color.c.v.v,
-                        color.d.v.v
-                    )
+                    JvmOpenCv.Scalar(color, current)
                 )
 
                 group {
@@ -111,7 +106,7 @@ open class DrawKeyPointsNode
                 current.scope {
                     nameComment()
 
-                    JvmOpenCvTypes.Features2d("drawKeypoints", input.value.v, keypointsValue.value.v, drawMat, colorScalar)
+                    JvmOpenCv.Features2d("drawKeypoints", input.value.v, keypointsValue.value.v, drawMat, colorScalar)
 
                     if (!isDrawOnInput) {
                         outputMat.streamIfEnabled(output, input.color)
@@ -128,7 +123,7 @@ open class DrawKeyPointsNode
             val session = Session()
 
             current {
-                val color = lineColor.genValue(current)
+                val color = lineColor.genValue(current) as GenValue.Scalar.Components
 
                 val input = inputMat.genValue(current)
                 val keypointsValue = keypoints.genValue(current)
@@ -145,10 +140,10 @@ open class DrawKeyPointsNode
                             CPythonLanguage.NoType,
                             input.value.v,
                             keypointsValue.value.v,
-                            CPythonOpenCvTypes.np.callValue("array",
+                            CPythonOpenCv.np.callValue("array",
                                 CPythonLanguage.NoType, CPythonLanguage.newArrayOf(CPythonLanguage.NoType, 0.v)
                             ),
-                            CPythonLanguage.tuple(color.a.v.v, color.b.v.v, color.c.v.v)
+                            CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v)
                         )
                     )
 

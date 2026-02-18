@@ -28,10 +28,10 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.Value
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
 import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
@@ -102,11 +102,11 @@ open class DrawRectanglesNode
                             if (rectangle is GenValue.Rect.Actual) {
                                 Imgproc(
                                     "rectangle", drawMat,
-                                    JvmOpenCvTypes.Rect.new(
+                                    JvmOpenCv.Rect.new(
                                         double(rectangle.x.v), double(rectangle.y.v),
                                         double(rectangle.w.v), double(rectangle.h.v)
                                     ),
-                                    lineParams.colorScalarValue.v,
+                                    lineParams.color.value.v,
                                     lineParams.thicknessValue.v
                                 )
                             } else if (rectangle is GenValue.Rect.Runtime) {
@@ -117,7 +117,7 @@ open class DrawRectanglesNode
                                 ) {
                                     Imgproc(
                                         "rectangle", drawMat, rectangle.value.v,
-                                        lineParams.colorScalarValue.v, lineParams.thicknessValue.v
+                                        lineParams.color.value.v, lineParams.thicknessValue.v
                                     )
                                 }
                             }
@@ -127,10 +127,10 @@ open class DrawRectanglesNode
                             (drawMat notEqualsTo language.nullValue) and
                                     not(drawMat.callValue("empty", BooleanType).condition())
                         ) {
-                            foreach(variable(JvmOpenCvTypes.Rect, "rect"), rectanglesList.value.v) {
+                            foreach(variable(JvmOpenCv.Rect, "rect"), rectanglesList.value.v) {
                                 Imgproc(
                                     "rectangle", drawMat, it,
-                                    lineParams.colorScalarValue.v, lineParams.thicknessValue.v
+                                    lineParams.color.value.v, lineParams.thicknessValue.v
                                 )
                             }
                         }
@@ -174,7 +174,7 @@ open class DrawRectanglesNode
                     val thickness = lineParams.thickness.value
 
                     val colorScalar =
-                        CPythonLanguage.tuple(color.a.value.v, color.b.value.v, color.c.value.v, color.d.value.v)
+                        CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
 
                     fun ScopeContext.runtimeRect(rectValue: Value) {
                         ifCondition(rectValue notEqualsTo language.nullValue) {

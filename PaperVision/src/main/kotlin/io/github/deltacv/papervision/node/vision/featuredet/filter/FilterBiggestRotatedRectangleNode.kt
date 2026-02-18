@@ -27,7 +27,7 @@ import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.dsl.ScopeContext
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
@@ -59,7 +59,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
 
                 val rectsList = input.genValue(current)
 
-                val biggestRect = uniqueVariable("biggestRotRect", JvmOpenCvTypes.RotatedRect.nullValue)
+                val biggestRect = uniqueVariable("biggestRotRect", JvmOpenCv.RotatedRect.nullValue)
 
                 group {
                     private(biggestRect)
@@ -74,8 +74,8 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                         ifCondition(rect notEqualsTo language.nullValue) {
                             ifCondition(
                                 biggestRect equalsTo biggestRect.nullValue or
-                                        (rect.propertyValue("size", JvmOpenCvTypes.Size).callValue("area", DoubleType)
-                                                greaterThan biggestRect.propertyValue("size", JvmOpenCvTypes.Size).callValue("area", DoubleType)
+                                        (rect.propertyValue("size", JvmOpenCv.Size).callValue("area", DoubleType)
+                                                greaterThan biggestRect.propertyValue("size", JvmOpenCv.Size).callValue("area", DoubleType)
                                                 )
                             ) {
                                 biggestRect instanceSet rect
@@ -84,7 +84,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                     }
 
                     if (rectsList is GenValue.List.Runtime<*>) {
-                        foreach(variable(JvmOpenCvTypes.RotatedRect, "rect"), rectsList.value.v) { rect ->
+                        foreach(variable(JvmOpenCv.RotatedRect, "rect"), rectsList.value.v) { rect ->
                             withRuntimeRect(rect)
                         }
                     } else {
@@ -93,9 +93,9 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                                 separate()
                                 val rect = DeclarableVariable(
                                     "rect",
-                                    JvmOpenCvTypes.RotatedRect.new(
-                                        JvmOpenCvTypes.Point.new(element.x.v, element.y.v),
-                                        JvmOpenCvTypes.Size.new(element.w.v, element.h.v),
+                                    JvmOpenCv.RotatedRect.new(
+                                        JvmOpenCv.Point.new(element.x.v, element.y.v),
+                                        JvmOpenCv.Size.new(element.w.v, element.h.v),
                                         element.angle.v
                                     )
                                 )

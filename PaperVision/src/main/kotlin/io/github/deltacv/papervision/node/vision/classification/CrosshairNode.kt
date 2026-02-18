@@ -30,10 +30,10 @@ import io.github.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -102,8 +102,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
             current {
                 val drawOnValue = drawOn.value.v
 
-                val crosshair = uniqueVariable("crosshair", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
-                val crosshairImage = uniqueVariable("crosshairImage", JvmOpenCvTypes.Mat.new())
+                val crosshair = uniqueVariable("crosshair", JavaTypes.ArrayList(JvmOpenCv.MatOfPoint).new())
+                val crosshairImage = uniqueVariable("crosshairImage", JvmOpenCv.Mat.new())
                 val crosshairSize = uniqueVariable("crosshairSize", int(crosshairSizeValue).v)
 
                 group {
@@ -128,7 +128,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                             val rows = drawOnValue.callValue("rows", IntType)
                             val cols = drawOnValue.callValue("cols", IntType)
 
-                            JvmOpenCvTypes.Point.new((double(cols) / 2.v) + double(crosshairPositionVector.xValue).v, (double(rows) / 2.v) + double(crosshairPositionVector.yValue).v)
+                            JvmOpenCv.Point.new((double(cols) / 2.v) + double(crosshairPositionVector.xValue).v, (double(rows) / 2.v) + double(crosshairPositionVector.yValue).v)
                         }
                     )
 
@@ -149,36 +149,36 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
-                    val crosshairCol = crosshairLineParams.colorScalarValue
+                    val crosshairCol = crosshairLineParams.color
                     val crosshairThickness = crosshairLineParams.thicknessValue
 
                     Imgproc(
                         "line",
                         crosshairImage,
-                        JvmOpenCvTypes.Point.new(
+                        JvmOpenCv.Point.new(
                             crosshairPoint.propertyValue("x", DoubleType) - adjustedCrosshairSize,
                             crosshairPoint.propertyValue("y", DoubleType)
                         ),
-                        JvmOpenCvTypes.Point.new(
+                        JvmOpenCv.Point.new(
                             crosshairPoint.propertyValue("x", DoubleType) + adjustedCrosshairSize,
                             crosshairPoint.propertyValue("y", DoubleType)
                         ),
-                        crosshairCol.v,
+                        JvmOpenCv.Scalar(crosshairCol, current),
                         crosshairThickness.value.v
                     )
 
                     Imgproc(
                         "line",
                         crosshairImage,
-                        JvmOpenCvTypes.Point.new(
+                        JvmOpenCv.Point.new(
                             crosshairPoint.propertyValue("x", DoubleType),
                             crosshairPoint.propertyValue("y", DoubleType) - adjustedCrosshairSize
                         ),
-                        JvmOpenCvTypes.Point.new(
+                        JvmOpenCv.Point.new(
                             crosshairPoint.propertyValue("x", DoubleType),
                             crosshairPoint.propertyValue("y", DoubleType) + adjustedCrosshairSize
                         ),
-                        crosshairCol.v,
+                        JvmOpenCv.Scalar(crosshairCol, current),
                         crosshairThickness.value.v
                     )
 
@@ -195,7 +195,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                     }
 
                     val closestContour = if(detectionMode.genValue(current).value == DetectionMode.Nearest) {
-                        uniqueVariable("closestContour", JvmOpenCvTypes.MatOfPoint.nullValue)
+                        uniqueVariable("closestContour", JvmOpenCv.MatOfPoint.nullValue)
                     } else {
                         null
                     }
@@ -208,10 +208,10 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                         separate()
                     }
 
-                    foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), inputPoints.value.v) {
+                    foreach(variable(JvmOpenCv.MatOfPoint, "contour"), inputPoints.value.v) {
                         // Get the bounding rectangle of the current contour
                         val boundingRect = uniqueVariable(
-                            "boundingRect", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, it)
+                            "boundingRect", Imgproc.callValue("boundingRect", JvmOpenCv.Rect, it)
                         )
                         local(boundingRect)
 
@@ -241,7 +241,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                                 local(distance)
 
-                                ifCondition((closestContour!! equalsTo JvmOpenCvTypes.MatOfPoint.nullValue) or (JavaTypes.Math.callValue("abs", DoubleType, distance) lessOrEqualThan currDist!!)) {
+                                ifCondition((closestContour!! equalsTo JvmOpenCv.MatOfPoint.nullValue) or (JavaTypes.Math.callValue("abs", DoubleType, distance) lessOrEqualThan currDist!!)) {
                                     currDist set JavaTypes.Math.callValue("abs", DoubleType, distance)
                                     closestContour set it
                                 }
@@ -250,7 +250,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                     }
 
                     if(DetectionMode.Nearest == detectionMode.genValue(current).value) {
-                        ifCondition(closestContour!! notEqualsTo JvmOpenCvTypes.MatOfPoint.nullValue) {
+                        ifCondition(closestContour!! notEqualsTo JvmOpenCv.MatOfPoint.nullValue) {
                             crosshair("add", closestContour)
                         }
                     }
@@ -328,10 +328,10 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
-                    val crosshairCol = crosshairLineParams.color.elements.map { it.v.v }.toTypedArray()
+                    val crosshairCol = crosshairLineParams.color.toActualOrNull()?.elements?.map { it.v }?.toTypedArray() ?: raise("") // TODO: Handle this better
                     val crosshairThickness = crosshairLineParams.thickness.value.v
 
-                    CPythonOpenCvTypes.cv2(
+                    CPythonOpenCv.cv2(
                         "line",
                         crosshairImage,
                         CPythonLanguage.tuple(
@@ -346,7 +346,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                         crosshairThickness
                     )
 
-                    CPythonOpenCvTypes.cv2(
+                    CPythonOpenCv.cv2(
                         "line",
                         crosshairImage,
                         CPythonLanguage.tuple(
@@ -366,7 +366,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                     foreach(variable(CPythonLanguage.NoType, "contour"), inputPoints.value.v) {
                         // Get the bounding rectangle of the current contour
                         val boundingRect = CPythonLanguage.declaredTupleVariable(
-                            CPythonOpenCvTypes.cv2.callValue("boundingRect", CPythonLanguage.NoType, it),
+                            CPythonOpenCv.cv2.callValue("boundingRect", CPythonLanguage.NoType, it),
                             "x", "y", "w", "h"
                         )
                         local(boundingRect)

@@ -75,14 +75,13 @@ class ScalarAttribute(
     }
 
     override fun genValue(current: CodeGen.Current): GenValue.Scalar {
-        val values = super.genValue(current).toActualOrNull()?.elements ?: parentNode.noValue(this)
+        val values = super.genValue(current).toActualOrNull()?.elements
 
-        val value = GenValue.Scalar.wrap(
-            values.getOrElse(0) { GenValue.Double.ZERO },
-            values.getOrElse(1) { GenValue.Double.ZERO },
-            values.getOrElse(2) { GenValue.Double.ZERO },
-            values.getOrElse(3) { GenValue.Double.ZERO },
-            current
+        val value = GenValue.Scalar.Components(
+            values?.getOrElse(0) { GenValue.Double.ZERO } ?: GenValue.Double.ZERO,
+            values?.getOrElse(1) { GenValue.Double.ZERO } ?: GenValue.Double.ZERO,
+            values?.getOrElse(2) { GenValue.Double.ZERO } ?: GenValue.Double.ZERO,
+            values?.getOrElse(3) { GenValue.Double.ZERO } ?: GenValue.Double.ZERO,
         )
 
         return readGenValue(current, value)

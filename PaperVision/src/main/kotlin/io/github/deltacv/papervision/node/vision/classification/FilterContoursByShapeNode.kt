@@ -27,10 +27,10 @@ import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Size
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Size
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
@@ -127,11 +127,11 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
                 val sidesValue = sides.genValue(current)
                 val accuracyValue = accuracy.genValue(current)
 
-                val list = uniqueVariable("filtered${shapeValue.name}Contours", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
+                val list = uniqueVariable("filtered${shapeValue.name}Contours", JavaTypes.ArrayList(JvmOpenCv.MatOfPoint).new())
 
-                val contours2f = uniqueVariable("contours2f", JvmOpenCvTypes.MatOfPoint2f.new())
-                val approxPolyDp = uniqueVariable("approxPolyDp", JvmOpenCvTypes.MatOfPoint2f.new())
-                val approxPolyDp2f = uniqueVariable("approxPolyDp2f", JvmOpenCvTypes.MatOfPoint2f.new())
+                val contours2f = uniqueVariable("contours2f", JvmOpenCv.MatOfPoint2f.new())
+                val approxPolyDp = uniqueVariable("approxPolyDp", JvmOpenCv.MatOfPoint2f.new())
+                val approxPolyDp2f = uniqueVariable("approxPolyDp2f", JvmOpenCv.MatOfPoint2f.new())
 
                 group {
                     private(approxPolyDp)
@@ -146,7 +146,7 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
 
                     list("clear")
 
-                    foreach(variable(JvmOpenCvTypes.MatOfPoint, "contour"), inputContours.value.v) {
+                    foreach(variable(JvmOpenCv.MatOfPoint, "contour"), inputContours.value.v) {
                         it("convertTo", contours2f, cvTypeValue("CV_32FC2"))
 
                         separate()

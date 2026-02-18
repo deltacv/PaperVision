@@ -19,12 +19,10 @@
 package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.codegen.build.Scope
-import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.dsl.CodeGenContext
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.resolve.PlaceholderResolver
 import io.github.deltacv.papervision.codegen.resolve.Resolvable
-import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.util.loggerFor
 
 enum class Visibility {
@@ -85,7 +83,7 @@ class CodeGen(
 
     val context = CodeGenContext(this)
 
-    operator fun <T> invoke(block: CodeGenContext.() -> T) = block(context)
+    inline operator fun <T> invoke(crossinline block: CodeGenContext.() -> T) = block(context)
 
     interface LanguageHolder {
         val language: Language
@@ -110,7 +108,7 @@ class CodeGen(
                 ?: throw IllegalStateException("Node ${node::class.simpleName} did not generate a session when requested")
         }
 
-        operator fun <T> invoke(scopeBlock: CodeGenContext.() -> T) = codeGen.invoke(scopeBlock)
+        inline operator fun <R> invoke(crossinline scopeBlock: CodeGenContext.() -> R) = codeGen.invoke(scopeBlock)
     }
 
 }

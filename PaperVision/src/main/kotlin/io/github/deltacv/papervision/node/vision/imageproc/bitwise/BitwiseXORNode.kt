@@ -25,9 +25,9 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolve.Resolvable
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -79,7 +79,7 @@ class BitwiseXORNode : DrawNode<BitwiseXORNode.Session>() {
                     nameComment()
 
                     outputMat("release")
-                    JvmOpenCvTypes.Core("bitwise_xor", firstValue.value.v, secondValue.value.v, outputMat)
+                    JvmOpenCv.Core("bitwise_xor", firstValue.value.v, secondValue.value.v, outputMat)
                     output.streamIfEnabled(outputMat, secondValue.color)
                 }
 
@@ -107,7 +107,7 @@ class BitwiseXORNode : DrawNode<BitwiseXORNode.Session>() {
             }
 
             current {
-                val value = CPythonOpenCvTypes.cv2.callValue("bitwise_xor", CPythonLanguage.NoType, firstValue.value.v, secondValue.value.v)
+                val value = CPythonOpenCv.cv2.callValue("bitwise_xor", CPythonLanguage.NoType, firstValue.value.v, secondValue.value.v)
                 val variable = uniqueVariable("bitwiseXORMat", value)
 
                 current.scope {

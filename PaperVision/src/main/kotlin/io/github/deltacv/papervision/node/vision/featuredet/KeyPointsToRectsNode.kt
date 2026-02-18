@@ -28,8 +28,8 @@ import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.AccessorVariable
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage.NoType
@@ -66,7 +66,7 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
                     raise("Only runtime lists are supported for now")
                 }
 
-                val rects = uniqueVariable("keypointsRects", JavaTypes.ArrayList(JvmOpenCvTypes.Rect).new())
+                val rects = uniqueVariable("keypointsRects", JavaTypes.ArrayList(JvmOpenCv.Rect).new())
 
                 group {
                     private(rects)
@@ -79,10 +79,10 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
 
                     separate()
 
-                    foreach(AccessorVariable(JvmOpenCvTypes.KeyPoint, "kp"), keypoints.value.v.callValue("toArray", JvmOpenCvTypes.KeyPoint.arrayType())) {
-                        rects("add", JvmOpenCvTypes.Rect.new(
-                            int(it.propertyValue("center", JvmOpenCvTypes.Point).propertyValue("x", DoubleType) - it.propertyValue("size", FloatType) / 2.v),
-                            int(it.propertyValue("center", JvmOpenCvTypes.Point).propertyValue("y", DoubleType) - it.propertyValue("size", FloatType) / 2.v),
+                    foreach(AccessorVariable(JvmOpenCv.KeyPoint, "kp"), keypoints.value.v.callValue("toArray", JvmOpenCv.KeyPoint.arrayType())) {
+                        rects("add", JvmOpenCv.Rect.new(
+                            int(it.propertyValue("center", JvmOpenCv.Point).propertyValue("x", DoubleType) - it.propertyValue("size", FloatType) / 2.v),
+                            int(it.propertyValue("center", JvmOpenCv.Point).propertyValue("y", DoubleType) - it.propertyValue("size", FloatType) / 2.v),
                             int(it.propertyValue("size", FloatType)),
                             int(it.propertyValue("size", FloatType))
                         ))

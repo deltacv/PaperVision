@@ -26,7 +26,7 @@ import io.github.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -64,18 +64,16 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
             current {
                 val lineColorValue = lineColor.genValue(current)
 
-                val lineColorVar = uniqueVariable("lineColor", JvmOpenCvTypes.Scalar.new(
-                    lineColorValue.a.v.v, lineColorValue.b.v.v, lineColorValue.c.v.v, lineColorValue.d.v.v
-                ))
+                val lineColorVar = uniqueVariable("lineColor", JvmOpenCv.Scalar(lineColorValue, current))
 
-                val lineThicknessVar = uniqueVariable("lineThickness", lineThickness.genValue(current).v.v)
+                val lineThicknessVar = uniqueVariable("lineThickness", lineThickness.genValue(current).v)
 
                 group {
                     public(lineColorVar, lineColor.label())
                     public(lineThicknessVar, lineThickness.label())
                 }
 
-                session.lineParameters = GenValue.LineParameters.Runtime(lineColorVar.resolved(), GenValue.Int.Runtime(lineThicknessVar.resolved()))
+                session.lineParameters = GenValue.LineParameters.Runtime(GenValue.Scalar.Inst(lineColorVar.resolved()), GenValue.Int.Runtime(lineThicknessVar.resolved()))
             }
 
             session
@@ -84,7 +82,7 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
         generatorFor(CPythonLanguage) {
             val session = Session()
 
-            session.lineParameters = GenValue.LineParameters.Actual(
+            session.lineParameters = GenValue.LineParameters.wrap(
                 lineColor.genValue(current),
                 lineThickness.genValue(current)
             )

@@ -24,9 +24,9 @@ import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -67,7 +67,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
                     nameComment()
 
                     outputMat("release")
-                    JvmOpenCvTypes.Core("bitwise_not", firstValue.value.v, outputMat)
+                    JvmOpenCv.Core("bitwise_not", firstValue.value.v, outputMat)
 
                     output.streamIfEnabled(outputMat, firstValue.color)
                 }
@@ -84,7 +84,7 @@ class BitwiseNOTNode : DrawNode<BitwiseNOTNode.Session>() {
             val firstValue = input.genValue(current)
 
             current {
-                val value = CPythonOpenCvTypes.cv2.callValue("bitwise_not", CPythonLanguage.NoType, firstValue.value.v)
+                val value = CPythonOpenCv.cv2.callValue("bitwise_not", CPythonLanguage.NoType, firstValue.value.v)
                 val variable = uniqueVariable("bitwiseNOTMat", value)
 
                 current.scope {

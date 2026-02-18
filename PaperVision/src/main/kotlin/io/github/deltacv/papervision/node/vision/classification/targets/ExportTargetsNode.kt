@@ -26,7 +26,7 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.codegen.build.AccessorVariable
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.dsl.jvm.jvmTargets
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
@@ -70,7 +70,7 @@ class ExportTargetsNode : DrawNode<NoSession>() {
                 current.jvmTargets {
                     current.scope {
                         forLoop(AccessorVariable(IntType, "i"), 0.v, targetsValue.value.v.callValue("size", IntType), 1.v) {
-                            addRectTarget(string("${labelValue}_").plus(it), targetsValue.value.v.callValue("get", JvmOpenCvTypes.Rect, it).castTo(JvmOpenCvTypes.Rect))
+                            addRectTarget(string("${labelValue}_").plus(it), targetsValue.value.v.callValue("get", JvmOpenCv.Rect, it).castTo(JvmOpenCv.Rect))
                         }
                     }
                 }
@@ -122,7 +122,7 @@ class ExportRotTargetsNode : DrawNode<NoSession>() {
                 current.jvmTargets {
                     current.scope {
                         forLoop(DeclarableVariable(IntType, "i"), 0.v, targetsValue.value.v.callValue("size", IntType), 1.v) {
-                            addRotRectTarget(string("${labelValue}_").plus(it), targetsValue.value.v.callValue("get", JvmOpenCvTypes.RotatedRect, it).castTo(JvmOpenCvTypes.RotatedRect))
+                            addRotRectTarget(string("${labelValue}_").plus(it), targetsValue.value.v.callValue("get", JvmOpenCv.RotatedRect, it).castTo(JvmOpenCv.RotatedRect))
                         }
                     }
                 }

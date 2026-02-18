@@ -29,10 +29,10 @@ import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.AccessorVariable
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Imgproc
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -94,10 +94,10 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
                 val maxRatioVar = uniqueVariable("maxRatio", int(maxRatioVal).v)
 
                 val contoursVarName = contours.value.map { it.value ?: "contours" }
-                val contoursVar = uniqueVariable("${contoursVarName.v}ByRatio", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
+                val contoursVar = uniqueVariable("${contoursVarName.v}ByRatio", JavaTypes.ArrayList(JvmOpenCv.MatOfPoint).new())
 
                 val pointsVarName = contours.value.map { it.value ?: "points" }
-                val points2f = uniqueVariable("${pointsVarName.v}2f", JvmOpenCvTypes.MatOfPoint2f.new())
+                val points2f = uniqueVariable("${pointsVarName.v}2f", JvmOpenCv.MatOfPoint2f.new())
 
                 group {
                     public(minRatioVar, minRatio.label())
@@ -115,9 +115,9 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
 
                     contoursVar("clear")
 
-                    foreach(AccessorVariable(JvmOpenCvTypes.MatOfPoint, "contour"), contours.value.v) { contour ->
+                    foreach(AccessorVariable(JvmOpenCv.MatOfPoint, "contour"), contours.value.v) { contour ->
                         val ratioVar = if(mode == BoundingMode.Normal) {
-                            val rect = uniqueVariable("rect", Imgproc.callValue("boundingRect", JvmOpenCvTypes.Rect, contour))
+                            val rect = uniqueVariable("rect", Imgproc.callValue("boundingRect", JvmOpenCv.Rect, contour))
                             local(rect)
 
                             uniqueVariable("ratio", rect.propertyValue("height", IntType).castTo(DoubleType) / rect.propertyValue("width", IntType).castTo(DoubleType))
@@ -125,13 +125,13 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
                             points2f("release")
                             contour("convertTo", points2f, cvTypeValue("CV_32F"))
 
-                            val rect = uniqueVariable("rect", Imgproc.callValue("minAreaRect", JvmOpenCvTypes.RotatedRect, points2f))
+                            val rect = uniqueVariable("rect", Imgproc.callValue("minAreaRect", JvmOpenCv.RotatedRect, points2f))
                             local(rect)
 
                             separate()
 
-                            val width = uniqueVariable("width", rect.propertyValue("size", JvmOpenCvTypes.Size).propertyValue("width", IntType).castTo(DoubleType))
-                            val height = uniqueVariable("height", rect.propertyValue("size", JvmOpenCvTypes.Size).propertyValue("height", IntType).castTo(DoubleType))
+                            val width = uniqueVariable("width", rect.propertyValue("size", JvmOpenCv.Size).propertyValue("width", IntType).castTo(DoubleType))
+                            val height = uniqueVariable("height", rect.propertyValue("size", JvmOpenCv.Size).propertyValue("height", IntType).castTo(DoubleType))
 
                             local(width)
                             local(height)
@@ -187,7 +187,7 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
 
                     foreach(DeclarableVariable(CPythonLanguage.NoType, "contour"), contours.value.v) { contour ->
                         val rectangle = CPythonLanguage.declaredTupleVariable(
-                            CPythonOpenCvTypes.cv2.callValue("boundingRect", CPythonLanguage.NoType, contour), // "rect" is a tuple of 4 values:
+                            CPythonOpenCv.cv2.callValue("boundingRect", CPythonLanguage.NoType, contour), // "rect" is a tuple of 4 values:
                             "x", "y", "w", "h"
                         )
                         local(rectangle)

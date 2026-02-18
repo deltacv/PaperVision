@@ -18,7 +18,7 @@
 
 package io.github.deltacv.papervision.codegen.build
 
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.node.vision.ColorSpace
 
@@ -136,13 +136,13 @@ interface ValueBuilder {
         }
 
         return ConValue(language.IntType, "Imgproc.COLOR_${newA}2${newB}").apply {
-            additionalImports(JvmOpenCvTypes.Imgproc)
+            additionalImports(JvmOpenCv.Imgproc)
         }
     }
 
     fun cvTypeValue(cvType: String): Value {
         return ConValue(language.IntType, "CvType.$cvType").apply {
-            additionalImports(JvmOpenCvTypes.CvType)
+            additionalImports(JvmOpenCv.CvType)
         }
     }
 

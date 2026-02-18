@@ -25,9 +25,9 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolve.Resolvable
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes.Mat
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -78,7 +78,7 @@ class BitwiseORNode : DrawNode<BitwiseORNode.Session>() {
                 current.scope {
                     nameComment()
                     outputMat("release")
-                    JvmOpenCvTypes.Core("bitwise_or", firstValue.value.v, secondValue.value.v, outputMat)
+                    JvmOpenCv.Core("bitwise_or", firstValue.value.v, secondValue.value.v, outputMat)
 
                     output.streamIfEnabled(outputMat, secondValue.color)
                 }
@@ -107,7 +107,7 @@ class BitwiseORNode : DrawNode<BitwiseORNode.Session>() {
             }
 
             current {
-                val value = CPythonOpenCvTypes.cv2.callValue("bitwise_or", CPythonLanguage.NoType, firstValue.value.v, secondValue.value.v)
+                val value = CPythonOpenCv.cv2.callValue("bitwise_or", CPythonLanguage.NoType, firstValue.value.v, secondValue.value.v)
                 val variable = uniqueVariable("bitwiseORMat", value)
 
                 current.scope {

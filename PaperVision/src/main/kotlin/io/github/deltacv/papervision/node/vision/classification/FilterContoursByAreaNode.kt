@@ -27,9 +27,9 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.AccessorVariable
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -80,7 +80,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                 val minAreaVar = uniqueVariable("minArea", minAreaVal.v)
                 val maxAreaVar = uniqueVariable("maxArea", maxAreaVal.v)
 
-                val contoursVar = uniqueVariable("${contours.value.v}ByArea", JavaTypes.ArrayList(JvmOpenCvTypes.MatOfPoint).new())
+                val contoursVar = uniqueVariable("${contours.value.v}ByArea", JavaTypes.ArrayList(JvmOpenCv.MatOfPoint).new())
 
                 group {
                     public(minAreaVar, minArea.label())
@@ -94,8 +94,8 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
 
                     contoursVar("clear")
 
-                    foreach(AccessorVariable(JvmOpenCvTypes.MatOfPoint, "contour"), contours.value.v) { contour ->
-                        val areaVar = uniqueVariable("area", JvmOpenCvTypes.Imgproc.callValue("contourArea", DoubleType, contour))
+                    foreach(AccessorVariable(JvmOpenCv.MatOfPoint, "contour"), contours.value.v) { contour ->
+                        val areaVar = uniqueVariable("area", JvmOpenCv.Imgproc.callValue("contourArea", DoubleType, contour))
                         local(areaVar)
 
                         ifCondition((areaVar greaterOrEqualThan minAreaVar) and (areaVar lessOrEqualThan maxAreaVar)) {
@@ -129,7 +129,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                     local(contoursVar)
 
                     foreach(AccessorVariable(CPythonLanguage.NoType, "contour"), contours.value.v) { contour ->
-                        val areaVar = uniqueVariable("area", CPythonOpenCvTypes.cv2.callValue("contourArea", CPythonLanguage.NoType, contour))
+                        val areaVar = uniqueVariable("area", CPythonOpenCv.cv2.callValue("contourArea", CPythonLanguage.NoType, contour))
                         local(areaVar)
 
                         ifCondition((areaVar greaterOrEqualThan int(minArea).v) and (areaVar lessOrEqualThan int(maxArea).v)) {

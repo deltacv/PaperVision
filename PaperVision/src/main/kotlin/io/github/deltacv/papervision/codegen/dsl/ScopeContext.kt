@@ -97,21 +97,21 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
 
     fun ifCondition(condition: Condition, block: ScopeContext.() -> Unit) {
         val ifScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
-        block(ifScope.context)
+        block(ScopeContext(ifScope))
 
         scope.ifCondition(condition, ifScope)
     }
 
     fun <T: Value> foreach(variable: T, list: Value, block: ScopeContext.(T) -> Unit) {
         val loopScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
-        block(loopScope.context, variable)
+        block(ScopeContext(loopScope), variable)
 
         scope.foreachLoop(variable, list, loopScope)
     }
 
     fun <T: Value> forLoop(variable: T, start: Value, max: Value, step: Value?, block: ScopeContext.(T) -> Unit) {
         val loopScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
-        block(loopScope.context, variable)
+        block(ScopeContext(loopScope), variable)
 
         scope.forLoop(variable, start, max, step, loopScope)
     }
@@ -123,7 +123,7 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         vis: Visibility, clazz: Type, vararg parameters: Parameter, block: ScopeContext.() -> Unit
     ) {
         val constructorScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
-        block(constructorScope.context)
+        block(ScopeContext(constructorScope))
 
         scope.constructor(vis, clazz.className, constructorScope, *parameters)
     }
@@ -132,11 +132,11 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         val block = resolvable.resolve()
 
         if(block != null) {
-            block(scope.context)
+            block(ScopeContext(scope))
         } else {
             val placeholder = Resolvable.DependentPlaceholder(resolvable) {
                 val newScope = Scope(scope.tabsCount, scope.language, scope.importScope)
-                it(newScope.context)
+                it(ScopeContext(newScope))
 
                 newScope.get()
             }
@@ -152,7 +152,7 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         isSynchronized: Boolean = false, block: ScopeContext.() -> Unit
     ) {
         val methodScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
-        block(methodScope.context)
+        block(ScopeContext(methodScope))
 
         scope.method(vis, returnType, name, methodScope, *parameters, isStatic = isStatic, isFinal = isFinal, isSynchronized = isSynchronized, isOverride = isOverride)
     }
@@ -163,7 +163,7 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
 
     fun beforeReturning(block: ScopeContext.() -> Unit) {
         scope.beforeReturning {
-            block(it.context)
+            block(ScopeContext(it))
         }
     }
 
@@ -174,7 +174,7 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         block: ScopeContext.() -> Unit
     ) {
         val clazzScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
-        block(clazzScope.context)
+        block(ScopeContext(clazzScope))
 
         scope.clazz(vis, name, clazzScope, extends, *implements, isStatic = isStatic, isFinal = isFinal)
     }

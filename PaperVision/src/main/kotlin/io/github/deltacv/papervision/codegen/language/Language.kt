@@ -22,7 +22,7 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
-import io.github.deltacv.papervision.codegen.build.type.StandardTypes
+import io.github.deltacv.papervision.codegen.build.language.StandardTypes
 import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.codegen.dsl.LanguageContext
 import io.github.deltacv.papervision.codegen.resolve.Resolvable

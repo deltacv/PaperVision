@@ -25,8 +25,8 @@ import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes.cv2
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -77,9 +77,9 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                 val dilateVal = erodeValue.genValue(current)
                 val dilateValVariable = uniqueVariable("dilateValue", int(dilateVal.v))
 
-                val element = uniqueVariable("element", JvmOpenCvTypes.Mat.nullValue)
+                val element = uniqueVariable("element", JvmOpenCv.Mat.nullValue)
 
-                val output = uniqueVariable("${input.value}ErodedDilated", JvmOpenCvTypes.Mat.new())
+                val output = uniqueVariable("${input.value}ErodedDilated", JvmOpenCv.Mat.new())
 
                 group {
                     public(erodeValVariable, erodeValue.label())
@@ -94,14 +94,14 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                     input.value.v("copyTo", output)
 
                     ifCondition(erodeValVariable greaterThan int(0)) {
-                        element instanceSet JvmOpenCvTypes.Imgproc.callValue(
+                        element instanceSet JvmOpenCv.Imgproc.callValue(
                             "getStructuringElement",
-                            JvmOpenCvTypes.Mat,
-                            JvmOpenCvTypes.Imgproc.MORPH_RECT,
-                            JvmOpenCvTypes.Size.new(erodeValVariable, erodeValVariable)
+                            JvmOpenCv.Mat,
+                            JvmOpenCv.Imgproc.MORPH_RECT,
+                            JvmOpenCv.Size.new(erodeValVariable, erodeValVariable)
                         )
 
-                        JvmOpenCvTypes.Imgproc("erode", output, output, element)
+                        JvmOpenCv.Imgproc("erode", output, output, element)
 
                         separate()
 
@@ -111,14 +111,14 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                     separate()
 
                     ifCondition(dilateValVariable greaterThan int(0)) {
-                        element instanceSet JvmOpenCvTypes.Imgproc.callValue(
+                        element instanceSet JvmOpenCv.Imgproc.callValue(
                             "getStructuringElement",
-                            JvmOpenCvTypes.Mat,
-                            JvmOpenCvTypes.Imgproc.MORPH_RECT,
-                            JvmOpenCvTypes.Size.new(dilateValVariable, dilateValVariable)
+                            JvmOpenCv.Mat,
+                            JvmOpenCv.Imgproc.MORPH_RECT,
+                            JvmOpenCv.Size.new(dilateValVariable, dilateValVariable)
                         )
 
-                        JvmOpenCvTypes.Imgproc("dilate", output, output, element)
+                        JvmOpenCv.Imgproc("dilate", output, output, element)
 
                         separate()
 

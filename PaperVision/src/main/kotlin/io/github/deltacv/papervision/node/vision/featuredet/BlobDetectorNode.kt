@@ -29,8 +29,8 @@ import io.github.deltacv.papervision.attribute.vision.structs.KeyPointAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.build.type.CPythonOpenCvTypes
-import io.github.deltacv.papervision.codegen.build.type.JvmOpenCvTypes
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
+import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -100,13 +100,13 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
                 val convexityRangeValue = convexity.genValue(current)
                 val inertiaRangeValue = inertia.genValue(current)
 
-                val params = uniqueVariable("blobDetectorParams", JvmOpenCvTypes.SimpleBlobDetector.Params.new())
+                val params = uniqueVariable("blobDetectorParams", JvmOpenCv.SimpleBlobDetector.Params.new())
 
                 val detector = uniqueVariable("detector",
-                    JvmOpenCvTypes.SimpleBlobDetector.nullValue
+                    JvmOpenCv.SimpleBlobDetector.nullValue
                 )
                 val keyPoints = uniqueVariable("keyPoints",
-                    JvmOpenCvTypes.MatOfKeyPoint.new()
+                    JvmOpenCv.MatOfKeyPoint.new()
                 )
 
                 val pref = "blobDet"
@@ -152,7 +152,7 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
                 }
 
                 initScope {
-                    detector instanceSet JvmOpenCvTypes.SimpleBlobDetector.callValue("create", JvmOpenCvTypes.SimpleBlobDetector, params)
+                    detector instanceSet JvmOpenCv.SimpleBlobDetector.callValue("create", JvmOpenCv.SimpleBlobDetector, params)
                 }
 
                 current.scope {
@@ -214,11 +214,11 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
                 val inertiaRangeValue = inertia.genValue(current)
 
                 val params = uniqueVariable("blob_detector_params",
-                    CPythonOpenCvTypes.cv2.callValue("SimpleBlobDetector_Params", CPythonLanguage.NoType)
+                    CPythonOpenCv.cv2.callValue("SimpleBlobDetector_Params", CPythonLanguage.NoType)
                 )
 
                 val detector = uniqueVariable("blob_detector",
-                    CPythonOpenCvTypes.cv2.callValue("SimpleBlobDetector_create", CPythonLanguage.NoType, params)
+                    CPythonOpenCv.cv2.callValue("SimpleBlobDetector_create", CPythonLanguage.NoType, params)
                 )
 
                 initScope {

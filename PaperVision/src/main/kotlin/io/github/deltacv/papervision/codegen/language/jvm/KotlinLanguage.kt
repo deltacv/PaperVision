@@ -20,8 +20,8 @@ package io.github.deltacv.papervision.codegen.language.jvm
 
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
-import io.github.deltacv.papervision.codegen.build.type.JavaTypes
-import io.github.deltacv.papervision.codegen.build.type.KotlinTypes
+import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
+import io.github.deltacv.papervision.codegen.build.language.KotlinTypes
 import io.github.deltacv.papervision.codegen.csv
 import io.github.deltacv.papervision.codegen.language.LanguageBase
 
