@@ -188,8 +188,7 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
             }
 
             if (!hasLink) { // only draw attributes if there's not a link attached
-                val isDrawAttributeTextOverridden =
-                    drawAttributeText(i, attrib)
+                val isDrawAttributeTextOverridden = drawAttributeText(i, attrib)
 
                 if (isDrawAttributeTextOverridden) {
                     ImGui.sameLine()
@@ -330,11 +329,13 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
 
         val element = elementAttributeType.new(AttributeMode.INPUT, elementName)
         element.parentNode = parentNode
-        if(enable) element.enable() //enables the new element
+        if(enable) element.enable() // enables the new element
 
         element.ownedByList = true
         element.drawType = false // hides the variable type
-        element.onChange.attach(onChange::run)
+        element.onChange.attach {
+            emitChange(element.peekChange())
+        }
 
         listAttributes.add(element)
 

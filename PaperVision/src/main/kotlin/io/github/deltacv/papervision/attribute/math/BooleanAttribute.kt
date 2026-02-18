@@ -31,7 +31,10 @@ import io.github.deltacv.papervision.serialization.data.SerializeData
 class BooleanAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null
-) : TypedAttribute<GenValue.Boolean>(Companion) {
+) : TypedAttribute<GenValue.Boolean>(
+    Companion,
+    doEditorChangeChecking = true // takes advantage of readEditorValue for change checking, so we don't have to do it manually
+) {
 
     companion object: AttributeType<BooleanAttribute> {
         override val icon = FontAwesomeIcons.ToggleOn
@@ -44,7 +47,6 @@ class BooleanAttribute(
 
     override fun drawAttribute() {
         super.drawAttribute()
-        checkChange()
 
         if(!hasLink && mode == AttributeMode.INPUT) {
             ImGui.checkbox("", value)

@@ -311,7 +311,7 @@ open class IdContainer<T : IdElement> : Collection<T> {
      */
     operator fun get(id: Int): T? {
         if (!useHashMapping) {
-            return slots[id]
+            return slots.getOrNull(id)
         }
 
         val internalId = extToInt?.get(id) ?: return null

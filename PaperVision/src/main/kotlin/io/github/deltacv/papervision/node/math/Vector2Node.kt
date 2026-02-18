@@ -61,12 +61,25 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
             val session = Session()
 
             current {
-                val x = uniqueVariable("vectorX", int(xAttribute.genValue(current)).v)
-                val y = uniqueVariable("vectorY", int(yAttribute.genValue(current)).v)
+                val xValue = xAttribute.genValue(current)
+                val yValue = yAttribute.genValue(current)
+
+                val x = uniqueVariable("vectorX", if(xValue is GenValue.Int.Actual) xValue.v else int(0))
+                val y = uniqueVariable("vectorY", if(yValue is GenValue.Int.Actual) yValue.v else int(0))
 
                 group {
                     public(x, xAttribute.label())
                     public(y, yAttribute.label())
+                }
+
+                current.scope {
+                    // if runtime, constantly update
+                    if(xValue is GenValue.Int.Runtime) {
+                        x instanceSet xValue.v
+                        y instanceSet yValue.v
+                    }
+
+                    // if actual, just set once, don't need to bother with constants
                 }
 
                 session.vector2 = GenValue.Vec2.Runtime(GenValue.Double.Runtime(x.resolved()), GenValue.Double.Runtime(y.resolved()))

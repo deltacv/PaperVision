@@ -31,7 +31,11 @@ import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.serialization.AttributeSerializationData
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.BasicAttribData
+import io.github.deltacv.papervision.util.ChangeEmitter
+import io.github.deltacv.papervision.util.DelegateChangeEmitter
+import io.github.deltacv.papervision.util.QueuedChangeEmitter
 import io.github.deltacv.papervision.util.event.PaperEventHandler
+import io.github.deltacv.papervision.util.event.PaperEventListener
 import java.util.concurrent.ArrayBlockingQueue
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -59,7 +63,7 @@ class EmptyInputAttribute(
     }
 }
 
-abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<AttributeSerializationData> {
+abstract class Attribute : DrawableIdElementBase<Attribute>(), DelegateChangeEmitter<Attribute.ChangeType>, DataSerializable<AttributeSerializationData> {
 
     override val idContainer get() = IdContainerStacks.local.peekNonNull<Attribute>()
 
@@ -98,11 +102,6 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     var wasLastDrawCancelled = false
         private set
 
-    val onChange = PaperEventHandler("OnChange-${this::class.simpleName}").apply {
-        attach {
-            changeQueue.add(true)
-        }
-    }
     val onDelete = PaperEventHandler("OnDelete-${this::class.simpleName}")
 
     val onLink = PaperEventHandler("OnLink-${this::class.simpleName}")
@@ -111,7 +110,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
     val position = ImVec2()
     val editorPosition = ImVec2()
 
-    internal val changeQueue = ArrayBlockingQueue<Boolean>(5)
+    override val changeEmitterDelegate = QueuedChangeEmitter<ChangeType>(defaultPeekChange = ChangeType.ValueChange)
 
     abstract fun drawAttribute()
 
@@ -127,9 +126,7 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
             return
         }
 
-        if(changeQueue.remainingCapacity() <= 1) {
-            changeQueue.poll()
-        }
+        processChanges()
 
         if(wasLastDrawCancelled) {
             wasLastDrawCancelled = false
@@ -239,7 +236,6 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
 
     val editorValue get() = when {
         mode == AttributeMode.INPUT -> readEditorValue()
-        hasLink -> availableLinkedAttribute!!.readEditorValue()
         else -> null
     }
 
@@ -279,8 +275,6 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         forgetSerializedId = true
     }
 
-    override fun hasChanged() = changeQueue.poll() ?: false
-
     override fun toString() = "Attribute(type=${this::class.java.typeName}, id=$id)"
 
     sealed class LinkAcceptance(val accepted: Boolean) {
@@ -292,11 +286,23 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DataSerializable<
         class Reject(val reason: String = "err_couldntlink_didntmatch"): LinkAcceptance(false)
     }
 
+    sealed class ChangeType {
+        object ValueChange: ChangeType()
+        object LinkChange: ChangeType()
+    }
+}
+
+fun <T: Attribute> T.rebuildOnLink(): T = apply {
+    onChange {
+        if(this@rebuildOnLink.isEnabled && this@rebuildOnLink.peekChange() is Attribute.ChangeType.LinkChange) {
+            rebuildPreviz()
+        }
+    }
 }
 
 fun <T: Attribute> T.rebuildOnChange(): T = apply {
     onChange {
-        if(idContainer[id] != null) {
+        if(this@rebuildOnChange.isEnabled) {
             rebuildPreviz()
         }
     }

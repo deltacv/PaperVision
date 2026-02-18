@@ -38,7 +38,10 @@ class DoubleAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null,
     initialValue: Double = 0.0
-) : TypedAttribute<GenValue.Double>(Companion) {
+) : TypedAttribute<GenValue.Double>(
+    Companion,
+    doEditorChangeChecking = true // takes advantage of readEditorValue for change checking, so we don't have to do it manually
+) {
 
     companion object : AttributeType<DoubleAttribute> {
         override val icon = FontAwesomeIcons.SquareRootAlt
@@ -106,7 +109,6 @@ class DoubleAttribute(
                 value.set(sliderValue.get().toDouble())
             }
 
-            checkChange()
             ImGui.popItemWidth()
 
             if (nextValue != null) {
@@ -130,7 +132,7 @@ class DoubleAttribute(
 
     override fun readEditorValue() = value.get()
 
-    override fun genValue(current: CodeGen.Current): GenValue.Double = readGenValue(
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Double>(
         current, GenValue.Double.Actual(value.get().resolved())
     )
 

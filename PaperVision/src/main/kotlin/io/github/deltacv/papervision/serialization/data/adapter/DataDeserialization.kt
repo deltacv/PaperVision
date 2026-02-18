@@ -22,6 +22,7 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import io.github.deltacv.papervision.serialization.data.DataSerializable
+import io.github.deltacv.papervision.serialization.data.SerializeIgnore
 import io.github.deltacv.papervision.util.getFieldDeep
 import io.github.deltacv.papervision.util.hasSuperclass
 
@@ -66,7 +67,7 @@ private fun processValue(instance: Any, valueName: String, value: JsonElement, c
     try {
         val field = instance::class.java.getFieldDeep(valueName)
 
-        if(field != null) {
+        if(field != null && !field.isAnnotationPresent(SerializeIgnore::class.java)) {
             field.isAccessible = true
 
             // al chile no se

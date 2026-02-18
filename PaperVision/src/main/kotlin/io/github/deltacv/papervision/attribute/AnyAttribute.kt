@@ -15,7 +15,7 @@ class AnyAttribute(
         override fun new(mode: AttributeMode, variableName: String) = AnyAttribute(mode, variableName)
     }
 
-    override fun genValue(current: CodeGen.Current) = getGenValueFromNode(current)
+    override fun genValue(current: CodeGen.Current): GenValue = readGenValue(current)
 
     override fun acceptLink(other: Attribute) = linkAcceptor(other)
 }

@@ -26,7 +26,7 @@ object SerializeIgnoreExclusionStrategy : ExclusionStrategy {
     override fun shouldSkipField(f: FieldAttributes): Boolean {
         // Check if the field or its class has the SerializeIgnore annotation
         return f.declaredClass.isAnnotationPresent(SerializeIgnore::class.java) ||
-                f.annotations.any { it.annotationClass.java.isAnnotationPresent(SerializeIgnore::class.java) }
+                f.annotations.any { it.annotationClass == SerializeIgnore::class }
     }
 
     override fun shouldSkipClass(clazz: Class<*>): Boolean {

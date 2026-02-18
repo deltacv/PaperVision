@@ -35,7 +35,10 @@ class EnumAttribute<T: Enum<T>>(
     override val mode: AttributeMode,
     val values: EnumEntries<T>,
     override var variableName: String?
-) : TypedAttribute<GenValue.Enum<T>>(Companion) {
+) : TypedAttribute<GenValue.Enum<T>>(
+    Companion,
+    doEditorChangeChecking = true // takes advantage of readEditorValue for change checking, so we don't have to do it manually
+) {
 
     companion object: AttributeType<EnumAttribute<*>> {
         override val icon = FontAwesomeIcons.FlagCheckered
@@ -62,8 +65,6 @@ class EnumAttribute<T: Enum<T>>(
             ImGui.combo("", currentIndex, valuesStrings)
             ImGui.popItemWidth()
         }
-
-        checkChange()
     }
 
     override fun acceptLink(other: Attribute) = if(super.acceptLink(other).accepted && other is EnumAttribute<*> && values[0]::class == other.values[0]::class) {

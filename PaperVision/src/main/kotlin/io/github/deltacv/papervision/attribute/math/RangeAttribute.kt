@@ -119,7 +119,7 @@ class RangeAttribute(
             val mx = maxValue.get()
 
             if(mn != prevMin || mx != prevMax) {
-                changed()
+                emitChange(ChangeType.ValueChange)
             }
 
             prevMin = mn
@@ -134,7 +134,7 @@ class RangeAttribute(
             ImGui.checkbox("###$toggleId", toggleValue)
 
             if(prevToggle == null || prevToggle != toggleValue.get()) {
-                changed()
+                emitChange(ChangeType.ValueChange)
 
                 if(usesToggleChanged) {
                     onToggleChange.run()

@@ -55,12 +55,12 @@ class InputMatNode @JvmOverloads constructor(
 
     override fun init() {
         val onDraw = editor.onDraw {
-            if(serializedId != null) {
+            if (serializedId != null) {
                 removeListener()
                 return@onDraw
             }
 
-            if(!isOnEditor) {
+            if (!isOnEditor) {
                 removeListener()
                 return@onDraw
             }
@@ -71,7 +71,7 @@ class InputMatNode @JvmOverloads constructor(
 
                 val windowSize = it()
 
-                if(lastWindowSize == null || (lastWindowSize!!.x != windowSize.x || lastWindowSize!!.y != windowSize.y)) {
+                if (lastWindowSize == null || (lastWindowSize!!.x != windowSize.x || lastWindowSize!!.y != windowSize.y)) {
                     ImNodes.setNodeScreenSpacePos(id, nodeSize.x * 0.5f, windowSize.y / 2f - nodeSize.y / 2)
                 }
 
@@ -81,7 +81,7 @@ class InputMatNode @JvmOverloads constructor(
                 // InputMatNode, OutputMatNode, originNode, flagsNode
                 // if there are more than 4 nodes, we'll stop adjusting the position
                 // since it's likely the user has just created a new project
-                if(editor.nodes.inmutable.size > 4 || ImNodes.isNodeSelected(id)) {
+                if (editor.nodes.inmutable.size > 4 || ImNodes.isNodeSelected(id)) {
                     removeListener()
                     editor.onEditorPan.run()
                 }
@@ -97,7 +97,7 @@ class InputMatNode @JvmOverloads constructor(
     val output = MatAttribute(OUTPUT, "$[att_input]")
 
     override fun onEnable() {
-        + output.rebuildOnChange()
+        +output.rebuildOnChange()
     }
 
     fun ensureAttributeExists() { // prevent weird oopsies due to the special way these persistent buddies are handled
@@ -109,10 +109,15 @@ class InputMatNode @JvmOverloads constructor(
         generatorForAny { NoSession }
     }
 
-    override fun getGenValueOf(current: CodeGen.Current,
-                               attrib: Attribute
-    ) = when(current.language) {
-        is CPythonLanguage -> GenValue.Mat(AccessorVariable(CPythonLanguage.NoType, "input").resolved(), ColorSpace.RGBA.resolved())
+    override fun getGenValueOf(
+        current: CodeGen.Current,
+        attrib: Attribute
+    ) = when (current.language) {
+        is CPythonLanguage -> GenValue.Mat(
+            AccessorVariable(CPythonLanguage.NoType, "input").resolved(),
+            ColorSpace.RGBA.resolved()
+        )
+
         else -> GenValue.Mat(AccessorVariable(JvmOpenCv.Mat, "input").resolved(), ColorSpace.RGBA.resolved())
     }
 }
@@ -125,18 +130,18 @@ class InputMatNode @JvmOverloads constructor(
 class OutputMatNode @JvmOverloads constructor(
     var windowSizeSupplier: (() -> ImVec2)? = null
 ) : DrawNode<NoSession>(allowDelete = false) {
-    
+
     var streamId: Int? = null
     private var lastWindowSize: ImVec2? = null
 
     override fun init() {
         val onDrawId = editor.onDraw {
-            if(serializedId != null) {
+            if (serializedId != null) {
                 removeListener()
                 return@onDraw
             }
 
-            if(!isOnEditor) {
+            if (!isOnEditor) {
                 removeListener()
                 return@onDraw
             }
@@ -147,8 +152,12 @@ class OutputMatNode @JvmOverloads constructor(
 
                 val windowSize = it()
 
-                if(lastWindowSize == null || (lastWindowSize!!.x != windowSize.x || lastWindowSize!!.y != windowSize.y)) {
-                    ImNodes.setNodeScreenSpacePos(id, windowSize.x - nodeSize.x * 1.5f, windowSize.y / 2f - nodeSize.y / 2f)
+                if (lastWindowSize == null || (lastWindowSize!!.x != windowSize.x || lastWindowSize!!.y != windowSize.y)) {
+                    ImNodes.setNodeScreenSpacePos(
+                        id,
+                        windowSize.x - nodeSize.x * 1.5f,
+                        windowSize.y / 2f - nodeSize.y / 2f
+                    )
                 }
 
                 lastWindowSize = ImVec2(windowSize.x, windowSize.y)
@@ -157,7 +166,7 @@ class OutputMatNode @JvmOverloads constructor(
                 // InputMatNode, OutputMatNode, originNode, flagsNode
                 // if there are more than 4 nodes, we'll stop adjusting the position
                 // since it's likely the user is starting to work on their project
-                if(editor.nodes.inmutable.size > 4 || ImNodes.isNodeSelected(id)) {
+                if (editor.nodes.inmutable.size > 4 || ImNodes.isNodeSelected(id)) {
                     removeListener()
                     editor.onEditorPan.run()
                 }
@@ -174,9 +183,9 @@ class OutputMatNode @JvmOverloads constructor(
     val exportedData = ListAttribute(INPUT, DoubleAttribute, "$[att_exporteddata]")
 
     override fun onEnable() {
-        + input.rebuildOnChange()
-        + crosshair.rebuildOnChange()
-        + exportedData.rebuildOnChange()
+        +input.rebuildOnChange()
+        +crosshair.rebuildOnChange()
+        +exportedData.rebuildOnChange()
     }
 
     fun ensureAttributeExists() { // prevent weird oopsies due to the special way these persistent buddies are handled
@@ -196,20 +205,29 @@ class OutputMatNode @JvmOverloads constructor(
                         val crosshairValue = crosshair.genValue(current)
 
                         ifCondition((crosshairValue.value.v notEqualsTo nullValue)) {
-                            val boundingRect = uniqueVariable("boundingRect", Imgproc.callValue("boundingRect", JvmOpenCv.Rect, crosshairValue.value.v))
+                            val boundingRect = uniqueVariable(
+                                "boundingRect",
+                                Imgproc.callValue("boundingRect", JvmOpenCv.Rect, crosshairValue.value.v)
+                            )
                             local(boundingRect)
 
                             separate()
 
                             // Calculate the centroid of the contour
                             val centroidX =
-                                uniqueVariable("centroidX", (boundingRect.callValue("tl", JvmOpenCv.Point).propertyValue("x", DoubleType) +
-                                        boundingRect.callValue("br", JvmOpenCv.Point)
-                                            .propertyValue("x", DoubleType)) / 2.v)
+                                uniqueVariable(
+                                    "centroidX",
+                                    (boundingRect.callValue("tl", JvmOpenCv.Point).propertyValue("x", DoubleType) +
+                                            boundingRect.callValue("br", JvmOpenCv.Point)
+                                                .propertyValue("x", DoubleType)) / 2.v
+                                )
                             val centroidY =
-                                uniqueVariable("centroidY", (boundingRect.callValue("tl", JvmOpenCv.Point).propertyValue("y", DoubleType) +
-                                        boundingRect.callValue("br", JvmOpenCv.Point)
-                                            .propertyValue("y", DoubleType)) / 2.v)
+                                uniqueVariable(
+                                    "centroidY",
+                                    (boundingRect.callValue("tl", JvmOpenCv.Point).propertyValue("y", DoubleType) +
+                                            boundingRect.callValue("br", JvmOpenCv.Point)
+                                                .propertyValue("y", DoubleType)) / 2.v
+                                )
 
                             local(centroidX)
                             local(centroidY)
@@ -218,7 +236,10 @@ class OutputMatNode @JvmOverloads constructor(
 
                             val centroid = uniqueVariable("centroid", JvmOpenCv.Point.new(centroidX, centroidY))
                             local(centroid)
-                            val contourArea = uniqueVariable("contourArea", Imgproc.callValue("contourArea", DoubleType, crosshairValue.value.v))
+                            val contourArea = uniqueVariable(
+                                "contourArea",
+                                Imgproc.callValue("contourArea", DoubleType, crosshairValue.value.v)
+                            )
                             local(contourArea)
 
                             separate()
@@ -226,21 +247,24 @@ class OutputMatNode @JvmOverloads constructor(
                             val crosshairSize = 10.v
                             val crosshairThickness = 5.v
 
-                            val crosshairCol = uniqueVariable("crosshairCol", JvmOpenCv.Scalar.new(0.0.v, 255.0.v, 0.0.v))
+                            val crosshairCol =
+                                uniqueVariable("crosshairCol", JvmOpenCv.Scalar.new(0.0.v, 255.0.v, 0.0.v))
                             local(crosshairCol)
 
                             // draw crosshair on the centroid
 
                             separate()
 
-                            Imgproc("line",
+                            Imgproc(
+                                "line",
                                 inputValue.value.v,
                                 JvmOpenCv.Point.new(centroidX - crosshairSize, centroidY),
                                 JvmOpenCv.Point.new(centroidX + crosshairSize, centroidY),
                                 crosshairCol,
                                 crosshairThickness
                             )
-                            Imgproc("line",
+                            Imgproc(
+                                "line",
                                 inputValue.value.v,
                                 JvmOpenCv.Point.new(centroidX, centroidY - crosshairSize),
                                 JvmOpenCv.Point.new(centroidX, centroidY + crosshairSize),
@@ -269,28 +293,26 @@ class OutputMatNode @JvmOverloads constructor(
                 val dataValue = exportedData.genValue(current)
 
                 current.scope {
-                    val llpython = uniqueVariable("llpython", when (dataValue) {
-                        is GenValue.List.Runtime<*> -> {
-                            dataValue.value.v
-                        }
+                    val llpython = uniqueVariable(
+                        "llpython", dataValue.switch(
+                            ifActual = {
+                                val data = mutableListOf<Value>()
 
-                        is GenValue.List.Actual<*> -> {
-                            val data = mutableListOf<Value>()
-
-                            for (d in dataValue.elements) {
-                                if (d is GenValue.Double) {
-                                    when(d) {
+                                for (d in it.elements) {
+                                    when (d) {
                                         is GenValue.Double.Actual -> data.add(d.value.v)
                                         is GenValue.Double.Runtime -> data.add(d.value.v)
                                     }
                                 }
+
+                                CPythonLanguage.newArrayOf(CPythonLanguage.NoType, *data.toTypedArray())
+                            },
+
+                            ifRuntime = {
+                                it.value.v
                             }
-
-                            CPythonLanguage.newArrayOf(CPythonLanguage.NoType, *data.toTypedArray())
-                        }
-
-                        is GenValue.List.Either<*> -> TODO("")
-                    })
+                        )
+                    )
 
                     local(llpython)
 

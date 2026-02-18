@@ -21,6 +21,7 @@ package io.github.deltacv.papervision.node.vision.overlay
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.attribute.rebuildOnChange
+import io.github.deltacv.papervision.attribute.rebuildOnLink
 import io.github.deltacv.papervision.attribute.vision.MatAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.LineParametersAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.PointsAttribute
@@ -60,7 +61,7 @@ open class DrawContoursNode
     override fun onEnable() {
         + inputMat.rebuildOnChange()
 
-        + lineParams
+        + lineParams.rebuildOnLink()
 
         + contours.rebuildOnChange()
 

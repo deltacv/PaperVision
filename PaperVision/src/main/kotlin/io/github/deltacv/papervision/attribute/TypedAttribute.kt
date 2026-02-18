@@ -31,7 +31,6 @@ import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValueMessage
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValuesMessage
 import io.github.deltacv.papervision.gui.util.Font
-import io.github.deltacv.papervision.node.Node
 
 interface AttributeType<A: TypedAttribute<*>> {
     val icon: String
@@ -51,10 +50,14 @@ interface AttributeType<A: TypedAttribute<*>> {
         throw UnsupportedOperationException("Cannot instantiate this attribute with new")
     }
 
-    fun decomposer(decomposerNode: Node<*>): AttributeDecomposer<*>? = null
+    fun newDecomposer(): AttributeDecomposer<*>? = null
 }
 
-abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) : Attribute() {
+abstract class TypedAttribute<R: GenValue>(
+    val attributeType: AttributeType<*>,
+    val doLinkChangeChecking: Boolean = true,
+    val doEditorChangeChecking: Boolean = false
+) : Attribute() {
 
     abstract var variableName: String?
 
@@ -80,7 +83,6 @@ abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) 
     var ownedByList = false
         internal set
 
-    private var previousGet: Any? = null
     private var cachedLabels = mutableMapOf<Int?, String>()
 
     private val finalVarName by lazy {
@@ -88,6 +90,9 @@ abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) 
     }
 
     val nodeSize = ImVec2()
+
+    private var previousLinkedAttributes: List<Attribute?> = emptyList()
+    private var previousGet: Any? = null
 
     private val defaultImGuiFont by Font.findLazy("default-12")
     private val fontAwesome by Font.findLazy("font-awesome")
@@ -105,7 +110,6 @@ abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) 
     override fun drawAttribute() {
         if(isSecondDraw) {
             ImNodes.getNodeDimensions(nodeSize, parentNode.id)
-
             isSecondDraw = false
         }
 
@@ -164,6 +168,40 @@ abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) 
         if(inputSameLine) {
             ImGui.popFont()
         }
+
+        if(doLinkChangeChecking) {
+            val currentLinkedAttribs = availableLinkedAttributes
+
+            var linksChanged = false
+
+            if (previousLinkedAttributes.size != currentLinkedAttribs.size) {
+                linksChanged = true
+            } else {
+                outer@ for (previousLink in previousLinkedAttributes) {
+                    for (currentLink in currentLinkedAttribs) {
+                        if (previousLink === currentLink) continue@outer
+                    }
+                    linksChanged = true
+                    break
+                }
+            }
+
+            if (linksChanged) {
+                emitChange(ChangeType.LinkChange)
+            }
+
+            previousLinkedAttributes = currentLinkedAttribs.toList()
+        }
+
+        if(doEditorChangeChecking) {
+            val currentGet = editorValue
+
+            if(currentGet != previousGet) {
+                emitChange(ChangeType.ValueChange)
+            }
+
+            previousGet = currentGet
+        }
     }
 
     open fun drawAfterText() { }
@@ -191,7 +229,7 @@ abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) 
                 )
 
                 val value = linkedAttrib.genValue(current)
-                raiseAssert(value is R, tr("err_attachedattrib_isnot", this::class.java.simpleName))
+                raiseAssert(value is R, tr("err_attachedattrib_isnot", R::class.simpleName ?: "unknown"))
 
                 value
             } else {
@@ -199,7 +237,7 @@ abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) 
             }
         } else {
             val value = getGenValueFromNode(current)
-            raiseAssert(value is R, tr("err_valreturned_isnot", this::class.java.simpleName))
+            raiseAssert(value is R, tr("err_valreturned_isnot", R::class.simpleName ?: "unknown"))
 
             return value
         }
@@ -237,26 +275,6 @@ abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) 
         }
     }
 
-
-    protected fun changed() {
-        if (!isFirstDraw && !isSecondDraw) onChange.run()
-    }
-
-    /**
-     * MUST be called if you want to get change detection for input attributes
-     */
-    protected open fun checkChange() {
-        if(mode == AttributeMode.INPUT) {
-            val currentGet = editorValue
-
-            if (currentGet != previousGet) {
-                changed()
-            }
-
-            previousGet = currentGet
-        }
-    }
-
     fun label(indexIfApplicable: Int? = null): String {
         if(!cachedLabels.containsKey(indexIfApplicable)) {
             val label = id.toString() + (indexIfApplicable?.let { "_$it" } ?: "")
@@ -265,7 +283,9 @@ abstract class TypedAttribute<R: GenValue>(val attributeType: AttributeType<*>) 
             onChange {
                 val value = editorValue
 
-                if(value == null) {
+                // if value is null we have an oopsie and we should just rebuild
+                // always rebuild on link changes, no other way to handle it
+                if(value == null || peekChange() is ChangeType.LinkChange) {
                     rebuildPreviz()
                     return@onChange
                 }

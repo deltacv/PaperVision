@@ -320,10 +320,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         for (link in links.inmutable) {
             link.draw()
-
-            if (link.hasChanged()) {
-                onEditorChange.run()
-            }
         }
 
         editorHovered = ImNodes.isEditorHovered()

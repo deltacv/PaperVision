@@ -41,6 +41,7 @@ nod_cannyedge,Canny Edge,Canny Edge
 nod_blobdetector,Simple Blob Detector,Detector de Blobs
 nod_keypointsto_rects,Key Points to Rectangles,Puntos Clave a Rectangulos
 nod_circlesto_rects,Circles to Rectangles,Circulos a Rectangulos
+nod_decomposer,Attribute Decomposer,Descomponedor de Atributos
 nod_exportrect_target,Export Rectangle,Exportar Rectangulo
 nod_exportrot_recttarget,Export Rotated Rectangle,Exportar Rectangulo Rotado
 nod_exportrect_targets,Export Rectangles,Exportar Rectangulos
@@ -129,6 +130,9 @@ att_rectsinside,Rects Inside,Rectangulos Dentro
 att_target,Target,Objetivo
 att_targets,Targets,Objetivos
 att_label,Label,Etiqueta
+att_attribute,Attribute,Atributo
+att_rows,Rows,Filas
+att_columns,Columns,Columnas
 des_exportrect_target,Export specified rectangle<br>to hand to another program.,Exporta el rectangulo especificado<br>para pasarlo a otro programa.
 des_exportrect_targets,Export specified rectangles<br>to hand to another program.,Exporta los rectangulos especificados<br>para pasarlos a otro programa.
 des_exportrot_recttarget,Export specified rotated rectangle<br>to hand to another program.,Exporta el rectangulo rotado especificado<br>para pasarlo a otro programa.
@@ -167,6 +171,7 @@ des_cannyedge,Filters edges in the input<br>image using the Canny algorithm.,Fil
 des_blobdetector,Detects blobs in an image<br>using OpenCV's Simple Blob Detector.,Detecta blobs en una imagen<br>usando el Detector de Blobs Simple de OpenCV.
 des_keypointsto_rects,Converts key points to<br>bounding rectangles.,Convierte puntos clave a<br>rectángulos delimitadores.
 des_circlesto_rects,Converts circles to<br>bounding rectangles.,Convierte círculos a<br>rectángulos delimitadores.
+des_decomposer,Decomposes a complex attribute<br>into simpler attributes that can be used<br>by other nodes.,Descompone un atributo complejo<br>en atributos más simples que pueden ser usados<br>por otros nodos.
 des_vector2,Composes a Vector in two dimensions,Compone un Vector en dos dimensiones
 err_bitwiseor_binary,"Both inputs must be of the same type, binary or not","Ambas entradas deben ser del mismo tipo, binario o no"
 err_grayscale_required,"Grayscale image required","Se requiere una imagen en escala de grises"

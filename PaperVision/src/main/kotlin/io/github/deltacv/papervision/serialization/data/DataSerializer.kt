@@ -47,5 +47,5 @@ object DataSerializer {
 @Target(AnnotationTarget.FIELD)
 annotation class SerializeData
 
-@Target(AnnotationTarget.CLASS, AnnotationTarget.PROPERTY)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FIELD)
 annotation class SerializeIgnore

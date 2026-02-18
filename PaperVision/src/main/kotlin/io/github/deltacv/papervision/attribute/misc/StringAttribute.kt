@@ -33,7 +33,10 @@ import io.github.deltacv.papervision.serialization.AttributeSerializationData
 class StringAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null
-) : TypedAttribute<GenValue.String>(Companion) {
+) : TypedAttribute<GenValue.String>(
+    Companion,
+    doEditorChangeChecking = true // takes advantage of readEditorValue for change checking, so we don't have to do it manually
+) {
 
     companion object: AttributeType<StringAttribute> {
         override val icon = FontAwesomeIcons.EnvelopeOpenText
@@ -60,10 +63,6 @@ class StringAttribute(
             ImGui.pushItemWidth(110.0f)
 
             ImGui.inputText("", value, if(disableInput) ImGuiInputTextFlags.ReadOnly else 0)
-
-            if(!ImGui.isItemFocused()) {
-                checkChange()
-            }
 
             ImGui.popItemWidth()
 

@@ -31,8 +31,9 @@ import java.util.concurrent.ArrayBlockingQueue
 
 abstract class DrawNode<S: CodeGenSession>(
     allowDelete: Boolean = true,
-    joinActionStack: Boolean = true
-) : Node<S>(allowDelete, joinActionStack) {
+    joinActionStack: Boolean = true,
+    rebuildOnLink: Boolean = true
+) : Node<S>(allowDelete, joinActionStack, rebuildOnLink) {
 
     var nextNodePosition: ImVec2? = null
 
@@ -47,8 +48,6 @@ abstract class DrawNode<S: CodeGenSession>(
 
     private var isFirstDraw = true
 
-    private var changeQueue = ArrayBlockingQueue<Boolean>(3)
-
     val annotationData by lazy {
         val annotation = this.javaClass.getAnnotation(PaperNode::class.java)
             ?: throw IllegalArgumentException("Node ${javaClass.typeName} needs to have a @PaperNode annotation")
@@ -56,24 +55,8 @@ abstract class DrawNode<S: CodeGenSession>(
         AnnotationData(annotation.name, annotation.description, annotation.category, annotation.showInList)
     }
 
-    init {
-        onChange {
-            if(changeQueue.remainingCapacity() <= 1) {
-                changeQueue.poll()
-            }
-
-            changeQueue.add(true)
-        }
-    }
-
     var titleColor = annotationData.category.color
     var titleHoverColor = annotationData.category.colorSelected
-
-    override fun onEnable() {
-        for(attribute in nodeAttributes) {
-            attribute.onChange  { onChange.run() }
-        }
-    }
 
     open fun init() {}
 
@@ -141,8 +124,6 @@ abstract class DrawNode<S: CodeGenSession>(
     }
 
     open fun drawNode() { }
-
-    override fun hasChanged() = changeQueue.poll() ?: false
 
     data class AnnotationData(val name: String,
                               val description: String,

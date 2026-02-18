@@ -328,7 +328,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
-                    val crosshairCol = crosshairLineParams.color.toActualOrNull()?.elements?.map { it.v }?.toTypedArray() ?: raise("") // TODO: Handle this better
+                    val crosshairCol = CPythonOpenCv.scalarTuple(crosshairLineParams.color, current)
                     val crosshairThickness = crosshairLineParams.thickness.value.v
 
                     CPythonOpenCv.cv2(
@@ -342,7 +342,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                             int(pointX + adjustedCrosshairSize),
                             int(pointY)
                         ),
-                        CPythonLanguage.tuple(*crosshairCol),
+                        crosshairCol,
                         crosshairThickness
                     )
 
@@ -357,7 +357,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                             int(pointX),
                             int(pointY + adjustedCrosshairSize)
                         ),
-                        CPythonLanguage.tuple(*crosshairCol),
+                        crosshairCol,
                         crosshairThickness
                     )
 

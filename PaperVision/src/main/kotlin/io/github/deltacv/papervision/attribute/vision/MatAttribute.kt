@@ -49,20 +49,20 @@ class MatAttribute(
 
         override fun new(mode: AttributeMode, variableName: String) = MatAttribute(mode, variableName)
 
-        override fun decomposer(decomposerNode: Node<*>) = MatAttributeDecomposer(decomposerNode)
+        override fun newDecomposer() = MatAttributeDecomposer()
     }
 
-    @SerializeIgnore
+    @field:SerializeIgnore
     var isPrevizEnabled = false
         private set
 
     private var prevIsPrevizEnabled = false
 
-    @SerializeIgnore
+    @field:SerializeIgnore
     var wasPrevizJustEnabled = false
         private set
 
-    @SerializeIgnore
+    @field:SerializeIgnore
     var displayWindow: ImageDisplayNode? = null
         private set
 

@@ -23,6 +23,8 @@ import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
+import io.github.deltacv.papervision.attribute.TypedAttribute
+import io.github.deltacv.papervision.attribute.rebuildOnLink
 import io.github.deltacv.papervision.codegen.*
 import io.github.deltacv.papervision.exception.NodeGenException
 import io.github.deltacv.papervision.gui.editor.NodeEditor
@@ -32,6 +34,8 @@ import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.BasicNodeData
 import io.github.deltacv.papervision.serialization.NodeSerializationData
+import io.github.deltacv.papervision.util.DelegateChangeEmitter
+import io.github.deltacv.papervision.util.QueuedChangeEmitter
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.event.PaperEventListenerId
 import io.github.deltacv.papervision.util.loggerFor
@@ -45,8 +49,9 @@ interface Type {
 
 abstract class Node<S: CodeGenSession>(
     allowDelete: Boolean = true,
-    val joinActionStack: Boolean = true
-) : DrawableIdElementBase<Node<*>>(), GenNode<S>, GenValueMapper, DataSerializable<NodeSerializationData> {
+    val joinActionStack: Boolean = true,
+    val rebuildOnLink: Boolean = true
+) : DrawableIdElementBase<Node<*>>(), GenNode<S>, GenValueMapper, DelegateChangeEmitter<Node.ChangeType>, DataSerializable<NodeSerializationData> {
 
     override val idContainer = IdContainerStacks.local.peekNonNull<Node<*>>()
     override val requestedId get() = if(forgetSerializedId) null else serializedId
@@ -82,7 +87,6 @@ abstract class Node<S: CodeGenSession>(
 
     override val genOptions = CodeGenOptions()
 
-    val onChange = PaperEventHandler("${this::class.java.simpleName}-OnChange")
     val onDelete = PaperEventHandler("OnDelete-${this::class.simpleName}")
 
     private val attribOnChangeListenerIds = mutableMapOf<Attribute, PaperEventListenerId>()
@@ -92,12 +96,16 @@ abstract class Node<S: CodeGenSession>(
 
     val nodeAttributes = _nodeAttributes as List<Attribute> // public read-only
 
-    protected fun drawAttributes() {
-        for((i, attribute) in nodeAttributes.withIndex()) {
+    override val changeEmitterDelegate = QueuedChangeEmitter<ChangeType>(defaultPeekChange = ChangeType.AttributeChange)
+
+    protected open fun drawAttributes(additional: List<Attribute> = emptyList()) {
+        val total = (nodeAttributes + additional)
+
+        for((i, attribute) in total.withIndex()) {
             attribute.parentNode = this
             attribute.draw()
 
-            if(i < nodeAttributes.size - 1 && !attribute.wasLastDrawCancelled) {
+            if(i < total.size - 1 && !attribute.wasLastDrawCancelled) {
                 ImGui.newLine() // make a new blank line if this isn't the last attribute
             }
         }
@@ -138,11 +146,17 @@ abstract class Node<S: CodeGenSession>(
         }
     }
 
-    fun addAttribute(attribute: Attribute) {
+    open fun addAttribute(attribute: Attribute) {
         if(!_nodeAttributes.contains(attribute)) {
             attribute.parentNode = this
             attribOnChangeListenerIds[attribute] = attribute.onChange {
-                onChange.run()
+                // emit this attribute's changes to the node
+                emitChange(ChangeType.AttributeChange)
+            }
+
+            if(rebuildOnLink) {
+                // automatically rebuild previz when this attribute's links change
+                attribute.rebuildOnLink()
             }
 
             _nodeAttributes.add(attribute)
@@ -212,7 +226,7 @@ abstract class Node<S: CodeGenSession>(
         }
 
         // Propagate to dead ends, so they can be processed without being left out
-        // because no one depends on them, so they won't be propagated to otherwise.
+        // because no one depends on them, as they won't be propagated to otherwise.
         deadEndNodes.forEach { it.genCodeIfNecessary(current) }
     }
 
@@ -241,7 +255,8 @@ abstract class Node<S: CodeGenSession>(
     }
 
     fun noValue(attrib: Attribute): Nothing {
-        raise(tr("err_attrib_nothandled_bythis", attrib))
+        val name = (attrib as? TypedAttribute<*>)?.variableName ?: attrib::class.simpleName ?: attrib.toString()
+        raise(tr("err_attrib_nothandled_bythis", tr(name)))
     }
 
     fun raise(message: String): Nothing = throw NodeGenException(this, message)
@@ -272,6 +287,10 @@ abstract class Node<S: CodeGenSession>(
     }
 
     override fun toString() = "Node(\"$genNodeName\", id=$id)"
+
+    sealed class ChangeType {
+        object AttributeChange: ChangeType()
+    }
 
     companion object {
         val logger by loggerFor<Node<*>>()
@@ -314,5 +333,4 @@ abstract class Node<S: CodeGenSession>(
             return false
         }
     }
-
 }

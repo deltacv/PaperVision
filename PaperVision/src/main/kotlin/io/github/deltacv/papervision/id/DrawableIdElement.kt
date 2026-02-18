@@ -22,7 +22,6 @@ import io.github.deltacv.papervision.id.container.IdContainer
 
 interface DrawableIdElement : StatedIdElement {
     fun draw()
-    fun hasChanged(): Boolean
 }
 
 @Suppress("UNCHECKED_CAST")
@@ -56,6 +55,4 @@ abstract class DrawableIdElementBase<T : DrawableIdElementBase<T>> : DrawableIdE
     override fun delete() = state.delete()
 
     override fun restore() = state.restore()
-
-    override fun hasChanged() = false
 }

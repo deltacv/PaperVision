@@ -35,7 +35,10 @@ class IntAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null,
     initialValue: Int = 0
-) : TypedAttribute<GenValue.Int>(Companion) {
+) : TypedAttribute<GenValue.Int>(
+    Companion,
+    doEditorChangeChecking = true // takes advantage of readEditorValue for change checking, so we don't have to do it manually
+) {
 
     companion object: AttributeType<IntAttribute> {
         override val icon = FontAwesomeIcons.Hashtag
@@ -73,8 +76,6 @@ class IntAttribute(
                 value.set(sliderValue.get())
             }
 
-            checkChange()
-
             ImGui.popItemWidth()
 
             if(nextValue != null) {
@@ -97,7 +98,7 @@ class IntAttribute(
 
     override fun readEditorValue() = value.get()
 
-    override fun genValue(current: CodeGen.Current): GenValue.Int = readGenValue(
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Int>(
         current, GenValue.Int.Actual(value.get().resolved())
     )
 

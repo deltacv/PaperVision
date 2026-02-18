@@ -11,9 +11,7 @@ import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.Node
 
-class MatAttributeDecomposer(
-    decomposerNode: Node<*>
-) : AttributeDecomposer<MatAttributeDecomposer.Session>(decomposerNode) {
+class MatAttributeDecomposer : AttributeDecomposer<MatAttributeDecomposer.Session>() {
 
     val rows = IntAttribute(OUTPUT, "$[att_rows]")
     val cols = IntAttribute(OUTPUT, "$[att_columns]")

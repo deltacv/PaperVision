@@ -11,21 +11,25 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.data.SerializeIgnore
 
 @PaperNode(
     name = "nod_decomposer",
-    category = NodeCategory.TRANSFORM
+    category = NodeCategory.TRANSFORM,
+    description = "des_decomposer"
 )
 class DecomposerNode : DrawNode<NoSession>() {
 
-    private var decomposer: AttributeDecomposer<*>? = null
+    var decomposer: AttributeDecomposer<*>? = null
 
-    val input = AnyAttribute(INPUT, "$[att_input]", linkAcceptor = {
-        if(it is TypedAttribute<*>) {
-            val decomposer = it.attributeType.decomposer(this)
+    @field:SerializeIgnore
+    private var previousLinkedAttribute: Attribute? = null
 
-            if(decomposer != null) {
-                this.decomposer = decomposer
+    val input = AnyAttribute(INPUT, "$[att_attribute]", linkAcceptor = {
+        if (it is TypedAttribute<*>) {
+            val decomposer = it.attributeType.newDecomposer()
+
+            if (decomposer != null) {
                 Attribute.LinkAcceptance.Accept
             } else Attribute.LinkAcceptance.Reject("err_couldntlink_notdecomposable")
         } else Attribute.LinkAcceptance.Reject
@@ -34,24 +38,41 @@ class DecomposerNode : DrawNode<NoSession>() {
     override fun onEnable() {
         + input
 
-        input.onLink {
-            decomposer?.enable()
-        }
+        // enable if serialization set it up
+        decomposer?.enable(this)
+    }
 
-        input.onUnlink {
+    override fun drawNode() {
+        val currentLinkedAttribute = input.availableLinkedAttribute
+
+        if(currentLinkedAttribute != previousLinkedAttribute || decomposer == null) {
             decomposer?.disable()
             decomposer = null
+
+            if(currentLinkedAttribute != null) {
+                val decomposer = (currentLinkedAttribute as? TypedAttribute<*>)?.attributeType?.newDecomposer()
+
+                if(decomposer != null) {
+                    decomposer.enable(this)
+                    this.decomposer = decomposer
+                }
+            }
         }
+
+        previousLinkedAttribute = currentLinkedAttribute
     }
 
     override val generators = generatorsBuilder {
         generatorForAny { _, current ->
-            current.codeGen.sessions[decomposer!!] = decomposer!!.genCode(input.genValue(current), current)
+            decomposer?.let {
+                current.codeGen.sessions[it] = it.genCode(input.genValue(current), current)
+            }
             NoSession
         }
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
+        warnAssert(decomposer != null, "Decomposer is null")
         return decomposer?.getGenValueOf(current, attrib) ?: noValue(attrib)
     }
 

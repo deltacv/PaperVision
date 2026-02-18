@@ -83,18 +83,28 @@ class Link(
         }
     }
 
-    override fun onEnable() {
-    }
+    override fun onEnable() {}
 
     override fun delete() {
+        if(aAttrib?.enabledLinks?.contains(this) == true) {
+            aAttrib?.onUnlink?.run()
+        }
+        if(bAttrib?.enabledLinks?.contains(this) == true) {
+            bAttrib?.onUnlink?.run()
+        }
+
         idContainer.removeId(id)
         triggerOnChange()
-
-        aAttrib?.onUnlink?.run()
-        bAttrib?.onUnlink?.run()
     }
 
     override fun restore() {
+        if(aAttrib?.links?.contains(this) == true) {
+            aAttrib?.onLink?.run()
+        }
+        if(bAttrib?.links?.contains(this) == true) {
+            bAttrib?.onLink?.run()
+        }
+
         idContainer[id] = this
         triggerOnChange()
     }
