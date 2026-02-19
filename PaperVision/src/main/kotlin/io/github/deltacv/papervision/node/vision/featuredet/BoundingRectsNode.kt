@@ -45,8 +45,8 @@ import io.github.deltacv.papervision.node.PaperNode
 )
 class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
-    val inputContours = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
-    val outputRects = ListAttribute(OUTPUT, RectAttribute, "$[att_boundingrects]")
+    val inputContours = ListAttribute(INPUT, "$[att_contours]", PointsAttribute)
+    val outputRects = ListAttribute(OUTPUT, "$[att_boundingrects]", RectAttribute)
 
     override fun onEnable() {
         + inputContours.rebuildOnChange()
@@ -95,7 +95,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                     }
                 }
 
-                session.outputRects = GenValue.List.Runtime(rectsList.resolved(), GenValue.Rect.Runtime::class.resolved())
+                session.outputRects = GenValue.List.Runtime(rectsList.resolved(), GenValue.Rect.Inst::class.resolved())
 
                 session
             }
@@ -138,7 +138,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
                     }
                 }
 
-                session.outputRects = GenValue.List.Runtime(rectsList.resolved(), GenValue.Rect.Runtime::class.resolved())
+                session.outputRects = GenValue.List.Runtime(rectsList.resolved(), GenValue.Rect.Inst::class.resolved())
 
                 session
             }
@@ -154,7 +154,7 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
     }
 
     class Session : CodeGenSession {
-        lateinit var outputRects: GenValue.List.Runtime<GenValue.Rect.Runtime>
+        lateinit var outputRects: GenValue.List.Runtime<GenValue.Rect.Inst>
     }
 
 }

@@ -21,11 +21,12 @@ interface ChangeEmitter<C> {
     fun processChanges()
 
     fun peekChange(): C = currentChange ?: defaultPeekChange
+    fun nullablePeekChange(): C? = currentChange
 
     fun hasChanged(): Boolean = currentChange != null
 }
 
-interface DelegateChangeEmitter<C> : ChangeEmitter<C> {
+interface DelegatedChangeEmitter<C> : ChangeEmitter<C> {
     val changeEmitterDelegate: ChangeEmitter<C>
 
     override val onChange: PaperEventHandler
@@ -38,14 +39,12 @@ interface DelegateChangeEmitter<C> : ChangeEmitter<C> {
 
     override fun emitChange(change: C) = changeEmitterDelegate.emitChange(change)
     override fun processChanges() = changeEmitterDelegate.processChanges()
-
-    override fun peekChange(): C = changeEmitterDelegate.peekChange()
 }
 
 open class QueuedChangeEmitter<C>(
     override val defaultPeekChange: C,
     queueSize: Int = 8,
-    private val logging: Boolean = true
+    private val logging: Boolean = false
 ) : ChangeEmitter<C> {
 
     val logger by loggerOf("QueuedChangeEmitter-${this::class.simpleName}")

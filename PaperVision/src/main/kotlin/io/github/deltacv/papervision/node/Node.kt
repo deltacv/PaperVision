@@ -34,7 +34,7 @@ import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.BasicNodeData
 import io.github.deltacv.papervision.serialization.NodeSerializationData
-import io.github.deltacv.papervision.util.DelegateChangeEmitter
+import io.github.deltacv.papervision.util.DelegatedChangeEmitter
 import io.github.deltacv.papervision.util.QueuedChangeEmitter
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.event.PaperEventListenerId
@@ -51,7 +51,7 @@ abstract class Node<S: CodeGenSession>(
     allowDelete: Boolean = true,
     val joinActionStack: Boolean = true,
     val rebuildOnLink: Boolean = true
-) : DrawableIdElementBase<Node<*>>(), GenNode<S>, GenValueMapper, DelegateChangeEmitter<Node.ChangeType>, DataSerializable<NodeSerializationData> {
+) : DrawableIdElementBase<Node<*>>(), GenNode<S>, GenValueMapper, DelegatedChangeEmitter<Node.ChangeType>, DataSerializable<NodeSerializationData> {
 
     override val idContainer = IdContainerStacks.local.peekNonNull<Node<*>>()
     override val requestedId get() = if(forgetSerializedId) null else serializedId

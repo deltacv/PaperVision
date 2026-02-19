@@ -50,7 +50,7 @@ class BlurNode : DrawNode<BlurNode.Session>() {
 
     val input = MatAttribute(INPUT, "$[att_input]")
 
-    val blurAlgo = EnumAttribute(INPUT, BlurAlgorithm.entries, "$[att_bluralgo]")
+    val blurAlgo = EnumAttribute(INPUT, "$[att_bluralgo]", BlurAlgorithm.entries)
     val blurValue = IntAttribute(INPUT, "$[att_value]")
 
     val output = MatAttribute(OUTPUT, "$[att_output]")

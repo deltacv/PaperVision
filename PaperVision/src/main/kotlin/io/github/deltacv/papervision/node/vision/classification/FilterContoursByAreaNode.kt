@@ -45,12 +45,12 @@ import io.github.deltacv.papervision.node.PaperNode
 )
 class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
 
-    val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
+    val input = ListAttribute(INPUT, "$[att_contours]", PointsAttribute)
 
     val minArea = IntAttribute(INPUT, "$[att_minarea]")
     val maxArea = IntAttribute(INPUT, "$[att_maxarea]")
 
-    val output = ListAttribute(OUTPUT, PointsAttribute, "$[att_filteredcontours]")
+    val output = ListAttribute(OUTPUT, "$[att_filteredcontours]", PointsAttribute)
 
     override fun onEnable() {
         + input.rebuildOnChange()

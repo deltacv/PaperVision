@@ -54,7 +54,7 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
     val convexity = RangeAttribute(INPUT, "$[att_convexity]") { it / 100.0 }
     val inertia = RangeAttribute(INPUT, "$[att_inertia]") { it / 100.0 }
 
-    val output = ListAttribute(AttributeMode.OUTPUT, KeyPointAttribute, "$[att_keypoints]")
+    val output = ListAttribute(AttributeMode.OUTPUT, "$[att_keypoints]", KeyPointAttribute)
 
     override fun onEnable() {
         + input.rebuildOnChange()

@@ -27,6 +27,8 @@ open class ButtonWindow(
         ImGuiWindowFlags.AlwaysAutoResize
     )
 
+    override val focusOnHover = true
+
     var buttonHovered = false
         private set
     private var lastPressed = false

@@ -50,7 +50,7 @@ open class DrawRectanglesNode
 @JvmOverloads constructor(val isDrawOnInput: Boolean = false) : DrawNode<DrawRectanglesNode.Session>() {
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")
-    val rectangles = ListAttribute(INPUT, RectAttribute, "$[att_rects]")
+    val rectangles = ListAttribute(INPUT, "$[att_rects]", RectAttribute)
 
     val lineParams = LineParametersAttribute(INPUT, "$[att_params]")
 
@@ -99,7 +99,7 @@ open class DrawRectanglesNode
 
                     if (rectanglesList !is GenValue.List.Runtime<*>) {
                         for (rectangle in (rectanglesList as GenValue.List.Actual<*>).elements) {
-                            if (rectangle is GenValue.Rect.Actual) {
+                            if (rectangle is GenValue.Rect.Components) {
                                 Imgproc(
                                     "rectangle", drawMat,
                                     JvmOpenCv.Rect.new(
@@ -109,7 +109,7 @@ open class DrawRectanglesNode
                                     lineParams.color.value.v,
                                     lineParams.thicknessValue.v
                                 )
-                            } else if (rectangle is GenValue.Rect.Runtime) {
+                            } else if (rectangle is GenValue.Rect.Inst) {
                                 ifCondition(
                                     rectangle.value.v notEqualsTo language.nullValue and
                                             (drawMat notEqualsTo language.nullValue) and
@@ -201,7 +201,7 @@ open class DrawRectanglesNode
 
                     if (rectanglesList !is GenValue.List.Runtime<*>) {
                         for (rectangle in (rectanglesList as GenValue.List.Actual<*>).elements) {
-                            if (rectangle is GenValue.Rect.Actual) {
+                            if (rectangle is GenValue.Rect.Components) {
                                 cv2(
                                     "rectangle", target,
                                     CPythonLanguage.tuple(rectangle.x.v, rectangle.y.v),
@@ -212,7 +212,7 @@ open class DrawRectanglesNode
                                     colorScalar,
                                     thickness.v
                                 )
-                            } else if (rectangle is GenValue.Rect.Runtime) {
+                            } else if (rectangle is GenValue.Rect.Inst) {
                                 runtimeRect(rectangle.value.v)
                             }
                         }

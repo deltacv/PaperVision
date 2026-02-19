@@ -52,14 +52,14 @@ enum class BoundingMode {
 )
 class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() {
 
-    val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
+    val input = ListAttribute(INPUT, "$[att_contours]", PointsAttribute)
 
-    val boundingMode = EnumAttribute(INPUT, BoundingMode.entries, "$[att_boundingmode]")
+    val boundingMode = EnumAttribute(INPUT, "$[att_boundingmode]", BoundingMode.entries)
 
     val minRatio = IntAttribute(INPUT, "$[att_minratio]")
     val maxRatio = IntAttribute(INPUT, "$[att_maxratio]")
 
-    val output = ListAttribute(OUTPUT, PointsAttribute, "$[att_filteredcontours]")
+    val output = ListAttribute(OUTPUT, "$[att_filteredcontours]", PointsAttribute)
 
     override fun onEnable() {
         + input.rebuildOnChange()

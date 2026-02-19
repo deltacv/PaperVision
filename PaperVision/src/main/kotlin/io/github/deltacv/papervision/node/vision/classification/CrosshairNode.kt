@@ -54,7 +54,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
     }
 
     val drawCrosshairOn = MatAttribute(INPUT, "$[att_drawon_image]")
-    val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
+    val input = ListAttribute(INPUT, "$[att_contours]", PointsAttribute)
 
     val crosshairPosition = Vector2Attribute(INPUT, "$[att_crosshairposition]")
 
@@ -62,9 +62,9 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
     val crosshairLineParams = LineParametersAttribute(INPUT, "$[att_crosshairline_params]")
 
-    val detectionMode = EnumAttribute(INPUT, DetectionMode.entries, "$[att_detectionmode]")
+    val detectionMode = EnumAttribute(INPUT, "$[att_detectionmode]", DetectionMode.entries)
 
-    val outputCrosshair = ListAttribute(OUTPUT, PointsAttribute, "$[att_crosshair]")
+    val outputCrosshair = ListAttribute(OUTPUT, "$[att_crosshair]", PointsAttribute)
     val outputCrosshairImage = MatAttribute(OUTPUT, "$[att_crosshairimage]")
 
     override fun onEnable() {

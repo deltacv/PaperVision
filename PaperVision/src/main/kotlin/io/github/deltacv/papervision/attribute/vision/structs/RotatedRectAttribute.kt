@@ -29,7 +29,7 @@ import io.github.deltacv.papervision.gui.style.rgbaColor
 class RotatedRectAttribute (
     override val mode: AttributeMode,
     override var variableName: String? = null
-) : TypedAttribute<GenValue.Rect.Rotated>(Companion) {
+) : TypedAttribute<GenValue.RotatedRect>(Companion) {
 
     companion object : AttributeType<RotatedRectAttribute> {
         override val icon = FontAwesomeIcons.VectorSquare
@@ -43,6 +43,6 @@ class RotatedRectAttribute (
         override fun new(mode: AttributeMode, variableName: String) = RotatedRectAttribute(mode, variableName)
     }
 
-    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Rect.Rotated.Runtime>(current)
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.RotatedRect.Inst>(current)
 
 }

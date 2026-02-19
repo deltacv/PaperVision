@@ -44,13 +44,13 @@ import io.github.deltacv.papervision.node.PaperNode
 )
 class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
 
-    val circles = ListAttribute(INPUT, CircleAttribute, "$[att_circles]")
+    val circles = ListAttribute(INPUT, "$[att_circles]", CircleAttribute)
 
-    val output = ListAttribute(OUTPUT, RectAttribute, "$[att_rects]")
+    val output = ListAttribute(OUTPUT, "$[att_rects]", RectAttribute)
 
     override fun onEnable() {
-        +circles.rebuildOnChange()
-        +output.rebuildOnChange()
+        + circles.rebuildOnChange()
+        + output.rebuildOnChange()
     }
 
     override val generators = generatorsBuilder {
@@ -93,7 +93,7 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
                 }
 
                 session.outputRects =
-                    GenValue.List.Runtime(rects.resolved(), GenValue.Rect.Runtime::class.resolved())
+                    GenValue.List.Runtime(rects.resolved(), GenValue.Rect.Inst::class.resolved())
             }
 
             session
@@ -130,7 +130,7 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
                     }
 
                     session.outputRects =
-                        GenValue.List.Runtime(rects.resolved(), GenValue.Rect.Runtime::class.resolved())
+                        GenValue.List.Runtime(rects.resolved(), GenValue.Rect.Inst::class.resolved())
                 }
             }
 
@@ -147,6 +147,6 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
     }
 
     class Session : CodeGenSession {
-        lateinit var outputRects: GenValue.List.Runtime<GenValue.Rect.Runtime>
+        lateinit var outputRects: GenValue.List.Runtime<GenValue.Rect.Inst>
     }
 }

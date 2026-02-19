@@ -44,7 +44,7 @@ import io.github.deltacv.papervision.node.PaperNode
 )
 class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>() {
 
-    val input = ListAttribute(INPUT, RectAttribute, "$[att_rects]")
+    val input = ListAttribute(INPUT, "$[att_rects]", RectAttribute)
     val output = RectAttribute(OUTPUT, "$[att_biggestrect]")
 
     override fun onEnable() {
@@ -87,7 +87,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                         }
                     } else {
                         for (element in (rectsList as GenValue.List.Actual<*>).elements) {
-                            if(element is GenValue.Rect.Actual) {
+                            if(element is GenValue.Rect.Components) {
                                 separate()
                                 val rect = DeclarableVariable(
                                     "rect",
@@ -106,7 +106,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                                 ) {
                                     biggestRect instanceSet rect
                                 }
-                            } else if(element is GenValue.Rect.Runtime) {
+                            } else if(element is GenValue.Rect.Inst) {
                                 separate()
                                 withRuntimeRect(element.value.v)
                             }
@@ -114,7 +114,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                     }
                 }
 
-                session.biggestRect = GenValue.Rect.Runtime(biggestRect.resolved())
+                session.biggestRect = GenValue.Rect.Inst(biggestRect.resolved())
 
                 session
             }
@@ -153,7 +153,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                         }
                     } else {
                         for (element in (rectsList as GenValue.List.Actual<*>).elements) {
-                            if(element is GenValue.Rect.Actual) {
+                            if(element is GenValue.Rect.Components) {
                                 separate()
 
                                 val rect = uniqueVariable(
@@ -175,7 +175,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                                 ) {
                                     biggestRect instanceSet rect
                                 }
-                            } else if(element is GenValue.Rect.Runtime) {
+                            } else if(element is GenValue.Rect.Inst) {
                                 separate()
                                 withRuntimeRect(element.value.v)
                             }
@@ -183,7 +183,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                     }
                 }
 
-                session.biggestRect = GenValue.Rect.Runtime(biggestRect.resolved())
+                session.biggestRect = GenValue.Rect.Inst(biggestRect.resolved())
 
                 session
             }
@@ -192,14 +192,14 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
         if(attrib == output) {
-            return GenValue.Rect.Runtime.defer { current.sessionOf(this)?.biggestRect }
+            return GenValue.Rect.Inst.defer { current.sessionOf(this)?.biggestRect }
         }
 
         noValue(attrib)
     }
 
     class Session : CodeGenSession {
-        lateinit var biggestRect: GenValue.Rect.Runtime
+        lateinit var biggestRect: GenValue.Rect.Inst
     }
 
 }

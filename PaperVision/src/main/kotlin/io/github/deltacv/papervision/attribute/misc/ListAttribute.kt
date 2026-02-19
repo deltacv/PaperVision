@@ -39,8 +39,8 @@ import io.github.deltacv.papervision.serialization.AttributeSerializationData
 
 open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
     override val mode: AttributeMode,
-    val elementAttributeType: AttributeType<E>,
     override var variableName: String? = null,
+    val elementAttributeType: AttributeType<E>,
     length: Int? = null,
     val allowAddOrDelete: Boolean = true
 ) : TypedAttribute<GenValue.List<ER>>(Companion) {

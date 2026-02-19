@@ -31,12 +31,9 @@ import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.serialization.AttributeSerializationData
 import io.github.deltacv.papervision.serialization.data.DataSerializable
 import io.github.deltacv.papervision.serialization.BasicAttribData
-import io.github.deltacv.papervision.util.ChangeEmitter
-import io.github.deltacv.papervision.util.DelegateChangeEmitter
+import io.github.deltacv.papervision.util.DelegatedChangeEmitter
 import io.github.deltacv.papervision.util.QueuedChangeEmitter
 import io.github.deltacv.papervision.util.event.PaperEventHandler
-import io.github.deltacv.papervision.util.event.PaperEventListener
-import java.util.concurrent.ArrayBlockingQueue
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -63,7 +60,7 @@ class EmptyInputAttribute(
     }
 }
 
-abstract class Attribute : DrawableIdElementBase<Attribute>(), DelegateChangeEmitter<Attribute.ChangeType>, DataSerializable<AttributeSerializationData> {
+abstract class Attribute : DrawableIdElementBase<Attribute>(), DelegatedChangeEmitter<Attribute.ChangeType>, DataSerializable<AttributeSerializationData> {
 
     override val idContainer get() = IdContainerStacks.local.peekNonNull<Attribute>()
 

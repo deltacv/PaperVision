@@ -21,6 +21,8 @@ package io.github.deltacv.papervision.attribute.vision.structs
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
+import io.github.deltacv.papervision.attribute.decomp.AttributeDecomposer
+import io.github.deltacv.papervision.attribute.decomp.vision.structs.RectAttributeDecomposer
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
@@ -41,7 +43,9 @@ class RectAttribute (
         override val listStyleHoveredColor = rgbaColor(253, 216, 53, 255)
 
         override fun new(mode: AttributeMode, variableName: String) = RectAttribute(mode, variableName)
+
+        override fun newDecomposer() = RectAttributeDecomposer()
     }
 
-    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Rect.Runtime>(current)
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Rect.Inst>(current)
 }

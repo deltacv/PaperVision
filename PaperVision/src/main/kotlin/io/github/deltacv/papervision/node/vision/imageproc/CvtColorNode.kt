@@ -48,7 +48,7 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
     val input  = MatAttribute(INPUT, "$[att_input]")
     val output = MatAttribute(OUTPUT, "$[att_output]").enablePrevizButton()
 
-    val convertTo = EnumAttribute(INPUT, ColorSpace.entries, "$[att_convertto]")
+    val convertTo = EnumAttribute(INPUT, "$[att_convertto]", ColorSpace.entries)
 
     override fun onEnable() {
         + input.rebuildOnChange()

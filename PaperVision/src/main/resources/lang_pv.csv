@@ -41,7 +41,6 @@ nod_cannyedge,Canny Edge,Canny Edge
 nod_blobdetector,Simple Blob Detector,Detector de Blobs
 nod_keypointsto_rects,Key Points to Rectangles,Puntos Clave a Rectangulos
 nod_circlesto_rects,Circles to Rectangles,Circulos a Rectangulos
-nod_decomposer,Attribute Decomposer,Descomponedor de Atributos
 nod_exportrect_target,Export Rectangle,Exportar Rectangulo
 nod_exportrot_recttarget,Export Rotated Rectangle,Exportar Rectangulo Rotado
 nod_exportrect_targets,Export Rectangles,Exportar Rectangulos
@@ -59,19 +58,25 @@ nod_drawrotated_rects,Draw Rotated Rectangles,Dibujar Rectangulos Rotados
 nod_drawkeypoints,Draw Key Points,Dibujar Puntos Clave
 nod_crosshair,Crosshair,Crosshair
 nod_lineparameters,Line Parameters,Parametros de Linea
+nod_decomposer,Attribute Decomposer,Descomponedor de Atributos
 nod_vector2,Vector in 2D,Vector en 2D
+nod_integermath,Math with Integers,Matematicas con Enteros
+nod_decimalmath,Math with Decimals,Matematicas con Decimales
 nod_sumintegers,Sum Integers,Sumar Enteros
 nod_codesnippet,Code Snippet,Trozo de Codigo
 att_input,Input,Entrada
 att_output,Output,Salida
 att_position,Position,Posicion
 att_scale,Scale,Escala
+att_width,Width,Ancho
+att_height,Height,Alto
 att_crosshair,Crosshair,Crosshair
 att_crosshairimage,Overlay Output,Salida del Overlay
 att_crosshairline_params,Crosshair Line,Linea del Crosshair
 att_crosshairposition,Crosshair Offset,Offset del Crosshair
 att_exporteddata,Export Data,Datos Exportados
 att_value,Value,Valor
+att_operation,Operation,Operacion
 att_params,Parameters,Parametros
 att_convertto,Convert To,Convertir A
 att_binarymask,Binary Mask,Mascara Binaria
@@ -173,6 +178,8 @@ des_keypointsto_rects,Converts key points to<br>bounding rectangles.,Convierte p
 des_circlesto_rects,Converts circles to<br>bounding rectangles.,Convierte círculos a<br>rectángulos delimitadores.
 des_decomposer,Decomposes a complex attribute<br>into simpler attributes that can be used<br>by other nodes.,Descompone un atributo complejo<br>en atributos más simples que pueden ser usados<br>por otros nodos.
 des_vector2,Composes a Vector in two dimensions,Compone un Vector en dos dimensiones
+des_integermath,Performs mathematical operations on integers,Realiza operaciones matemáticas con enteros
+des_decimalmath,Performs mathematical operations on decimals,Realiza operaciones matemáticas con decimales
 err_bitwiseor_binary,"Both inputs must be of the same type, binary or not","Ambas entradas deben ser del mismo tipo, binario o no"
 err_grayscale_required,"Grayscale image required","Se requiere una imagen en escala de grises"
 err_musthave_attachedattrib,Must have an attribute attached,Debe tener un atributo conectado

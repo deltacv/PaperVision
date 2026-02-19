@@ -180,12 +180,12 @@ class OutputMatNode @JvmOverloads constructor(
 
     val input = MatAttribute(INPUT, "$[att_output]")
     val crosshair = PointsAttribute(INPUT, "$[att_crosshair]")
-    val exportedData = ListAttribute(INPUT, DoubleAttribute, "$[att_exporteddata]")
+    val exportedData = ListAttribute(INPUT, "$[att_exporteddata]", DoubleAttribute)
 
     override fun onEnable() {
-        +input.rebuildOnChange()
-        +crosshair.rebuildOnChange()
-        +exportedData.rebuildOnChange()
+        + input.rebuildOnChange()
+        + crosshair.rebuildOnChange()
+        + exportedData.rebuildOnChange()
     }
 
     fun ensureAttributeExists() { // prevent weird oopsies due to the special way these persistent buddies are handled

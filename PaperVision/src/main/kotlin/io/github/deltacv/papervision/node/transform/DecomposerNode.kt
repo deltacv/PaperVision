@@ -22,7 +22,7 @@ class DecomposerNode : DrawNode<NoSession>() {
 
     var decomposer: AttributeDecomposer<*>? = null
 
-    @field:SerializeIgnore
+    @SerializeIgnore
     private var previousLinkedAttribute: Attribute? = null
 
     val input = AnyAttribute(INPUT, "$[att_attribute]", linkAcceptor = {

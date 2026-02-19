@@ -47,8 +47,8 @@ import io.github.deltacv.papervision.node.PaperNode
 )
 class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
 
-    val contours = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
-    val outputRects = ListAttribute(OUTPUT, RotatedRectAttribute, "$[att_rects]")
+    val contours = ListAttribute(INPUT, "$[att_contours]", PointsAttribute)
+    val outputRects = ListAttribute(OUTPUT, "$[att_rects]", RotatedRectAttribute)
 
     override fun onEnable() {
         + contours.rebuildOnChange()
@@ -103,7 +103,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                     }
                 }
 
-                session.rects = GenValue.List.Runtime(rectsList.resolved(), GenValue.Rect.Rotated.Runtime::class.resolved())
+                session.rects = GenValue.List.Runtime(rectsList.resolved(), GenValue.RotatedRect.Inst::class.resolved())
             }
 
             session
@@ -145,7 +145,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                     }
                 }
 
-                session.rects = GenValue.List.Runtime(rectsList.resolved(), GenValue.Rect.Rotated.Runtime::class.resolved())
+                session.rects = GenValue.List.Runtime(rectsList.resolved(), GenValue.RotatedRect.Inst::class.resolved())
             }
 
             session
@@ -160,6 +160,6 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
     }
 
     class Session : CodeGenSession {
-        lateinit var rects: GenValue.List.Runtime<GenValue.Rect.Rotated.Runtime>
+        lateinit var rects: GenValue.List.Runtime<GenValue.RotatedRect.Inst>
     }
 }

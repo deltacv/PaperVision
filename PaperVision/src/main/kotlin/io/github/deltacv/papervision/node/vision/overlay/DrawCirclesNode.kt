@@ -47,20 +47,20 @@ import io.github.deltacv.papervision.node.PaperNode
 open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")
-    val circles = ListAttribute(INPUT, CircleAttribute, "$[att_circles]")
+    val circles = ListAttribute(INPUT, "$[att_circles]", CircleAttribute)
 
     val line = LineParametersAttribute(INPUT, "$[att_params]")
 
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
-        +inputMat.rebuildOnChange()
+        + inputMat.rebuildOnChange()
 
-        +line
+        + line
 
-        +circles.rebuildOnChange()
+        + circles.rebuildOnChange()
 
-        +outputMat.enablePrevizButton().rebuildOnChange()
+        + outputMat.enablePrevizButton().rebuildOnChange()
     }
 
     override val generators = generatorsBuilder {

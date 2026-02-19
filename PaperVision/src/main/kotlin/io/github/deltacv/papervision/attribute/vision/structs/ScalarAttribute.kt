@@ -35,7 +35,7 @@ class ScalarAttribute(
     mode: AttributeMode,
     color: ColorSpace,
     variableName: String? = null
-) : ListAttribute<DoubleAttribute, GenValue.Double>(mode, DoubleAttribute, variableName, color.channels) {
+) : ListAttribute<DoubleAttribute, GenValue.Double>(mode, variableName, DoubleAttribute, color.channels) {
 
     var color = color
         set(value) {

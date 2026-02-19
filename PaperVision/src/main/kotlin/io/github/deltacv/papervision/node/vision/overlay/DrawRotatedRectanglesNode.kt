@@ -52,7 +52,7 @@ open class DrawRotatedRectanglesNode
 @JvmOverloads constructor(val isDrawOnInput: Boolean = false) : DrawNode<DrawRotatedRectanglesNode.Session>() {
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")
-    val rectangles = ListAttribute(INPUT, RotatedRectAttribute, "$[att_rects]")
+    val rectangles = ListAttribute(INPUT, "$[att_rects]", RotatedRectAttribute)
 
     val lineParams = LineParametersAttribute(INPUT, "$[att_params]")
 
@@ -130,9 +130,9 @@ open class DrawRotatedRectanglesNode
 
                     if (rectanglesList !is GenValue.List.Runtime<*>) {
                         for (rectangle in (rectanglesList as GenValue.List.Actual<*>).elements) {
-                            if (rectangle is GenValue.Rect.Rotated.Actual) {
+                            if (rectangle is GenValue.RotatedRect.Components) {
                                 TODO("")
-                            } else if (rectangle is GenValue.Rect.Rotated.Runtime) {
+                            } else if (rectangle is GenValue.RotatedRect.Inst) {
                                 drawRuntimeRect(rectangle.value.v)
                             }
                         }
@@ -194,9 +194,9 @@ open class DrawRotatedRectanglesNode
 
                     if (rectanglesList !is GenValue.List.Runtime<*>) {
                         for (rectangle in (rectanglesList as GenValue.List.Actual<*>).elements) {
-                            if (rectangle is GenValue.Rect.Rotated.Actual) {
+                            if (rectangle is GenValue.RotatedRect.Components) {
                                 raise("RotatedRects are not supported")
-                            } else if (rectangle is GenValue.Rect.Runtime) {
+                            } else if (rectangle is GenValue.Rect.Inst) {
                                 runtimeRect(rectangle.value.v)
                             }
                         }

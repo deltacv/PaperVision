@@ -28,13 +28,17 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.rgbaColor
+import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.serialization.data.SerializeData
+import org.deltacv.mai18n.tr
 import kotlin.enums.EnumEntries
 
 class EnumAttribute<T: Enum<T>>(
     override val mode: AttributeMode,
+    override var variableName: String?,
     val values: EnumEntries<T>,
-    override var variableName: String?
+    val enumNameFont: Font? = null,
+    val enumToNameConverter: (T) -> String = { it.name } // by default, just use the name of the enum value, but allow for customization
 ) : TypedAttribute<GenValue.Enum<T>>(
     Companion,
     doEditorChangeChecking = true // takes advantage of readEditorValue for change checking, so we don't have to do it manually
@@ -49,7 +53,7 @@ class EnumAttribute<T: Enum<T>>(
     }
 
     private val valuesStrings = values.map {
-        it.name
+        tr(enumToNameConverter(it))
     }.toTypedArray()
 
     @SerializeData
@@ -61,8 +65,12 @@ class EnumAttribute<T: Enum<T>>(
         super.drawAttribute()
 
         if(!hasLink) {
+            enumNameFont?.let { ImGui.pushFont(it.imfont) }
             ImGui.pushItemWidth(110.0f)
+
             ImGui.combo("", currentIndex, valuesStrings)
+
+            enumNameFont?.let { ImGui.popFont() }
             ImGui.popItemWidth()
         }
     }

@@ -58,7 +58,7 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
     val param1 = DoubleAttribute(INPUT, "$[att_edgethreshold]", 255.0)
     val param2 = DoubleAttribute(INPUT, "$[att_accumulatorthreshold]", 100.0)
 
-    val output = ListAttribute(OUTPUT, CircleAttribute, "$[att_circles]")
+    val output = ListAttribute(OUTPUT, "$[att_circles]", CircleAttribute)
 
     override fun onEnable() {
         + input.rebuildOnChange()

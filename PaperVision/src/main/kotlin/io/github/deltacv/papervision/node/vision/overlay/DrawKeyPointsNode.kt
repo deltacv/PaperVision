@@ -49,7 +49,7 @@ open class DrawKeyPointsNode
 @JvmOverloads constructor(val isDrawOnInput: Boolean = false) : DrawNode<DrawKeyPointsNode.Session>() {
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")
-    val keypoints = ListAttribute(INPUT, KeyPointAttribute, "$[att_keypoints]")
+    val keypoints = ListAttribute(INPUT, "$[att_keypoints]", KeyPointAttribute)
 
     val lineColor = ScalarAttribute(INPUT, ColorSpace.RGB, "$[att_linecolor]")
 

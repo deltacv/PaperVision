@@ -46,8 +46,8 @@ import io.github.deltacv.papervision.node.PaperNode
 )
 class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
 
-    val input = ListAttribute(INPUT, KeyPointAttribute, "$[att_keypoints]")
-    val output = ListAttribute(OUTPUT, RectAttribute, "$[att_rects]")
+    val input = ListAttribute(INPUT, "$[att_keypoints]", KeyPointAttribute)
+    val output = ListAttribute(OUTPUT, "$[att_rects]", RectAttribute)
 
     override fun onEnable() {
         + input.rebuildOnChange()
@@ -88,7 +88,7 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
                         ))
                     }
 
-                    session.output = GenValue.List.Runtime<GenValue.Rect.Runtime>(rects.resolved())
+                    session.output = GenValue.List.Runtime<GenValue.Rect.Inst>(rects.resolved())
                 }
             }
 
@@ -123,7 +123,7 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
                     }
                 }
 
-                session.output = GenValue.List.Runtime<GenValue.Rect.Runtime>(rects.resolved())
+                session.output = GenValue.List.Runtime<GenValue.Rect.Inst>(rects.resolved())
             }
 
             session
@@ -138,6 +138,6 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
     }
 
     class Session : CodeGenSession {
-        lateinit var output: GenValue.List.Runtime<GenValue.Rect.Runtime>
+        lateinit var output: GenValue.List.Runtime<GenValue.Rect.Inst>
     }
 }

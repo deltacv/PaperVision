@@ -52,7 +52,7 @@ open class DrawContoursNode
     : DrawNode<DrawContoursNode.Session>()  {
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")
-    val contours = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
+    val contours = ListAttribute(INPUT, "$[att_contours]", PointsAttribute)
 
     val lineParams = LineParametersAttribute(INPUT, "$[att_params]")
 

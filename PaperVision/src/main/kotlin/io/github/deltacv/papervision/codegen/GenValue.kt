@@ -92,30 +92,30 @@ sealed class GenValue {
         }
     }
 
-    sealed class Rect : GenValue() {
-        data class Actual(val x: Double, val y: Double, val w: Double, val h: Double) : Rect()
+    sealed class RotatedRect : GenValue() {
+        data class Components(
+            val x: Double, val y: Double,
+            val w: Double, val h: Double,
+            val angle: Double
+        ) : RotatedRect()
 
-        data class Runtime(val value: Resolvable<Value>) : Rect() {
+        data class Inst(val value: Resolvable<Value>) : RotatedRect() {
             companion object {
-                fun defer(genValueResolver: () -> Runtime?) = Runtime(
+                fun defer(genValueResolver: () -> Inst?) = Inst(
                     Resolvable.from { genValueResolver()?.value }
                 )
             }
         }
+    }
 
-        sealed class Rotated : Rect() {
-            data class Actual(
-                val x: Double, val y: Double,
-                val w: Double, val h: Double,
-                val angle: Double
-            ) : Rotated()
+    sealed class Rect : GenValue() {
+        data class Components(val x: Double, val y: Double, val w: Double, val h: Double) : Rect()
 
-            data class Runtime(val value: Resolvable<Value>) : Rotated() {
-                companion object {
-                    fun defer(genValueResolver: () -> Runtime?) = Runtime(
-                        Resolvable.from { genValueResolver()?.value }
-                    )
-                }
+        data class Inst(val value: Resolvable<Value>) : Rect() {
+            companion object {
+                fun defer(genValueResolver: () -> Inst?) = Inst(
+                    Resolvable.from { genValueResolver()?.value }
+                )
             }
         }
     }

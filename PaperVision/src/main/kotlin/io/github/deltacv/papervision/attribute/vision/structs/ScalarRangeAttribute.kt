@@ -35,7 +35,7 @@ class ScalarRangeAttribute(
     mode: AttributeMode,
     color: ColorSpace,
     variableName: String? = null
-) : ListAttribute<RangeAttribute, GenValue.Range>(mode, RangeAttribute, variableName, color.channels) {
+) : ListAttribute<RangeAttribute, GenValue.Range>(mode, variableName, RangeAttribute, color.channels) {
 
     var color = color
         set(value) {

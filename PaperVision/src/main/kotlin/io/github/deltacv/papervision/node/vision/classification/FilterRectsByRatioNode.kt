@@ -44,12 +44,12 @@ import io.github.deltacv.papervision.node.PaperNode
 )
 class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
 
-    val input = ListAttribute(INPUT, RectAttribute, "$[att_rects]")
+    val input = ListAttribute(INPUT, "$[att_rects]", RectAttribute)
 
     val minRatio = IntAttribute(INPUT, "$[att_minratio]")
     val maxRatio = IntAttribute(INPUT, "$[att_maxratio]")
 
-    val output = ListAttribute(OUTPUT, RectAttribute, "$[att_filteredrects]")
+    val output = ListAttribute(OUTPUT, "$[att_filteredrects]", RectAttribute)
 
     override fun onEnable() {
         + input.rebuildOnChange()
@@ -104,7 +104,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
                     }
                 }
 
-                session.output = GenValue.List.Runtime(rectsVar.resolved(), GenValue.Rect.Runtime::class.resolved())
+                session.output = GenValue.List.Runtime(rectsVar.resolved(), GenValue.Rect.Inst::class.resolved())
             }
 
             session

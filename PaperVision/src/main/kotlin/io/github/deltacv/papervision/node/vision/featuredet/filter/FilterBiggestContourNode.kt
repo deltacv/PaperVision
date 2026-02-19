@@ -44,7 +44,7 @@ import io.github.deltacv.papervision.node.PaperNode
 )
 class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
 
-    val input = ListAttribute(INPUT, PointsAttribute, "$[att_contours]")
+    val input = ListAttribute(INPUT, "$[att_contours]", PointsAttribute)
     val output = PointsAttribute(OUTPUT, "$[att_biggestcontour]")
 
     override fun onEnable() {

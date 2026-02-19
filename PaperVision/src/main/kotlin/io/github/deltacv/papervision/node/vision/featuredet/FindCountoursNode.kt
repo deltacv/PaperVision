@@ -47,7 +47,7 @@ import io.github.deltacv.papervision.node.PaperNode
 class FindContoursNode : DrawNode<FindContoursNode.Session>() {
 
     val inputMat = MatAttribute(INPUT, "$[att_binaryinput]")
-    val outputPoints = ListAttribute(OUTPUT, PointsAttribute, "$[att_contours]")
+    val outputPoints = ListAttribute(OUTPUT, "$[att_contours]", PointsAttribute)
 
     override fun onEnable() {
         + inputMat.rebuildOnChange()
