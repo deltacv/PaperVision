@@ -38,6 +38,9 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 enum class BlurAlgorithm { Gaussian, Box, Median, Bilateral }
 
@@ -46,6 +49,7 @@ enum class BlurAlgorithm { Gaussian, Box, Median, Bilateral }
     category = NodeCategory.IMAGE_PROC,
     description = "des_blur"
 )
+@CodecType
 class BlurNode : DrawNode<BlurNode.Session>() {
 
     val input = MatAttribute(INPUT, "$[att_input]")
@@ -176,6 +180,22 @@ class BlurNode : DrawNode<BlurNode.Session>() {
         }
 
         noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("input", input)
+        encoder.obj("blurAlgo", blurAlgo)
+        encoder.obj("blurValue", blurValue)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("input", input)
+        decoder.obj("blurAlgo", blurAlgo)
+        decoder.obj("blurValue", blurValue)
+        decoder.obj("output", output)
     }
 
     class Session : CodeGenSession {

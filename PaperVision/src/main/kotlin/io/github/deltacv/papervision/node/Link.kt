@@ -29,8 +29,8 @@ import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
 import io.github.deltacv.papervision.serialization.v1.LinkSerializationData
 import io.github.deltacv.papervision.serialization.v2.CodecType
 import io.github.deltacv.papervision.serialization.v2.DataCodec
-import io.github.deltacv.papervision.serialization.v2.DataReader
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 import io.github.deltacv.papervision.util.loggerForThis
 
 @CodecType
@@ -141,12 +141,12 @@ class Link(
 
     override fun toString() = "Link(from=$a, to=$b)"
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
         encoder.int("a", a)
         encoder.int("b", b)
     }
 
-    override fun decode(decoder: DataReader) {
+    override fun decode(decoder: DataDecoder) {
         a = decoder.int("a")
         b = decoder.int("b")
     }

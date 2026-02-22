@@ -30,8 +30,8 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.serialization.v1.AttributeSerializationData
 import io.github.deltacv.papervision.serialization.v2.CodecType
-import io.github.deltacv.papervision.serialization.v2.DataReader
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @CodecType(instantiable = false)
 class StringAttribute(
@@ -97,13 +97,13 @@ class StringAttribute(
 
     // ------------------ Serialization v2 ------------------
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
         super.encode(encoder)
 
         encoder.string("value", value.get())
     }
 
-    override fun decode(decoder: DataReader) {
+    override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
 
         nextValue = decoder.string("value")

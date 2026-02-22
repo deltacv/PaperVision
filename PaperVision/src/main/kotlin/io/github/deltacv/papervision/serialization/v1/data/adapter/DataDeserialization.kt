@@ -38,7 +38,15 @@ fun jsonObjectToDataSerializable(
     val classLoader = DataSerializable::class.java.classLoader
     val jsonObject = json.asJsonObject
 
-    val dataClass = classLoader.loadClass(jsonObject.get("dataClass").asString)
+    var className = jsonObject.get("dataClass").asString
+    if(!className.startsWith("io.github.deltacv.papervision.serialization.v1")) {
+        // last breath of life of v1 serialization before we completely remove it in favor of v2
+        // totally forgot about backwards compatibility when i made the v2 package, whoops
+        // (such a bad idea to serialize the class name like this but i was like 15 when i wrote this)
+        className = className.replace("io.github.deltacv.papervision.serialization", "io.github.deltacv.papervision.serialization.v1")
+    }
+
+    val dataClass = classLoader.loadClass(className)
     val dataObj = jsonObject.get("data") ?: JsonObject()
     val dataInstance = context?.deserialize(dataObj, dataClass) ?: dataSerializableGson.fromJson(dataObj, dataClass)
 

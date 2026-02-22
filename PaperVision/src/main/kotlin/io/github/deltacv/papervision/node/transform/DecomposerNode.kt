@@ -12,12 +12,17 @@ import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.serialization.v1.data.SerializeIgnore
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
+import io.github.deltacv.papervision.serialization.v2.objTyped
 
 @PaperNode(
     name = "nod_decomposer",
     category = NodeCategory.TRANSFORM,
     description = "des_decomposer"
 )
+@CodecType
 class DecomposerNode : DrawNode<NoSession>() {
 
     var decomposer: AttributeDecomposer<*>? = null
@@ -70,6 +75,24 @@ class DecomposerNode : DrawNode<NoSession>() {
                 current.codeGen.sessions[it] = it.genCode(input.genValue(current), current)
             }
             NoSession
+        }
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("input", input)
+
+        decomposer?.let {
+            encoder.obj("decomposer", it)
+        }
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+
+        decoder.obj("input", input)
+        if(decoder.has("decomposer")) {
+            decomposer = decoder.objTyped("decomposer")
         }
     }
 

@@ -38,6 +38,9 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 import io.github.deltacv.papervision.util.Range2d
 
 @PaperNode(
@@ -45,6 +48,7 @@ import io.github.deltacv.papervision.util.Range2d
     category = NodeCategory.FEATURE_DET,
     description = "des_houghcircles"
 )
+@CodecType
 class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
 
     val input = MatAttribute(INPUT, "$[att_input]")
@@ -227,6 +231,28 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
             output -> GenValue.List.Runtime.defer { current.sessionOf(this)?.circles }
             else -> noValue(attrib)
         }
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("input", input)
+        encoder.obj("minDistance", minDistance)
+        encoder.obj("radiusRange", radiusRange)
+        encoder.obj("downscale", downscale)
+        encoder.obj("param1", param1)
+        encoder.obj("param2", param2)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("input", input)
+        decoder.obj("minDistance", minDistance)
+        decoder.obj("radiusRange", radiusRange)
+        decoder.obj("downscale", downscale)
+        decoder.obj("param1", param1)
+        decoder.obj("param2", param2)
+        decoder.obj("output", output)
     }
 
     class Session : CodeGenSession {

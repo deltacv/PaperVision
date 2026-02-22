@@ -30,13 +30,16 @@ import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
-
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_exportrect_target",
     category = NodeCategory.CLASSIFICATION,
     description = "des_exportrect_target"
 )
+@CodecType
 class ExportTargetNode : DrawNode<NoSession>() {
 
     val inputTarget = RectAttribute(INPUT, "$[att_target]")
@@ -62,6 +65,18 @@ class ExportTargetNode : DrawNode<NoSession>() {
             warn("err_targetsnot_supported")
             NoSession
         }
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("inputTarget", inputTarget)
+        encoder.obj("label", label)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("inputTarget", inputTarget)
+        decoder.obj("label", label)
     }
 
 }
@@ -97,6 +112,18 @@ class ExportRotTarget : DrawNode<NoSession>() {
             warn("err_targetsnot_supported")
             NoSession
         }
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("inputTarget", inputTarget)
+        encoder.obj("label", label)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("inputTarget", inputTarget)
+        decoder.obj("label", label)
     }
 
 }

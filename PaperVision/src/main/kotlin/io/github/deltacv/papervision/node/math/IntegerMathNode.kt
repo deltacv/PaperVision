@@ -15,12 +15,16 @@ import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_integermath",
     category = NodeCategory.MATH,
     description = "des_integermath"
 )
+@CodecType
 class IntegerMathNode : DrawNode<IntegerMathNode.Session>() {
 
     val first = IntAttribute(INPUT, "$[att_first]")
@@ -80,6 +84,22 @@ class IntegerMathNode : DrawNode<IntegerMathNode.Session>() {
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute) = when (attrib) {
         result -> GenValue.Int.Runtime.defer { current.sessionOf(this)?.result }
         else -> noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("first", first)
+        encoder.obj("operation", operation)
+        encoder.obj("second", second)
+        encoder.obj("result", result)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("first", first)
+        decoder.obj("operation", operation)
+        decoder.obj("second", second)
+        decoder.obj("result", result)
     }
 
     class Session : CodeGenSession {

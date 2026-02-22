@@ -7,13 +7,11 @@ import io.github.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.codegen.Generator
-import io.github.deltacv.papervision.codegen.PolyglotMapping
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.serialization.v2.CodecType
-import io.github.deltacv.papervision.serialization.v2.DataReader
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @CodecType
 class Vector2AttributeDecomposer : AttributeDecomposer<Vector2AttributeDecomposer.Session>() {
@@ -63,12 +61,12 @@ class Vector2AttributeDecomposer : AttributeDecomposer<Vector2AttributeDecompose
         else -> noValue(attrib)
     }
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
         encoder.obj("x", x)
         encoder.obj("y", y)
     }
 
-    override fun decode(decoder: DataReader) {
+    override fun decode(decoder: DataDecoder) {
         decoder.obj("x", x)
         decoder.obj("y", y)
     }

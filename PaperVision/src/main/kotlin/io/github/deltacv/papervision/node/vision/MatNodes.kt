@@ -42,8 +42,8 @@ import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.serialization.v1.data.SerializeData
 import io.github.deltacv.papervision.serialization.v2.CodecType
-import io.github.deltacv.papervision.serialization.v2.DataReader
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_pipelineinput",
@@ -338,7 +338,7 @@ class OutputMatNode @JvmOverloads constructor(
         }
     }
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
         super.encode(encoder)
 
         encoder.obj("input", input)
@@ -346,7 +346,7 @@ class OutputMatNode @JvmOverloads constructor(
         encoder.obj("exportedData", exportedData)
     }
 
-    override fun decode(decoder: DataReader) {
+    override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
 
         decoder.obj("input", input)

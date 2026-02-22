@@ -38,12 +38,16 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_findcontours",
     category = NodeCategory.FEATURE_DET,
     description = "des_findcontours"
 )
+@CodecType
 class FindContoursNode : DrawNode<FindContoursNode.Session>() {
 
     val inputMat = MatAttribute(INPUT, "$[att_binaryinput]")
@@ -122,6 +126,18 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
         }
 
         noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("inputMat", inputMat)
+        encoder.obj("outputPoints", outputPoints)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("inputMat", inputMat)
+        decoder.obj("outputPoints", outputPoints)
     }
 
     class Session : CodeGenSession {

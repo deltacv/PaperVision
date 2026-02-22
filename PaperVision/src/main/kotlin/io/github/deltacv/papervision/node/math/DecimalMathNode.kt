@@ -15,14 +15,16 @@ import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.PaperNode
-import io.github.deltacv.papervision.serialization.v2.DataReader
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_decimalmath",
     category = NodeCategory.MATH,
     description = "des_decimalmath"
 )
+@CodecType
 class DecimalMathNode : DrawNode<DecimalMathNode.Session>() {
 
     val first = DoubleAttribute(INPUT, "$[att_first]")
@@ -84,20 +86,22 @@ class DecimalMathNode : DrawNode<DecimalMathNode.Session>() {
         else -> noValue(attrib)
     }
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
         super.encode(encoder) // encode node first
 
         encoder.obj("first", first)
         encoder.obj("operation", operation)
         encoder.obj("second", second)
+        encoder.obj("result", result)
     }
 
-    override fun decode(decoder: DataReader) {
+    override fun decode(decoder: DataDecoder) {
         super.decode(decoder) // decode node first
 
         decoder.obj("first", first)
         decoder.obj("operation", operation)
         decoder.obj("second", second)
+        decoder.obj("result", result)
     }
 
     class Session : CodeGenSession {

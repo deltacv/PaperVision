@@ -38,12 +38,16 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_blobdetector",
     category = NodeCategory.FEATURE_DET,
     description = "des_blobdetector"
 )
+@CodecType
 class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
 
     val input = MatAttribute(INPUT, "$[att_input]")
@@ -276,6 +280,28 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
             output -> GenValue.List.Runtime.defer { current.sessionOf(this)?.output }
             else -> noValue(attrib)
         }
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("input", input)
+        encoder.obj("area", area)
+        encoder.obj("threshold", threshold)
+        encoder.obj("circularity", circularity)
+        encoder.obj("convexity", convexity)
+        encoder.obj("inertia", inertia)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("input", input)
+        decoder.obj("area", area)
+        decoder.obj("threshold", threshold)
+        decoder.obj("circularity", circularity)
+        decoder.obj("convexity", convexity)
+        decoder.obj("inertia", inertia)
+        decoder.obj("output", output)
     }
 
     class Session : CodeGenSession {

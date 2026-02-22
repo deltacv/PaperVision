@@ -3,9 +3,9 @@ package io.github.deltacv.papervision.serialization.v2.json
 import kotlinx.serialization.json.*
 import io.github.deltacv.papervision.serialization.v2.*
 
-class JsonDataReader(
+class JsonDataDecoder(
     private val obj: JsonObject
-) : DataReader {
+) : DataDecoder {
 
     override fun has(name: String) = obj.containsKey(name)
 
@@ -21,14 +21,14 @@ class JsonDataReader(
         val data = wrapper["_data"]!!.jsonObject
 
         val instance = CodecTypeRegistry.create(type)
-        instance.decode(JsonDataReader(data))
+        instance.decode(JsonDataDecoder(data))
         instance
     }
 
     override fun obj(name: String, target: DataCodec) = safe(name) {
         val wrapper = obj[name]!!.jsonObject
         val data = wrapper["_data"]!!.jsonObject
-        target.decode(JsonDataReader(data))
+        target.decode(JsonDataDecoder(data))
     }
 
     // ---- Typed list readers ----
@@ -60,12 +60,12 @@ class JsonDataReader(
             val data = wrapper["_data"]!!.jsonObject
 
             val instance = CodecTypeRegistry.create(type)
-            instance.decode(JsonDataReader(data))
+            instance.decode(JsonDataDecoder(data))
             instance
         }
     }
 
-    override fun objList(name: String, targets: List<DataCodec>) = safe(name) {
+    override fun <C: DataCodec> objList(name: String, targets: List<C>) = safe(name) {
         objList(name, targetFactory = { index ->
             if (index >= targets.size) {
                 throw MalformedDataException("Not enough target objects provided for objList with name $name", obj)
@@ -74,13 +74,13 @@ class JsonDataReader(
         })
     }
 
-    override fun objList(name: String, targetFactory: (Int) -> DataCodec) = safe(name) {
+    override fun <C: DataCodec> objList(name: String, targetFactory: (Int) -> C) = safe(name) {
         obj[name]!!.jsonArray.mapIndexed { index, element ->
             val wrapper = element.jsonObject
             val data = wrapper["_data"]!!.jsonObject
 
             val target = targetFactory(index)
-            target.decode(JsonDataReader(data))
+            target.decode(JsonDataDecoder(data))
             target
         }
     }

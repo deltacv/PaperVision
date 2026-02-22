@@ -3,7 +3,7 @@ package io.github.deltacv.papervision.serialization.v2.json
 import kotlinx.serialization.json.*
 import io.github.deltacv.papervision.serialization.v2.*
 
-class JsonDataWriter : DataWriter {
+class JsonDataEncoder : DataEncoder {
 
     private val map = mutableMapOf<String, JsonElement>()
 
@@ -12,32 +12,32 @@ class JsonDataWriter : DataWriter {
     override var isIgnored = false
         private set
 
-    override fun int(key: String, value: Int) {
+    override fun int(key: String, value: Int) = safe(key) {
         map[key] = JsonPrimitive(value)
     }
 
-    override fun float(key: String, value: Float) {
+    override fun float(key: String, value: Float) = safe(key) {
         map[key] = JsonPrimitive(value)
     }
 
-    override fun double(key: String, value: Double) {
+    override fun double(key: String, value: Double) = safe(key) {
         map[key] = JsonPrimitive(value)
     }
 
-    override fun bool(key: String, value: Boolean) {
+    override fun bool(key: String, value: Boolean) = safe(key) {
         map[key] = JsonPrimitive(value)
     }
 
-    override fun string(key: String, value: String) {
+    override fun string(key: String, value: String) = safe(key) {
         map[key] = JsonPrimitive(value)
     }
 
-    override fun obj(key: String, value: DataCodec, typeName: String?) {
-        val writer = JsonDataWriter()
+    override fun obj(key: String, value: DataCodec, typeName: String?) = safe(key) {
+        val writer = JsonDataEncoder()
         value.encode(writer)
 
         if(writer.isIgnored) {
-            return // object requested for us to ignore it
+            return@safe // object requested for us to ignore it
         }
 
         val type = typeName // override typeName with passed parameter first
@@ -52,30 +52,30 @@ class JsonDataWriter : DataWriter {
 
     // ---- Typed lists ----
 
-    override fun intList(key: String, values: List<Int>) {
+    override fun intList(key: String, values: List<Int>) = safe(key) {
         map[key] = JsonArray(values.map { JsonPrimitive(it) })
     }
 
-    override fun floatList(key: String, values: List<Float>) {
+    override fun floatList(key: String, values: List<Float>) = safe(key) {
         map[key] = JsonArray(values.map { JsonPrimitive(it) })
     }
 
-    override fun doubleList(key: String, values: List<Double>) {
+    override fun doubleList(key: String, values: List<Double>) = safe(key) {
         map[key] = JsonArray(values.map { JsonPrimitive(it) })
     }
 
-    override fun stringList(key: String, values: List<String>) {
+    override fun stringList(key: String, values: List<String>) = safe(key) {
         map[key] = JsonArray(values.map { JsonPrimitive(it) })
     }
 
-    override fun boolList(key: String, values: List<Boolean>) {
+    override fun boolList(key: String, values: List<Boolean>) = safe(key) {
         map[key] = JsonArray(values.map { JsonPrimitive(it) })
     }
 
-    override fun objList(key: String, values: List<DataCodec>) {
+    override fun objList(key: String, values: List<DataCodec>) = safe(key) {
         val array = JsonArray(buildList {
             for (value in values) {
-                val writer = JsonDataWriter()
+                val writer = JsonDataEncoder()
                 value.encode(writer)
 
                 if (writer.isIgnored) continue
@@ -99,5 +99,12 @@ class JsonDataWriter : DataWriter {
 
     override fun unignore() {
         isIgnored = false
+    }
+
+    private inline fun <R> safe(key: String, crossinline block: () -> R): R {
+        if(map.containsKey(key)) {
+            throw IllegalArgumentException("Duplicate key: $key")
+        }
+        return block()
     }
 }

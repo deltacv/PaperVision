@@ -41,12 +41,16 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_crosshair",
     category = NodeCategory.CLASSIFICATION,
     description = "des_crosshair"
 )
+@CodecType
 class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
     enum class DetectionMode {
@@ -406,6 +410,30 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
             outputCrosshairImage -> GenValue.Mat.defer { current.sessionOf(this)?.outputCrosshairImage }
             else -> noValue(attrib)
         }
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("drawCrosshairOn", drawCrosshairOn)
+        encoder.obj("input", input)
+        encoder.obj("crosshairPosition", crosshairPosition)
+        encoder.obj("crosshairScale", crosshairScale)
+        encoder.obj("crosshairLineParams", crosshairLineParams)
+        encoder.obj("detectionMode", detectionMode)
+        encoder.obj("outputCrosshair", outputCrosshair)
+        encoder.obj("outputCrosshairImage", outputCrosshairImage)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("drawCrosshairOn", drawCrosshairOn)
+        decoder.obj("input", input)
+        decoder.obj("crosshairPosition", crosshairPosition)
+        decoder.obj("crosshairScale", crosshairScale)
+        decoder.obj("crosshairLineParams", crosshairLineParams)
+        decoder.obj("detectionMode", detectionMode)
+        decoder.obj("outputCrosshair", outputCrosshair)
+        decoder.obj("outputCrosshairImage", outputCrosshairImage)
     }
 
     class Session : CodeGenSession {

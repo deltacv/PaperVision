@@ -33,8 +33,8 @@ import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
 import io.github.deltacv.papervision.serialization.v1.BasicAttribData
 import io.github.deltacv.papervision.serialization.v2.CodecType
 import io.github.deltacv.papervision.serialization.v2.DataCodec
-import io.github.deltacv.papervision.serialization.v2.DataReader
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 import io.github.deltacv.papervision.util.DelegatedChangeEmitter
 import io.github.deltacv.papervision.util.QueuedChangeEmitter
 import io.github.deltacv.papervision.util.event.PaperEventHandler
@@ -283,11 +283,11 @@ abstract class Attribute :
 
     // ------------------ Serialization v2 ------------------
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
         encoder.int("id", id)
     }
 
-    override fun decode(decoder: DataReader) {
+    override fun decode(decoder: DataDecoder) {
         serializedId = decoder.int("id")
     }
 

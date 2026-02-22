@@ -35,6 +35,9 @@ import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.vision.ColorSpace
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 import io.github.deltacv.papervision.util.Range2i
 
 @PaperNode(
@@ -42,6 +45,7 @@ import io.github.deltacv.papervision.util.Range2i
     category = NodeCategory.IMAGE_PROC,
     description = "des_erodedilate"
 )
+@CodecType
 class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
 
     val inputMat = MatAttribute(INPUT, "$[att_binaryinput]")
@@ -189,6 +193,22 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
         }
 
         noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("inputMat", inputMat)
+        encoder.obj("erodeValue", erodeValue)
+        encoder.obj("dilateValue", dilateValue)
+        encoder.obj("outputMat", outputMat)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("inputMat", inputMat)
+        decoder.obj("erodeValue", erodeValue)
+        decoder.obj("dilateValue", dilateValue)
+        decoder.obj("outputMat", outputMat)
     }
 
     class Session : CodeGenSession {

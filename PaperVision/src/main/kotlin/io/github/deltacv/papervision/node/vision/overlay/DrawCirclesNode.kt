@@ -38,12 +38,16 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_drawcircles",
     category = NodeCategory.OVERLAY,
     description = "des_drawcircles"
 )
+@CodecType
 open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")
@@ -155,6 +159,22 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
         }
 
         noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("inputMat", inputMat)
+        encoder.obj("circles", circles)
+        encoder.obj("line", line)
+        encoder.obj("outputMat", outputMat)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("inputMat", inputMat)
+        decoder.obj("circles", circles)
+        decoder.obj("line", line)
+        decoder.obj("outputMat", outputMat)
     }
 
     class Session : CodeGenSession {

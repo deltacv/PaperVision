@@ -34,12 +34,16 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_bitwiseand",
     category = NodeCategory.IMAGE_PROC,
     description = "des_bitwiseand"
 )
+@CodecType
 class BitwiseANDNode : DrawNode<BitwiseANDNode.Session>() {
 
     val first = MatAttribute(INPUT, "$[att_first]")
@@ -132,6 +136,20 @@ class BitwiseANDNode : DrawNode<BitwiseANDNode.Session>() {
         }
 
         noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("first", first)
+        encoder.obj("second", second)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("first", first)
+        decoder.obj("second", second)
+        decoder.obj("output", output)
     }
 
     class Session : CodeGenSession {

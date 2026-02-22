@@ -1,6 +1,6 @@
 package io.github.deltacv.papervision.serialization.v2
 
-interface DataWriter {
+interface DataEncoder {
 
     val isIgnored: Boolean
 

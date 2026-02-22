@@ -36,12 +36,16 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "$[nod_circlesto_rects]",
     category = NodeCategory.TRANSFORM,
     description = "$[des_circlesto_rects]"
 )
+@CodecType
 class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
 
     val circles = ListAttribute(INPUT, "$[att_circles]", CircleAttribute)
@@ -144,6 +148,18 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
         }
 
         noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("circles", circles)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("circles", circles)
+        decoder.obj("output", output)
     }
 
     class Session : CodeGenSession {

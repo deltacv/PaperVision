@@ -39,12 +39,16 @@ import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.vision.ColorSpace
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_drawkeypoints",
     category = NodeCategory.OVERLAY,
     description = "des_drawkeypoints"
 )
+@CodecType
 open class DrawKeyPointsNode
 @JvmOverloads constructor(val isDrawOnInput: Boolean = false) : DrawNode<DrawKeyPointsNode.Session>() {
 
@@ -56,14 +60,14 @@ open class DrawKeyPointsNode
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
-        + inputMat.rebuildOnChange()
+        +inputMat.rebuildOnChange()
 
-        + lineColor
+        +lineColor
 
-        + keypoints.rebuildOnChange()
+        +keypoints.rebuildOnChange()
 
         if (!isDrawOnInput) {
-            + outputMat.enablePrevizButton().rebuildOnChange()
+            +outputMat.enablePrevizButton().rebuildOnChange()
         } else {
             inputMat.variableName = "$[att_drawon_image]"
         }
@@ -79,7 +83,7 @@ open class DrawKeyPointsNode
                 val input = inputMat.genValue(current)
 
                 val keypointsValue = keypoints.genValue(current)
-                if(keypointsValue !is GenValue.List.Runtime<*>) {
+                if (keypointsValue !is GenValue.List.Runtime<*>) {
                     raise("Only runtime lists are supported for now")
                 }
 
@@ -127,7 +131,7 @@ open class DrawKeyPointsNode
 
                 val input = inputMat.genValue(current)
                 val keypointsValue = keypoints.genValue(current)
-                if(keypointsValue !is GenValue.List.Runtime<*>) {
+                if (keypointsValue !is GenValue.List.Runtime<*>) {
                     raise("Only runtime lists are supported for now")
                 }
 
@@ -135,12 +139,15 @@ open class DrawKeyPointsNode
                 current.scope {
                     nameComment()
 
-                    val output = uniqueVariable("${input.value.v}_keypoints",
-                        cv2.callValue("drawKeypoints",
+                    val output = uniqueVariable(
+                        "${input.value.v}_keypoints",
+                        cv2.callValue(
+                            "drawKeypoints",
                             CPythonLanguage.NoType,
                             input.value.v,
                             keypointsValue.value.v,
-                            CPythonOpenCv.np.callValue("array",
+                            CPythonOpenCv.np.callValue(
+                                "array",
                                 CPythonLanguage.NoType, CPythonLanguage.newArrayOf(CPythonLanguage.NoType, 0.v)
                             ),
                             CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v)
@@ -161,6 +168,26 @@ open class DrawKeyPointsNode
         }
 
         noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("inputMat", inputMat)
+        encoder.obj("keypoints", keypoints)
+        encoder.obj("lineColor", lineColor)
+        if (!isDrawOnInput) {
+            encoder.obj("outputMat", outputMat)
+        }
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("inputMat", inputMat)
+        decoder.obj("keypoints", keypoints)
+        decoder.obj("lineColor", lineColor)
+        if (!isDrawOnInput) {
+            decoder.obj("outputMat", outputMat)
+        }
     }
 
     class Session : CodeGenSession {

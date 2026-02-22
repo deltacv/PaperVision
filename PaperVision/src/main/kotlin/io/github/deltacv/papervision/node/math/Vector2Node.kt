@@ -21,7 +21,6 @@ package io.github.deltacv.papervision.node.math
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.math.DoubleAttribute
 import io.github.deltacv.papervision.node.DrawNode
-import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
@@ -32,7 +31,9 @@ import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.NodeCategory
-import io.github.deltacv.papervision.util.Range2i
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 
 @PaperNode(
@@ -40,6 +41,7 @@ import io.github.deltacv.papervision.util.Range2i
     category = NodeCategory.TRANSFORM,
     description = "des_vector2"
 )
+@CodecType
 class Vector2Node @JvmOverloads constructor(
     useSizeNaming: Boolean = false
 ) : DrawNode<Vector2Node.Session>() {
@@ -120,6 +122,20 @@ class Vector2Node @JvmOverloads constructor(
         }
 
         noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("xAttribute", xAttribute)
+        encoder.obj("yAttribute", yAttribute)
+        encoder.obj("result", result)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("xAttribute", xAttribute)
+        decoder.obj("yAttribute", yAttribute)
+        decoder.obj("result", result)
     }
 
     class Session : CodeGenSession {

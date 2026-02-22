@@ -30,6 +30,7 @@ import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.ColorSpace
 import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 import io.github.deltacv.papervision.util.hexString
 
 @CodecType(instantiable = false)
@@ -113,5 +114,4 @@ class ScalarRangeAttribute(
 
         return twoScalarsCached!!
     }
-
 }

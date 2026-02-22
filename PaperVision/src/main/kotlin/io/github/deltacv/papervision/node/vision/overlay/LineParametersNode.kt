@@ -35,12 +35,16 @@ import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.vision.ColorSpace
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_lineparameters",
     category = NodeCategory.TRANSFORM,
     description = "des_lineparameters"
 )
+@CodecType
 class LineParametersNode : DrawNode<LineParametersNode.Session>() {
 
     val lineColor = ScalarAttribute(INPUT, ColorSpace.RGB, "$[att_linecolor]")
@@ -98,6 +102,19 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
         }
     }
 
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("lineColor", lineColor)
+        encoder.obj("lineThickness", lineThickness)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("lineColor", lineColor)
+        decoder.obj("lineThickness", lineThickness)
+        decoder.obj("output", output)
+    }
 
     class Session : CodeGenSession {
         lateinit var lineParameters: GenValue.LineParameters

@@ -12,12 +12,15 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_integerto_decimal",
     category = NodeCategory.MATH,
     description = "des_integerto_decimal"
 )
+@CodecType
 class IntegerToDecimalNode : DrawNode<IntegerToDecimalNode.Session>(){
 
     val input = IntAttribute(INPUT, "$[att_input]")
@@ -55,6 +58,12 @@ class IntegerToDecimalNode : DrawNode<IntegerToDecimalNode.Session>(){
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute) = when(attrib) {
         output -> GenValue.Double.Runtime.defer { current.sessionOf(this)?.output }
         else -> noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("input", input)
+        encoder.obj("output", output)
     }
 
     class Session : CodeGenSession {

@@ -25,7 +25,7 @@ import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.serialization.v1.data.SerializeIgnore
 import io.github.deltacv.papervision.serialization.v2.CodecType
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @SerializeIgnore
 @CodecType
@@ -52,7 +52,8 @@ open class InvisibleNode : Node<NoSession>(allowDelete = false) {
 
     override fun genCode(input: Unit, current: CodeGen.Current) = NoSession
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
         encoder.ignore()
     }
 

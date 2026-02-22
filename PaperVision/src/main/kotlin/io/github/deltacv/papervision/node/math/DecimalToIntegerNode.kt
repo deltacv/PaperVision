@@ -15,6 +15,9 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 enum class RoundingBehavior(val icon: String) {
     ROUND("mis_round"),
@@ -28,6 +31,7 @@ enum class RoundingBehavior(val icon: String) {
     category = NodeCategory.MATH,
     description = "des_decimalto_integer"
 )
+@CodecType
 class DecimalToIntegerNode : DrawNode<DecimalToIntegerNode.Session>(){
 
     val input = DoubleAttribute(INPUT, "$[att_input]")
@@ -75,6 +79,20 @@ class DecimalToIntegerNode : DrawNode<DecimalToIntegerNode.Session>(){
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute) = when(attrib) {
         output -> GenValue.Int.Runtime.defer { current.sessionOf(this)?.output }
         else -> noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("input", input)
+        encoder.obj("roundingBehavior", roundingBehavior)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("input", input)
+        decoder.obj("roundingBehavior", roundingBehavior)
+        decoder.obj("output", output)
     }
 
     class Session : CodeGenSession {

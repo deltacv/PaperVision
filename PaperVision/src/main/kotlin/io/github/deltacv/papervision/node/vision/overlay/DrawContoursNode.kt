@@ -41,12 +41,16 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_drawcontours",
     category = NodeCategory.OVERLAY,
     description = "des_drawcontours"
 )
+@CodecType
 open class DrawContoursNode
 @JvmOverloads constructor(val isDrawOnInput: Boolean = false)
     : DrawNode<DrawContoursNode.Session>()  {
@@ -208,6 +212,26 @@ open class DrawContoursNode
         }
 
         noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("inputMat", inputMat)
+        encoder.obj("contours", contours)
+        encoder.obj("lineParams", lineParams)
+        if(!isDrawOnInput) {
+            encoder.obj("outputMat", outputMat)
+        }
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("inputMat", inputMat)
+        decoder.obj("contours", contours)
+        decoder.obj("lineParams", lineParams)
+        if(!isDrawOnInput) {
+            decoder.obj("outputMat", outputMat)
+        }
     }
 
     class Session : CodeGenSession {

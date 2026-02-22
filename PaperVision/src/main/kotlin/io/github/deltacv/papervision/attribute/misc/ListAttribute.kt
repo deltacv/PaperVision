@@ -37,7 +37,8 @@ import io.github.deltacv.papervision.serialization.v1.data.adapter.dataSerializa
 import io.github.deltacv.papervision.serialization.v1.data.adapter.jsonObjectToDataSerializable
 import io.github.deltacv.papervision.serialization.v1.AttributeSerializationData
 import io.github.deltacv.papervision.serialization.v2.CodecType
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 import io.github.deltacv.papervision.serialization.v2.MalformedDataException
 
 @CodecType(instantiable = false)
@@ -98,6 +99,8 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
 
             serializationData = null
         } else {
+            lastLength = listAttributes.size
+
             // oh god... (it's been only 10 minutes and i have already forgotten how this works)
             if (lastLength != fixedLength) {
                 if (fixedLength != null && (lastLength == null || lastLength == 0)) {
@@ -132,6 +135,10 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
                     for (attribute in listAttributes.toTypedArray<Attribute>()) {
                         attribute.delete()
                     }
+                }
+            } else {
+                for (attribute in listAttributes) {
+                    attribute.enable() // enable decoded attributes
                 }
             }
         }
@@ -180,6 +187,8 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
         }
 
         for ((i, attrib) in listAttributes.withIndex()) {
+            attrib.parentNode = parentNode
+
             if (lastHasLink != hasLink && !ignoreNewLink) {
                 if (hasLink) {
                     // delete attributes if a link has been created
@@ -221,46 +230,6 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
     }
 
     open fun drawAttributeText(index: Int, attrib: Attribute): Boolean = false
-
-    @Suppress("UNCHECKED_CAST")
-    override fun genValue(current: CodeGen.Current): GenValue.List<ER> {
-        return if (mode == AttributeMode.INPUT) {
-            if (hasLink) {
-                val linkedAttrib = availableLinkedAttribute
-
-                raiseAssert(
-                    linkedAttrib != null,
-                    "List attribute must have another attribute attached"
-                )
-
-                validateAttributes()
-
-                val value = linkedAttrib.genValue(current)
-
-                raiseAssert(
-                    value is GenValue.List<*>,
-                    "Attribute attached is not a list"
-                )
-
-                value as GenValue.List<ER>
-            } else {
-                validateAttributes() // we can safely do an unchecked cast after validating the attributes
-
-                // get the values of all the attributes and return a
-                // GenValue.List with the attribute values in an array
-                GenValue.List.Actual(listAttributes.map { it.genValue(current) }) as GenValue.List<ER>
-            }
-        } else {
-            parentNode.genCodeIfNecessary(current)
-            val value = getGenValueFromNode(current)
-            raiseAssert(
-                value is GenValue.List<*>,
-                "Value returned from the node is not a list"
-            )
-
-            value as GenValue.List<ER>
-        }
-    }
 
     private fun validateAttributes() {
         for (attribute in listAttributes) {
@@ -317,22 +286,11 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
         }
     }
 
-    override fun readEditorValue(): Array<Any?> {
-        val list = mutableListOf<Any?>()
-
-        for(attribute in listAttributes) {
-            list.add(attribute.editorValue)
-        }
-
-        return list.toTypedArray()
-    }
-
     private fun createElement(enable: Boolean = true, linkTo: Attribute? = null, relatedLink: Link? = null): E {
         val count = listAttributes.size.toString()
         val elementName = count + if (count.length == 1) " " else ""
 
         val element = elementAttributeType.new(AttributeMode.INPUT, elementName)
-        element.parentNode = parentNode
         if(enable) element.enable() // enables the new element
 
         element.drawType = false // hides the variable type
@@ -376,6 +334,56 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
         if(it is T) callback(it)
     }
 
+    @Suppress("UNCHECKED_CAST")
+    override fun genValue(current: CodeGen.Current): GenValue.List<ER> {
+        return if (mode == AttributeMode.INPUT) {
+            if (hasLink) {
+                val linkedAttrib = availableLinkedAttribute
+
+                raiseAssert(
+                    linkedAttrib != null,
+                    "List attribute must have another attribute attached"
+                )
+
+                validateAttributes()
+
+                val value = linkedAttrib.genValue(current)
+
+                raiseAssert(
+                    value is GenValue.List<*>,
+                    "Attribute attached is not a list"
+                )
+
+                value as GenValue.List<ER>
+            } else {
+                validateAttributes() // we can safely do an unchecked cast after validating the attributes
+
+                // get the values of all the attributes and return a
+                // GenValue.List with the attribute values in an array
+                GenValue.List.Actual(listAttributes.map { it.genValue(current) }) as GenValue.List<ER>
+            }
+        } else {
+            parentNode.genCodeIfNecessary(current)
+            val value = getGenValueFromNode(current)
+            raiseAssert(
+                value is GenValue.List<*>,
+                "Value returned from the node is not a list"
+            )
+
+            value as GenValue.List<ER>
+        }
+    }
+
+    override fun readEditorValue(): Array<Any?> {
+        val list = mutableListOf<Any?>()
+
+        for(attribute in listAttributes) {
+            list.add(attribute.editorValue)
+        }
+
+        return list.toTypedArray()
+    }
+
     // ------------------ Serialization v1 ------------------
 
     override fun makeSerializationData(): AttributeSerializationData {
@@ -398,26 +406,25 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
 
     // ------------------ Serialization v2 ------------------
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
         super.encode(encoder)
 
         encoder.objList("attributes", listAttributes)
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun decode(decoder: io.github.deltacv.papervision.serialization.v2.DataReader) {
+    override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
 
-        val attributes = decoder.objList("attributes") {
-            createElement(enable = false)
-        }.map {
-            if((it as? TypedAttribute<*>)?.attributeType == elementAttributeType)
-                it as E
-            else
-                throw MalformedDataException("Decoded attribute is not of the correct type", it)
-        }
+        // clear the list before decoding to avoid duplicates
+        this.listAttributes.clear()
 
-        this.listAttributes += attributes
+        // pass createElement instantiator to objList so that
+        // the elements are decoded with the correct type
+        // (createElement automatically appends to listAttributes)
+        decoder.objList("attributes") {
+            createElement(enable = false)
+        }
     }
 
 }

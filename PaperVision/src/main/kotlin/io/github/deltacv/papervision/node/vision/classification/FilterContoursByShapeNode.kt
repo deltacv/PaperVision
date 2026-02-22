@@ -37,6 +37,9 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 import io.github.deltacv.papervision.util.Range2i
 
 enum class Shape(val sides: Int?) {
@@ -48,6 +51,7 @@ enum class Shape(val sides: Int?) {
     category = NodeCategory.CLASSIFICATION,
     description = "des_groupcontours_byshape"
 )
+@CodecType
 class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() {
 
     val input = ListAttribute(INPUT, "$[att_contours]", PointsAttribute)
@@ -186,6 +190,24 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
     private fun refreshSidesField() {
         sides.showAttributesCircles = shape.currentValue == Shape.Polygon
         sides.value.set(shape.currentValue.sides ?: if(sides.value.get() >= 5) sides.value.get() else 5)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("input", input)
+        encoder.obj("shape", shape)
+        encoder.obj("sides", sides)
+        encoder.obj("accuracy", accuracy)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("input", input)
+        decoder.obj("accuracy", accuracy)
+        decoder.obj("sides", sides)
+        decoder.obj("shape", shape)
+        decoder.obj("output", output)
     }
 
     class Session : CodeGenSession {

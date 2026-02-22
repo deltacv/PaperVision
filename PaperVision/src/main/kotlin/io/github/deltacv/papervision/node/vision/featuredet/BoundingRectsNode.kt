@@ -37,12 +37,16 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_boundingrect",
     category = NodeCategory.FEATURE_DET,
     description = "des_boundingrect"
 )
+@CodecType
 class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
 
     val inputContours = ListAttribute(INPUT, "$[att_contours]", PointsAttribute)
@@ -151,6 +155,18 @@ class BoundingRectsNode : DrawNode<BoundingRectsNode.Session>() {
         }
 
         noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("inputContours", inputContours)
+        encoder.obj("outputRects", outputRects)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("inputContours", inputContours)
+        decoder.obj("outputRects", outputRects)
     }
 
     class Session : CodeGenSession {

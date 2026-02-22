@@ -36,12 +36,16 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_filterbiggest_rect",
     category = NodeCategory.FEATURE_DET,
     description = "des_filterbiggest_rect"
 )
+@CodecType
 class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>() {
 
     val input = ListAttribute(INPUT, "$[att_rects]", RectAttribute)
@@ -196,6 +200,18 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
         }
 
         noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("input", input)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("input", input)
+        decoder.obj("output", output)
     }
 
     class Session : CodeGenSession {

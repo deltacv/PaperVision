@@ -12,12 +12,16 @@ import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_composerect",
     category = NodeCategory.TRANSFORM,
     description = "des_composerect"
 )
+@CodecType
 class ComposeRectNode : DrawNode<ComposeRectNode.Session>() {
 
     val positionAtt = Vector2Attribute(INPUT, "$[att_position]")
@@ -63,6 +67,20 @@ class ComposeRectNode : DrawNode<ComposeRectNode.Session>() {
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute) = when(attrib) {
         output -> current.nonNullSessionOf(this).rect // cannot defer rect
         else -> noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("position", positionAtt)
+        encoder.obj("size", sizeAtt)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("position", positionAtt)
+        decoder.obj("size", sizeAtt)
+        decoder.obj("output", output)
     }
 
     class Session : CodeGenSession {

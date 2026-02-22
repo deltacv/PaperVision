@@ -9,10 +9,9 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
-import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.serialization.v2.CodecType
-import io.github.deltacv.papervision.serialization.v2.DataReader
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @CodecType
 class MatAttributeDecomposer : AttributeDecomposer<MatAttributeDecomposer.Session>() {
@@ -49,12 +48,12 @@ class MatAttributeDecomposer : AttributeDecomposer<MatAttributeDecomposer.Sessio
         else -> noValue(attrib)
     }
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
         encoder.obj("rows", rows)
         encoder.obj("cols", cols)
     }
 
-    override fun decode(decoder: DataReader) {
+    override fun decode(decoder: DataDecoder) {
         decoder.obj("rows", rows)
         decoder.obj("cols", cols)
     }

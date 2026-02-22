@@ -32,8 +32,9 @@ import io.github.deltacv.papervision.gui.util.ImGuiEx
 import io.github.deltacv.papervision.id.Misc
 import io.github.deltacv.papervision.serialization.v1.data.SerializeData
 import io.github.deltacv.papervision.serialization.v2.CodecType
-import io.github.deltacv.papervision.serialization.v2.DataReader
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
+import io.github.deltacv.papervision.serialization.v2.boolOrNull
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 
 @CodecType(instantiable = false)
@@ -159,18 +160,20 @@ class RangeAttribute(
 
     // ------------------ Serialization v2 ------------------
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
         super.encode(encoder)
 
-        encoder.int("min", min)
-        encoder.int("max", max)
+        encoder.int("min", minValue.get())
+        encoder.int("max", maxValue.get())
+        encoder.bool("toggle", toggleValue.get())
     }
 
-    override fun decode(decoder: DataReader) {
+    override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
 
-        min = decoder.int("min")
-        max = decoder.int("max")
+        minValue.set(decoder.int("min"))
+        maxValue.set(decoder.int("max"))
+        toggleValue.set(decoder.boolOrNull("toggle") ?: false)
     }
 }
 

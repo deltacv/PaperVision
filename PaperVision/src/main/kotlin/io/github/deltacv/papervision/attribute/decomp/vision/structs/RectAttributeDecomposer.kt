@@ -2,7 +2,6 @@ package io.github.deltacv.papervision.attribute.decomp.vision.structs
 
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.decomp.AttributeDecomposer
-import io.github.deltacv.papervision.attribute.math.DoubleAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
@@ -10,9 +9,11 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
-import io.github.deltacv.papervision.serialization.v2.DataReader
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
+@CodecType
 class RectAttributeDecomposer : AttributeDecomposer<RectAttributeDecomposer.Session>() {
 
     val position = Vector2Attribute(OUTPUT, "$[att_position]")
@@ -72,12 +73,12 @@ class RectAttributeDecomposer : AttributeDecomposer<RectAttributeDecomposer.Sess
         else -> noValue(attrib)
     }
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
         encoder.obj("position", position)
         encoder.obj("size", size)
     }
 
-    override fun decode(decoder: DataReader) {
+    override fun decode(decoder: DataDecoder) {
         decoder.obj("position", position)
         decoder.obj("size", size)
     }

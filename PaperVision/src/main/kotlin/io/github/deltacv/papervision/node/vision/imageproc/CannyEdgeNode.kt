@@ -36,12 +36,16 @@ import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.vision.ColorSpace
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_cannyedge",
     category = NodeCategory.IMAGE_PROC,
     description = "des_cannyedge"
 )
+@CodecType
 class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
 
     val inputMat = MatAttribute(INPUT, "$[att_input]")
@@ -128,6 +132,22 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 session
             }
         }
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("inputMat", inputMat)
+        encoder.obj("firstThreshold", firstThreshold)
+        encoder.obj("secondThreshold", secondThreshold)
+        encoder.obj("outputMat", outputMat)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("inputMat", inputMat)
+        decoder.obj("firstThreshold", firstThreshold)
+        decoder.obj("secondThreshold", secondThreshold)
+        decoder.obj("outputMat", outputMat)
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {

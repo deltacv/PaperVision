@@ -263,10 +263,6 @@ class PaperVision(
 
         textureProcessorQueues.forEach { it.draw() }
 
-        if(keyManager.pressed(keyManager.keys.ArrowDown)) {
-            print(JsonCodec(true).encode(PaperVisionProject(nodes = nodes.inmutable.toMutableList(), links = links.inmutable.toMutableList())))
-        }
-
         ImGui.popFont()
 
         keyManager.update()

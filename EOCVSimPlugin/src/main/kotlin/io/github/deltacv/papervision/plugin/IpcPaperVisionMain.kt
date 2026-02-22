@@ -18,6 +18,8 @@
 
 package io.github.deltacv.papervision.plugin
 
+import com.google.gson.Gson
+import com.google.gson.JsonElement
 import imgui.app.Application
 import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
@@ -35,9 +37,12 @@ import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentProjectMessage
 import io.github.deltacv.papervision.plugin.ipc.message.SaveCurrentProjectMessage
 import io.github.deltacv.papervision.serialization.v1.PaperVisionSerializer.deserializeAndApply
 import io.github.deltacv.papervision.serialization.v1.PaperVisionSerializer.serializeToTree
+import io.github.deltacv.papervision.serialization.v2.PaperVisionProject
+import io.github.deltacv.papervision.serialization.v2.json.JsonCodec
 import io.github.deltacv.papervision.util.loggerForThis
 import picocli.CommandLine
 import java.util.concurrent.Callable
+import kotlin.math.log
 import kotlin.system.exitProcess
 
 class IpcPaperVisionMain : Callable<Int?> {
@@ -66,18 +71,30 @@ class IpcPaperVisionMain : Callable<Int?> {
                     val json = response.value
 
                     app.paperVision.onUpdate.once {
-                        deserializeAndApply(json, app.paperVision)
+                        // v2 serialization attempt first
+                        try {
+                            JsonCodec().decode(Gson().toJson(json), PaperVisionProject()).apply(app.paperVision)
+                        } catch (e: Exception) {
+                            logger.warn(
+                                "Failed to deserialize project with v2 format, falling back to v1 (will be automatically migrated to v2 on next save)",
+                                e
+                            )
 
-                        app.paperVision.nodeEditor.onEditorChange {
-                            app.paperVision.onUpdate.once {
-                                app.paperVision.engineClient.sendMessage(
-                                    EditorChangeMessage(
-                                        serializeToTree(
-                                            app.paperVision.nodes.inmutable,
-                                            app.paperVision.links.inmutable
+                            // fall back to v1, this will be the last time this project
+                            // is deserialized with v1. After this, the project will be saved with v2.
+                            deserializeAndApply(json, app.paperVision)
+                        }
+
+                        app.paperVision.onUpdate.once {
+                            app.paperVision.nodeEditor.onEditorChange {
+                                app.paperVision.onUpdate.once {
+                                    val project = PaperVisionProject.from(app.paperVision)
+                                    app.paperVision.engineClient.sendMessage(
+                                        EditorChangeMessage(
+                                            Gson().fromJson(JsonCodec().encode(project), JsonElement::class.java)
                                         )
                                     )
-                                )
+                                }
                             }
                         }
                     }
@@ -131,9 +148,8 @@ class IpcPaperVisionMain : Callable<Int?> {
             when (action) {
                 CloseConfirmWindow.Action.YES -> app.paperVision.engineClient.sendMessage(
                     SaveCurrentProjectMessage(
-                        serializeToTree(
-                            app.paperVision.nodes.inmutable, app.paperVision.links.inmutable
-                        )
+                        // save v2
+                        Gson().fromJson(JsonCodec().encode(PaperVisionProject.from(app.paperVision)), JsonElement::class.java)
                     ).onResponse { response: PaperVisionEngineMessageResponse? ->
                         if (response is OkResponse) {
                             exitProcess(0)

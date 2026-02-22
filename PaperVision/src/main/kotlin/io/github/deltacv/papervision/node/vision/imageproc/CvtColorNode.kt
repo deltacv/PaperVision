@@ -37,12 +37,16 @@ import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.vision.ColorSpace
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_cvtcolor",
     category = NodeCategory.IMAGE_PROC,
     description = "des_cvtcolor"
 )
+@CodecType
 class CvtColorNode : DrawNode<CvtColorNode.Session>() {
 
     val input  = MatAttribute(INPUT, "$[att_input]")
@@ -152,6 +156,20 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
         }
 
         noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("input", input)
+        encoder.obj("convertTo", convertTo)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("input", input)
+        decoder.obj("convertTo", convertTo)
+        decoder.obj("output", output)
     }
 
     class Session : CodeGenSession {

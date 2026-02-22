@@ -33,8 +33,8 @@ import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.id.Misc
 import io.github.deltacv.papervision.serialization.v1.AttributeSerializationData
 import io.github.deltacv.papervision.serialization.v2.CodecType
-import io.github.deltacv.papervision.serialization.v2.DataReader
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 import io.github.deltacv.papervision.util.Range2d
 
 @CodecType(instantiable = false)
@@ -154,12 +154,12 @@ class DoubleAttribute(
 
     // ------------------ Serialization v2 ------------------
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
         super.encode(encoder)
         encoder.double("value", value.get())
     }
 
-    override fun decode(decoder: DataReader) {
+    override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
         nextValue = decoder.double("value")
     }

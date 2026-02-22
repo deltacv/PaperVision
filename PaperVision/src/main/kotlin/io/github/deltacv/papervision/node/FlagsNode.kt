@@ -20,8 +20,8 @@ package io.github.deltacv.papervision.node
 
 import io.github.deltacv.papervision.serialization.v1.data.SerializeData
 import io.github.deltacv.papervision.serialization.v2.CodecType
-import io.github.deltacv.papervision.serialization.v2.DataReader
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "Flags",
@@ -40,7 +40,7 @@ class FlagsNode : InvisibleNode() {
     @SerializeData
     val numFlags = mutableMapOf<String, Double>()
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
         super.encode(encoder)
         encoder.unignore() // InvisibleNode requests ignore by default, we dont really want that anymore
 
@@ -53,7 +53,7 @@ class FlagsNode : InvisibleNode() {
         }
     }
 
-    override fun decode(decoder: DataReader) {
+    override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
 
         val flagsKeys = decoder.boolEntries()

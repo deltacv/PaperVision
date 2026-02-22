@@ -36,12 +36,16 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_grouprects_byratio",
     category = NodeCategory.CLASSIFICATION,
     description = "des_grouprects_byratio"
 )
+@CodecType
 class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
 
     val input = ListAttribute(INPUT, "$[att_rects]", RectAttribute)
@@ -154,6 +158,22 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
             output -> GenValue.List.Runtime.defer { current.sessionOf(this)?.output }
             else -> noValue(attrib)
         }
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("input", input)
+        encoder.obj("minRatio", minRatio)
+        encoder.obj("maxRatio", maxRatio)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("input", input)
+        decoder.obj("minRatio", minRatio)
+        decoder.obj("maxRatio", maxRatio)
+        decoder.obj("output", output)
     }
 
     class Session : CodeGenSession {

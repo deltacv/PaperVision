@@ -38,12 +38,16 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_keypointsto_rects",
     category = NodeCategory.TRANSFORM,
     description = "des_keypointsto_rects"
 )
+@CodecType
 class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
 
     val input = ListAttribute(INPUT, "$[att_keypoints]", KeyPointAttribute)
@@ -135,6 +139,18 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
             output -> GenValue.List.Runtime.defer { current.sessionOf(this)?.output }
             else -> noValue(attrib)
         }
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("input", input)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("input", input)
+        decoder.obj("output", output)
     }
 
     class Session : CodeGenSession {

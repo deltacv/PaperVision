@@ -35,8 +35,8 @@ import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
 import io.github.deltacv.papervision.serialization.v1.BasicNodeData
 import io.github.deltacv.papervision.serialization.v1.NodeSerializationData
 import io.github.deltacv.papervision.serialization.v2.DataCodec
-import io.github.deltacv.papervision.serialization.v2.DataReader
-import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 import io.github.deltacv.papervision.util.DelegatedChangeEmitter
 import io.github.deltacv.papervision.util.QueuedChangeEmitter
 import io.github.deltacv.papervision.util.event.PaperEventHandler
@@ -267,7 +267,7 @@ abstract class Node<S: CodeGenSession>(
 
     // ------------------ Serialization v2 ------------------
 
-    override fun encode(encoder: DataWriter) {
+    override fun encode(encoder: DataEncoder) {
         encoder.int("id", id)
 
         val pos = ImNodes.getNodeEditorSpacePos(id)
@@ -275,7 +275,7 @@ abstract class Node<S: CodeGenSession>(
         encoder.float("y", pos.y)
     }
 
-    override fun decode(decoder: DataReader) {
+    override fun decode(decoder: DataDecoder) {
         serializedId = decoder.int("id")
 
         val x = decoder.float("x")

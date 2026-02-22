@@ -42,12 +42,16 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_drawrotated_rects",
     category = NodeCategory.OVERLAY,
     description = "des_drawrotated_rects"
 )
+@CodecType
 open class DrawRotatedRectanglesNode
 @JvmOverloads constructor(val isDrawOnInput: Boolean = false) : DrawNode<DrawRotatedRectanglesNode.Session>() {
 
@@ -220,6 +224,22 @@ open class DrawRotatedRectanglesNode
         }
 
         noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("inputMat", inputMat)
+        encoder.obj("rectangles", rectangles)
+        encoder.obj("lineParams", lineParams)
+        encoder.obj("outputMat", outputMat)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.obj("inputMat", inputMat)
+        decoder.obj("rectangles", rectangles)
+        decoder.obj("lineParams", lineParams)
+        decoder.obj("outputMat", outputMat)
     }
 
     class Session : CodeGenSession {
