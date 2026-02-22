@@ -36,7 +36,7 @@ class AboutModalWindow : Window() {
     override var title = "win_welcome"
 
     val imguiFont by Font.findLazy("default-12")
-    val monoFont by Font.findLazy("jetbrains-mono")
+    val monoFont by Font.findLazy("jetbrains-mono-big")
 
     override val windowFlags = flags(
         ImGuiWindowFlags.NoResize,

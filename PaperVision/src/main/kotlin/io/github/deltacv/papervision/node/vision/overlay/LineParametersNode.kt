@@ -38,7 +38,7 @@ import io.github.deltacv.papervision.node.vision.ColorSpace
 
 @PaperNode(
     name = "nod_lineparameters",
-    category = NodeCategory.OVERLAY,
+    category = NodeCategory.TRANSFORM,
     description = "des_lineparameters"
 )
 class LineParametersNode : DrawNode<LineParametersNode.Session>() {

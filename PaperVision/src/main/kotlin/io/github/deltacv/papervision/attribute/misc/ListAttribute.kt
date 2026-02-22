@@ -32,11 +32,15 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.node.Link
-import io.github.deltacv.papervision.serialization.data.DataSerializable
-import io.github.deltacv.papervision.serialization.data.adapter.dataSerializableToJsonObject
-import io.github.deltacv.papervision.serialization.data.adapter.jsonObjectToDataSerializable
-import io.github.deltacv.papervision.serialization.AttributeSerializationData
+import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
+import io.github.deltacv.papervision.serialization.v1.data.adapter.dataSerializableToJsonObject
+import io.github.deltacv.papervision.serialization.v1.data.adapter.jsonObjectToDataSerializable
+import io.github.deltacv.papervision.serialization.v1.AttributeSerializationData
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.serialization.v2.MalformedDataException
 
+@CodecType(instantiable = false)
 open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
     override val mode: AttributeMode,
     override var variableName: String? = null,
@@ -193,7 +197,7 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
                 if (isDrawAttributeTextOverridden) {
                     ImGui.sameLine()
                 } else {
-                    attrib.inputSameLine = true
+                    attrib.inlineInput = true
                 }
 
                 attrib.draw()
@@ -331,7 +335,6 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
         element.parentNode = parentNode
         if(enable) element.enable() // enables the new element
 
-        element.ownedByList = true
         element.drawType = false // hides the variable type
         element.onChange.attach {
             emitChange(element.peekChange())
@@ -373,6 +376,8 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
         if(it is T) callback(it)
     }
 
+    // ------------------ Serialization v1 ------------------
+
     override fun makeSerializationData(): AttributeSerializationData {
         val objects = mutableListOf<JsonObject>()
 
@@ -389,5 +394,30 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
     }
 
     data class Data(var attributes: List<JsonObject>) : AttributeSerializationData()
+
+
+    // ------------------ Serialization v2 ------------------
+
+    override fun encode(encoder: DataWriter) {
+        super.encode(encoder)
+
+        encoder.objList("attributes", listAttributes)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun decode(decoder: io.github.deltacv.papervision.serialization.v2.DataReader) {
+        super.decode(decoder)
+
+        val attributes = decoder.objList("attributes") {
+            createElement(enable = false)
+        }.map {
+            if((it as? TypedAttribute<*>)?.attributeType == elementAttributeType)
+                it as E
+            else
+                throw MalformedDataException("Decoded attribute is not of the correct type", it)
+        }
+
+        this.listAttributes += attributes
+    }
 
 }

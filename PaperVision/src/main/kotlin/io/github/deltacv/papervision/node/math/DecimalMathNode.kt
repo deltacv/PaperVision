@@ -15,6 +15,8 @@ import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.PaperNode
+import io.github.deltacv.papervision.serialization.v2.DataReader
+import io.github.deltacv.papervision.serialization.v2.DataWriter
 
 @PaperNode(
     name = "nod_decimalmath",
@@ -30,11 +32,11 @@ class DecimalMathNode : DrawNode<DecimalMathNode.Session>() {
     val result = DoubleAttribute(OUTPUT, "$[att_result]")
 
     override fun onEnable() {
-        + first
-        + operation.rebuildOnChange()
-        + second
+        +first
+        +operation.rebuildOnChange()
+        +second
 
-        + result
+        +result
     }
 
     override val generators = generatorsBuilder {
@@ -49,19 +51,19 @@ class DecimalMathNode : DrawNode<DecimalMathNode.Session>() {
                 var secondV = secondValue.v
 
                 // move into class variables for previz so they can be tuned without rebuilding
-                if(codeGen.isForPreviz) {
-                    if(firstValue is GenValue.Double.Actual)
+                if (codeGen.isForPreviz) {
+                    if (firstValue is GenValue.Double.Actual)
                         firstV = uniqueVariable("integerMathFirst", firstValue.v)
-                    if(secondValue is GenValue.Double.Actual)
+                    if (secondValue is GenValue.Double.Actual)
                         secondV = uniqueVariable("integerMathSecond", secondValue.v)
 
                     group {
-                        if(firstV is DeclarableVariable) public(firstV, first.label())
-                        if(secondV is DeclarableVariable) public(secondV, second.label())
+                        if (firstV is DeclarableVariable) public(firstV, first.label())
+                        if (secondV is DeclarableVariable) public(secondV, second.label())
                     }
                 }
 
-                val resultValue = when(operation.genValue(current).value) {
+                val resultValue = when (operation.genValue(current).value) {
                     Operation.PLUS -> firstV + secondV
                     Operation.MINUS -> firstV - secondV
                     Operation.MULTIPLY -> firstV * secondV
@@ -77,11 +79,25 @@ class DecimalMathNode : DrawNode<DecimalMathNode.Session>() {
         }
     }
 
-    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        return when(attrib) {
-            result -> GenValue.Double.Runtime.defer { current.sessionOf(this)?.result }
-            else -> super.getGenValueOf(current, attrib)
-        }
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute) = when (attrib) {
+        result -> GenValue.Double.Runtime.defer { current.sessionOf(this)?.result }
+        else -> noValue(attrib)
+    }
+
+    override fun encode(encoder: DataWriter) {
+        super.encode(encoder) // encode node first
+
+        encoder.obj("first", first)
+        encoder.obj("operation", operation)
+        encoder.obj("second", second)
+    }
+
+    override fun decode(decoder: DataReader) {
+        super.decode(decoder) // decode node first
+
+        decoder.obj("first", first)
+        decoder.obj("operation", operation)
+        decoder.obj("second", second)
     }
 
     class Session : CodeGenSession {

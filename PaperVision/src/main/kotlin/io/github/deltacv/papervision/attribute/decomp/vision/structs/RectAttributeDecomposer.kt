@@ -3,25 +3,24 @@ package io.github.deltacv.papervision.attribute.decomp.vision.structs
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.decomp.AttributeDecomposer
 import io.github.deltacv.papervision.attribute.math.DoubleAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
+import io.github.deltacv.papervision.serialization.v2.DataReader
+import io.github.deltacv.papervision.serialization.v2.DataWriter
 
 class RectAttributeDecomposer : AttributeDecomposer<RectAttributeDecomposer.Session>() {
 
-    val x = DoubleAttribute(OUTPUT, "X")
-    val y = DoubleAttribute(OUTPUT, "Y")
-    val width = DoubleAttribute(OUTPUT, "$[att_width]")
-    val height = DoubleAttribute(OUTPUT, "$[att_height]")
+    val position = Vector2Attribute(OUTPUT, "$[att_position]")
+    val size = Vector2Attribute(OUTPUT, "$[att_size]", useSizeNaming = true)
 
     override fun onEnable() {
-        + x
-        + y
-        + width
-        + height
+        + position
+        + size
     }
 
     override val generators = generatorsBuilder<GenValue, Session> {
@@ -33,18 +32,29 @@ class RectAttributeDecomposer : AttributeDecomposer<RectAttributeDecomposer.Sess
             current.scope {
                 when(genInput) {
                     is GenValue.Rect.Components -> {
-                        session.x = genInput.x.toRuntime(current)
-                        session.y = genInput.y.toRuntime(current)
-                        session.width = genInput.w.toRuntime(current)
-                        session.height = genInput.h.toRuntime(current)
+                        session.position = GenValue.Vec2.Runtime(
+                            genInput.x.toRuntime(current),
+                            genInput.y.toRuntime(current)
+                        )
+
+                        session.size = GenValue.Vec2.Runtime(
+                            genInput.w.toRuntime(current),
+                            genInput.h.toRuntime(current)
+                        )
                     }
                     is GenValue.Rect.Inst -> {
                         val rect = genInput.value.v
 
-                        session.x = GenValue.Double.Runtime(double(rect.propertyValue("x", IntType)).resolved())
-                        session.y = GenValue.Double.Runtime(double(rect.propertyValue("y", IntType)).resolved())
-                        session.width = GenValue.Double.Runtime(double(rect.propertyValue("width", IntType)).resolved())
-                        session.height = GenValue.Double.Runtime(double(rect.propertyValue("height", IntType)).resolved())
+                        val x = GenValue.Double.Runtime(double(rect.propertyValue("x", IntType)).resolved())
+                        val y = GenValue.Double.Runtime(double(rect.propertyValue("y", IntType)).resolved())
+                        val position = GenValue.Vec2.Runtime(x, y)
+
+                        val width = GenValue.Double.Runtime(double(rect.propertyValue("width", IntType)).resolved())
+                        val height = GenValue.Double.Runtime(double(rect.propertyValue("height", IntType)).resolved())
+                        val size = GenValue.Vec2.Runtime(width, height)
+
+                        session.position = position
+                        session.size = size
                     }
                 }
             }
@@ -57,17 +67,23 @@ class RectAttributeDecomposer : AttributeDecomposer<RectAttributeDecomposer.Sess
         current: CodeGen.Current,
         attrib: Attribute
     ) = when(attrib) {
-        x -> GenValue.Double.Runtime.defer { current.sessionOf(this)?.x }
-        y -> GenValue.Double.Runtime.defer { current.sessionOf(this)?.y }
-        width -> GenValue.Double.Runtime.defer { current.sessionOf(this)?.width }
-        height -> GenValue.Double.Runtime.defer { current.sessionOf(this)?.height }
+        position -> GenValue.Vec2.Runtime.defer { current.sessionOf(this)?.position }
+        size -> GenValue.Vec2.Runtime.defer { current.sessionOf(this)?.size }
         else -> noValue(attrib)
     }
 
+    override fun encode(encoder: DataWriter) {
+        encoder.obj("position", position)
+        encoder.obj("size", size)
+    }
+
+    override fun decode(decoder: DataReader) {
+        decoder.obj("position", position)
+        decoder.obj("size", size)
+    }
+
     class Session : CodeGenSession {
-        lateinit var x: GenValue.Double.Runtime
-        lateinit var y: GenValue.Double.Runtime
-        lateinit var width: GenValue.Double.Runtime
-        lateinit var height: GenValue.Double.Runtime
+        lateinit var position: GenValue.Vec2.Runtime
+        lateinit var size: GenValue.Vec2.Runtime
     }
 }

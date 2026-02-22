@@ -24,22 +24,29 @@ import io.github.deltacv.papervision.action.editor.CreateLinkAction
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
+import io.github.deltacv.papervision.attribute.decomp.AttributeDecomposer
+import io.github.deltacv.papervision.attribute.decomp.vision.structs.Vector2AttributeDecomposer
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.math.Vector2Node
+import io.github.deltacv.papervision.serialization.v2.CodecType
 
+@CodecType(instantiable = false)
 class Vector2Attribute (
     override val mode: AttributeMode,
-    override var variableName: String? = null
+    override var variableName: String? = null,
+    val useSizeNaming: Boolean = false
 ) : TypedAttribute<GenValue.Vec2>(Companion) {
 
     companion object : AttributeType<Vector2Attribute> {
         override val icon = FontAwesomeIcons.DotCircle
 
         override fun new(mode: AttributeMode, variableName: String) = Vector2Attribute(mode, variableName)
+
+        override fun newDecomposer() = Vector2AttributeDecomposer()
     }
 
     private val fontAwesome = Font.find("font-awesome")
@@ -51,7 +58,7 @@ class Vector2Attribute (
             ImGui.pushFont(fontAwesome.imfont)
 
             if(!hasLink && ImGui.button(FontAwesomeIcons.PencilAlt)) {
-                val node = parentNode.editor.addNode(Vector2Node::class.java)
+                val node = parentNode.editor.addNode(Vector2Node(useSizeNaming))
 
                 parentNode.editor.onDraw.once {
                     CreateLinkAction(

@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.serialization.data
+package io.github.deltacv.papervision.serialization.v1.data
 
 import com.google.gson.*
 import com.google.gson.reflect.TypeToken
-import io.github.deltacv.papervision.serialization.data.adapter.dataSerializableGson
+import io.github.deltacv.papervision.serialization.v1.data.adapter.dataSerializableGson
 
 object DataSerializer {
 

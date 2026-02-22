@@ -44,7 +44,7 @@ class CodeDisplayWindow(
 ) : Window() {
     override var title = "Code"
 
-    val codeFont = Font.find("jetbrains-mono")
+    val codeFont = Font.find("jetbrains-mono-big")
     val buttonsFont = Font.find("calcutta-big")
 
     override val windowFlags = flags(

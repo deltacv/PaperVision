@@ -19,6 +19,7 @@
 package io.github.deltacv.papervision.node.math
 
 import io.github.deltacv.papervision.attribute.Attribute
+import io.github.deltacv.papervision.attribute.math.DoubleAttribute
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.attribute.vision.structs.Vector2Attribute
@@ -36,22 +37,21 @@ import io.github.deltacv.papervision.util.Range2i
 
 @PaperNode(
     name = "nod_vector2",
-    category = NodeCategory.MATH,
+    category = NodeCategory.TRANSFORM,
     description = "des_vector2"
 )
-class Vector2Node : DrawNode<Vector2Node.Session>() {
+class Vector2Node @JvmOverloads constructor(
+    useSizeNaming: Boolean = false
+) : DrawNode<Vector2Node.Session>() {
 
-    val xAttribute = IntAttribute(INPUT, "X")
-    val yAttribute = IntAttribute(INPUT, "Y")
+    val xAttribute = DoubleAttribute(INPUT, if(useSizeNaming) "att_width" else "X")
+    val yAttribute = DoubleAttribute(INPUT, if(useSizeNaming) "att_height" else "Y")
 
     val result = Vector2Attribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
         + xAttribute
-        xAttribute.fieldMode(range = Range2i(Int.MIN_VALUE, Int.MAX_VALUE))
-
         + yAttribute
-        yAttribute.fieldMode(range = Range2i(Int.MIN_VALUE, Int.MAX_VALUE))
 
         + result
     }
@@ -61,28 +61,39 @@ class Vector2Node : DrawNode<Vector2Node.Session>() {
             val session = Session()
 
             current {
-                val xValue = xAttribute.genValue(current)
-                val yValue = yAttribute.genValue(current)
+                if(codeGen.isForPreviz) {
+                    val xValue = xAttribute.genValue(current)
+                    val yValue = yAttribute.genValue(current)
 
-                val x = uniqueVariable("vectorX", if(xValue is GenValue.Int.Actual) xValue.v else int(0))
-                val y = uniqueVariable("vectorY", if(yValue is GenValue.Int.Actual) yValue.v else int(0))
+                    val x = uniqueVariable("vectorX", if (xValue is GenValue.Double.Actual) xValue.v else double(0.0))
+                    val y = uniqueVariable("vectorY", if (yValue is GenValue.Double.Actual) yValue.v else double(0.0))
 
-                group {
-                    public(x, xAttribute.label())
-                    public(y, yAttribute.label())
-                }
-
-                current.scope {
-                    // if runtime, constantly update
-                    if(xValue is GenValue.Int.Runtime) {
-                        x instanceSet xValue.v
-                        y instanceSet yValue.v
+                    group {
+                        public(x, xAttribute.label())
+                        public(y, yAttribute.label())
                     }
 
-                    // if actual, just set once, don't need to bother with constants
-                }
+                    current.scope {
+                        // if runtime, constantly update
+                        if (xValue is GenValue.Double.Runtime) {
+                            x instanceSet xValue.v
+                            y instanceSet yValue.v
+                        }
 
-                session.vector2 = GenValue.Vec2.Runtime(GenValue.Double.Runtime(x.resolved()), GenValue.Double.Runtime(y.resolved()))
+                        // if actual, just set once, don't need to bother with constants
+                    }
+
+                    session.vector2 = GenValue.Vec2.Runtime(
+                        GenValue.Double.Runtime(x.resolved()),
+                        GenValue.Double.Runtime(y.resolved())
+                    )
+                } else {
+                    session.vector2 = GenValue.Vec2.wrap(
+                        xAttribute.genValue(current).toDouble(current),
+                        yAttribute.genValue(current).toDouble(current),
+                        current
+                    )
+                }
             }
 
             session

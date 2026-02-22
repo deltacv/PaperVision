@@ -29,10 +29,14 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.gui.util.Font
-import io.github.deltacv.papervision.serialization.data.SerializeData
+import io.github.deltacv.papervision.serialization.v1.data.SerializeData
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataReader
+import io.github.deltacv.papervision.serialization.v2.DataWriter
 import org.deltacv.mai18n.tr
 import kotlin.enums.EnumEntries
 
+@CodecType(instantiable = false)
 class EnumAttribute<T: Enum<T>>(
     override val mode: AttributeMode,
     override var variableName: String?,
@@ -124,6 +128,17 @@ class EnumAttribute<T: Enum<T>>(
 
             return valueEnum
         }
+    }
+
+    // ------------------ Serialization v2 ------------------
+    override fun encode(encoder: DataWriter) {
+        super.encode(encoder)
+        encoder.int("currentIndex", currentIndex.get())
+    }
+
+    override fun decode(decoder: DataReader) {
+        super.decode(decoder)
+        currentIndex.set(decoder.int("currentIndex"))
     }
 
 }

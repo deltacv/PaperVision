@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.serialization.data.adapter
+package io.github.deltacv.papervision.serialization.v1.data.adapter
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import io.github.deltacv.papervision.serialization.data.DataSerializable
+import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
 
 val dataSerializableGson: Gson = GsonBuilder()
     .registerTypeHierarchyAdapter(DataSerializable::class.java, DataSerializableAdapter)

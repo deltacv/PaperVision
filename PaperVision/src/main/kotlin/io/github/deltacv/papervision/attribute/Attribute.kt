@@ -28,9 +28,13 @@ import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
-import io.github.deltacv.papervision.serialization.AttributeSerializationData
-import io.github.deltacv.papervision.serialization.data.DataSerializable
-import io.github.deltacv.papervision.serialization.BasicAttribData
+import io.github.deltacv.papervision.serialization.v1.AttributeSerializationData
+import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
+import io.github.deltacv.papervision.serialization.v1.BasicAttribData
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataCodec
+import io.github.deltacv.papervision.serialization.v2.DataReader
+import io.github.deltacv.papervision.serialization.v2.DataWriter
 import io.github.deltacv.papervision.util.DelegatedChangeEmitter
 import io.github.deltacv.papervision.util.QueuedChangeEmitter
 import io.github.deltacv.papervision.util.event.PaperEventHandler
@@ -39,6 +43,7 @@ import kotlin.contracts.contract
 
 enum class AttributeMode { INPUT, OUTPUT }
 
+@CodecType(instantiable = false)
 class EmptyInputAttribute(
     parent: Node<*>? = null
 ) : Attribute() {
@@ -60,7 +65,12 @@ class EmptyInputAttribute(
     }
 }
 
-abstract class Attribute : DrawableIdElementBase<Attribute>(), DelegatedChangeEmitter<Attribute.ChangeType>, DataSerializable<AttributeSerializationData> {
+abstract class Attribute :
+    DrawableIdElementBase<Attribute>(),
+    DelegatedChangeEmitter<Attribute.ChangeType>,
+    DataSerializable<AttributeSerializationData>,
+    DataCodec
+{
 
     override val idContainer get() = IdContainerStacks.local.peekNonNull<Attribute>()
 
@@ -250,6 +260,8 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DelegatedChangeEm
         return parentNode.getGenValueOf(current, this)
     }
 
+    // ------------------ Serialization v1 ------------------
+
     open fun makeSerializationData(): AttributeSerializationData = BasicAttribData(id)
     open fun takeSerializationData(data: AttributeSerializationData) { /* do nothing */ }
 
@@ -266,6 +278,17 @@ abstract class Attribute : DrawableIdElementBase<Attribute>(), DelegatedChangeEm
         data.id = id
 
         return data
+    }
+
+
+    // ------------------ Serialization v2 ------------------
+
+    override fun encode(encoder: DataWriter) {
+        encoder.int("id", id)
+    }
+
+    override fun decode(decoder: DataReader) {
+        serializedId = decoder.int("id")
     }
 
     fun forgetSerializedId() {

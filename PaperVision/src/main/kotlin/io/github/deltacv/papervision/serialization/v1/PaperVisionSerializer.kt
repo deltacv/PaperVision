@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.serialization
+package io.github.deltacv.papervision.serialization.v1
 
 import com.google.gson.JsonElement
 import io.github.deltacv.papervision.PaperVision
@@ -25,8 +25,8 @@ import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.node.vision.InputMatNode
 import io.github.deltacv.papervision.node.vision.OutputMatNode
-import io.github.deltacv.papervision.serialization.data.DataSerializable
-import io.github.deltacv.papervision.serialization.data.DataSerializer
+import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
+import io.github.deltacv.papervision.serialization.v1.data.DataSerializer
 
 object PaperVisionSerializer {
 

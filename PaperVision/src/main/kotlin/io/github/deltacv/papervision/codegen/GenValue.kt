@@ -305,34 +305,6 @@ sealed class GenValue {
                 )
             }
         }
-
-        fun ensureRuntimeLineJvm(current: CodeGen.Current): Runtime {
-            return current {
-                when (val lineParams = this@LineParameters) {
-                    is Actual -> {
-                        val color = uniqueVariable(
-                            "lineColor", JvmOpenCv.Scalar.new(
-                                lineParams.color.a.v,
-                                lineParams.color.b.v,
-                                lineParams.color.c.v,
-                                lineParams.color.d.v
-                            )
-                        )
-
-                        val thickness = uniqueVariable("lineThickness", lineParams.thickness.value.v)
-
-                        group {
-                            public(color)
-                            public(thickness)
-                        }
-
-                        Runtime(Scalar.Inst(Resolvable.Now(color)), Int.Runtime(Resolvable.Now(thickness)))
-                    }
-
-                    is Runtime -> lineParams
-                }
-            }
-        }
     }
 
     sealed class Scalar(actual: Actual<Double>? = null, runtime: Runtime<Double>? = null) : List.Either<Double>(actual, runtime) {
@@ -363,28 +335,24 @@ sealed class GenValue {
             }
         }
 
-        data class Actual(val x: Double.Actual, val y: Double.Actual) : Vec2()
-        data class Runtime(val xValue: Double.Runtime, val yValue: Double.Runtime) : Vec2()
-
-        fun ensureRuntimeVector2Java(current: CodeGen.Current): Runtime {
-            return current {
-                when (val vec = this@Vec2) {
-                    is Actual -> {
-                        val x = uniqueVariable("vectorX", vec.x.value.v)
-                        val y = uniqueVariable("vectorY", vec.y.value.v)
-
-                        group {
-                            public(x)
-                            public(y)
-                        }
-
-                        Runtime(Double.Runtime(Resolvable.Now(x)), Double.Runtime(Resolvable.Now(y)))
-                    }
-
-                    is Runtime -> vec
-                }
+        data class Actual(val x: Double.Actual, val y: Double.Actual) : Vec2() {
+            companion object {
+                fun defer(genValueResolver: () -> Actual?) = Actual(
+                    Double.Actual.defer { genValueResolver()?.x },
+                    Double.Actual.defer { genValueResolver()?.y }
+                )
             }
         }
+
+        data class Runtime(val xValue: Double.Runtime, val yValue: Double.Runtime) : Vec2() {
+            companion object {
+                fun defer(genValueResolver: () -> Runtime?) = Runtime(
+                    Double.Runtime.defer { genValueResolver()?.xValue },
+                    Double.Runtime.defer { genValueResolver()?.yValue }
+                )
+            }
+        }
+
     }
 
     data class Range(val min: Double, val max: Double) : GenValue() {

@@ -40,13 +40,17 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
-import io.github.deltacv.papervision.serialization.data.SerializeData
+import io.github.deltacv.papervision.serialization.v1.data.SerializeData
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataReader
+import io.github.deltacv.papervision.serialization.v2.DataWriter
 
 @PaperNode(
     name = "nod_pipelineinput",
     category = NodeCategory.FLOW,
     showInList = false
 )
+@CodecType
 class InputMatNode @JvmOverloads constructor(
     var windowSizeSupplier: (() -> ImVec2)? = null
 ) : DrawNode<NoSession>(allowDelete = false) {
@@ -127,6 +131,7 @@ class InputMatNode @JvmOverloads constructor(
     category = NodeCategory.FLOW,
     showInList = false
 )
+@CodecType
 class OutputMatNode @JvmOverloads constructor(
     var windowSizeSupplier: (() -> ImVec2)? = null
 ) : DrawNode<NoSession>(allowDelete = false) {
@@ -331,6 +336,22 @@ class OutputMatNode @JvmOverloads constructor(
                 NoSession
             }
         }
+    }
+
+    override fun encode(encoder: DataWriter) {
+        super.encode(encoder)
+
+        encoder.obj("input", input)
+        encoder.obj("crosshair", crosshair)
+        encoder.obj("exportedData", exportedData)
+    }
+
+    override fun decode(decoder: DataReader) {
+        super.decode(decoder)
+
+        decoder.obj("input", input)
+        decoder.obj("crosshair", crosshair)
+        decoder.obj("exportedData", exportedData)
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute) = GenValue.None

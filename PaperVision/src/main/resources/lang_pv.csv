@@ -15,7 +15,7 @@ cat_image_proc,Image Processing,Procesamiento de Imagen
 cat_feature_det,Feature Detection,Deteccion de Caracteristicas
 cat_overlay,Overlay,Overlay
 cat_class,"Classification, Filtering and Exporting","Clasificación, Filtrado y Exportación"
-cat_transform,Transform,Transformacion
+cat_transform,Compose and Transform,Componer y Transformar
 cat_math,Math,Matematicas
 cat_misc,Miscellaneous,Miscelaneo
 nod_previewdisplay,Preview,Previsualizacion
@@ -57,16 +57,21 @@ nod_drawrects_onimage,Draw Rectangles on Image,Dibujar Rectangulos en Imagen
 nod_drawrotated_rects,Draw Rotated Rectangles,Dibujar Rectangulos Rotados
 nod_drawkeypoints,Draw Key Points,Dibujar Puntos Clave
 nod_crosshair,Crosshair,Crosshair
-nod_lineparameters,Line Parameters,Parametros de Linea
+nod_lineparameters,Compose Line Parameters,Componer Parametros de Linea
+nod_composerect,Compose Rectangle,Componer Rectangulo
 nod_decomposer,Attribute Decomposer,Descomponedor de Atributos
-nod_vector2,Vector in 2D,Vector en 2D
+nod_vector2,Compose Vector in 2D,Componer Vector en 2D
 nod_integermath,Math with Integers,Matematicas con Enteros
+nod_integerto_decima`l`,Integer to Decimal,Entero a Decimal
 nod_decimalmath,Math with Decimals,Matematicas con Decimales
+nod_decimalto_integer,Decimal to Integer,Decimal a Entero
+nod_vector2math,Math with 2D Vectors,Matematicas con Vectores 2D
 nod_sumintegers,Sum Integers,Sumar Enteros
 nod_codesnippet,Code Snippet,Trozo de Codigo
 att_input,Input,Entrada
 att_output,Output,Salida
 att_position,Position,Posicion
+att_size,Size,Tamaño
 att_scale,Scale,Escala
 att_width,Width,Ancho
 att_height,Height,Alto
@@ -77,6 +82,7 @@ att_crosshairposition,Crosshair Offset,Offset del Crosshair
 att_exporteddata,Export Data,Datos Exportados
 att_value,Value,Valor
 att_operation,Operation,Operacion
+att_roundingbehavior,Rounding,Redondeo
 att_params,Parameters,Parametros
 att_convertto,Convert To,Convertir A
 att_binarymask,Binary Mask,Mascara Binaria
@@ -90,6 +96,7 @@ att_lowerthreshold,Lower Threshold,Umbral Inferior
 att_upperthreshold,Upper Threshold,Umbral Superior
 att_bluralgo,Blur Algorithm,Algoritmo de Difuminado
 att_contours,Contours,Contornos
+att_rect,Rect,Rectangulo
 att_rects,Rectangles,Rectangulos
 att_rotrects,Rotated Rectangles,Rectangulos Rotados
 att_biggestrot_rect,Biggest Rect,Rectangulo Mas Grande
@@ -179,7 +186,9 @@ des_circlesto_rects,Converts circles to<br>bounding rectangles.,Convierte círcu
 des_decomposer,Decomposes a complex attribute<br>into simpler attributes that can be used<br>by other nodes.,Descompone un atributo complejo<br>en atributos más simples que pueden ser usados<br>por otros nodos.
 des_vector2,Composes a Vector in two dimensions,Compone un Vector en dos dimensiones
 des_integermath,Performs mathematical operations on integers,Realiza operaciones matemáticas con enteros
+des_integerto_decimal,Converts an integer number to a decimal,Convierte un numero entero a decimal
 des_decimalmath,Performs mathematical operations on decimals,Realiza operaciones matemáticas con decimales
+des_decimalto_integer,Converts a decimal number to an integer,Convierte un numero decimal a entero
 err_bitwiseor_binary,"Both inputs must be of the same type, binary or not","Ambas entradas deben ser del mismo tipo, binario o no"
 err_grayscale_required,"Grayscale image required","Se requiere una imagen en escala de grises"
 err_musthave_attachedattrib,Must have an attribute attached,Debe tener un atributo conectado
@@ -192,6 +201,10 @@ err_couldntlink_notdecomposable,Couldn't link nodes: Attribute is not decomposab
 err_noop_engine,"PaperVision engine is running in no-op mode, this feature is not available","El motor de PaperVision esta corriendo en modo no-op, esta caracteristica no esta disponible"
 mis_input,Input,Entrada
 mis_output,Output,Salida
+mis_round,Nearest Round,Redondear al mas cercano
+mis_floor,Round Down,Redondear hacia abajo
+mis_ceil,Round Up,Redondear hacia arriba
+mis_truncate,Drop Decimals,Truncar Decimales
 mis_nodeslist_open,Press SPACE to open the nodes list,Presiona ESPACIO para abrir la lista de nodos
 mis_nodeslist_close,Press ESCAPE to close the nodes list,Presiona ESCAPE para cerrar la lista de nodos
 mis_doubleclick_tomaximize,Double-Click to maximize,Doble-Clic para maximizar

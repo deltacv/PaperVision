@@ -30,9 +30,13 @@ import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.util.ImGuiEx
 import io.github.deltacv.papervision.id.Misc
-import io.github.deltacv.papervision.serialization.data.SerializeData
+import io.github.deltacv.papervision.serialization.v1.data.SerializeData
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataReader
+import io.github.deltacv.papervision.serialization.v2.DataWriter
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 
+@CodecType(instantiable = false)
 class RangeAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null,
@@ -97,7 +101,7 @@ class RangeAttribute(
         if(useToggle && !toggleValue.get()) return
 
         if(!hasLink) {
-            sameLineIfNeeded()
+            inlineIfNeeded()
 
             if(useSliders) {
                 ImGuiEx.rangeSliders(
@@ -152,8 +156,23 @@ class RangeAttribute(
             GenValue.Double.Actual(valueMutator(maxValue.get()).resolved())
         )
     )
-}
 
+    // ------------------ Serialization v2 ------------------
+
+    override fun encode(encoder: DataWriter) {
+        super.encode(encoder)
+
+        encoder.int("min", min)
+        encoder.int("max", max)
+    }
+
+    override fun decode(decoder: DataReader) {
+        super.decode(decoder)
+
+        min = decoder.int("min")
+        max = decoder.int("max")
+    }
+}
 
 fun RangeAttribute.rebuildOnToggleChange() = apply {
     onToggleChange {

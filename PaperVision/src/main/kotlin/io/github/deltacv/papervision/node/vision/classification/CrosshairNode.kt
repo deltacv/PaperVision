@@ -95,7 +95,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
             val drawOn = drawCrosshairOn.genValue(current)
 
-            val crosshairLineParams = crosshairLineParams.genValue(current).ensureRuntimeLineJvm(current)
+            val crosshairLineParams = JvmOpenCv.toRuntimeLineParameters(crosshairLineParams.genValue(current), current)
 
             val crosshairSizeValue = crosshairScale.genValue(current)
 
@@ -120,7 +120,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
-                    val crosshairPositionVector = crosshairPosition.genValue(current).ensureRuntimeVector2Java(current)
+                    val crosshairPositionVector = JvmOpenCv.toRuntimeVec2(crosshairPosition.genValue(current), current)
 
                     val crosshairPoint = uniqueVariable(
                         "crosshairPoint", run {

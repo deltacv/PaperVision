@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.serialization.data
+package io.github.deltacv.papervision.serialization.v1.data
 
 interface DataSerializable<D: Any> {
     val shouldSerialize: Boolean

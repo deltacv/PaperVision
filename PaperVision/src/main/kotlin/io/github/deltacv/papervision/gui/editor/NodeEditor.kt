@@ -53,7 +53,7 @@ import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.node.PaperNodeRegistry
 import io.github.deltacv.papervision.node.vision.InputMatNode
 import io.github.deltacv.papervision.node.vision.OutputMatNode
-import io.github.deltacv.papervision.serialization.PaperVisionSerializer
+import io.github.deltacv.papervision.serialization.v1.PaperVisionSerializer
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.flags
@@ -621,15 +621,19 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
                 "Node $nodeClazz could not be instantiated, is it a valid Node subclass?"
             )
 
-        val action = CreateNodesAction(instance)
+        return addNode(instance)
+    }
 
-        if (instance.joinActionStack) {
+    fun addNode(node: Node<*>): Node<*> {
+        val action = CreateNodesAction(node)
+
+        if (node.joinActionStack) {
             action.enable()
         } else {
             action.execute()
         }
 
-        return instance
+        return node
     }
 
     fun startImageDisplayFor(attribute: Attribute): ImageDisplayNode {

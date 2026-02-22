@@ -28,7 +28,7 @@ import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
-import io.github.deltacv.papervision.serialization.data.SerializeIgnore
+import io.github.deltacv.papervision.serialization.v1.data.SerializeIgnore
 
 @PaperNode(
     name = "nod_previewdisplay",

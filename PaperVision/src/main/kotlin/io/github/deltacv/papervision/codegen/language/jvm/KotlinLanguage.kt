@@ -42,7 +42,10 @@ object KotlinLanguage : LanguageBase(usesSemicolon = false) {
 
     override val Parameter.string get() = "$name: ${type.shortNameWithGenerics}"
 
-    override fun castValue(value: Value, castTo: Type) = ConValue(castTo, "($value as ${castTo.shortNameWithGenerics})")
+    override fun castValue(value: Value, castTo: Type, forceCast: Boolean) =
+        if(value.type == castTo && !forceCast)
+            value
+        else ConValue(castTo, "(${castTo.shortNameWithGenerics}) ${value.value}")
 
     override fun instanceVariableDeclaration(
         vis: Visibility,

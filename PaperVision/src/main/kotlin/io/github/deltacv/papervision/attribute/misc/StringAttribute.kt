@@ -28,8 +28,12 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
-import io.github.deltacv.papervision.serialization.AttributeSerializationData
+import io.github.deltacv.papervision.serialization.v1.AttributeSerializationData
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataReader
+import io.github.deltacv.papervision.serialization.v2.DataWriter
 
+@CodecType(instantiable = false)
 class StringAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null
@@ -58,7 +62,7 @@ class StringAttribute(
         super.drawAttribute()
 
         if(!hasLink && mode == AttributeMode.INPUT) {
-            sameLineIfNeeded()
+            inlineIfNeeded()
 
             ImGui.pushItemWidth(110.0f)
 
@@ -79,6 +83,8 @@ class StringAttribute(
         current, GenValue.String(value.get().resolved())
     )
 
+    // ------------------ Serialization v1 ------------------
+
     override fun makeSerializationData() = Data(value.get())
 
     override fun takeSerializationData(data: AttributeSerializationData) {
@@ -88,5 +94,19 @@ class StringAttribute(
     }
 
     data class Data(var value: String = "") : AttributeSerializationData()
+
+    // ------------------ Serialization v2 ------------------
+
+    override fun encode(encoder: DataWriter) {
+        super.encode(encoder)
+
+        encoder.string("value", value.get())
+    }
+
+    override fun decode(decoder: DataReader) {
+        super.decode(decoder)
+
+        nextValue = decoder.string("value")
+    }
 
 }

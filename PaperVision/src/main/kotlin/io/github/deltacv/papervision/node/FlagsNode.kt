@@ -18,7 +18,10 @@
 
 package io.github.deltacv.papervision.node
 
-import io.github.deltacv.papervision.serialization.data.SerializeData
+import io.github.deltacv.papervision.serialization.v1.data.SerializeData
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataReader
+import io.github.deltacv.papervision.serialization.v2.DataWriter
 
 @PaperNode(
     name = "Flags",
@@ -26,6 +29,7 @@ import io.github.deltacv.papervision.serialization.data.SerializeData
     category = NodeCategory.MISC,
     showInList = false
 )
+@CodecType
 class FlagsNode : InvisibleNode() {
 
     override val requestedId = 171
@@ -35,5 +39,34 @@ class FlagsNode : InvisibleNode() {
 
     @SerializeData
     val numFlags = mutableMapOf<String, Double>()
+
+    override fun encode(encoder: DataWriter) {
+        super.encode(encoder)
+        encoder.unignore() // InvisibleNode requests ignore by default, we dont really want that anymore
+
+        for((key, value) in flags) {
+            encoder.bool("f_$key", value)
+        }
+
+        for((key, value) in numFlags) {
+            encoder.double("n_$key", value)
+        }
+    }
+
+    override fun decode(decoder: DataReader) {
+        super.decode(decoder)
+
+        val flagsKeys = decoder.boolEntries()
+        for((key, value) in flagsKeys) {
+            val flagKey = key.removePrefix("f_")
+            flags[flagKey] = value
+        }
+
+        val numFlagsKeys = decoder.doubleEntries()
+        for((key, value) in numFlagsKeys) {
+            val flagKey = key.removePrefix("n_")
+            numFlags[flagKey] = value
+        }
+    }
 
 }

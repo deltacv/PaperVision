@@ -70,7 +70,7 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
 
                 val session = Session()
 
-                val line = line.genValue(current).ensureRuntimeLineJvm(current)
+                val line = JvmOpenCv.toRuntimeLineParameters(line.genValue(current), current)
 
                 val input = inputMat.genValue(current)
                 val circlesValue = circles.genValue(current) as? GenValue.List.Runtime<*>

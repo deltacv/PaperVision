@@ -70,7 +70,7 @@ abstract class TypedAttribute<R: GenValue>(
     var drawDescriptiveText = true
     var drawType = true
 
-    var inputSameLine = false
+    var inlineInput = false
 
     open var icon = attributeType.icon
 
@@ -79,9 +79,6 @@ abstract class TypedAttribute<R: GenValue>(
 
     private var isFirstDraw = true
     private var isSecondDraw = false
-
-    var ownedByList = false
-        internal set
 
     private var cachedLabels = mutableMapOf<Int?, String>()
 
@@ -94,7 +91,7 @@ abstract class TypedAttribute<R: GenValue>(
     private var previousLinkedAttributes: List<Attribute?> = emptyList()
     private var previousGet: Any? = null
 
-    private val defaultImGuiFont by Font.findLazy("default-12")
+    private val monospaceFont by Font.findLazy("jetbrains-mono")
     private val fontAwesome by Font.findLazy("font-awesome")
 
     override fun draw() {
@@ -118,8 +115,8 @@ abstract class TypedAttribute<R: GenValue>(
             isFirstDraw = false
         }
 
-        if(inputSameLine) {
-            ImGui.pushFont(defaultImGuiFont.imfont)
+        if(inlineInput) {
+            ImGui.pushFont(monospaceFont.imfont)
         }
 
         if(drawDescriptiveText) {
@@ -159,13 +156,13 @@ abstract class TypedAttribute<R: GenValue>(
 
                 drawAfterText()
             }
-        } else if(!inputSameLine) {
+        } else if(!inlineInput) {
             ImGui.text("")
         } else {
             drawAfterText()
         }
 
-        if(inputSameLine) {
+        if(inlineInput) {
             ImGui.popFont()
         }
 
@@ -206,8 +203,8 @@ abstract class TypedAttribute<R: GenValue>(
 
     open fun drawAfterText() { }
 
-    protected fun sameLineIfNeeded() {
-        if(inputSameLine) {
+    protected fun inlineIfNeeded() {
+        if(inlineInput) {
             ImGui.sameLine()
         }
     }

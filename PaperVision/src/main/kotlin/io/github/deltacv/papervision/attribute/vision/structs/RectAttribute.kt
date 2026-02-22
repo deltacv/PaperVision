@@ -27,7 +27,9 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.rgbaColor
+import io.github.deltacv.papervision.serialization.v2.CodecType
 
+@CodecType(instantiable = false)
 class RectAttribute (
     override val mode: AttributeMode,
     override var variableName: String? = null
@@ -47,5 +49,5 @@ class RectAttribute (
         override fun newDecomposer() = RectAttributeDecomposer()
     }
 
-    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Rect.Inst>(current)
+    override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Rect>(current)
 }

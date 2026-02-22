@@ -33,8 +33,8 @@ import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMe
 import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
 import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentProjectMessage
 import io.github.deltacv.papervision.plugin.ipc.message.SaveCurrentProjectMessage
-import io.github.deltacv.papervision.serialization.PaperVisionSerializer.deserializeAndApply
-import io.github.deltacv.papervision.serialization.PaperVisionSerializer.serializeToTree
+import io.github.deltacv.papervision.serialization.v1.PaperVisionSerializer.deserializeAndApply
+import io.github.deltacv.papervision.serialization.v1.PaperVisionSerializer.serializeToTree
 import io.github.deltacv.papervision.util.loggerForThis
 import picocli.CommandLine
 import java.util.concurrent.Callable

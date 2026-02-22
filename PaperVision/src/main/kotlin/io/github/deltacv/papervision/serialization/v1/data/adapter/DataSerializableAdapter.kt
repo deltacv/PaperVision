@@ -16,14 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.annotation
+package io.github.deltacv.papervision.serialization.v1.data.adapter
 
-import com.google.devtools.ksp.processing.SymbolProcessor
-import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
-import com.google.devtools.ksp.processing.SymbolProcessorProvider
+import com.google.gson.*
+import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
+import java.lang.reflect.Type
 
-class PaperNodeAnnotationProcessorProvider : SymbolProcessorProvider {
-    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return PaperNodeAnnotationProcessor(environment)
+object DataSerializableAdapter : JsonSerializer<DataSerializable<*>>, JsonDeserializer<DataSerializable<*>> {
+
+    override fun serialize(src: DataSerializable<*>, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
+        return dataSerializableToJsonObject(src, context)
     }
+
+    override fun deserialize(
+        json: JsonElement,
+        typeOfT: Type,
+        context: JsonDeserializationContext
+    ): DataSerializable<*> {
+        return jsonObjectToDataSerializable(json, context)
+    }
+
 }

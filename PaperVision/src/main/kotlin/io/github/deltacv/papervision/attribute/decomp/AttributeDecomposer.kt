@@ -1,7 +1,5 @@
 package io.github.deltacv.papervision.attribute.decomp
 
-import com.google.gson.JsonObject
-import imgui.ImGui
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.codegen.CodeGenSession
@@ -9,14 +7,17 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.GenValueMapper
 import io.github.deltacv.papervision.codegen.PolyglotGenerator
 import io.github.deltacv.papervision.node.Node
-import io.github.deltacv.papervision.serialization.AttributeSerializationData
-import io.github.deltacv.papervision.serialization.data.DataSerializable
-import io.github.deltacv.papervision.serialization.data.SerializeData
-import io.github.deltacv.papervision.serialization.data.adapter.dataSerializableToJsonObject
+import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
+import io.github.deltacv.papervision.serialization.v2.DataCodec
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-abstract class AttributeDecomposer<S: CodeGenSession> : PolyglotGenerator<GenValue, S>, GenValueMapper, DataSerializable<Any> {
+abstract class AttributeDecomposer<S: CodeGenSession> :
+    PolyglotGenerator<GenValue, S>,
+    GenValueMapper,
+    DataSerializable<Any>,
+    DataCodec
+{
 
     companion object {
         val INPUT = AttributeMode.INPUT
@@ -26,36 +27,39 @@ abstract class AttributeDecomposer<S: CodeGenSession> : PolyglotGenerator<GenVal
     lateinit var decomposerNode: Node<*>
         private set
 
-    private val _outputAttributes = mutableListOf<Attribute>()
+    lateinit var decomposedAttribute: Attribute
+        private set
 
-    val outputAttributes get() = _outputAttributes.toList()
+    private val outputAttributes = mutableListOf<Attribute>()
 
     abstract fun onEnable()
 
-    fun enable(decomposerNode: Node<*>) {
+    fun enable(decomposerNode: Node<*>, decomposedAttribute: Attribute) {
         if(::decomposerNode.isInitialized && this.decomposerNode != decomposerNode) {
             throw IllegalStateException("Decomposer cannot be reused")
         }
 
         this.decomposerNode = decomposerNode
+        this.decomposedAttribute = decomposedAttribute
         onEnable()
     }
 
     fun disable() {
-        _outputAttributes.forEach {
+        outputAttributes.forEach {
             decomposerNode.removeAttribute(it)
             it.delete()
         }
-        _outputAttributes.clear()
+        outputAttributes.clear()
     }
 
     operator fun Attribute.unaryPlus() = addOutputAttribute(this)
 
     fun addOutputAttribute(attribute: Attribute) {
-        if(attribute.mode != AttributeMode.OUTPUT)
+        if(attribute.mode != AttributeMode.OUTPUT) {
             throw IllegalArgumentException("Only output attributes can be added to the decomposer")
+        }
 
-        _outputAttributes.add(attribute)
+        outputAttributes.add(attribute)
         decomposerNode.addAttribute(attribute)
 
         attribute.enable()

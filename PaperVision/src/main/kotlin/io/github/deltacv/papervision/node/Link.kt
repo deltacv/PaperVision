@@ -25,18 +25,34 @@ import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.container.IdContainerStacks
-import io.github.deltacv.papervision.serialization.data.DataSerializable
-import io.github.deltacv.papervision.serialization.LinkSerializationData
+import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
+import io.github.deltacv.papervision.serialization.v1.LinkSerializationData
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataCodec
+import io.github.deltacv.papervision.serialization.v2.DataReader
+import io.github.deltacv.papervision.serialization.v2.DataWriter
+import io.github.deltacv.papervision.util.loggerForThis
 
+@CodecType
 class Link(
-    val a: Int,
-    val b: Int,
+    a: Int = -1,
+    b: Int = -1,
     val isDestroyableByUser: Boolean = true,
     override val shouldSerialize: Boolean = true
-) : DrawableIdElementBase<Link>(), DataSerializable<LinkSerializationData> {
+) : DrawableIdElementBase<Link>(),
+    DataSerializable<LinkSerializationData>,
+    DataCodec
+{
+    val logger by loggerForThis()
 
     val attribIdElementContainer = IdContainerStacks.local.peekNonNull<Attribute>()
     override val idContainer = IdContainerStacks.local.peekNonNull<Link>()
+
+    var a = a
+        private set
+
+    var b = b
+        private set
 
     val aAttrib get() = attribIdElementContainer[a]
     val bAttrib get() = attribIdElementContainer[b]
@@ -58,6 +74,10 @@ class Link(
         }
 
         if(aAttrib == null || bAttrib == null) {
+            val aPresent = "(${if(aAttrib == null) "missing" else "present"})"
+            val bPresent = "(${if(bAttrib == null) "missing" else "present"})"
+
+            logger.warn("Link $id has invalid attributes (a: #${a} $aPresent, b: #${b} $bPresent), deleting link")
             delete()
             return
         }
@@ -114,6 +134,23 @@ class Link(
         bAttrib?.onChange?.run()
     }
 
+    override fun serialize() = LinkSerializationData(a, b)
+
+    override fun deserialize(data: LinkSerializationData) {
+    }
+
+    override fun toString() = "Link(from=$a, to=$b)"
+
+    override fun encode(encoder: DataWriter) {
+        encoder.int("a", a)
+        encoder.int("b", b)
+    }
+
+    override fun decode(decoder: DataReader) {
+        a = decoder.int("a")
+        b = decoder.int("b")
+    }
+
     companion object {
         fun getLinksBetween(a: Node<*>, b: Node<*>): List<Link> {
             val l = mutableListOf<Link>()
@@ -132,12 +169,5 @@ class Link(
             return l
         }
     }
-
-    override fun serialize() = LinkSerializationData(a, b)
-
-    override fun deserialize(data: LinkSerializationData) {
-    }
-
-    override fun toString() = "Link(from=$a, to=$b)"
 
 }

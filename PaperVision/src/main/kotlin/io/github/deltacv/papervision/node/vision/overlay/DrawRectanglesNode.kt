@@ -75,7 +75,7 @@ open class DrawRectanglesNode
             current {
                 val session = Session()
 
-                val lineParams = lineParams.genValue(current).ensureRuntimeLineJvm(current)
+                val lineParams = JvmOpenCv.toRuntimeLineParameters(lineParams.genValue(current), current)
 
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)
@@ -102,10 +102,7 @@ open class DrawRectanglesNode
                             if (rectangle is GenValue.Rect.Components) {
                                 Imgproc(
                                     "rectangle", drawMat,
-                                    JvmOpenCv.Rect.new(
-                                        double(rectangle.x.v), double(rectangle.y.v),
-                                        double(rectangle.w.v), double(rectangle.h.v)
-                                    ),
+                                    JvmOpenCv.toRectInst(rectangle, current).value.v,
                                     lineParams.color.value.v,
                                     lineParams.thicknessValue.v
                                 )

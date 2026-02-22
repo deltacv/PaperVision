@@ -142,7 +142,7 @@ object CPythonLanguage : LanguageBase(
             |}""".trimMargin()
     }
 
-    override fun castValue(value: Value, castTo: Type) = ConValue(castTo, value.value)
+    override fun castValue(value: Value, castTo: Type, forceCast: Boolean) = ConValue(castTo, value.value)
 
     fun sliceValue(start: Value? = null, end: Value? = null, step: Value? = null) : ConValue {
         val sliceStr = buildString {

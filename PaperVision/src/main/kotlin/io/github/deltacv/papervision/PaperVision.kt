@@ -51,6 +51,8 @@ import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.platform.*
+import io.github.deltacv.papervision.serialization.v2.PaperVisionProject
+import io.github.deltacv.papervision.serialization.v2.json.JsonCodec
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 import org.deltacv.mai18n.Language
@@ -180,16 +182,18 @@ class PaperVision(
 
         defaultFont = font("calcutta", "/fonts/Calcutta-SemiBold.otf", 20f)
         font("calcutta-big", "/fonts/Calcutta-SemiBold.otf", 28f)
-        font("jetbrains-mono", "/fonts/JetBrainsMono-Regular.ttf", 28f)
+
+        font("jetbrains-mono", "/fonts/JetBrainsMono-Regular.ttf", 20f, ranges)
+        font("jetbrains-mono-big", "/fonts/JetBrainsMono-Regular.ttf", 28f)
 
         fontManager.makeDefaultFont(20) // "default-20"
         fontManager.makeDefaultFont(12) // "default-12"
 
         // Pass the ranges to the icon fonts so FontAwesome glyphs are available
-        fontManager.makeFont("font-awesome", "/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(16f), ranges)
-        fontManager.makeFont("font-awesome-big", "/fonts/icons/FontAwesome6-Free-Solid-900.otf", defaultFontConfig(52f), ranges)
-        fontManager.makeFont("font-awesome-brands", "/fonts/icons/FontAwesome6-Brands-Regular-400.otf", defaultFontConfig(16f), ranges)
-        fontManager.makeFont("font-awesome-brands-big", "/fonts/icons/FontAwesome6-Brands-Regular-400.otf", defaultFontConfig(80f), ranges)
+        font("font-awesome", "/fonts/icons/FontAwesome6-Free-Solid-900.otf", 16f, ranges)
+        font("font-awesome-big", "/fonts/icons/FontAwesome6-Free-Solid-900.otf", 52f, ranges)
+        font("font-awesome-brands", "/fonts/icons/FontAwesome6-Brands-Regular-400.otf", 16f, ranges)
+        font("font-awesome-brands-big", "/fonts/icons/FontAwesome6-Brands-Regular-400.otf", 80f, ranges)
     }
 
     private fun initUI() {
@@ -259,6 +263,10 @@ class PaperVision(
 
         textureProcessorQueues.forEach { it.draw() }
 
+        if(keyManager.pressed(keyManager.keys.ArrowDown)) {
+            print(JsonCodec(true).encode(PaperVisionProject(nodes = nodes.inmutable.toMutableList(), links = links.inmutable.toMutableList())))
+        }
+
         ImGui.popFont()
 
         keyManager.update()
@@ -310,8 +318,8 @@ class PaperVision(
     }
 
     /** Helper to simplify font creation */
-    private fun font(name: String, path: String, size: Float) =
-        fontManager.makeFont(name, path, defaultFontConfig(size))
+    private fun font(name: String, path: String, size: Float, ranges: ShortArray? = null) =
+        fontManager.makeFont(name, path, defaultFontConfig(size), ranges)
 
     /** Executes a block of code with all containers pushed/popped safely */
     private inline fun withStacks(crossinline block: () -> Unit) {

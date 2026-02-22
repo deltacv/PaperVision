@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.serialization.data.adapter
+package io.github.deltacv.papervision.serialization.v1.data.adapter
 
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import io.github.deltacv.papervision.serialization.data.DataSerializable
-import io.github.deltacv.papervision.serialization.data.SerializeIgnore
+import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
+import io.github.deltacv.papervision.serialization.v1.data.SerializeIgnore
 import io.github.deltacv.papervision.util.getFieldDeep
 import io.github.deltacv.papervision.util.hasSuperclass
 

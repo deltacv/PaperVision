@@ -30,11 +30,11 @@ class IntegerMathNode : DrawNode<IntegerMathNode.Session>() {
     val result = IntAttribute(OUTPUT, "$[att_result]")
 
     override fun onEnable() {
-        + first
-        + operation.rebuildOnChange()
-        + second
+        +first
+        +operation.rebuildOnChange()
+        +second
 
-        + result
+        +result
     }
 
     override val generators = generatorsBuilder {
@@ -49,19 +49,19 @@ class IntegerMathNode : DrawNode<IntegerMathNode.Session>() {
                 var secondV = secondValue.v
 
                 // move into class variables for previz so they can be tuned without rebuilding
-                if(codeGen.isForPreviz) {
-                    if(firstValue is GenValue.Int.Actual)
+                if (codeGen.isForPreviz) {
+                    if (firstValue is GenValue.Int.Actual)
                         firstV = uniqueVariable("integerMathFirst", firstValue.v)
-                    if(secondValue is GenValue.Int.Actual)
+                    if (secondValue is GenValue.Int.Actual)
                         secondV = uniqueVariable("integerMathSecond", secondValue.v)
 
                     group {
-                        if(firstV is DeclarableVariable) public(firstV, first.label())
-                        if(secondV is DeclarableVariable) public(secondV, second.label())
+                        if (firstV is DeclarableVariable) public(firstV, first.label())
+                        if (secondV is DeclarableVariable) public(secondV, second.label())
                     }
                 }
 
-                val resultValue = when(operation.genValue(current).value) {
+                val resultValue = when (operation.genValue(current).value) {
                     Operation.PLUS -> firstV + secondV
                     Operation.MINUS -> firstV - secondV
                     Operation.MULTIPLY -> firstV * secondV
@@ -77,11 +77,9 @@ class IntegerMathNode : DrawNode<IntegerMathNode.Session>() {
         }
     }
 
-    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {
-        return when(attrib) {
-            result -> GenValue.Int.Runtime.defer { current.sessionOf(this)?.result }
-            else -> super.getGenValueOf(current, attrib)
-        }
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute) = when (attrib) {
+        result -> GenValue.Int.Runtime.defer { current.sessionOf(this)?.result }
+        else -> noValue(attrib)
     }
 
     class Session : CodeGenSession {

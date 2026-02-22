@@ -29,8 +29,10 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.ColorSpace
+import io.github.deltacv.papervision.serialization.v2.CodecType
 import io.github.deltacv.papervision.util.hexString
 
+@CodecType(instantiable = false)
 class ScalarRangeAttribute(
     mode: AttributeMode,
     color: ColorSpace,
@@ -54,7 +56,7 @@ class ScalarRangeAttribute(
 
             if(attrib is TypedAttribute<*>) {
                 attrib.drawDescriptiveText = false
-                attrib.inputSameLine = true
+                attrib.inlineInput = true
             }
 
             ImGui.pushFont(defaultImGuiFont.imfont)

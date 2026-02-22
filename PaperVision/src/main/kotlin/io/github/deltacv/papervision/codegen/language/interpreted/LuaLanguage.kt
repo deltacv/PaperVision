@@ -127,7 +127,7 @@ object LuaLanguage : LanguageBase(
             additionalImports(*parameters)
         }
 
-    override fun castValue(value: Value, castTo: Type) = ConValue(castTo, value.value)
+    override fun castValue(value: Value, castTo: Type, forceCast: Boolean) = ConValue(castTo, value.value)
 
     override fun newArrayOf(type: Type, size: Value): ConValue {
         return ConValue(arrayOf(type), "java.array(${type})").apply {

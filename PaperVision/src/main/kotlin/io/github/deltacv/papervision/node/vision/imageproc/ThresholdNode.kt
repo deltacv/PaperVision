@@ -45,7 +45,7 @@ import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.vision.ColorSpace
-import io.github.deltacv.papervision.serialization.data.SerializeData
+import io.github.deltacv.papervision.serialization.v1.data.SerializeData
 
 @PaperNode(
     name = "nod_colorthresh",

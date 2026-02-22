@@ -16,7 +16,7 @@ sealed interface PolyglotMapping {
     }
 
     object AnyLanguage : PolyglotMapping {
-        override fun match(language: Language) = Int.MAX_VALUE
+        override fun match(language: Language) = Int.MAX_VALUE // worst possible match, will be used if no other mapping matches
     }
 
     /**
@@ -24,7 +24,6 @@ sealed interface PolyglotMapping {
      */
     fun match(language: Language): Int
 }
-
 
 private fun KClass<out Language>.inheritanceDistance(other: Language): Int? {
     if(this == other::class) return 0

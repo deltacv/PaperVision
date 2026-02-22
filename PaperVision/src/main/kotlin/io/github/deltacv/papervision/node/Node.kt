@@ -31,9 +31,12 @@ import io.github.deltacv.papervision.gui.editor.NodeEditor
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.node.vision.OutputMatNode
-import io.github.deltacv.papervision.serialization.data.DataSerializable
-import io.github.deltacv.papervision.serialization.BasicNodeData
-import io.github.deltacv.papervision.serialization.NodeSerializationData
+import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
+import io.github.deltacv.papervision.serialization.v1.BasicNodeData
+import io.github.deltacv.papervision.serialization.v1.NodeSerializationData
+import io.github.deltacv.papervision.serialization.v2.DataCodec
+import io.github.deltacv.papervision.serialization.v2.DataReader
+import io.github.deltacv.papervision.serialization.v2.DataWriter
 import io.github.deltacv.papervision.util.DelegatedChangeEmitter
 import io.github.deltacv.papervision.util.QueuedChangeEmitter
 import io.github.deltacv.papervision.util.event.PaperEventHandler
@@ -51,7 +54,13 @@ abstract class Node<S: CodeGenSession>(
     allowDelete: Boolean = true,
     val joinActionStack: Boolean = true,
     val rebuildOnLink: Boolean = true
-) : DrawableIdElementBase<Node<*>>(), GenNode<S>, GenValueMapper, DelegatedChangeEmitter<Node.ChangeType>, DataSerializable<NodeSerializationData> {
+) : DrawableIdElementBase<Node<*>>(),
+    GenNode<S>,
+    GenValueMapper,
+    DelegatedChangeEmitter<Node.ChangeType>,
+    DataSerializable<NodeSerializationData>,
+    DataCodec
+{
 
     override val idContainer = IdContainerStacks.local.peekNonNull<Node<*>>()
     override val requestedId get() = if(forgetSerializedId) null else serializedId
@@ -230,8 +239,10 @@ abstract class Node<S: CodeGenSession>(
         deadEndNodes.forEach { it.genCodeIfNecessary(current) }
     }
 
-    open fun makeSerializationData() = BasicNodeData(id, ImNodes.getNodeEditorSpacePos(id))
+    // ------------------ Serialization v1 ------------------
+
     open fun takeSerializationData(data: NodeSerializationData) { /* do nothing */ }
+    open fun makeSerializationData() = BasicNodeData(id, ImNodes.getNodeEditorSpacePos(id))
 
     /**
      * Call before enable()
@@ -252,6 +263,27 @@ abstract class Node<S: CodeGenSession>(
         data.nodePos = ImNodes.getNodeEditorSpacePos(id)
 
         return data
+    }
+
+    // ------------------ Serialization v2 ------------------
+
+    override fun encode(encoder: DataWriter) {
+        encoder.int("id", id)
+
+        val pos = ImNodes.getNodeEditorSpacePos(id)
+        encoder.float("x", pos.x)
+        encoder.float("y", pos.y)
+    }
+
+    override fun decode(decoder: DataReader) {
+        serializedId = decoder.int("id")
+
+        val x = decoder.float("x")
+        val y = decoder.float("y")
+
+        if(this is DrawNode<*>) {
+            nextNodePosition = ImVec2(x, y)
+        }
     }
 
     fun noValue(attrib: Attribute): Nothing {

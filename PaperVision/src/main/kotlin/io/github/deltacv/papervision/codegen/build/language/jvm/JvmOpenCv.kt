@@ -20,6 +20,8 @@ package io.github.deltacv.papervision.codegen.build.language.jvm
 
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.GenValue.Vec2.Actual
+import io.github.deltacv.papervision.codegen.GenValue.Vec2.Runtime
 import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.ConValue
 import io.github.deltacv.papervision.codegen.build.Parameter
@@ -27,6 +29,8 @@ import io.github.deltacv.papervision.codegen.build.Type
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.language.StandardTypes
 import io.github.deltacv.papervision.codegen.dsl.LanguageContext
+import io.github.deltacv.papervision.codegen.resolve.Resolvable
+import io.github.deltacv.papervision.codegen.resolve.resolved
 
 object JvmOpenCv {
 
@@ -78,6 +82,15 @@ object JvmOpenCv {
     }
 
     val Rect = Type("Rect", "org.opencv.core")
+
+    fun toRectInst(rect: GenValue.Rect, langHolder: CodeGen.LanguageHolder) = when(rect) {
+        is GenValue.Rect.Components -> langHolder.language {
+            GenValue.Rect.Inst(Rect.new(rect.x.toInt(langHolder).v, rect.y.toInt(langHolder).v, rect.w.toInt(langHolder).v, rect.h.toInt(langHolder).v).resolved())
+        }
+
+        is GenValue.Rect.Inst -> rect
+    }
+
     val RotatedRect = Type("RotatedRect", "org.opencv.core")
 
     val Point = Type("Point", "org.opencv.core")
@@ -85,6 +98,43 @@ object JvmOpenCv {
 
     object SimpleBlobDetector : Type("SimpleBlobDetector", "org.opencv.features2d") {
         val Params = Type("SimpleBlobDetector_Params", "org.opencv.features2d")
+    }
+
+    fun toRuntimeLineParameters(line: GenValue.LineParameters, current: CodeGen.Current): GenValue.LineParameters.Runtime {
+        return current {
+            when (line) {
+                is GenValue.LineParameters.Actual -> {
+                    val color = uniqueVariable(
+                        "lineColor", Scalar.new(
+                            line.color.a.v,
+                            line.color.b.v,
+                            line.color.c.v,
+                            line.color.d.v
+                        )
+                    )
+
+                    val thickness = uniqueVariable("lineThickness", line.thickness.value.v)
+
+                    group {
+                        public(color)
+                        public(thickness)
+                    }
+
+                    GenValue.LineParameters.Runtime(GenValue.Scalar.Inst(Resolvable.Now(color)), GenValue.Int.Runtime(Resolvable.Now(thickness)))
+                }
+
+                is GenValue.LineParameters.Runtime -> line
+            }
+        }
+    }
+
+    fun toRuntimeVec2(vec2: GenValue.Vec2, langHolder: CodeGen.LanguageHolder): GenValue.Vec2.Runtime {
+        return langHolder.language {
+            when (vec2) {
+                is Actual -> Runtime(vec2.x.toRuntime(langHolder), vec2.y.toRuntime(langHolder))
+                is Runtime -> vec2
+            }
+        }
     }
 
     fun getCircleType(current: CodeGen.Current): Type {

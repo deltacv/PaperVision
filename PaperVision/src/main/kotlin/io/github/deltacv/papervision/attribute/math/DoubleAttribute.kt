@@ -31,9 +31,13 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.id.Misc
-import io.github.deltacv.papervision.serialization.AttributeSerializationData
+import io.github.deltacv.papervision.serialization.v1.AttributeSerializationData
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataReader
+import io.github.deltacv.papervision.serialization.v2.DataWriter
 import io.github.deltacv.papervision.util.Range2d
 
+@CodecType(instantiable = false)
 class DoubleAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null,
@@ -71,7 +75,7 @@ class DoubleAttribute(
         super.drawAttribute()
 
         if (!hasLink && mode == AttributeMode.INPUT) {
-            sameLineIfNeeded()
+            inlineIfNeeded()
             ImGui.pushItemWidth(110.0f)
 
             if (!isSlider || disableInput) {
@@ -136,6 +140,8 @@ class DoubleAttribute(
         current, GenValue.Double.Actual(value.get().resolved())
     )
 
+    // ------------------ Serialization v1 ------------------
+
     override fun makeSerializationData() = Data(value.get())
 
     override fun takeSerializationData(data: AttributeSerializationData) {
@@ -145,4 +151,16 @@ class DoubleAttribute(
     }
 
     data class Data(var value: Double = 0.0) : AttributeSerializationData()
+
+    // ------------------ Serialization v2 ------------------
+
+    override fun encode(encoder: DataWriter) {
+        super.encode(encoder)
+        encoder.double("value", value.get())
+    }
+
+    override fun decode(decoder: DataReader) {
+        super.decode(decoder)
+        nextValue = decoder.double("value")
+    }
 }

@@ -31,7 +31,9 @@ import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.vision.overlay.LineParametersNode
+import io.github.deltacv.papervision.serialization.v2.CodecType
 
+@CodecType(instantiable = false)
 class LineParametersAttribute(
     override val mode: AttributeMode,
     override var variableName: String? = null

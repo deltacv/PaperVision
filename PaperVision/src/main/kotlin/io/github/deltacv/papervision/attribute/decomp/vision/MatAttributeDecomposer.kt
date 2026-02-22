@@ -10,7 +10,11 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.Node
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataReader
+import io.github.deltacv.papervision.serialization.v2.DataWriter
 
+@CodecType
 class MatAttributeDecomposer : AttributeDecomposer<MatAttributeDecomposer.Session>() {
 
     val rows = IntAttribute(OUTPUT, "$[att_rows]")
@@ -43,6 +47,16 @@ class MatAttributeDecomposer : AttributeDecomposer<MatAttributeDecomposer.Sessio
         rows -> GenValue.Int.Runtime.defer { current.sessionOf(this)?.rows }
         cols -> GenValue.Int.Runtime.defer { current.sessionOf(this)?.columns }
         else -> noValue(attrib)
+    }
+
+    override fun encode(encoder: DataWriter) {
+        encoder.obj("rows", rows)
+        encoder.obj("cols", cols)
+    }
+
+    override fun decode(decoder: DataReader) {
+        decoder.obj("rows", rows)
+        decoder.obj("cols", cols)
     }
 
     class Session : CodeGenSession {

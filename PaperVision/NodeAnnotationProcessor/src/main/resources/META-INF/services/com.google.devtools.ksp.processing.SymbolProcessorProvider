@@ -1,1 +1,2 @@
-io.github.deltacv.papervision.annotation.PaperNodeAnnotationProcessorProvider
+io.github.deltacv.papervision.annotation.papernode.PaperNodeAnnotationProcessorProvider
+io.github.deltacv.papervision.annotation.codectype.CodecTypeAnnotationProcessorProvider

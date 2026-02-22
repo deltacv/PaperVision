@@ -11,7 +11,7 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.PaperNode
-import io.github.deltacv.papervision.serialization.data.SerializeIgnore
+import io.github.deltacv.papervision.serialization.v1.data.SerializeIgnore
 
 @PaperNode(
     name = "nod_decomposer",
@@ -39,7 +39,9 @@ class DecomposerNode : DrawNode<NoSession>() {
         + input
 
         // enable if serialization set it up
-        decomposer?.enable(this)
+        input.availableLinkedAttribute?.let {
+            decomposer?.enable(this, it)
+        }
     }
 
     override fun drawNode() {
@@ -53,7 +55,7 @@ class DecomposerNode : DrawNode<NoSession>() {
                 val decomposer = (currentLinkedAttribute as? TypedAttribute<*>)?.attributeType?.newDecomposer()
 
                 if(decomposer != null) {
-                    decomposer.enable(this)
+                    decomposer.enable(this, currentLinkedAttribute)
                     this.decomposer = decomposer
                 }
             }

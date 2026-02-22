@@ -23,9 +23,12 @@ import imgui.extension.imnodes.flag.ImNodesCol
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.NoSession
 import io.github.deltacv.papervision.gui.style.rgbaColor
-import io.github.deltacv.papervision.serialization.data.SerializeIgnore
+import io.github.deltacv.papervision.serialization.v1.data.SerializeIgnore
+import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.DataWriter
 
 @SerializeIgnore
+@CodecType
 open class InvisibleNode : Node<NoSession>(allowDelete = false) {
 
     private val invisibleColor = rgbaColor(0, 0, 0, 0)
@@ -48,5 +51,9 @@ open class InvisibleNode : Node<NoSession>(allowDelete = false) {
     }
 
     override fun genCode(input: Unit, current: CodeGen.Current) = NoSession
+
+    override fun encode(encoder: DataWriter) {
+        encoder.ignore()
+    }
 
 }

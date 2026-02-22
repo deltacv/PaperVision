@@ -16,24 +16,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.serialization.data.adapter
+package io.github.deltacv.papervision.serialization.v1
 
-import com.google.gson.*
-import io.github.deltacv.papervision.serialization.data.DataSerializable
-import java.lang.reflect.Type
+import imgui.ImVec2
 
-object DataSerializableAdapter : JsonSerializer<DataSerializable<*>>, JsonDeserializer<DataSerializable<*>> {
+abstract class AttributeSerializationData {
+    open var id: Int = 0
+}
 
-    override fun serialize(src: DataSerializable<*>, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
-        return dataSerializableToJsonObject(src, context)
+class BasicAttribData(id: Int) : AttributeSerializationData() {
+    init {
+        this.id = id
     }
 
-    override fun deserialize(
-        json: JsonElement,
-        typeOfT: Type,
-        context: JsonDeserializationContext
-    ): DataSerializable<*> {
-        return jsonObjectToDataSerializable(json, context)
+    constructor(): this(0)
+}
+
+abstract class NodeSerializationData {
+    open var id: Int = 0
+    open var nodePos: ImVec2 = ImVec2(0f, 0f)
+}
+
+class BasicNodeData(
+    id: Int,
+    nodePos: ImVec2
+) : NodeSerializationData() {
+
+    init {
+        this.id = id
+        this.nodePos = nodePos
     }
 
+    constructor() : this(0, ImVec2(0f, 0f))
+}
+
+data class LinkSerializationData(
+    var from: Int,
+    var to: Int
+) {
+    constructor() : this(0, 0)
 }

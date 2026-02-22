@@ -44,7 +44,7 @@ class IntroModalWindow(
     )
 
     private val imguiFont = Font.find("default-12")
-    private val monoFont = Font.find("jetbrains-mono")
+    private val monoFont = Font.find("jetbrains-mono-big")
 
     override val modal = ModalMode.Modal(closeOnOutsideClick = false)
 

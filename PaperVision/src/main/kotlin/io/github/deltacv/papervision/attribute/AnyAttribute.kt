@@ -3,7 +3,9 @@ package io.github.deltacv.papervision.attribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.serialization.v2.CodecType
 
+@CodecType(instantiable = false)
 class AnyAttribute(
     override val mode: AttributeMode,
     override var variableName: String?,
