@@ -27,8 +27,8 @@ import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
-import io.github.deltacv.papervision.plugin.ipc.message.*
-import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
+import io.github.deltacv.papervision.plugin.engine.message.*
+import io.github.deltacv.papervision.plugin.engine.message.response.InputSourcesListResponse
 import io.github.deltacv.papervision.util.flags
 import org.deltacv.mai18n.tr
 

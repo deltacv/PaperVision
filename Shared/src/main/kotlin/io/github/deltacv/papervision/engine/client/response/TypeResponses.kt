@@ -18,16 +18,24 @@
 
 package io.github.deltacv.papervision.engine.client.response
 
-import com.google.gson.JsonElement
+import io.github.deltacv.papervision.serialization.PolymorphicSerializable
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
+@Serializable
+@PolymorphicSerializable(PaperVisionEngineMessageResponse::class)
 class BooleanResponse(
-    var value: Boolean
+    val value: Boolean
 ) : OkResponse()
 
+@Serializable
+@PolymorphicSerializable(PaperVisionEngineMessageResponse::class)
 class StringResponse(
-    var value: String
+    val value: String
 ) : OkResponse()
 
+@Serializable
+@PolymorphicSerializable(PaperVisionEngineMessageResponse::class)
 class JsonElementResponse(
-    var value: JsonElement
+    val value: JsonElement
 ) : OkResponse()

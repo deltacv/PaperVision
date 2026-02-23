@@ -19,20 +19,24 @@
 package io.github.deltacv.papervision.engine
 
 import io.github.deltacv.papervision.engine.client.response.ErrorResponse
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
+import io.github.deltacv.papervision.engine.client.message.PaperVisionEngineMessage
+import io.github.deltacv.papervision.engine.client.response.PaperVisionEngineMessageResponse
+import io.github.deltacv.papervision.util.loggerForThis
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 abstract class MessageHandlerPaperVisionEngine : PaperVisionEngine {
 
-    private val messageHandlers = mutableMapOf<Class<out PaperVisionEngineMessage>, MessageHandlerCtx<*>.() -> Unit>()
+    private val logger by loggerForThis()
+
+    private val messageHandlers = mutableMapOf<KClass<out PaperVisionEngineMessage>, MessageHandlerCtx<*>.() -> Unit>()
 
     override fun acceptMessage(message: PaperVisionEngineMessage) {
         try {
-            // find the handler with the topmost class
             val handler =
-                messageHandlers.entries.find { (type, _) -> type.isAssignableFrom(message.javaClass) }?.value
+                messageHandlers.entries.find { (messageClass, _) -> message::class == messageClass }?.value
             handler?.invoke(MessageHandlerCtx(this, message))
+                ?: logger.warn("No handler found for message of type ${message::class.qualifiedName}")
         } catch(e: Exception) {
             sendResponse(ErrorResponse(e.message ?: "An error occurred", e).apply {
                 id = message.id
@@ -42,7 +46,7 @@ abstract class MessageHandlerPaperVisionEngine : PaperVisionEngine {
 
     @Suppress("UNCHECKED_CAST")
     fun <T: PaperVisionEngineMessage> setMessageHandlerOf(type: KClass<T>, handler: MessageHandlerCtx<T>.() -> Unit) {
-        messageHandlers[type.java] = handler as MessageHandlerCtx<*>.() -> Unit
+        messageHandlers[type] = handler as MessageHandlerCtx<*>.() -> Unit
     }
 
     inline fun <reified T : PaperVisionEngineMessage> setMessageHandlerOf(noinline handler: MessageHandlerCtx<T>.() -> Unit) {
@@ -50,7 +54,6 @@ abstract class MessageHandlerPaperVisionEngine : PaperVisionEngine {
     }
 
 }
-
 
 class MessageHandlerCtx<T: PaperVisionEngineMessage>(
     val engine: MessageHandlerPaperVisionEngine,

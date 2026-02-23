@@ -21,8 +21,6 @@ package io.github.deltacv.papervision.plugin.project
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.extension.plus
 import com.github.serivesmejia.eocvsim.util.extension.removeFromEnd
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import io.github.deltacv.common.util.loggerForThis
 import io.github.deltacv.eocvsim.plugin.PLUGIN_CACHING_FOLDER
 import io.github.deltacv.eocvsim.plugin.api.EOCVSimApi
@@ -33,16 +31,19 @@ import io.github.deltacv.papervision.plugin.PaperVisionEOCVSimPlugin
 import io.github.deltacv.papervision.plugin.PaperVisionProcessRunner
 import io.github.deltacv.papervision.plugin.previz.SinglePipelineCompiler
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
-import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngine
-import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMessage
-import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
-import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentProjectMessage
-import io.github.deltacv.papervision.plugin.ipc.message.SaveCurrentProjectMessage
+import io.github.deltacv.papervision.plugin.engine.EOCVSimIpcEngine
+import io.github.deltacv.papervision.plugin.engine.message.DiscardCurrentRecoveryMessage
+import io.github.deltacv.papervision.plugin.engine.message.EditorChangeMessage
+import io.github.deltacv.papervision.plugin.engine.message.GetCurrentProjectMessage
+import io.github.deltacv.papervision.plugin.engine.message.SaveCurrentProjectMessage
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveredProject
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryDaemonProcessManager
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryData
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.hexString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import org.openftc.easyopencv.OpenCvPipeline
 import java.awt.Window
 import java.io.File
@@ -88,7 +89,7 @@ class PaperVisionProjectManager(
     var currentProject: PaperVisionProjectTree.TreeNode.Project? = null
         private set
 
-    var currentPaperVisionProject: PaperVisionProject? = null
+    var currentPaperVisionProject: EOCVSimPaperVisionProject? = null
         private set
 
     val previewPipelines = mutableListOf<WeakReference<Class<out OpenCvPipeline>>>()
@@ -96,7 +97,7 @@ class PaperVisionProjectManager(
     fun paperVisionProjectFrom(
         project: PaperVisionProjectTree.TreeNode.Project,
         tree: JsonElement
-    ) = PaperVisionProject(
+    ) = EOCVSimPaperVisionProject(
         Instant.now().toEpochMilli(),
         findProjectFolderPath(project)!!.pathString,
         project.name,
@@ -115,7 +116,7 @@ class PaperVisionProjectManager(
                 for (file in recoveryFolder.listFiles() ?: arrayOf()) {
                     if (file.extension == "recoverypaperproj") {
                         val recoveredProject = try {
-                            RecoveredProject.fromJson(file.readText())
+                            Json.decodeFromString<RecoveredProject>(file.readText())
                         } catch (e: Exception) {
                             logger.warn("Failed to read recovery file, deleting", e)
                             file.delete()
@@ -126,12 +127,10 @@ class PaperVisionProjectManager(
 
                         if (projectPath.exists()) {
                             val project = try {
-                                PaperVisionProject.fromJson(
-                                    String(
-                                        fileSystem.readAllBytes(projectPath),
-                                        StandardCharsets.UTF_8
-                                    )
-                                )
+                                Json.decodeFromString<EOCVSimPaperVisionProject>(String(
+                                    fileSystem.readAllBytes(projectPath),
+                                    StandardCharsets.UTF_8
+                                ))
                             } catch (e: Exception) {
                                 logger.warn("Failed to read project file for phased recovery, deleting", e)
                                 file.delete()
@@ -167,7 +166,7 @@ class PaperVisionProjectManager(
         }
 
         engine.setMessageHandlerOf<GetCurrentProjectMessage> {
-            respond(JsonElementResponse(currentPaperVisionProject!!.json))
+            respond(JsonElementResponse(currentPaperVisionProject!!.data))
         }
 
         engine.setMessageHandlerOf<EditorChangeMessage> {
@@ -277,11 +276,11 @@ class PaperVisionProjectManager(
     }
 
     fun importProject(path: String, name: String, file: File) {
-        newProject(path, name, jsonElement = PaperVisionProject.fromJson(SysUtil.loadFileStr(file)).json)
+        newProject(path, name, jsonElement = Json.decodeFromString<EOCVSimPaperVisionProject>(SysUtil.loadFileStr(file)).data)
     }
 
     fun cloneProject(path: String, newName: String, project: PaperVisionProjectTree.TreeNode.Project) {
-        newProject(path, newName, jsonElement = PaperVisionProject.fromJson(readProjectFile(project)).json)
+        newProject(path, newName, jsonElement = Json.decodeFromString<EOCVSimPaperVisionProject>(readProjectFile(project)).data)
     }
 
     fun newProjectAsk(ancestor: Window) {
@@ -313,11 +312,11 @@ class PaperVisionProjectManager(
         val projectFile = projectPath.resolve(if (appendExtension) "$name.paperproj" else name)
         fileSystem.createFile(projectFile)
         fileSystem.write(
-            projectFile, PaperVisionProject(
+            projectFile, Json.encodeToString(EOCVSimPaperVisionProject(
                 Instant.now().toEpochMilli(),
                 path, name,
-                jsonElement ?: JsonObject()
-            ).toJson().toByteArray(StandardCharsets.UTF_8)
+                jsonElement ?: JsonObject(emptyMap())
+            )).toByteArray(StandardCharsets.UTF_8)
         )
 
         refresh()
@@ -384,7 +383,7 @@ class PaperVisionProjectManager(
     fun openProject(project: PaperVisionProjectTree.TreeNode.Project) {
         logger.info("Opening ${project.name}")
 
-        currentPaperVisionProject = PaperVisionProject.fromJson(readProjectFile(project))
+        currentPaperVisionProject = Json.decodeFromString<EOCVSimPaperVisionProject>(readProjectFile(project))
 
         SwingUtilities.invokeLater {
             eocvSim.visualizerApi.frame!!.isVisible = false
@@ -409,7 +408,7 @@ class PaperVisionProjectManager(
 
         fileSystem.write(
             path,
-            paperVisionProjectFrom(currentProject!!, json).toJson().toByteArray(StandardCharsets.UTF_8)
+            Json.encodeToString(paperVisionProjectFrom(currentProject!!, json)).toByteArray(StandardCharsets.UTF_8)
         )
     }
 
@@ -521,7 +520,7 @@ class PaperVisionProjectManager(
         newProject(
             recoveredProject.project.path,
             recoveredProject.project.name,
-            jsonElement = recoveredProject.project.json,
+            jsonElement = recoveredProject.project.data,
             appendExtension = false
         )
 

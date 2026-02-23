@@ -27,6 +27,7 @@ import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolve.resolved
+import io.github.deltacv.papervision.engine.client.message.TunerValue
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.util.ImGuiEx
 import io.github.deltacv.papervision.id.Misc
@@ -150,6 +151,11 @@ class RangeAttribute(
     }
 
     override fun readEditorValue() = arrayOf(valueMutator(minValue.get()), valueMutator(maxValue.get()))
+
+    override fun readTunerValue() = TunerValue.ListValue(listOf(
+        TunerValue.DoubleValue(valueMutator(minValue.get())),
+        TunerValue.DoubleValue(valueMutator(maxValue.get()))
+    ))
 
     override fun genValue(current: CodeGen.Current) = readGenValue(
         current, GenValue.Range(

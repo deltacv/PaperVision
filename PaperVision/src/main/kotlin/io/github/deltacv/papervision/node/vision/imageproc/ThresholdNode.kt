@@ -49,6 +49,7 @@ import io.github.deltacv.papervision.serialization.v1.data.SerializeData
 import io.github.deltacv.papervision.serialization.v2.CodecType
 import io.github.deltacv.papervision.serialization.v2.DataDecoder
 import io.github.deltacv.papervision.serialization.v2.DataEncoder
+import io.github.deltacv.papervision.serialization.v2.intOrNull
 
 @PaperNode(
     name = "nod_colorthresh",
@@ -225,6 +226,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
     override fun encode(encoder: DataEncoder) {
         super.encode(encoder)
         encoder.obj("input", input)
+        encoder.int("color", colorValue.get())
         encoder.obj("scalar", scalar)
         encoder.obj("output", output)
     }
@@ -232,6 +234,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
     override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
         decoder.obj("input", input)
+        colorValue.set(decoder.intOrNull("color") ?: 0)
         decoder.obj("scalar", scalar)
         decoder.obj("output", output)
     }

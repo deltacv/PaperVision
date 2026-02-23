@@ -23,6 +23,7 @@ import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.engine.client.message.TunerValue
 import io.github.deltacv.papervision.exception.AttributeGenException
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.container.IdContainerStacks
@@ -42,28 +43,6 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 enum class AttributeMode { INPUT, OUTPUT }
-
-@CodecType(instantiable = false)
-class EmptyInputAttribute(
-    parent: Node<*>? = null
-) : Attribute() {
-    override val mode = AttributeMode.INPUT
-
-    init {
-        parent?.let {
-            parentNode = it
-        }
-    }
-
-    override fun drawAttribute() {
-    }
-
-    override fun acceptLink(other: Attribute) = LinkAcceptance.Accept
-
-    override fun genValue(current: CodeGen.Current): GenValue {
-        throw NotImplementedError("value() is not implemented for EmptyInputAttribute")
-    }
-}
 
 abstract class Attribute :
     DrawableIdElementBase<Attribute>(),
@@ -239,12 +218,8 @@ abstract class Attribute :
 
     abstract fun genValue(current: CodeGen.Current): GenValue
 
-    internal open fun readEditorValue(): Any? = null
-
-    val editorValue get() = when {
-        mode == AttributeMode.INPUT -> readEditorValue()
-        else -> null
-    }
+    open val editorValue: Any? = null
+    open val tunerValue: TunerValue? = null
 
     fun rebuildPreviz() {
         if(!isOnEditor) return
@@ -325,5 +300,27 @@ fun <T: Attribute> T.rebuildOnChange(): T = apply {
         if(this@rebuildOnChange.isEnabled) {
             rebuildPreviz()
         }
+    }
+}
+
+@CodecType(instantiable = false)
+class EmptyInputAttribute(
+    parent: Node<*>? = null
+) : Attribute() {
+    override val mode = AttributeMode.INPUT
+
+    init {
+        parent?.let {
+            parentNode = it
+        }
+    }
+
+    override fun drawAttribute() {
+    }
+
+    override fun acceptLink(other: Attribute) = LinkAcceptance.Accept
+
+    override fun genValue(current: CodeGen.Current): GenValue {
+        throw NotImplementedError("value() is not implemented for EmptyInputAttribute")
     }
 }

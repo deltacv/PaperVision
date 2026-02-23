@@ -18,36 +18,85 @@
 
 package io.github.deltacv.papervision.engine.client.message
 
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageBase
+import io.github.deltacv.papervision.serialization.PolymorphicSerializable
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.json.JsonElement
 
+@Serializable
+@PolymorphicSerializable(PaperVisionEngineMessage::class)
 class PrevizPingMessage(
-    var previzName: String
+    val previzName: String
 ) : PaperVisionEngineMessageBase()
 
+@Serializable
+@PolymorphicSerializable(PaperVisionEngineMessage::class)
 class PrevizStartMessage(
-    var previzName: String,
-    var sourceCode: String,
-    var streamWidth: Int,
-    var streamHeight: Int
+    val previzName: String,
+    val sourceCode: String,
+    val streamWidth: Int,
+    val streamHeight: Int
 ) : PaperVisionEngineMessageBase()
 
+@Serializable
+@PolymorphicSerializable(PaperVisionEngineMessage::class)
 class PrevizSourceCodeMessage(
-    var previzName: String,
-    var sourceCode: String
+    val previzName: String,
+    val sourceCode: String
 ) : PaperVisionEngineMessageBase()
 
+@Serializable
+@PolymorphicSerializable(PaperVisionEngineMessage::class)
 class PrevizStopMessage(
-    var previzName: String
+    val previzName: String
 ) : PaperVisionEngineMessageBase()
 
+@Serializable
+@PolymorphicSerializable(PaperVisionEngineMessage::class)
 class PrevizAskNameMessage : PaperVisionEngineMessageBase()
 
-class TunerChangeValueMessage(
-    var label: String,
-    var value: Any
-) : PaperVisionEngineMessageBase()
+@Serializable
+sealed class TunerValue {
 
-class TunerChangeValuesMessage(
-    var label: String,
-    var values: Array<*>
+    abstract fun asAny(): Any?
+
+    @Serializable
+    data class IntValue(val value: Int) : TunerValue() {
+        override fun asAny(): Any = value
+    }
+
+    @Serializable
+    data class DoubleValue(val value: Double) : TunerValue() {
+        override fun asAny(): Any = value
+    }
+
+    @Serializable
+    data class BooleanValue(val value: Boolean) : TunerValue() {
+        override fun asAny(): Any = value
+    }
+
+    @Serializable
+    data class StringValue(val value: String) : TunerValue() {
+        override fun asAny(): Any = value
+    }
+
+    @Serializable
+    data class ListValue(val values: List<TunerValue>) : TunerValue() {
+        override fun asAny(): List<Any?> = values.map { it.asAny() }
+    }
+
+    @Serializable
+    object NullValue : TunerValue() {
+        override fun asAny() = null
+    }
+
+}
+
+@Serializable
+@PolymorphicSerializable(PaperVisionEngineMessage::class)
+class TunerChangeValueMessage(
+    val label: String,
+    val value: TunerValue
 ) : PaperVisionEngineMessageBase()

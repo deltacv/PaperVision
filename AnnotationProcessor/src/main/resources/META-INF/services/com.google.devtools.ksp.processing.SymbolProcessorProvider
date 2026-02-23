@@ -1,0 +1,3 @@
+io.github.deltacv.papervision.annotation.papernode.PaperNodeAnnotationProcessorProvider
+io.github.deltacv.papervision.annotation.codectype.CodecTypeAnnotationProcessorProvider
+io.github.deltacv.papervision.annotation.polymorphicserializable.PolymorphicSerializableAnnotationProcessorProvider

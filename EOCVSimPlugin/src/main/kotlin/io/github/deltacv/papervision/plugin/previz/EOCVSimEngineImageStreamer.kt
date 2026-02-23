@@ -22,7 +22,7 @@ import com.qualcomm.robotcore.util.ElapsedTime
 import com.qualcomm.robotcore.util.MovingStatistics
 import io.github.deltacv.eocvsim.stream.ImageStreamer
 import io.github.deltacv.papervision.engine.PaperVisionEngine
-import io.github.deltacv.papervision.engine.message.ByteMessageTag
+import io.github.deltacv.papervision.engine.ByteMessageTag
 import io.github.deltacv.papervision.util.ReusableBufferPool
 import io.github.deltacv.papervision.util.loggerFor
 import io.github.deltacv.vision.external.util.extension.aspectRatio

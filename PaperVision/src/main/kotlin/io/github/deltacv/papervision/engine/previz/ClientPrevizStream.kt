@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.engine.previz
 
 import io.github.deltacv.papervision.engine.client.ByteMessageReceiver
 import io.github.deltacv.papervision.engine.client.ByteMessageHandler
-import io.github.deltacv.papervision.engine.message.ByteMessages
+import io.github.deltacv.papervision.engine.ByteMessages
 import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bytes

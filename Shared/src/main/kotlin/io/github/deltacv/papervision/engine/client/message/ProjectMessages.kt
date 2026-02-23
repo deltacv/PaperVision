@@ -18,6 +18,9 @@
 
 package io.github.deltacv.papervision.engine.client.message
 
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageBase
+import io.github.deltacv.papervision.serialization.PolymorphicSerializable
+import kotlinx.serialization.Serializable
 
+@Serializable
+@PolymorphicSerializable(PaperVisionEngineMessage::class)
 class AskProjectGenClassNameMessage : PaperVisionEngineMessageBase()

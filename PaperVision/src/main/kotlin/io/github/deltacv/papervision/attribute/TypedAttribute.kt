@@ -29,7 +29,7 @@ import io.github.deltacv.papervision.codegen.GenValue
 import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValueMessage
-import io.github.deltacv.papervision.engine.client.message.TunerChangeValuesMessage
+import io.github.deltacv.papervision.engine.client.message.TunerValue
 import io.github.deltacv.papervision.gui.util.Font
 
 interface AttributeType<A: TypedAttribute<*>> {
@@ -272,13 +272,25 @@ abstract class TypedAttribute<R: GenValue>(
         }
     }
 
+    open fun readEditorValue(): Any? = null
+    open fun readTunerValue(): TunerValue? = null
+
+    override val editorValue get() = when {
+        mode == AttributeMode.INPUT -> readEditorValue()
+        else -> null
+    }
+    override val tunerValue get() = when {
+        mode == AttributeMode.INPUT -> readTunerValue()
+        else -> null
+    }
+
     fun label(indexIfApplicable: Int? = null): String {
         if(!cachedLabels.containsKey(indexIfApplicable)) {
             val label = id.toString() + (indexIfApplicable?.let { "_$it" } ?: "")
             cachedLabels[indexIfApplicable] = label
 
             onChange {
-                val value = editorValue
+                val value = tunerValue
 
                 // if value is null we have an oopsie and we should just rebuild
                 // always rebuild on link changes, no other way to handle it
@@ -294,20 +306,21 @@ abstract class TypedAttribute<R: GenValue>(
         return cachedLabels[indexIfApplicable]!!
     }
 
-    protected fun broadcastLabelMessageFor(label: String, value: Any, indexIfApplicable: Int? = null) {
+    protected fun broadcastLabelMessageFor(label: String, value: TunerValue, indexIfApplicable: Int? = null) {
         if(!isOnEditor) return
 
         parentNode.editor.paperVision.engineClient.sendMessage(
             when (value) {
-                is Array<*> -> if(indexIfApplicable != null) {
-                    TunerChangeValueMessage(label, value[indexIfApplicable] as Any) // only send the specific index that we want
-                } else TunerChangeValuesMessage(label, value) // send all values
-
-                is Iterable<*> -> if(indexIfApplicable != null) {
-                    TunerChangeValueMessage(label, value.elementAt(indexIfApplicable) as Any) // only send the specific index that we want
-                } else TunerChangeValuesMessage(label, value.map { it as Any }.toTypedArray()) // send all values
-
-                else -> TunerChangeValueMessage(label, value) // bleh
+                is TunerValue.ListValue -> {
+                    if(indexIfApplicable != null) {
+                        TunerChangeValueMessage(label, value.values.getOrNull(indexIfApplicable)
+                            ?: throw IndexOutOfBoundsException("Index $indexIfApplicable is out of bounds for list of size ${value.values.size}")
+                        )
+                    } else {
+                        TunerChangeValueMessage(label, value)
+                    }
+                }
+                else -> TunerChangeValueMessage(label, value)
             }
         )
     }

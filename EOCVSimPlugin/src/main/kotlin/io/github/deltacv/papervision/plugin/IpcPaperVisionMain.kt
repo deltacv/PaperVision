@@ -18,31 +18,28 @@
 
 package io.github.deltacv.papervision.plugin
 
-import com.google.gson.Gson
-import com.google.gson.JsonElement
 import imgui.app.Application
 import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
+import io.github.deltacv.papervision.engine.client.response.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.editor.Option
 import io.github.deltacv.papervision.gui.TooltipPopup
 import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp
 import io.github.deltacv.papervision.plugin.gui.imgui.CloseConfirmWindow
 import io.github.deltacv.papervision.plugin.gui.imgui.InputSourceWindow
-import io.github.deltacv.papervision.plugin.ipc.EOCVSimIpcEngineBridge
-import io.github.deltacv.papervision.plugin.ipc.message.DiscardCurrentRecoveryMessage
-import io.github.deltacv.papervision.plugin.ipc.message.EditorChangeMessage
-import io.github.deltacv.papervision.plugin.ipc.message.GetCurrentProjectMessage
-import io.github.deltacv.papervision.plugin.ipc.message.SaveCurrentProjectMessage
+import io.github.deltacv.papervision.plugin.engine.EOCVSimIpcEngineBridge
+import io.github.deltacv.papervision.plugin.engine.message.DiscardCurrentRecoveryMessage
+import io.github.deltacv.papervision.plugin.engine.message.EditorChangeMessage
+import io.github.deltacv.papervision.plugin.engine.message.GetCurrentProjectMessage
+import io.github.deltacv.papervision.plugin.engine.message.SaveCurrentProjectMessage
 import io.github.deltacv.papervision.serialization.v1.PaperVisionSerializer.deserializeAndApply
-import io.github.deltacv.papervision.serialization.v1.PaperVisionSerializer.serializeToTree
 import io.github.deltacv.papervision.serialization.v2.PaperVisionProject
 import io.github.deltacv.papervision.serialization.v2.json.JsonCodec
 import io.github.deltacv.papervision.util.loggerForThis
+import kotlinx.serialization.json.Json
 import picocli.CommandLine
 import java.util.concurrent.Callable
-import kotlin.math.log
 import kotlin.system.exitProcess
 
 class IpcPaperVisionMain : Callable<Int?> {
@@ -73,7 +70,7 @@ class IpcPaperVisionMain : Callable<Int?> {
                     app.paperVision.onUpdate.once {
                         // v2 serialization attempt first
                         try {
-                            JsonCodec().decode(Gson().toJson(json), PaperVisionProject()).apply(app.paperVision)
+                            JsonCodec().decode(json, PaperVisionProject()).apply(app.paperVision)
                         } catch (e: Exception) {
                             logger.warn(
                                 "Failed to deserialize project with v2 format, falling back to v1 (will be automatically migrated to v2 on next save)",
@@ -82,7 +79,7 @@ class IpcPaperVisionMain : Callable<Int?> {
 
                             // fall back to v1, this will be the last time this project
                             // is deserialized with v1. After this, the project will be saved with v2.
-                            deserializeAndApply(json, app.paperVision)
+                            deserializeAndApply(Json.encodeToString(json), app.paperVision)
                         }
 
                         app.paperVision.onUpdate.once {
@@ -91,7 +88,7 @@ class IpcPaperVisionMain : Callable<Int?> {
                                     val project = PaperVisionProject.from(app.paperVision)
                                     app.paperVision.engineClient.sendMessage(
                                         EditorChangeMessage(
-                                            Gson().fromJson(JsonCodec().encode(project), JsonElement::class.java)
+                                            JsonCodec().encodeToJsonElement(project)
                                         )
                                     )
                                 }
@@ -112,9 +109,8 @@ class IpcPaperVisionMain : Callable<Int?> {
             app.paperVision.nodeEditor.options[FontAwesomeIcons.Save] = Option("mis_saveproject") {
                 app.paperVision.engineClient.sendMessage(
                     SaveCurrentProjectMessage(
-                        serializeToTree(
-                            app.paperVision.nodes.inmutable, app.paperVision.links.inmutable
-                        )
+                        // save v2
+                        JsonCodec().encodeToJsonElement(PaperVisionProject.from(app.paperVision))
                     ).onResponseWith<OkResponse> {
                         app.paperVision.onUpdate.once {
                             TooltipPopup("mis_projectsaved", 4.0).enable()
@@ -149,7 +145,7 @@ class IpcPaperVisionMain : Callable<Int?> {
                 CloseConfirmWindow.Action.YES -> app.paperVision.engineClient.sendMessage(
                     SaveCurrentProjectMessage(
                         // save v2
-                        Gson().fromJson(JsonCodec().encode(PaperVisionProject.from(app.paperVision)), JsonElement::class.java)
+                        JsonCodec().encodeToJsonElement(PaperVisionProject.from(app.paperVision))
                     ).onResponse { response: PaperVisionEngineMessageResponse? ->
                         if (response is OkResponse) {
                             exitProcess(0)

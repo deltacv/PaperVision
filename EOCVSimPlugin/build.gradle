@@ -1,5 +1,7 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
+    id 'com.google.devtools.ksp' version '2.3.4'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '2.3.10'
     id 'com.gradleup.shadow' version '8.3.5'
     id 'signing'
     id "com.vanniktech.maven.publish"
@@ -140,8 +142,12 @@ shadowJar {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation project(":LwjglPlatform")
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinx_serialization_version"
+    implementation "com.google.code.gson:gson:$gson_version" // TODO: we'll get rid of it in the next releases
 
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 
@@ -155,7 +161,6 @@ dependencies {
     compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
     implementation 'org.codehaus.janino:janino:3.1.12'
-    implementation "com.google.code.gson:gson:$gson_version"
     implementation 'org.java-websocket:Java-WebSocket:1.5.7'
     implementation 'info.picocli:picocli:4.7.6'
 
@@ -163,4 +168,11 @@ dependencies {
 
     implementation("io.javalin:javalin:6.7.0")
     implementation 'commons-io:commons-io:2.17.0'
+
+    ksp project(":AnnotationProcessor")
+}
+
+ksp {
+    arg("moduleName", "EOCVSimPlugin")
+    arg("polymorphicSerializableMetadataPackage", "io.github.deltacv.papervision.serialization.generated")
 }

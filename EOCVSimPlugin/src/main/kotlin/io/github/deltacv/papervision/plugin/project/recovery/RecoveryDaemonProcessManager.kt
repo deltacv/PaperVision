@@ -21,10 +21,11 @@ package io.github.deltacv.papervision.plugin.project.recovery
 import com.github.serivesmejia.eocvsim.util.JavaProcess
 import com.github.serivesmejia.eocvsim.util.JavaProcess.SLF4JIOReceiver
 import io.github.deltacv.common.util.loggerForThis
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.java_websocket.WebSocket
 import org.java_websocket.handshake.ClientHandshake
 import org.java_websocket.server.WebSocketServer
-import java.io.File
 import java.lang.Exception
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
@@ -61,7 +62,7 @@ class RecoveryDaemonProcessManager(
 
     fun sendRecoveryData(recoveryData: RecoveryData) {
         for(conn in server.connections) {
-            conn.send(RecoveryData.serialize(recoveryData))
+            conn.send(Json.encodeToString(recoveryData))
         }
     }
 

@@ -19,8 +19,8 @@
 package io.github.deltacv.papervision.engine.bridge
 
 import io.github.deltacv.papervision.engine.client.PaperVisionEngineClient
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
+import io.github.deltacv.papervision.engine.client.message.PaperVisionEngineMessage
+import io.github.deltacv.papervision.engine.client.response.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 
 object NoOpPaperVisionEngineBridge : PaperVisionEngineBridge {

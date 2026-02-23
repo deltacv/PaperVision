@@ -29,6 +29,7 @@ import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.engine.client.message.TunerValue
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.node.Link
@@ -373,6 +374,10 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
             value as GenValue.List<ER>
         }
     }
+
+    override fun readTunerValue() = TunerValue.ListValue(
+        listAttributes.map { it.tunerValue ?: TunerValue.NullValue }
+    )
 
     override fun readEditorValue(): Array<Any?> {
         val list = mutableListOf<Any?>()

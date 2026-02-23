@@ -19,10 +19,10 @@
 package io.github.deltacv.papervision.engine.client
 
 import io.github.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
-import io.github.deltacv.papervision.engine.message.ByteMessageTag
-import io.github.deltacv.papervision.engine.message.ByteMessages
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
+import io.github.deltacv.papervision.engine.ByteMessageTag
+import io.github.deltacv.papervision.engine.ByteMessages
+import io.github.deltacv.papervision.engine.client.message.PaperVisionEngineMessage
+import io.github.deltacv.papervision.engine.client.response.PaperVisionEngineMessageResponse
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.loggerForThis
 import java.util.concurrent.ConcurrentHashMap

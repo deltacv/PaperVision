@@ -32,15 +32,17 @@ dependencies {
     implementation "org.deltacv:mackjpeg:$mackjpeg_version"
 
     api project(":Shared")
-    ksp project(":PaperVision:NodeAnnotationProcessor")
+    ksp project(":AnnotationProcessor")
 }
 
 ksp {
+    arg("moduleName", "PaperVision")
+
     arg("paperNodeClassesMetadataPackage", "io.github.deltacv.papervision.node.generated")
-    arg("paperNodeClassesMetadataClassName", "PaperNodeAnnotationMetadata")
+    arg("paperNodeClassesMetadataClassName", "PaperNodeMetadata")
 
     arg("codecTypeClassesMetadataPackage", "io.github.deltacv.papervision.serialization.v2.generated")
-    arg("codecTypeClassesMetadataClassName", "CodecTypeAnnotationMetadata")
+    arg("codecTypeClassesMetadataClassName", "CodecTypeMetadata")
 }
 
 tasks.register('writeBuildClassJava') {

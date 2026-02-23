@@ -18,14 +18,19 @@
 
 package io.github.deltacv.papervision.engine.client.response
 
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
+import io.github.deltacv.papervision.serialization.PolymorphicSerializable
+import kotlinx.serialization.Serializable
 
+@Serializable
+@PolymorphicSerializable(PaperVisionEngineMessageResponse::class)
 open class OkResponse(val info: String = "OK") : PaperVisionEngineMessageResponse() {
     override val status = true
 
     override fun toString() = "OkResponse(type=\"${this::class.java.typeName}\", info=\"$info\")"
 }
 
+@Serializable
+@PolymorphicSerializable(PaperVisionEngineMessageResponse::class)
 open class ErrorResponse(val reason: String, val stackTrace: Array<String>? = null) : PaperVisionEngineMessageResponse() {
     override val status = false
 

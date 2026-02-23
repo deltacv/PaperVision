@@ -18,7 +18,6 @@
 
 package io.github.deltacv.papervision.plugin
 
-import com.github.serivesmejia.eocvsim.plugin.api.impl.EOCVSimApiImpl
 import com.github.serivesmejia.eocvsim.plugin.api.impl.VisualizerApiImpl
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
 import io.github.deltacv.eocvsim.plugin.api.InputSourceApi
@@ -37,8 +36,8 @@ import io.github.deltacv.papervision.plugin.gui.eocvsim.PaperVisionTabPanel
 import io.github.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import io.github.deltacv.papervision.plugin.previz.EOCVSimEngineImageStreamer
 import io.github.deltacv.papervision.plugin.previz.EOCVSimPrevizSession
-import io.github.deltacv.papervision.plugin.ipc.message.*
-import io.github.deltacv.papervision.plugin.ipc.message.response.InputSourcesListResponse
+import io.github.deltacv.papervision.plugin.engine.message.*
+import io.github.deltacv.papervision.plugin.engine.message.response.InputSourcesListResponse
 import io.github.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import io.github.deltacv.papervision.util.replaceLast
 import io.github.deltacv.papervision.util.toValidIdentifier
@@ -160,24 +159,12 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                 val field = currentPrevizSession?.latestVirtualReflect?.getLabeledField(message.label)
 
                 if (field != null) {
-                    val tunableField = tunableFieldOf(field)
-
-                    tunableField?.setFieldValue(0, message.value)
-                }
-
-                respond(OkResponse())
-            }
-        }
-
-        engine.setMessageHandlerOf<TunerChangeValuesMessage> {
-            eocvSimApi.mainLoopHook.once {
-                val field = currentPrevizSession?.latestVirtualReflect?.getLabeledField(message.label)
-
-                if (field != null) {
-                    val tunableField = tunableFieldOf(field)
-
-                    for (i in message.values.indices) {
-                        tunableField?.setFieldValue(i, message.values[i]!!)
+                    val tunableField = tunableFieldOf(field) ?: return@once
+                    when(message.value) {
+                        is TunerValue.ListValue -> for ((i, e) in (message.value as TunerValue.ListValue).asAny().withIndex()) {
+                            tunableField.setFieldValue(i, e ?: continue)
+                        }
+                        else -> tunableField.setFieldValue(0, message.value.asAny() ?: return@once)
                     }
                 }
 

@@ -18,7 +18,12 @@
 
 package io.github.deltacv.papervision.engine.client.response
 
+import io.github.deltacv.papervision.serialization.PolymorphicSerializable
+import kotlinx.serialization.Serializable
+
+@Serializable
+@PolymorphicSerializable(PaperVisionEngineMessageResponse::class)
 class PrevizStatisticsResponse(
-    var fps: Float,
-    var frameTimeMs: Long
+    val fps: Float,
+    val frameTimeMs: Long
 ) : OkResponse()

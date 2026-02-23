@@ -29,6 +29,7 @@ import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolve.resolved
+import io.github.deltacv.papervision.engine.client.message.TunerValue
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.id.Misc
 import io.github.deltacv.papervision.serialization.v1.AttributeSerializationData
@@ -135,6 +136,8 @@ class DoubleAttribute(
     }
 
     override fun readEditorValue() = value.get()
+
+    override fun readTunerValue() = TunerValue.DoubleValue(value.get())
 
     override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Double>(
         current, GenValue.Double.Actual(value.get().resolved())

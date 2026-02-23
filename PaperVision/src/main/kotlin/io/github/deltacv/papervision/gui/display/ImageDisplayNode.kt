@@ -29,6 +29,7 @@ import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.serialization.v1.data.SerializeIgnore
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_previewdisplay",
@@ -63,5 +64,10 @@ class ImageDisplayNode(
     }
 
     override fun genCode(input: Unit, current: CodeGen.Current) = NoSession
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.ignore()
+    }
 
 }

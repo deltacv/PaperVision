@@ -26,6 +26,7 @@ import io.github.deltacv.papervision.attribute.math.RangeAttribute
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.engine.client.message.TunerValue
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.ColorSpace
@@ -96,8 +97,8 @@ class ScalarRangeAttribute(
                 it as Array<*>
             } ?: return@onChange
 
-            val minValues = arrayOf(0.0, 0.0, 0.0, 0.0)
-            val maxValues = arrayOf(0.0, 0.0, 0.0, 0.0)
+            val minValues = mutableListOf(0.0, 0.0, 0.0, 0.0)
+            val maxValues = mutableListOf(0.0, 0.0, 0.0, 0.0)
 
             for((i, value) in values.withIndex()) {
                 val valueArr = value as Array<*>
@@ -106,8 +107,8 @@ class ScalarRangeAttribute(
                 maxValues[i] = valueArr[1] as Double
             }
 
-            broadcastLabelMessageFor(hexMin, minValues)
-            broadcastLabelMessageFor(hexMax, maxValues)
+            broadcastLabelMessageFor(hexMin, TunerValue.ListValue(minValues.map { TunerValue.DoubleValue(it) }))
+            broadcastLabelMessageFor(hexMax, TunerValue.ListValue(maxValues.map { TunerValue.DoubleValue(it) }))
         }
 
         twoScalarsCached = Pair(hexMin, hexMax)

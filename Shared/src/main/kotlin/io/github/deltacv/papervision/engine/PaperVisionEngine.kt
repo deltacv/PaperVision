@@ -18,10 +18,8 @@
 
 package io.github.deltacv.papervision.engine
 
-import io.github.deltacv.papervision.engine.message.ByteMessageTag
-import io.github.deltacv.papervision.engine.message.ByteMessages
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
+import io.github.deltacv.papervision.engine.client.message.PaperVisionEngineMessage
+import io.github.deltacv.papervision.engine.client.response.PaperVisionEngineMessageResponse
 
 interface PaperVisionEngine {
     fun sendBytes(bytes: ByteArray)

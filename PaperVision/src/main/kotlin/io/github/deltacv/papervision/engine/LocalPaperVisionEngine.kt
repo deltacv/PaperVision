@@ -20,8 +20,8 @@ package io.github.deltacv.papervision.engine
 
 import io.github.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
 import io.github.deltacv.papervision.engine.client.response.ErrorResponse
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessage
-import io.github.deltacv.papervision.engine.message.PaperVisionEngineMessageResponse
+import io.github.deltacv.papervision.engine.client.message.PaperVisionEngineMessage
+import io.github.deltacv.papervision.engine.client.response.PaperVisionEngineMessageResponse
 import kotlin.reflect.KClass
 
 class LocalPaperVisionEngine : PaperVisionEngine {
