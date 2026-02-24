@@ -11,7 +11,6 @@ import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.PaperNode
-import io.github.deltacv.papervision.serialization.v1.data.SerializeIgnore
 import io.github.deltacv.papervision.serialization.v2.CodecType
 import io.github.deltacv.papervision.serialization.v2.DataDecoder
 import io.github.deltacv.papervision.serialization.v2.DataEncoder
@@ -27,8 +26,10 @@ class DecomposerNode : DrawNode<NoSession>() {
 
     var decomposer: AttributeDecomposer<*>? = null
 
-    @SerializeIgnore
     private var previousLinkedAttribute: Attribute? = null
+    private var wasJustDecoded = false
+    private var decodedWaitFrames = 0
+    private var hasLoggedFirstDraw = false
 
     val input = AnyAttribute(INPUT, "$[att_attribute]", linkAcceptor = {
         if (it is TypedAttribute<*>) {
@@ -42,31 +43,42 @@ class DecomposerNode : DrawNode<NoSession>() {
 
     override fun onEnable() {
         + input
-
-        // enable if serialization set it up
-        input.availableLinkedAttribute?.let {
-            decomposer?.enable(this, it)
-        }
+        decomposer?.enable(this, input)
     }
 
     override fun drawNode() {
         val currentLinkedAttribute = input.availableLinkedAttribute
 
-        if(currentLinkedAttribute != previousLinkedAttribute || decomposer == null) {
+        if(!hasLoggedFirstDraw) {
+            hasLoggedFirstDraw = true
+        }
+
+        if(wasJustDecoded) {
+            if(currentLinkedAttribute != null) {
+                wasJustDecoded = false
+                decodedWaitFrames = 0
+                previousLinkedAttribute = currentLinkedAttribute
+            } else if(++decodedWaitFrames > 2) {
+                wasJustDecoded = false
+                decodedWaitFrames = 0
+                decomposer?.disable()
+                decomposer = null
+            }
+        } else if(currentLinkedAttribute != previousLinkedAttribute || decomposer == null) {
             decomposer?.disable()
             decomposer = null
 
             if(currentLinkedAttribute != null) {
-                val decomposer = (currentLinkedAttribute as? TypedAttribute<*>)?.attributeType?.newDecomposer()
+                val newDecomposer = (currentLinkedAttribute as? TypedAttribute<*>)?.attributeType?.newDecomposer()
 
-                if(decomposer != null) {
-                    decomposer.enable(this, currentLinkedAttribute)
-                    this.decomposer = decomposer
+                if(newDecomposer != null) {
+                    newDecomposer.enable(this, input)
+                    this.decomposer = newDecomposer
                 }
             }
-        }
 
-        previousLinkedAttribute = currentLinkedAttribute
+            previousLinkedAttribute = currentLinkedAttribute
+        }
     }
 
     override val generators = generatorsBuilder {
@@ -94,6 +106,8 @@ class DecomposerNode : DrawNode<NoSession>() {
         if(decoder.has("decomposer")) {
             decomposer = decoder.objTyped("decomposer")
         }
+
+        wasJustDecoded = true
     }
 
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute): GenValue {

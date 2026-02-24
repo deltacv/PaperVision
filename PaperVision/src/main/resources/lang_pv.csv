@@ -62,7 +62,7 @@ nod_composerect,Compose Rectangle,Componer Rectangulo
 nod_decomposer,Attribute Decomposer,Descomponedor de Atributos
 nod_vector2,Compose Vector in 2D,Componer Vector en 2D
 nod_integermath,Math with Integers,Matematicas con Enteros
-nod_integerto_decima`l`,Integer to Decimal,Entero a Decimal
+nod_integerto_decimal,Integer to Decimal,Entero a Decimal
 nod_decimalmath,Math with Decimals,Matematicas con Decimales
 nod_decimalto_integer,Decimal to Integer,Decimal a Entero
 nod_vector2math,Math with 2D Vectors,Matematicas con Vectores 2D
@@ -189,6 +189,7 @@ des_integermath,Performs mathematical operations on integers,Realiza operaciones
 des_integerto_decimal,Converts an integer number to a decimal,Convierte un numero entero a decimal
 des_decimalmath,Performs mathematical operations on decimals,Realiza operaciones matemáticas con decimales
 des_decimalto_integer,Converts a decimal number to an integer,Convierte un numero decimal a entero
+des_vector2math,Performs mathematical operations on 2D vectors,Realiza operaciones matemáticas con vectores 2D
 err_bitwiseor_binary,"Both inputs must be of the same type, binary or not","Ambas entradas deben ser del mismo tipo, binario o no"
 err_grayscale_required,"Grayscale image required","Se requiere una imagen en escala de grises"
 err_musthave_attachedattrib,Must have an attribute attached,Debe tener un atributo conectado

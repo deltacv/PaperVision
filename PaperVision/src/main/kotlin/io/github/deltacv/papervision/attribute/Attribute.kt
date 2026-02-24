@@ -33,12 +33,14 @@ import io.github.deltacv.papervision.serialization.v1.AttributeSerializationData
 import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
 import io.github.deltacv.papervision.serialization.v1.BasicAttribData
 import io.github.deltacv.papervision.serialization.v2.CodecType
+import io.github.deltacv.papervision.serialization.v2.CodecTypeRegistry
 import io.github.deltacv.papervision.serialization.v2.DataCodec
 import io.github.deltacv.papervision.serialization.v2.DataDecoder
 import io.github.deltacv.papervision.serialization.v2.DataEncoder
 import io.github.deltacv.papervision.util.DelegatedChangeEmitter
 import io.github.deltacv.papervision.util.QueuedChangeEmitter
 import io.github.deltacv.papervision.util.event.PaperEventHandler
+import io.github.deltacv.papervision.util.loggerForThis
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -50,6 +52,8 @@ abstract class Attribute :
     DataSerializable<AttributeSerializationData>,
     DataCodec
 {
+
+    private val logger by loggerForThis()
 
     override val idContainer get() = IdContainerStacks.local.peekNonNull<Attribute>()
 
@@ -82,7 +86,6 @@ abstract class Attribute :
     var forgetSerializedId = false
         private set
 
-    private var isFirstDraw = true
     private var cancelNextDraw = false
 
     var wasLastDrawCancelled = false
@@ -116,12 +119,6 @@ abstract class Attribute :
 
         if(wasLastDrawCancelled) {
             wasLastDrawCancelled = false
-        }
-
-        if(isFirstDraw) {
-            enable()
-            isFirstDraw = false
-            onChange.run()
         }
 
         if(parentNode.showAttributesCircles && showAttributesCircles) {
@@ -264,6 +261,7 @@ abstract class Attribute :
 
     override fun decode(decoder: DataDecoder) {
         serializedId = decoder.int("id")
+        logger.trace("Decoded attribute with id {} ({})", serializedId, CodecTypeRegistry.nameOf(this::class))
     }
 
     fun forgetSerializedId() {

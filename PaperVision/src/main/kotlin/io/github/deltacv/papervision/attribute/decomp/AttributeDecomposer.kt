@@ -7,7 +7,6 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.GenValueMapper
 import io.github.deltacv.papervision.codegen.PolyglotGenerator
 import io.github.deltacv.papervision.node.Node
-import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
 import io.github.deltacv.papervision.serialization.v2.DataCodec
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -15,32 +14,32 @@ import kotlin.contracts.contract
 abstract class AttributeDecomposer<S: CodeGenSession> :
     PolyglotGenerator<GenValue, S>,
     GenValueMapper,
-    DataSerializable<Any>,
     DataCodec
 {
 
     companion object {
-        val INPUT = AttributeMode.INPUT
         val OUTPUT = AttributeMode.OUTPUT
     }
 
     lateinit var decomposerNode: Node<*>
         private set
 
-    lateinit var decomposedAttribute: Attribute
+    lateinit var inputAttribute: Attribute
         private set
+
+    val linkedAttribute get() = inputAttribute.availableLinkedAttribute
 
     private val outputAttributes = mutableListOf<Attribute>()
 
     abstract fun onEnable()
 
-    fun enable(decomposerNode: Node<*>, decomposedAttribute: Attribute) {
+    fun enable(decomposerNode: Node<*>, inputAttribute: Attribute) {
         if(::decomposerNode.isInitialized && this.decomposerNode != decomposerNode) {
             throw IllegalStateException("Decomposer cannot be reused")
         }
 
         this.decomposerNode = decomposerNode
-        this.decomposedAttribute = decomposedAttribute
+        this.inputAttribute = inputAttribute
         onEnable()
     }
 
@@ -63,6 +62,7 @@ abstract class AttributeDecomposer<S: CodeGenSession> :
         decomposerNode.addAttribute(attribute)
 
         attribute.enable()
+        println("AttributeDecomposer - Enabling attribute ${attribute.id}")
     }
 
     protected fun noValue(attrib: Attribute): Nothing = decomposerNode.noValue(attrib)
@@ -77,9 +77,5 @@ abstract class AttributeDecomposer<S: CodeGenSession> :
             decomposerNode.raise("Decomposer received invalid GenValue type (expected ${T::class.simpleName} received ${value::class.simpleName})")
         }
     }
-
-    final override fun deserialize(data: Any) { }
-
-    final override fun serialize() = Any()
 
 }

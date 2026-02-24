@@ -23,7 +23,7 @@ class Vector2AttributeDecomposer : AttributeDecomposer<Vector2AttributeDecompose
         + x
         + y
 
-        if(decomposedAttribute is Vector2Attribute && (decomposedAttribute as Vector2Attribute).useSizeNaming) {
+        if(linkedAttribute is Vector2Attribute && (linkedAttribute as Vector2Attribute).useSizeNaming) {
             x.variableName = "$[att_width]"
             y.variableName = "$[att_height]"
         }

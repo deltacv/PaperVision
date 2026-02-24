@@ -146,6 +146,12 @@ class PaperVision(
         textureFactory = setup.textureFactory ?: error("Platform ${setup.name} must provide a TextureFactory")
         config = setup.config
         config.load()
+
+        keyManager.addShortcut(keyManager.keys.NativeLeftSuper, keyManager.keys.ArrowDown) {
+            // serialize and log
+            logger.info("-- Serialized project for Ctrl + Down debugging --")
+            logger.info(JsonCodec().encode(PaperVisionProject.from(this)))
+        }
     }
 
     private fun initLanguage() {

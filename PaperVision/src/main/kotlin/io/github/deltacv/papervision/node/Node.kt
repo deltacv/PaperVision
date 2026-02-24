@@ -34,6 +34,7 @@ import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
 import io.github.deltacv.papervision.serialization.v1.BasicNodeData
 import io.github.deltacv.papervision.serialization.v1.NodeSerializationData
+import io.github.deltacv.papervision.serialization.v2.CodecTypeRegistry
 import io.github.deltacv.papervision.serialization.v2.DataCodec
 import io.github.deltacv.papervision.serialization.v2.DataDecoder
 import io.github.deltacv.papervision.serialization.v2.DataEncoder
@@ -42,6 +43,7 @@ import io.github.deltacv.papervision.util.QueuedChangeEmitter
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.event.PaperEventListenerId
 import io.github.deltacv.papervision.util.loggerFor
+import io.github.deltacv.papervision.util.loggerForThis
 import org.deltacv.mai18n.tr
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -61,6 +63,8 @@ abstract class Node<S: CodeGenSession>(
     DataSerializable<NodeSerializationData>,
     DataCodec
 {
+
+    private val logger by loggerForThis()
 
     override val idContainer = IdContainerStacks.local.peekNonNull<Node<*>>()
     override val requestedId get() = if(forgetSerializedId) null else serializedId
@@ -168,6 +172,8 @@ abstract class Node<S: CodeGenSession>(
                 attribute.rebuildOnLink()
             }
 
+            attribute.enable()
+
             _nodeAttributes.add(attribute)
         }
     }
@@ -269,21 +275,11 @@ abstract class Node<S: CodeGenSession>(
 
     override fun encode(encoder: DataEncoder) {
         encoder.int("id", id)
-
-        val pos = ImNodes.getNodeEditorSpacePos(id)
-        encoder.float("x", pos.x)
-        encoder.float("y", pos.y)
     }
 
     override fun decode(decoder: DataDecoder) {
         serializedId = decoder.int("id")
-
-        val x = decoder.float("x")
-        val y = decoder.float("y")
-
-        if(this is DrawNode<*>) {
-            nextNodePosition = ImVec2(x, y)
-        }
+        logger.trace("Decoded node with id {} ({})", serializedId, CodecTypeRegistry.nameOf(this::class))
     }
 
     fun noValue(attrib: Attribute): Nothing {
@@ -325,7 +321,7 @@ abstract class Node<S: CodeGenSession>(
     }
 
     companion object {
-        val logger by loggerFor<Node<*>>()
+        private val logger by loggerFor<Node<*>>()
 
         @JvmStatic protected val INPUT = AttributeMode.INPUT
         @JvmStatic protected val OUTPUT = AttributeMode.OUTPUT

@@ -86,6 +86,7 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
     private val allowMutation get() = allowAddOrDelete && fixedLength == null
 
     private var serializationData: Data? = null
+    private var wasDecoded = false
 
     @Suppress("UNCHECKED_CAST")
     override fun onEnable() {
@@ -99,9 +100,7 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
             }
 
             serializationData = null
-        } else {
-            lastLength = listAttributes.size
-
+        } else if(!wasDecoded) {
             // oh god... (it's been only 10 minutes and i have already forgotten how this works)
             if (lastLength != fixedLength) {
                 if (fixedLength != null && (lastLength == null || lastLength == 0)) {
@@ -413,13 +412,12 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
 
     override fun encode(encoder: DataEncoder) {
         super.encode(encoder)
-
         encoder.objList("attributes", listAttributes)
     }
 
-    @Suppress("UNCHECKED_CAST")
     override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
+        wasDecoded = true
 
         // clear the list before decoding to avoid duplicates
         this.listAttributes.clear()

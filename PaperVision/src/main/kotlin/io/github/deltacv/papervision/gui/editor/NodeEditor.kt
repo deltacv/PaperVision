@@ -54,6 +54,8 @@ import io.github.deltacv.papervision.node.PaperNodeRegistry
 import io.github.deltacv.papervision.node.vision.InputMatNode
 import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.v1.PaperVisionSerializer
+import io.github.deltacv.papervision.serialization.v2.PaperVisionProject
+import io.github.deltacv.papervision.serialization.v2.json.JsonCodec
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.flags
@@ -500,7 +502,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         val selectedNodesList = getSelectedNodesList(overrideSelection) ?: return
 
         pasteCount = 0
-        clipboard = PaperVisionSerializer.serialize(selectedNodesList.filter { it.joinActionStack }, listOf())
+        clipboard = JsonCodec().encode(PaperVisionProject(selectedNodesList.toMutableList(), mutableListOf()))
 
         logger.debug("Clipboard content: $clipboard")
     }
@@ -532,7 +534,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     fun paste() {
         val clipboardContent = clipboard ?: return
 
-        val (nodes, _) = PaperVisionSerializer.deserialize(clipboardContent)
+        val nodes = JsonCodec().decode(clipboardContent, PaperVisionProject()).nodes
 
         updatePasteState()
         positionPastedNodes(nodes)

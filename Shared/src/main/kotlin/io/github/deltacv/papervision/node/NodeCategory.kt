@@ -52,7 +52,9 @@ enum class NodeCategory(val properName: String,
         hexColor("#c62828"), // material red 800
         hexColor("#d32f2f")), // material red 600
 
-    MATH("cat_math"),
+    MATH("cat_math",
+        hexColor("#2e7d32"), // material green 800
+        hexColor("#43A047")), // material green 600),
     MISC("cat_misc")
 
 }

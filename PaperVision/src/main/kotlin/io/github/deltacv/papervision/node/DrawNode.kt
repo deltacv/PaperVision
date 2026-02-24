@@ -23,11 +23,10 @@ import imgui.ImVec2
 import imgui.extension.imnodes.ImNodes
 import imgui.extension.imnodes.flag.ImNodesCol
 import imgui.flag.ImGuiMouseButton
-import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.codegen.CodeGenSession
+import io.github.deltacv.papervision.serialization.v2.DataDecoder
+import io.github.deltacv.papervision.serialization.v2.DataEncoder
 import org.deltacv.mai18n.tr
-import java.lang.IllegalArgumentException
-import java.util.concurrent.ArrayBlockingQueue
 
 abstract class DrawNode<S: CodeGenSession>(
     allowDelete: Boolean = true,
@@ -101,7 +100,7 @@ abstract class DrawNode<S: CodeGenSession>(
             if(pinToMouse != lastPinToMouse) {
                 val nodeDims = ImVec2()
 
-                // i have no idea why this is needed
+                // I have no idea why this is needed
                 ImNodes.getNodeDimensions(nodeDims, id)
 
                 pinToMouseNewOffset = ImVec2(
@@ -124,6 +123,22 @@ abstract class DrawNode<S: CodeGenSession>(
     }
 
     open fun drawNode() { }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+
+        val pos = ImNodes.getNodeEditorSpacePos(id)
+        encoder.float("x", pos.x)
+        encoder.float("y", pos.y)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        val x = decoder.float("x")
+        val y = decoder.float("y")
+
+        nextNodePosition = ImVec2(x, y)
+    }
 
     data class AnnotationData(val name: String,
                               val description: String,

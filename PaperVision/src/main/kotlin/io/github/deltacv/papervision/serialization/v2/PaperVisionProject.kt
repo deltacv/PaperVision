@@ -89,10 +89,11 @@ class PaperVisionProject(
         paperVision.nodeEditor.inputNode.ensureAttributeExists()
         paperVision.nodeEditor.outputNode.ensureAttributeExists()
 
-        for (link in links) {
-            link.enable()
+        paperVision.onUpdate.once {
+            for (link in links) {
+                link.enable()
+            }
+            paperVision.onDeserialization.run()
         }
-
-        paperVision.onDeserialization.run()
     }
 }
