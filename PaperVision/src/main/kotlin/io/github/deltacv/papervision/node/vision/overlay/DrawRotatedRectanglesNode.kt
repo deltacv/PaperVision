@@ -34,7 +34,7 @@ import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
 import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
-import io.github.deltacv.papervision.codegen.dsl.ScopeContext
+import io.github.deltacv.papervision.codegen.dsl.ScopeCtx
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -104,7 +104,7 @@ open class DrawRotatedRectanglesNode
                         input.value.v("copyTo", drawMat)
                     }
 
-                    fun ScopeContext.drawRuntimeRect(rectValue: Value) {
+                    fun ScopeCtx.drawRuntimeRect(rectValue: Value) {
                         ifCondition(rectValue notEqualsTo language.nullValue) {
                             val rectPoints = uniqueVariable("rectPoints", JvmOpenCv.Point.newArray(4.v))
                             local(rectPoints)
@@ -187,12 +187,12 @@ open class DrawRotatedRectanglesNode
 
                     // TODO: Implement rotated rect drawing in python
 
-                    fun ScopeContext.runtimeRect(rectValue: Value) {
+                    fun ScopeCtx.runtimeRect(rectValue: Value) {
                         ifCondition(rectValue notEqualsTo language.nullValue) {
                             val box = uniqueVariable("box", cv2.callValue("boxPoints", CPythonLanguage.NoType, rectValue))
                             local(box)
-                            box set np.callValue("int0", CPythonLanguage.NoType, box)
-                            cv2("drawContours", target, box, (0).v, colorScalar, thickness.v)
+                            box set np.callValue("int32", CPythonLanguage.NoType, box)
+                            cv2("drawContours", target, CPythonLanguage.NoType.newArrayOfValues(box), (0).v, colorScalar, thickness.v)
                         }
                     }
 

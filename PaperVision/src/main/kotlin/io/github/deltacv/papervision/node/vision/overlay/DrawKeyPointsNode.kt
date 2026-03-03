@@ -135,7 +135,6 @@ open class DrawKeyPointsNode
                     raise("Only runtime lists are supported for now")
                 }
 
-
                 current.scope {
                     nameComment()
 

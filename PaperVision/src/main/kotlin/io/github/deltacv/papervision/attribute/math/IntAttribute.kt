@@ -33,6 +33,8 @@ import io.github.deltacv.papervision.serialization.v1.AttributeSerializationData
 import io.github.deltacv.papervision.serialization.v2.CodecType
 import io.github.deltacv.papervision.serialization.v2.DataDecoder
 import io.github.deltacv.papervision.serialization.v2.DataEncoder
+import io.github.deltacv.papervision.serialization.v2.doubleOrNull
+import io.github.deltacv.papervision.serialization.v2.intOrNull
 import io.github.deltacv.papervision.util.Range2i
 
 @CodecType(instantiable = false)
@@ -130,7 +132,7 @@ class IntAttribute(
 
     override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
-        nextValue = decoder.int("value")
+        nextValue = decoder.intOrNull("value") ?: decoder.doubleOrNull("value")?.toInt() ?: 0
     }
 
 }

@@ -109,7 +109,12 @@ sealed class GenValue {
     }
 
     sealed class Rect : GenValue() {
-        data class Components(val x: Double, val y: Double, val w: Double, val h: Double) : Rect()
+        data class Components(val position: Vec2, val size: Vec2) : Rect() {
+            companion object {
+                fun wrap(x: Int, y: Int, w: Int, h: Int, languageHolder: CodeGen.LanguageHolder) =
+                    Components(Vec2.wrap(x, y, languageHolder), Vec2.wrap(w, h, languageHolder))
+            }
+        }
 
         data class Inst(val value: Resolvable<Value>) : Rect() {
             companion object {
@@ -326,8 +331,8 @@ sealed class GenValue {
 
     sealed class Vec2 : GenValue() {
         companion object {
-            fun wrap(x: Double, y: Double, languageHolder: CodeGen.LanguageHolder): Vec2 {
-                return if(x is Double.Actual && y is Double.Actual) {
+            fun wrap(x: Int, y: Int, languageHolder: CodeGen.LanguageHolder): Vec2 {
+                return if (x is Int.Actual && y is Int.Actual) {
                     Actual(x, y)
                 } else {
                     Runtime(x.toRuntime(languageHolder), y.toRuntime(languageHolder))
@@ -335,24 +340,32 @@ sealed class GenValue {
             }
         }
 
-        data class Actual(val x: Double.Actual, val y: Double.Actual) : Vec2() {
+        data class Actual(val x: Int.Actual, val y: Int.Actual) : Vec2() {
             companion object {
                 fun defer(genValueResolver: () -> Actual?) = Actual(
-                    Double.Actual.defer { genValueResolver()?.x },
-                    Double.Actual.defer { genValueResolver()?.y }
+                    Int.Actual.defer { genValueResolver()?.x },
+                    Int.Actual.defer { genValueResolver()?.y }
                 )
             }
+
+            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = Runtime(
+                x.toRuntime(langHolder),
+                y.toRuntime(langHolder)
+            )
         }
 
-        data class Runtime(val xValue: Double.Runtime, val yValue: Double.Runtime) : Vec2() {
+        data class Runtime(val xValue: Int.Runtime, val yValue: Int.Runtime) : Vec2() {
             companion object {
                 fun defer(genValueResolver: () -> Runtime?) = Runtime(
-                    Double.Runtime.defer { genValueResolver()?.xValue },
-                    Double.Runtime.defer { genValueResolver()?.yValue }
+                    Int.Runtime.defer { genValueResolver()?.xValue },
+                    Int.Runtime.defer { genValueResolver()?.yValue }
                 )
             }
+
+            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = this
         }
 
+        abstract fun toRuntime(langHolder: CodeGen.LanguageHolder): Runtime
     }
 
     data class Range(val min: Double, val max: Double) : GenValue() {

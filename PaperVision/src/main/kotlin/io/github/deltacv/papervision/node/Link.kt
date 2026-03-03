@@ -149,6 +149,8 @@ class Link(
     override fun decode(decoder: DataDecoder) {
         a = decoder.int("a")
         b = decoder.int("b")
+
+        logger.debug("Decoded Link with a=$a, b=$b")
     }
 
     companion object {

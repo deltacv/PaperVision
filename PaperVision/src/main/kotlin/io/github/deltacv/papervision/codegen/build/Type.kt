@@ -18,32 +18,48 @@
 
 package io.github.deltacv.papervision.codegen.build
 
+import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.csv
+import io.github.deltacv.papervision.util.hashCodeString
 
 open class Type(
     val className: String,
     open val packagePath: String = "",
-    val generics: Array<Type>? = null,
+    val generics: Array<Type> = arrayOf(),
 
     open val overridenImport: Type? = null,
-    val isArray: Boolean = false
+    val isArray: Boolean = false,
+    private val initializer: (InitializerCtx.() -> Unit)? = null
 ) {
 
     companion object {
         val NONE = Type("", "")
     }
 
-    val hasGenerics get() = !generics.isNullOrEmpty()
+    val hasInitializer = initializer != null
+
+    val hasGenerics get() = generics.isNotEmpty()
 
     open val shouldImport get() = className != packagePath
 
     val shortNameWithGenerics get() =
-        if(generics != null)
+        if(hasGenerics)
             "$className<${generics.csv()}>"
         else className
 
+    fun initialize(current: CodeGen.Current) {
+        val flag = "typeInitialized#$hashCodeString"
+
+        if(initializer != null && !current.codeGen.hasFlag(flag)) {
+            initializer.invoke(InitializerCtx(this, current))
+            current.codeGen.addFlag(flag)
+        }
+    }
+
     override fun toString() = "Type(className=$className, packagePath=$packagePath, actualImport=$overridenImport, isArray=$isArray)"
 
+    @ConsistentCopyVisibility
+    data class InitializerCtx internal constructor(val type: Type, val current: CodeGen.Current)
 }
 
 private val typeCache = mutableMapOf<Class<*>, Type>()

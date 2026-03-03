@@ -99,7 +99,7 @@ interface ValueBuilder {
 
     fun newArrayOf(type: Type, size: Value): Value
 
-    fun newArrayOf(type: Type, vararg values: Value): Value
+    fun newArrayOfValues(type: Type, vararg values: Value): Value
 
     fun arraySize(array: Value): Value
 

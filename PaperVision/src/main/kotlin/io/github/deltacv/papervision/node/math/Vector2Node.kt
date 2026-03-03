@@ -20,6 +20,7 @@ package io.github.deltacv.papervision.node.math
 
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.math.DoubleAttribute
+import io.github.deltacv.papervision.attribute.math.IntAttribute
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import io.github.deltacv.papervision.codegen.CodeGen
@@ -34,6 +35,7 @@ import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.serialization.v2.CodecType
 import io.github.deltacv.papervision.serialization.v2.DataDecoder
 import io.github.deltacv.papervision.serialization.v2.DataEncoder
+import io.github.deltacv.papervision.serialization.v2.objOrSkip
 
 
 @PaperNode(
@@ -46,8 +48,8 @@ class Vector2Node @JvmOverloads constructor(
     useSizeNaming: Boolean = false
 ) : DrawNode<Vector2Node.Session>() {
 
-    val xAttribute = DoubleAttribute(INPUT, if(useSizeNaming) "att_width" else "X")
-    val yAttribute = DoubleAttribute(INPUT, if(useSizeNaming) "att_height" else "Y")
+    val xAttribute = IntAttribute(INPUT, if(useSizeNaming) "att_width" else "X")
+    val yAttribute = IntAttribute(INPUT, if(useSizeNaming) "att_height" else "Y")
 
     val result = Vector2Attribute(OUTPUT, "$[att_output]")
 
@@ -67,8 +69,8 @@ class Vector2Node @JvmOverloads constructor(
                     val xValue = xAttribute.genValue(current)
                     val yValue = yAttribute.genValue(current)
 
-                    val x = uniqueVariable("vectorX", if (xValue is GenValue.Double.Actual) xValue.v else double(0.0))
-                    val y = uniqueVariable("vectorY", if (yValue is GenValue.Double.Actual) yValue.v else double(0.0))
+                    val x = uniqueVariable("vectorX", if (xValue is GenValue.Int.Actual) xValue.v else int(0))
+                    val y = uniqueVariable("vectorY", if (yValue is GenValue.Int.Actual) yValue.v else int(0))
 
                     group {
                         public(x, xAttribute.label())
@@ -77,22 +79,21 @@ class Vector2Node @JvmOverloads constructor(
 
                     current.scope {
                         // if runtime, constantly update
-                        if (xValue is GenValue.Double.Runtime) {
+                        if (xValue is GenValue.Int.Runtime) {
                             x instanceSet xValue.v
                             y instanceSet yValue.v
                         }
-
                         // if actual, just set once, don't need to bother with constants
                     }
 
                     session.vector2 = GenValue.Vec2.Runtime(
-                        GenValue.Double.Runtime(x.resolved()),
-                        GenValue.Double.Runtime(y.resolved())
+                        GenValue.Int.Runtime(x.resolved()),
+                        GenValue.Int.Runtime(y.resolved())
                     )
                 } else {
                     session.vector2 = GenValue.Vec2.wrap(
-                        xAttribute.genValue(current).toDouble(current),
-                        yAttribute.genValue(current).toDouble(current),
+                        xAttribute.genValue(current),
+                        yAttribute.genValue(current),
                         current
                     )
                 }
@@ -106,8 +107,8 @@ class Vector2Node @JvmOverloads constructor(
 
             current.scope {
                 session.vector2 = GenValue.Vec2.wrap(
-                    xAttribute.genValue(current).toDouble(current),
-                    yAttribute.genValue(current).toDouble(current),
+                    xAttribute.genValue(current),
+                    yAttribute.genValue(current),
                     current
                 )
             }
@@ -133,9 +134,9 @@ class Vector2Node @JvmOverloads constructor(
 
     override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
-        decoder.obj("xAttribute", xAttribute)
-        decoder.obj("yAttribute", yAttribute)
-        decoder.obj("result", result)
+        decoder.objOrSkip("xAttribute", xAttribute)
+        decoder.objOrSkip("yAttribute", yAttribute)
+        decoder.objOrSkip("result", result)
     }
 
     class Session : CodeGenSession {

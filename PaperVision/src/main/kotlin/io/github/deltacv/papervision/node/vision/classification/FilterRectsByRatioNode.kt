@@ -127,7 +127,7 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
             val maxRatioVal = maxRatio.genValue(current)
 
             current {
-                val rectsVar = uniqueVariable("${rects.value.v}_by_ratio", CPythonLanguage.newArrayOf(CPythonLanguage.NoType))
+                val rectsVar = uniqueVariable("${rects.value.v}_by_ratio", CPythonLanguage.NoType.newArrayOfValues())
 
                 current.scope {
                     nameComment()

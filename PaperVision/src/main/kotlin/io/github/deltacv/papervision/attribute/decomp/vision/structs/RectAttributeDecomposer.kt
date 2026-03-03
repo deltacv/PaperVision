@@ -7,6 +7,7 @@ import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.serialization.v2.CodecType
@@ -25,7 +26,7 @@ class RectAttributeDecomposer : AttributeDecomposer<RectAttributeDecomposer.Sess
     }
 
     override val generators = generatorsBuilder<GenValue, Session> {
-        generatorFor(JavaLanguage) {
+        generatorForAny {
             assertGenValueType<GenValue.Rect>(genInput)
 
             val session = Session()
@@ -33,25 +34,39 @@ class RectAttributeDecomposer : AttributeDecomposer<RectAttributeDecomposer.Sess
             current.scope {
                 when(genInput) {
                     is GenValue.Rect.Components -> {
-                        session.position = GenValue.Vec2.Runtime(
-                            genInput.x.toRuntime(current),
-                            genInput.y.toRuntime(current)
-                        )
-
-                        session.size = GenValue.Vec2.Runtime(
-                            genInput.w.toRuntime(current),
-                            genInput.h.toRuntime(current)
-                        )
+                        session.position = genInput.position.toRuntime(current)
+                        session.size = genInput.size.toRuntime(current)
                     }
                     is GenValue.Rect.Inst -> {
                         val rect = genInput.value.v
 
-                        val x = GenValue.Double.Runtime(double(rect.propertyValue("x", IntType)).resolved())
-                        val y = GenValue.Double.Runtime(double(rect.propertyValue("y", IntType)).resolved())
+                        val (xValue, yValue, widthValue, heightValue) = when(language) {
+                            is JavaLanguage -> {
+                                listOf(
+                                    double(rect.propertyValue("x", IntType)),
+                                    double(rect.propertyValue("y", IntType)),
+                                    double(rect.propertyValue("width", IntType)),
+                                    double(rect.propertyValue("height", IntType)),
+                                )
+                            }
+                            is CPythonLanguage -> {
+                                listOf(
+                                    // Python OpenCV's Rect is a tuple of (x, y, w, h)
+                                    rect[0.v, DoubleType],
+                                    rect[1.v, DoubleType],
+                                    rect[2.v, DoubleType],
+                                    rect[3.v, DoubleType],
+                                )
+                            }
+                            else -> throwLanguageNotSupported()
+                        }
+
+                        val x = GenValue.Int.Runtime(xValue.resolved())
+                        val y = GenValue.Int.Runtime(yValue.resolved())
                         val position = GenValue.Vec2.Runtime(x, y)
 
-                        val width = GenValue.Double.Runtime(double(rect.propertyValue("width", IntType)).resolved())
-                        val height = GenValue.Double.Runtime(double(rect.propertyValue("height", IntType)).resolved())
+                        val width = GenValue.Int.Runtime(widthValue.resolved())
+                        val height = GenValue.Int.Runtime(heightValue.resolved())
                         val size = GenValue.Vec2.Runtime(width, height)
 
                         session.position = position

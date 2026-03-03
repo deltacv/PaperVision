@@ -28,7 +28,7 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
-import io.github.deltacv.papervision.codegen.dsl.ScopeContext
+import io.github.deltacv.papervision.codegen.dsl.ScopeCtx
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -74,7 +74,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
 
                     biggestRect instanceSet biggestRect.nullValue
 
-                    fun ScopeContext.withRuntimeRect(rect: Value) {
+                    fun ScopeCtx.withRuntimeRect(rect: Value) {
                         ifCondition(rect notEqualsTo language.nullValue) {
                             ifCondition(
                                 biggestRect equalsTo biggestRect.nullValue or
@@ -141,7 +141,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
 
                     local(biggestRect)
 
-                    fun ScopeContext.withRuntimeRect(rect: Value) {
+                    fun ScopeCtx.withRuntimeRect(rect: Value) {
                         ifCondition(rect notEqualsTo language.nullValue) {
                             // 2 - width, 3 - height, of tuple (x, y, w, h)
                             val rectArea = rect[1.v, CPythonLanguage.NoType][0.v, CPythonLanguage.NoType] * rect[1.v, CPythonLanguage.NoType][1.v, CPythonLanguage.NoType]

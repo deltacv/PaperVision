@@ -180,7 +180,7 @@ open class DrawContoursNode
                     } else {
                         separate()
 
-                        val list = uniqueVariable("contoursList", CPythonLanguage.NoType.newArray())
+                        val list = uniqueVariable("contoursList", CPythonLanguage.NoType.newArrayOfValues())
                         local(list)
 
                         for(contour in (contoursList as GenValue.List.Actual<*>).elements) {

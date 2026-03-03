@@ -62,7 +62,6 @@ abstract class AttributeDecomposer<S: CodeGenSession> :
         decomposerNode.addAttribute(attribute)
 
         attribute.enable()
-        println("AttributeDecomposer - Enabling attribute ${attribute.id}")
     }
 
     protected fun noValue(attrib: Attribute): Nothing = decomposerNode.noValue(attrib)

@@ -8,8 +8,10 @@ import io.github.deltacv.papervision.attribute.rebuildOnChange
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
+import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonTypes
 import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.node.DrawNode
@@ -67,6 +69,28 @@ class DecimalToIntegerNode : DrawNode<DecimalToIntegerNode.Session>(){
                     RoundingBehavior.FLOOR -> JavaTypes.Math.callValue("floor", DoubleType, inputV).castTo(IntType)
                     RoundingBehavior.CEIL -> JavaTypes.Math.callValue("ceil", DoubleType, inputV).castTo(IntType)
                     RoundingBehavior.TRUNCATE -> int(inputV) // cast to int in java truncates towards zero
+                }
+
+                session.output = GenValue.Int.Runtime(result.resolved())
+            }
+
+            session
+        }
+
+        generatorFor(CPythonLanguage) {
+            val session = Session()
+
+            val inputValue = input.genValue(current)
+            val roundingBehaviorValue = roundingBehavior.genValue(current)
+
+            current {
+                val inputV = inputValue.v
+
+                val result = when(roundingBehaviorValue.value) {
+                    RoundingBehavior.ROUND -> "round".callValue(CPythonLanguage.NoType, inputV)
+                    RoundingBehavior.FLOOR -> int(CPythonTypes.math.callValue("floor", CPythonLanguage.NoType, inputV))
+                    RoundingBehavior.CEIL -> int(CPythonTypes.math.callValue("ceil", CPythonLanguage.NoType, inputV))
+                    RoundingBehavior.TRUNCATE -> int(inputV) // int() in python truncates towards zero
                 }
 
                 session.output = GenValue.Int.Runtime(result.resolved())

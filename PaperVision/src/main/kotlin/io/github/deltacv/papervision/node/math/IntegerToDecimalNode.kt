@@ -32,7 +32,7 @@ class IntegerToDecimalNode : DrawNode<IntegerToDecimalNode.Session>(){
     }
 
     override val generators = generatorsBuilder {
-        generatorFor(JavaLanguage) {
+        generatorForAny {
             val session = Session()
 
             val inputValue = input.genValue(current)

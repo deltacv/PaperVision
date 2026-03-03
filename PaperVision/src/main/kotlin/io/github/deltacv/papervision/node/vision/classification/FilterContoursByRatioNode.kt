@@ -182,7 +182,7 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
             val maxRatioVal = maxRatio.genValue(current)
 
             current {
-                val contoursVar = uniqueVariable("${contours.value.v}_by_ratio", CPythonLanguage.newArrayOf(CPythonLanguage.NoType))
+                val contoursVar = uniqueVariable("${contours.value.v}_by_ratio", CPythonLanguage.NoType.newArrayOfValues())
 
                 current.scope {
                     local(contoursVar)

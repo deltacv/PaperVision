@@ -116,8 +116,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
                 val matColor = inputMat.color
                 val targetColor = lastColor
 
-                val cvtMat = uniqueVariable("${targetColor.name.lowercase()}Mat", Mat.new())
-                val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}BinaryMat", Mat.new())
+                val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}Threshold", Mat.new())
 
                 val scalarLabels = scalar.labelsForTwoScalars()
 
@@ -187,7 +186,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
                 current.scope {
                     nameComment()
 
-                    val target = uniqueVariable("thresholdTargetMat", inputMat.value.v)
+                    val target = uniqueVariable("threshold_target", inputMat.value.v)
                     local(target)
 
                     deferredBlock(Resolvable.DependentPlaceholder(matColor) {

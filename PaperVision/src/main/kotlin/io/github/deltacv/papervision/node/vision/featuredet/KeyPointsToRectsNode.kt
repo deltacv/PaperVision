@@ -110,7 +110,7 @@ class KeyPointsToRectsNode : DrawNode<KeyPointsToRectsNode.Session>() {
 
             // rectangles in python are just tuples of (x, y, w, h)
             current {
-                val rects = uniqueVariable("keypoints_rects", NoType.newArray())
+                val rects = uniqueVariable("keypoints_rects", NoType.newArrayOfValues())
 
                 current.scope {
                     local(rects)

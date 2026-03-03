@@ -37,6 +37,7 @@ import io.github.deltacv.papervision.id.container.IdContainer
 import io.github.deltacv.papervision.id.container.IdContainerStacks
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.Node
+import io.github.deltacv.papervision.util.hashCodeString
 import io.github.deltacv.papervision.util.loggerForThis
 
 class CodeGenManager(val paperVision: PaperVision) {
@@ -52,10 +53,6 @@ class CodeGenManager(val paperVision: PaperVision) {
 
         IdContainerStacks.local.push(placeholders) // all placeholders created during code gen will be caught here
 
-        val timestamp = System.currentTimeMillis()
-
-        logger.info("Starting code gen at $timestamp")
-
         for(popup in IdContainerStacks.local.peekNonNull<Popup>().inmutable) {
             if(popup.label == "Gen-Error") {
                 popup.delete()
@@ -65,7 +62,7 @@ class CodeGenManager(val paperVision: PaperVision) {
 
         val codeGen = CodeGen(name, language, isForPreviz)
 
-        val current = codeGen.currProcessFrame
+        logger.info("-- Starting CodeGen #${codeGen.hashCodeString} --")
 
         try {
             codeGen.stage = CodeGen.Stage.INITIAL_GEN
@@ -73,13 +70,9 @@ class CodeGenManager(val paperVision: PaperVision) {
             paperVision.nodeEditor.outputNode.input.requireAttachedAttribute() // output always needs to be connected
 
             // start off code generation chain
-            paperVision.nodeEditor.outputNode.genCodeIfNecessary(current)
+            paperVision.nodeEditor.outputNode.genCodeIfNecessary(codeGen.current)
 
             codeGen.stage = CodeGen.Stage.END_GEN
-
-            for(node in codeGen.endingNodes) {
-                node.genCodeIfNecessary(current)
-            }
         } catch (attrEx: AttributeGenException) {
             codeGen.stage = CodeGen.Stage.ENDED_ERROR
 
@@ -92,7 +85,7 @@ class CodeGenManager(val paperVision: PaperVision) {
             val node = attrEx.attribute.parentNode
             showError(codeGen, node, attrEx.message)
 
-            logger.warn("Code gen stopped due to attribute exception", attrEx)
+            logger.warn("-- CodeGen ${codeGen.hashCodeString} FAILED due to attribute exception --", attrEx)
             return null
         } catch(nodeEx: NodeGenException) {
             codeGen.stage = CodeGen.Stage.ENDED_ERROR
@@ -105,7 +98,7 @@ class CodeGenManager(val paperVision: PaperVision) {
 
             showError(codeGen, nodeEx.node, nodeEx.message)
 
-            logger.warn("Code gen stopped due to node exception", nodeEx)
+            logger.warn("-- CodeGen ${codeGen.hashCodeString} FAILED due to node exception --", nodeEx)
             return null
         } catch(ex: Exception) {
             codeGen.stage = CodeGen.Stage.ENDED_ERROR
@@ -117,15 +110,20 @@ class CodeGenManager(val paperVision: PaperVision) {
                 font = Font.find("calcutta-big")
             ).enable()
 
-            logger.error("Code gen stopped due to ${if(ex is GenException) "gen" else "unknown"} exception", ex)
+            logger.error("-- CodeGen #${codeGen.hashCodeString}FAILED due to ${if(ex is GenException) "gen" else "unknown"} exception --", ex)
             return null
         }
 
-        val result = codeGen.gen()
+        val result = codeGen.build()
 
         codeGen.stage = CodeGen.Stage.ENDED_SUCCESS
 
-        logger.info("Code gen $timestamp OK")
+        logger.debug("Flags defined during CodeGen #{}:{}", codeGen.hashCodeString, if(codeGen.flags().isEmpty()) " none" else "")
+        for(flag in codeGen.flags()) {
+            logger.debug("- $flag")
+        }
+
+        logger.info("-- CodeGen #${codeGen.hashCodeString} OK --")
 
         IdContainerStacks.local.pop<Resolvable.Placeholder<*>>() // we're done with placeholders
 
@@ -133,7 +131,7 @@ class CodeGenManager(val paperVision: PaperVision) {
     }
 
     private fun showError(codeGen: CodeGen, node: Node<*>, message: String) {
-        if(!codeGen.isForPreviz) { // dont scroll if we're on an active previz session as there's a new gen triggered on every change
+        if(!codeGen.isForPreviz) { // dont scroll if we're on an active previz session, can become annoying
             paperVision.nodeEditor.editorPanning.x = (-node.gridPosition.x) - (node.size.x / 2) + ImGui.getMainViewport().size.x / 2
             paperVision.nodeEditor.editorPanning.y = (-node.gridPosition.y) - (node.size.y / 2) + ImGui.getMainViewport().size.y / 2
         }

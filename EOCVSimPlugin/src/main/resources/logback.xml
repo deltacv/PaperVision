@@ -61,7 +61,7 @@
         </encoder>
     </appender>
 
-    <root level="TRACE">
+    <root level="DEBUG">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="STDERR"/>
         <appender-ref ref="FILE"/>

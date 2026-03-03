@@ -40,7 +40,7 @@ import io.github.deltacv.papervision.plugin.project.recovery.RecoveredProject
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryDaemonProcessManager
 import io.github.deltacv.papervision.plugin.project.recovery.RecoveryData
 import io.github.deltacv.papervision.util.event.PaperEventHandler
-import io.github.deltacv.papervision.util.hexString
+import io.github.deltacv.papervision.util.hashCodeString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
@@ -484,7 +484,7 @@ class PaperVisionProjectManager(
         tree: JsonElement
     ) {
         val projectPath = findProjectPath(projectNode)?.pathString ?: return
-        val hex = projectPath.hexString
+        val hex = projectPath.hashCodeString
 
         recoveryDaemonProcessManager.sendRecoveryData(
             RecoveryData(
@@ -506,7 +506,7 @@ class PaperVisionProjectManager(
 
         logger.info("Discarding recovery for $path")
 
-        val recoveryFile = recoveryFolder.resolve("${path.hexString}.recoverypaperproj")
+        val recoveryFile = recoveryFolder.resolve("${path.hashCodeString}.recoverypaperproj")
         recoveryFile.delete()
     }
 

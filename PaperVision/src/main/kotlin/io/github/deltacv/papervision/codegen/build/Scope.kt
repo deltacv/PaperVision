@@ -18,7 +18,7 @@
 
 package io.github.deltacv.papervision.codegen.build
 
-import io.github.deltacv.papervision.codegen.dsl.ScopeContext
+import io.github.deltacv.papervision.codegen.dsl.ScopeCtx
 import io.github.deltacv.papervision.codegen.*
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.resolve.Resolvable
@@ -37,8 +37,6 @@ class Scope(
 
     private val usedNames = mutableListOf<String>()
 
-    private val beforeReturningCallbacks = mutableListOf<(Scope) -> Unit>()
-
     private val tabs by lazy {
         val builder = StringBuilder()
 
@@ -49,15 +47,28 @@ class Scope(
         builder.toString()
     }
 
-    private val importBuilder = language.newImportBuilder()
+    private val importBuilder by lazy { language.newImportBuilder() }
+
+    private val nullables: MutableList<DeclarableVariable> =
+        importScope?.nullables ?: mutableListOf()
+
+    private val typesToInitialize: MutableList<Type> =
+        importScope?.typesToInitialize ?: mutableListOf()
 
     fun importType(vararg types: Type) {
         if(importScope != null) {
             importScope.importType(*types)
         } else {
             for (type in types) {
+                if(type.hasInitializer && !typesToInitialize.contains(type)) {
+                    typesToInitialize.add(type)
+                }
+
                 if (type.shouldImport) {
                     importBuilder.import(type)
+                }
+                for(generic in type.generics) {
+                    importType(generic)
                 }
             }
         }
@@ -66,8 +77,33 @@ class Scope(
     private fun importValue(vararg values: Value) {
         for(value in values) {
             if(value == Value.NONE) continue
-
             importType(*value.imports.toTypedArray())
+        }
+    }
+
+    private fun handleNullability(variable: DeclarableVariable) {
+        if(variable.isNullable) {
+            nullables.add(variable)
+        }
+    }
+
+    fun findNullables(vararg values: Value): List<DeclarableVariable> {
+        val result = mutableListOf<DeclarableVariable>()
+
+        for(variable in nullables) {
+            for(value in values) {
+                if(variable.name in (value.value ?: "") && !result.contains(variable)) {
+                    result.add(variable)
+                }
+            }
+        }
+
+        return result
+    }
+
+    fun initializeTypes(current: CodeGen.Current) {
+        for(type in typesToInitialize) {
+            type.initialize(current)
         }
     }
 
@@ -76,6 +112,8 @@ class Scope(
         newStatement()
         usedNames.add(variable.name)
         importValue(variable)
+
+        handleNullability(variable)
 
         val pair = language.instanceVariableDeclaration(
             vis, variable,
@@ -93,6 +131,8 @@ class Scope(
         newStatement()
         usedNames.add(variable.name)
         importValue(variable)
+
+        handleNullability(variable)
 
         builder.append("$tabs${language.localVariableDeclaration(variable)}")
     }
@@ -214,15 +254,7 @@ class Scope(
         builder.append(language.block(methodDeclaration.second, body, indentOverride ?: tabsCount))
     }
 
-    fun beforeReturning(block: (Scope) -> Unit) {
-        beforeReturningCallbacks.add(block)
-    }
-
     fun returnMethod(value: Value? = null) {
-        for(callback in beforeReturningCallbacks) {
-            callback(this)
-        }
-
         newStatement()
         if(value != null) importValue(value)
 
@@ -324,15 +356,12 @@ class Scope(
 
     override fun toString() = get()
 
-    var appendWhiteline = true
-
-    inline operator fun <R> invoke(crossinline block: ScopeContext.() -> R): R {
-        val result = block(ScopeContext(this))
+    inline operator fun <R> invoke(appendWhiteline: Boolean = true, crossinline block: ScopeCtx.() -> R): R {
+        val result = block(ScopeCtx(this))
 
         if(appendWhiteline) {
             newStatement()
         }
-        appendWhiteline = true
 
         return result
     }

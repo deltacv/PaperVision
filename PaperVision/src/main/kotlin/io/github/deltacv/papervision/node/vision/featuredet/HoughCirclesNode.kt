@@ -88,8 +88,6 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
     override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
             // Circle type needs to be lazily evaluated to gen its inner class
-            val Circle = JvmOpenCv.getCircleType(current)
-
             val session = Session()
 
             val inputValue = input.genValue(current).value
@@ -107,7 +105,7 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
             current {
                 val circlesMatVar = uniqueVariable("houghCirclesMat", JvmOpenCv.Mat.new())
                 val circlesListVar = uniqueVariable("houghCirclesList",
-                    JavaTypes.ArrayList(Circle).new()
+                    JavaTypes.ArrayList(JvmOpenCv.Circle).new()
                 )
 
                 val minDistanceVar = uniqueVariable("houghCirclesMinDistance", double(minDistanceValue).v)
@@ -171,7 +169,7 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
 
                         separate()
 
-                        circlesListVar("add", Circle.new(p, c))
+                        circlesListVar("add", JvmOpenCv.Circle.new(p, c))
                     }
                 }
 

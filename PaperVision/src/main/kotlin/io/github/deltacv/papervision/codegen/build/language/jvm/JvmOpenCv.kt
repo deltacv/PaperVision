@@ -28,7 +28,6 @@ import io.github.deltacv.papervision.codegen.build.Parameter
 import io.github.deltacv.papervision.codegen.build.Type
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.language.StandardTypes
-import io.github.deltacv.papervision.codegen.dsl.LanguageContext
 import io.github.deltacv.papervision.codegen.resolve.Resolvable
 import io.github.deltacv.papervision.codegen.resolve.resolved
 
@@ -83,9 +82,12 @@ object JvmOpenCv {
 
     val Rect = Type("Rect", "org.opencv.core")
 
-    fun toRectInst(rect: GenValue.Rect, langHolder: CodeGen.LanguageHolder) = when(rect) {
+    fun toRectInst(rect: GenValue.Rect, langHolder: CodeGen.LanguageHolder) = when (rect) {
         is GenValue.Rect.Components -> langHolder.language {
-            GenValue.Rect.Inst(Rect.new(rect.x.toInt(langHolder).v, rect.y.toInt(langHolder).v, rect.w.toInt(langHolder).v, rect.h.toInt(langHolder).v).resolved())
+            val pos = rect.position.toRuntime(langHolder)
+            val size = rect.size.toRuntime(langHolder)
+
+            GenValue.Rect.Inst(Rect.new(pos.xValue.v, pos.yValue.v, size.xValue.v, size.yValue.v).resolved())
         }
 
         is GenValue.Rect.Inst -> rect
@@ -100,7 +102,10 @@ object JvmOpenCv {
         val Params = Type("SimpleBlobDetector_Params", "org.opencv.features2d")
     }
 
-    fun toRuntimeLineParameters(line: GenValue.LineParameters, current: CodeGen.Current): GenValue.LineParameters.Runtime {
+    fun toRuntimeLineParameters(
+        line: GenValue.LineParameters,
+        current: CodeGen.Current
+    ): GenValue.LineParameters.Runtime {
         return current {
             when (line) {
                 is GenValue.LineParameters.Actual -> {
@@ -120,7 +125,10 @@ object JvmOpenCv {
                         public(thickness)
                     }
 
-                    GenValue.LineParameters.Runtime(GenValue.Scalar.Inst(Resolvable.Now(color)), GenValue.Int.Runtime(Resolvable.Now(thickness)))
+                    GenValue.LineParameters.Runtime(
+                        GenValue.Scalar.Inst(Resolvable.Now(color)),
+                        GenValue.Int.Runtime(Resolvable.Now(thickness))
+                    )
                 }
 
                 is GenValue.LineParameters.Runtime -> line
@@ -128,54 +136,38 @@ object JvmOpenCv {
         }
     }
 
-    fun toRuntimeVec2(vec2: GenValue.Vec2, langHolder: CodeGen.LanguageHolder): GenValue.Vec2.Runtime {
-        return langHolder.language {
-            when (vec2) {
-                is Actual -> Runtime(vec2.x.toRuntime(langHolder), vec2.y.toRuntime(langHolder))
-                is Runtime -> vec2
-            }
-        }
-    }
-
-    fun getCircleType(current: CodeGen.Current): Type {
-        val circleType = Type("Circle", "Circle")
+    val Circle = Type("Circle", "Circle") {
         current {
-            if (!codeGen.hasFlag("circleTypeEnabled")) {
-                codeGen.classEndScope {
-                    clazz(Visibility.PACKAGE_PRIVATE, "Circle", isStatic = true) {
-                        val centerVariable = DeclarableVariable(Point, "center")
-                        val radiusVariable = DeclarableVariable(DoubleType, "radius")
+            codeGen.classEndScope {
+                clazz(Visibility.PACKAGE_PRIVATE, "Circle", isStatic = true) {
+                    val centerVariable = DeclarableVariable(Point, "center")
+                    val radiusVariable = DeclarableVariable(DoubleType, "radius")
 
-                        group {
-                            instanceVariable(
-                                Visibility.PACKAGE_PRIVATE,
-                                centerVariable,
-                                isFinal = true
-                            )
+                    group {
+                        instanceVariable(
+                            Visibility.PACKAGE_PRIVATE,
+                            centerVariable,
+                            isFinal = true
+                        )
 
-                            instanceVariable(
-                                Visibility.PACKAGE_PRIVATE,
-                                radiusVariable,
-                                isFinal = true
-                            )
-                        }
+                        instanceVariable(
+                            Visibility.PACKAGE_PRIVATE,
+                            radiusVariable,
+                            isFinal = true
+                        )
+                    }
 
-                        separate()
+                    separate()
 
-                        val centerParameter = Parameter(Point, "center")
-                        val radiusParameter = Parameter(FloatType, "radius")
+                    val centerParameter = Parameter(Point, "center")
+                    val radiusParameter = Parameter(FloatType, "radius")
 
-                        constructor(Visibility.PACKAGE_PRIVATE, circleType, centerParameter, radiusParameter) {
-                            centerVariable instanceSet centerParameter
-                            radiusVariable instanceSet radiusParameter
-                        }
+                    constructor(Visibility.PACKAGE_PRIVATE, type, centerParameter, radiusParameter) {
+                        centerVariable instanceSet centerParameter
+                        radiusVariable instanceSet radiusParameter
                     }
                 }
-
-                codeGen.addFlag("circleTypeEnabled")
             }
         }
-
-        return circleType
     }
 }

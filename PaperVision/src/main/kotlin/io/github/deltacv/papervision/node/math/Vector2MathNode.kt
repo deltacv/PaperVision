@@ -42,14 +42,14 @@ class Vector2MathNode : DrawNode<Vector2MathNode.Session>() {
     }
 
     override val generators = generatorsBuilder {
-        generatorFor(JavaLanguage) {
+        generatorForAny {
             val session = Session()
 
-            var firstValue = JvmOpenCv.toRuntimeVec2(first.genValue(current), current)
-            var secondValue = JvmOpenCv.toRuntimeVec2(second.genValue(current), current)
+            var firstValue = first.genValue(current).toRuntime(current)
+            var secondValue = second.genValue(current).toRuntime(current)
 
             current {
-                fun operate(first: GenValue.Double, second: GenValue.Double) = when (operation.genValue(current).value) {
+                fun operate(first: GenValue.Int, second: GenValue.Int) = when (operation.genValue(current).value) {
                     Operation.PLUS -> first.v + second.v
                     Operation.MINUS -> first.v - second.v
                     Operation.MULTIPLY -> first.v * second.v
@@ -60,8 +60,8 @@ class Vector2MathNode : DrawNode<Vector2MathNode.Session>() {
                 val yResultValue = operate(firstValue.yValue, secondValue.yValue)
 
                 session.result = GenValue.Vec2.Runtime(
-                    GenValue.Double.Runtime(xResultValue.resolved()),
-                    GenValue.Double.Runtime(yResultValue.resolved())
+                    GenValue.Int.Runtime(xResultValue.resolved()),
+                    GenValue.Int.Runtime(yResultValue.resolved())
                 )
             }
 

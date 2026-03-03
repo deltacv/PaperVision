@@ -261,7 +261,7 @@ abstract class Attribute :
 
     override fun decode(decoder: DataDecoder) {
         serializedId = decoder.int("id")
-        logger.trace("Decoded attribute with id {} ({})", serializedId, CodecTypeRegistry.nameOf(this::class))
+        logger.debug("Decoded attribute with id {} ({})", serializedId, CodecTypeRegistry.nameOf(this::class))
     }
 
     fun forgetSerializedId() {

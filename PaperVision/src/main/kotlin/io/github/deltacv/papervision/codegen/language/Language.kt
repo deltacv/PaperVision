@@ -24,7 +24,7 @@ import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
 import io.github.deltacv.papervision.codegen.build.language.StandardTypes
 import io.github.deltacv.papervision.codegen.csv
-import io.github.deltacv.papervision.codegen.dsl.LanguageContext
+import io.github.deltacv.papervision.codegen.dsl.LanguageCtx
 import io.github.deltacv.papervision.codegen.resolve.Resolvable
 import io.github.deltacv.papervision.exception.GenException
 
@@ -47,7 +47,7 @@ interface Language : ValueBuilder, CodeGen.LanguageHolder {
 
     val nullValue get() = ConValue(VoidType, "null")
 
-    operator fun <R> invoke(block: LanguageContext.() -> R) = LanguageContext(this).block()
+    operator fun <R> invoke(block: LanguageCtx.() -> R) = LanguageCtx(this).block()
 
     fun newImportBuilder(): ImportBuilder
 
@@ -125,7 +125,7 @@ interface Language : ValueBuilder, CodeGen.LanguageHolder {
         else -> throw GenException("Cannot convert value of type ${value.type} to Float")
     }
 
-    fun float(value: Float) = ConValue(FloatType, value.toString())
+    fun float(value: Float): Value = ConValue(FloatType, value.toString())
 
     fun double(value: GenValue.Double): Resolvable<Value> = when (value) {
         is GenValue.Double.Actual -> value.value.map { double(it) }
@@ -208,7 +208,7 @@ interface Language : ValueBuilder, CodeGen.LanguageHolder {
 
     fun block(start: String, body: Scope, indent: Int): String
 
-    fun gen(codeGen: CodeGen): String
+    fun build(codeGen: CodeGen): String
 
     interface ImportBuilder {
         fun import(type: Type)

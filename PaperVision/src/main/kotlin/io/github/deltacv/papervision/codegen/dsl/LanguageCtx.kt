@@ -26,7 +26,7 @@ import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.node.vision.ColorSpace
 
 @Suppress("UNUSED")
-open class LanguageContext(override val language: Language): CodeGen.LanguageHolder {
+open class LanguageCtx(override val language: Language): CodeGen.LanguageHolder {
 
     val Int.v get() = ConValue(language.IntType, toString())
     val Long.v get() = ConValue(language.LongType, toString())
@@ -34,7 +34,7 @@ open class LanguageContext(override val language: Language): CodeGen.LanguageHol
     val Double.v get() = ConValue(language.DoubleType, toString())
     val String.v get() = ConValue(Type.NONE, this)
 
-    val GenValue.Number.v get() = value(this@LanguageContext)
+    val GenValue.Number.v get() = value(this@LanguageCtx)
 
     val Resolvable<Double>.v @JvmName("vRDouble") get() = tryReturn({ it.v }, { it.v })
     val Resolvable<Int>.v @JvmName("vRInt") get() = tryReturn({ it.v }, { it.v })
@@ -72,6 +72,24 @@ open class LanguageContext(override val language: Language): CodeGen.LanguageHol
     infix fun Condition.and(right: Condition) = language.and(this, right)
     infix fun Condition.or(right: Condition) = language.or(this, right)
 
+    fun <T: Value> List<T>.joinWithAnd(joiner: (T) -> Condition): Condition? {
+        if(isEmpty()) return null
+
+        var condition: Condition? = null
+
+        for(value in this) {
+            val newCondition = joiner(value)
+
+            condition = if(condition == null) {
+                newCondition
+            } else {
+                condition and newCondition
+            }
+        }
+
+        return condition
+    }
+
     fun Value.castTo(type: Type) = language.castValue(this, type)
 
     fun Value.condition(): Condition {
@@ -104,10 +122,10 @@ open class LanguageContext(override val language: Language): CodeGen.LanguageHol
     infix fun Float.by(right: Float) = language.multiplication(this.v, right.v)
     infix fun Double.by(right: Double) = language.multiplication(this.v, right.v)
 
-    infix fun Int.between(right: Int) = language.division(this.v, right.v)
-    infix fun Long.between(right: Long) = language.division(this.v, right.v)
-    infix fun Float.between(right: Float) = language.division(this.v, right.v)
-    infix fun Double.between(right: Double) = language.division(this.v, right.v)
+    infix fun Int.div(right: Int) = language.division(this.v, right.v)
+    infix fun Long.div(right: Long) = language.division(this.v, right.v)
+    infix fun Float.div(right: Float) = language.division(this.v, right.v)
+    infix fun Double.div(right: Double) = language.division(this.v, right.v)
 
     fun boolean(value: Boolean) = language.boolean(value)
 
@@ -140,7 +158,7 @@ open class LanguageContext(override val language: Language): CodeGen.LanguageHol
 
     fun Type.newArray(size: Value) = language.newArrayOf(this, size)
 
-    fun Type.newArray() = language.newArrayOf(this)
+    fun Type.newArrayOfValues(vararg values: Value) = language.newArrayOfValues(this, *values)
 
     fun value(type: Type, value: String) = language.value(type, value)
 
@@ -166,6 +184,6 @@ open class LanguageContext(override val language: Language): CodeGen.LanguageHol
 
     fun cvTypeValue(cvType: String) = language.cvTypeValue(cvType)
 
-    fun variable(name: String, value: Value) = DeclarableVariable(name, value)
-    fun variable(type: Type, name: String) = DeclarableVariable(type, name)
+    fun variable(name: String, value: Value, isNullable: Boolean = false) = DeclarableVariable(name, value, isNullable)
+    fun variable(type: Type, name: String) = AccessorVariable(type, name)
 }

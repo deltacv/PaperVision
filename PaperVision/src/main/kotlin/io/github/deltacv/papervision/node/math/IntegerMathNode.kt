@@ -42,7 +42,7 @@ class IntegerMathNode : DrawNode<IntegerMathNode.Session>() {
     }
 
     override val generators = generatorsBuilder {
-        generatorFor(JavaLanguage) {
+        generatorForAny {
             val session = Session()
 
             val firstValue = first.genValue(current)

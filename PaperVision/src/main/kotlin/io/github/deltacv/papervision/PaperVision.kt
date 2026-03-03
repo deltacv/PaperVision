@@ -147,10 +147,20 @@ class PaperVision(
         config = setup.config
         config.load()
 
+        // serialize and log
         keyManager.addShortcut(keyManager.keys.NativeLeftSuper, keyManager.keys.ArrowDown) {
-            // serialize and log
             logger.info("-- Serialized project for Ctrl + Down debugging --")
             logger.info(JsonCodec().encode(PaperVisionProject.from(this)))
+        }
+
+        // close the topmost modal window on escape
+        keyManager.addShortcut(keyManager.keys.Escape) {
+            for(window in windows.inmutable) {
+                if(window.isEnabled && window.isModal) {
+                    window.delete()
+                    break
+                }
+            }
         }
     }
 

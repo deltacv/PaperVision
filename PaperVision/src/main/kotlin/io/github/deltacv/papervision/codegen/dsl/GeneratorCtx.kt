@@ -21,15 +21,19 @@ package io.github.deltacv.papervision.codegen.dsl
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.Generator
-import io.github.deltacv.papervision.codegen.language.Language
 
-class GeneratorContext<I, S: CodeGenSession>(
+class GeneratorCtx<I, S: CodeGenSession>(
     val genInput: I,
     val current: CodeGen.Current
-)
+) {
+    fun throwLanguageNotSupported(): Nothing =
+        throw NoSuchElementException(
+            "No generator found for language ${current.language.javaClass.simpleName}"
+        )
+}
 
 fun <I, S: CodeGenSession>
-        generator(init: GeneratorContext<I, S>.() -> S) =
+        generator(init: GeneratorCtx<I, S>.() -> S) =
     Generator<I, S> { input, current ->
-        init(GeneratorContext(input, current))
+        init(GeneratorCtx(input, current))
     }

@@ -2,7 +2,7 @@
 
 package io.github.deltacv.papervision.serialization.v2
 
-class MalformedDataException(message: String, obj: Any) : RuntimeException(message)
+class MalformedDataException(message: String, obj: Any, cause: Exception? = null) : RuntimeException(message, cause)
 
 interface DataDecoder {
 
@@ -53,15 +53,22 @@ inline fun <reified T: DataCodec> DataDecoder.objTyped(name: String): T {
     return obj
 }
 
-fun DataDecoder.intOrNull(name: String): Int? = if (has(name)) int(name) else null
-fun DataDecoder.floatOrNull(name: String): Float? = if (has(name)) float(name) else null
-fun DataDecoder.doubleOrNull(name: String): Double? = if (has(name)) double(name) else null
-fun DataDecoder.stringOrNull(name: String): String? = if (has(name)) string(name) else null
-fun DataDecoder.boolOrNull(name: String): Boolean? = if (has(name)) bool(name) else null
-fun DataDecoder.objOrNull(name: String): DataCodec? = if (has(name)) obj(name) else null
-fun DataDecoder.intListOrNull(name: String): List<Int>? = if (has(name)) intList(name) else null
-fun DataDecoder.floatListOrNull(name: String): List<Float>? = if (has(name)) floatList(name) else null
-fun DataDecoder.doubleListOrNull(name: String): List<Double>? = if (has(name)) doubleList(name) else null
-fun DataDecoder.stringListOrNull(name: String): List<String>? = if (has(name)) stringList(name) else null
-fun DataDecoder.boolListOrNull(name: String): List<Boolean>? = if (has(name)) boolList(name) else null
-fun DataDecoder.objListOrNull(name: String): List<DataCodec>? = if (has(name)) objList(name) else null
+private inline fun <R> tryOrNull (crossinline block: () -> R): R? = try {
+    block()
+} catch (e: MalformedDataException) {
+    null
+}
+
+fun DataDecoder.intOrNull(name: String): Int? = tryOrNull { if (has(name)) int(name) else null }
+fun DataDecoder.floatOrNull(name: String): Float? = tryOrNull { if (has(name)) float(name) else null }
+fun DataDecoder.doubleOrNull(name: String): Double? = tryOrNull { if (has(name)) double(name) else null }
+fun DataDecoder.stringOrNull(name: String): String? = tryOrNull { if (has(name)) string(name) else null }
+fun DataDecoder.boolOrNull(name: String): Boolean? = tryOrNull { if (has(name)) bool(name) else null }
+fun DataDecoder.objOrNull(name: String): DataCodec? = tryOrNull { if (has(name)) obj(name) else null }
+fun DataDecoder.objOrSkip(name: String, target: DataCodec): Boolean = tryOrNull {  if (has(name)) { obj(name, target); true } else false } ?: false
+fun DataDecoder.intListOrNull(name: String): List<Int>? = tryOrNull { if (has(name)) intList(name) else null }
+fun DataDecoder.floatListOrNull(name: String): List<Float>? = tryOrNull { if (has(name)) floatList(name) else null }
+fun DataDecoder.doubleListOrNull(name: String): List<Double>? = tryOrNull { if (has(name)) doubleList(name) else null }
+fun DataDecoder.stringListOrNull(name: String): List<String>? = tryOrNull { if (has(name)) stringList(name) else null }
+fun DataDecoder.boolListOrNull(name: String): List<Boolean>? = tryOrNull { if (has(name)) boolList(name) else null }
+fun DataDecoder.objListOrNull(name: String): List<DataCodec>? = tryOrNull { if (has(name)) objList(name) else null }

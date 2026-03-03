@@ -28,7 +28,7 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.codegen.build.DeclarableVariable
 import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
-import io.github.deltacv.papervision.codegen.dsl.ScopeContext
+import io.github.deltacv.papervision.codegen.dsl.ScopeCtx
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -63,7 +63,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
 
                 val rectsList = input.genValue(current)
 
-                val biggestRect = uniqueVariable("biggestRect", JvmOpenCv.Rect.nullValue)
+                val biggestRect = uniqueVariable("biggestRect", JvmOpenCv.Rect.nullValue, isNullable = true)
 
                 group {
                     private(biggestRect)
@@ -74,7 +74,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
 
                     biggestRect instanceSet biggestRect.nullValue
 
-                    fun ScopeContext.withRuntimeRect(rect: Value) {
+                    fun ScopeCtx.withRuntimeRect(rect: Value) {
                         ifCondition(rect notEqualsTo language.nullValue) {
                             ifCondition(
                                 biggestRect equalsTo biggestRect.nullValue or
@@ -92,14 +92,18 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                     } else {
                         for (element in (rectsList as GenValue.List.Actual<*>).elements) {
                             if(element is GenValue.Rect.Components) {
+                                val pos = element.position.toRuntime(current)
+                                val size = element.size.toRuntime(current)
+
                                 separate()
+
                                 val rect = DeclarableVariable(
                                     "rect",
                                     JvmOpenCv.Rect.new(
-                                        element.x.v,
-                                        element.y.v,
-                                        element.w.v,
-                                        element.h.v
+                                        pos.xValue.v,
+                                        pos.yValue.v,
+                                        size.xValue.v,
+                                        size.yValue.v
                                     )
                                 )
 
@@ -130,14 +134,14 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
 
                 val rectsList = input.genValue(current)
 
-                val biggestRect = uniqueVariable("biggest_rect", CPythonLanguage.nullValue)
+                val biggestRect = uniqueVariable("biggest_rect", CPythonLanguage.nullValue, isNullable = true)
 
                 current.scope {
                     nameComment()
 
                     local(biggestRect)
 
-                    fun ScopeContext.withRuntimeRect(rect: Value) {
+                    fun ScopeCtx.withRuntimeRect(rect: Value) {
                         ifCondition(rect notEqualsTo language.nullValue) {
                             // 2 - width, 3 - height, of tuple (x, y, w, h)
                             val rectArea = rect[2.v, CPythonLanguage.NoType] * rect[3.v, CPythonLanguage.NoType]
@@ -160,13 +164,16 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                             if(element is GenValue.Rect.Components) {
                                 separate()
 
+                                val pos = element.position.toRuntime(current)
+                                val size = element.size.toRuntime(current)
+
                                 val rect = uniqueVariable(
                                     "rect",
                                     CPythonLanguage.tuple(
-                                        element.x.v,
-                                        element.y.v,
-                                        element.w.v,
-                                        element.h.v
+                                        pos.xValue.v,
+                                        pos.yValue.v,
+                                        size.xValue.v,
+                                        size.yValue.v
                                     )
                                 )
                                 local(rect)

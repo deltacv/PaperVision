@@ -76,7 +76,7 @@ open class LanguageBase(
             return castValue(value, language.FloatType)
         }
     }
-    override fun float(value: Float) = ConValue(FloatType, "${value}f")
+    override fun float(value: Float): Value = ConValue(FloatType, "${value}f")
 
     override fun double(value: Value): Value {
         try {
@@ -104,7 +104,7 @@ open class LanguageBase(
         arrayOf(type), "new ${type.className}${if(type.hasGenerics) "<>" else ""}[${size.value}]"
     )
 
-    override fun newArrayOf(type: Type, vararg values: Value): Value {
+    override fun newArrayOfValues(type: Type, vararg values: Value): Value {
         val arrayType = arrayOf(type)
         return ConValue(arrayType, "new ${type.className}${if(type.hasGenerics) "<>" else ""}[] { ${values.csv()} }")
     }
@@ -281,7 +281,7 @@ open class LanguageBase(
         }
     }
 
-    override fun gen(codeGen: CodeGen): String = codeGen.run {
+    override fun build(codeGen: CodeGen): String = codeGen.run {
         val mainScope = Scope(0, language, importScope)
         val classBodyScope = Scope(1, language, importScope)
 

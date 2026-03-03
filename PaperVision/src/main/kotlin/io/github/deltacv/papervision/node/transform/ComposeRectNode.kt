@@ -36,17 +36,12 @@ class ComposeRectNode : DrawNode<ComposeRectNode.Session>() {
     }
 
     override val generators = generatorsBuilder {
-        generatorFor(JavaLanguage) {
+        generatorForAny {
             current {
                 val session = Session()
 
                 var positionValue = positionAtt.genValue(current)
                 var sizeValue = sizeAtt.genValue(current)
-
-                if(codeGen.isForPreviz) {
-                    positionValue = JvmOpenCv.toRuntimeVec2(positionValue, current)
-                    sizeValue = JvmOpenCv.toRuntimeVec2(sizeValue, current)
-                }
 
                 val (x, y) = when(positionValue) {
                     is GenValue.Vec2.Runtime -> positionValue.xValue to positionValue.yValue
@@ -57,7 +52,7 @@ class ComposeRectNode : DrawNode<ComposeRectNode.Session>() {
                     is GenValue.Vec2.Actual -> sizeValue.x to sizeValue.y
                 }
 
-                session.rect = GenValue.Rect.Components(x, y, w, h)
+                session.rect = GenValue.Rect.Components.wrap(x, y, w, h, current)
 
                 session
             }

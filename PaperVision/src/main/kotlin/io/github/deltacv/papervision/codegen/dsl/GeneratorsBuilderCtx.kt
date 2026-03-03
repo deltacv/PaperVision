@@ -24,13 +24,13 @@ import io.github.deltacv.papervision.codegen.PolyglotMapping
 import io.github.deltacv.papervision.codegen.language.Language
 import kotlin.reflect.KClass
 
-class GeneratorsBuilderContext<I, S: CodeGenSession> {
+class GeneratorsBuilderCtx<I, S: CodeGenSession> {
 
     val generators = mutableMapOf<PolyglotMapping, Generator<I, S>>()
 
     /* ---------- INSTANCE LANGUAGES ---------- */
 
-    fun generatorFor(vararg languages: Language, init: GeneratorContext<I, S>.() -> S) =
+    fun generatorFor(vararg languages: Language, init: GeneratorCtx<I, S>.() -> S) =
         generator(init).also {
             generators[PolyglotMapping.LanguagesInst(languages.toList())] = it
         }
@@ -42,7 +42,7 @@ class GeneratorsBuilderContext<I, S: CodeGenSession> {
     /* ---------- CLASS LANGUAGES ---------- */
 
     @JvmName("generatorForSingleClassLanguage")
-    inline fun <reified L: Language> generatorFor(noinline init: GeneratorContext<I, S>.() -> S) =
+    inline fun <reified L: Language> generatorFor(noinline init: GeneratorCtx<I, S>.() -> S) =
         generator(init).also {
             generators[PolyglotMapping.LanguagesClass(listOf(L::class))] = it
         }
@@ -55,7 +55,7 @@ class GeneratorsBuilderContext<I, S: CodeGenSession> {
 
     @JvmName("generatorForTwoClassLanguages")
     inline fun <reified L1: Language, reified L2: Language>
-            generatorFor(noinline init: GeneratorContext<I, S>.() -> S) =
+            generatorFor(noinline init: GeneratorCtx<I, S>.() -> S) =
         generator(init).also {
             generators[
                 PolyglotMapping.LanguagesClass(
@@ -68,7 +68,7 @@ class GeneratorsBuilderContext<I, S: CodeGenSession> {
 
     fun generatorFor(
         vararg languageClasses: KClass<out Language>,
-        init: GeneratorContext<I, S>.() -> S
+        init: GeneratorCtx<I, S>.() -> S
     ) =
         generator(init).also {
             generators[
@@ -87,7 +87,7 @@ class GeneratorsBuilderContext<I, S: CodeGenSession> {
 
     /* ---------- ANY ---------- */
 
-    fun generatorForAny(init: GeneratorContext<I, S>.() -> S) =
+    fun generatorForAny(init: GeneratorCtx<I, S>.() -> S) =
         generator(init).also {
             generators[PolyglotMapping.AnyLanguage] = it
         }
@@ -96,10 +96,10 @@ class GeneratorsBuilderContext<I, S: CodeGenSession> {
         generators.put(PolyglotMapping.AnyLanguage, generator)
 }
 
-inline fun <I, S: CodeGenSession> generatorsBuilder(init: GeneratorsBuilderContext<I, S>.() -> Unit) = GeneratorsBuilderContext<I, S>().run {
+inline fun <I, S: CodeGenSession> generatorsBuilder(init: GeneratorsBuilderCtx<I, S>.() -> Unit) = GeneratorsBuilderCtx<I, S>().run {
     init()
     generators
 }
 
 @JvmName("generatorsBuilderUnit")
-inline fun <S: CodeGenSession> generatorsBuilder(init: GeneratorsBuilderContext<Unit, S>.() -> Unit) = generatorsBuilder<Unit, S>(init)
+inline fun <S: CodeGenSession> generatorsBuilder(init: GeneratorsBuilderCtx<Unit, S>.() -> Unit) = generatorsBuilder<Unit, S>(init)

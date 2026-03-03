@@ -279,7 +279,7 @@ abstract class Node<S: CodeGenSession>(
 
     override fun decode(decoder: DataDecoder) {
         serializedId = decoder.int("id")
-        logger.trace("Decoded node with id {} ({})", serializedId, CodecTypeRegistry.nameOf(this::class))
+        logger.debug("Decoded node with id {} ({})", serializedId, CodecTypeRegistry.nameOf(this::class))
     }
 
     fun noValue(attrib: Attribute): Nothing {

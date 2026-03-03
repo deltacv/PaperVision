@@ -70,8 +70,6 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
     override val generators = generatorsBuilder {
         generatorFor(JavaLanguage) {
             current {
-                val Circle = JvmOpenCv.getCircleType(current)
-
                 val session = Session()
 
                 val line = JvmOpenCv.toRuntimeLineParameters(line.genValue(current), current)
@@ -91,7 +89,7 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
 
                     input.value.v("copyTo", output)
 
-                    foreach(AccessorVariable(Circle, "circle"), circlesValue.value.v) {
+                    foreach(AccessorVariable(JvmOpenCv.Circle, "circle"), circlesValue.value.v) {
                         JvmOpenCv.Imgproc(
                             "circle",
                             output,

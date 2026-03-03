@@ -20,7 +20,7 @@ class PlaceholderResolver(
         val placeholders = IdContainerStacks.local.peekNonNull<Resolvable.Placeholder<*>>()
 
         logger.info("Resolving active placeholders: ${placeholders.size}")
-        placeholders.forEach { logger.debug("{} = {}", it.placeholder, it.resolve()) }
+        placeholders.forEach { logger.debug("{} = {}", it.placeholder, it.resolve().toString().replace("\n", "\\n")) }
 
         val stack = mutableListOf<Int>() // single stack per pass
 

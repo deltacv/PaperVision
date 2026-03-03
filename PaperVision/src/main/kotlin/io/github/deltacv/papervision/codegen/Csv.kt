@@ -41,6 +41,8 @@ fun Array<out Value>.csv(): String {
     return stringArray.csv()
 }
 
+fun List<Value>.csv() = this.toTypedArray().csv()
+
 fun Array<out Type>.csv(): String {
     val stringArray = this.map { it.shortNameWithGenerics }.toTypedArray()
     return stringArray.csv()

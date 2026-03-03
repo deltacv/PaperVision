@@ -75,6 +75,7 @@ att_size,Size,Tamaño
 att_scale,Scale,Escala
 att_width,Width,Ancho
 att_height,Height,Alto
+att_channels,Channels,Canales
 att_crosshair,Crosshair,Crosshair
 att_crosshairimage,Overlay Output,Salida del Overlay
 att_crosshairline_params,Crosshair Line,Linea del Crosshair

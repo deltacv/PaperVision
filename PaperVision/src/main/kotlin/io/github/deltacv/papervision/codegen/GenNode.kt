@@ -19,7 +19,7 @@
 package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.codegen.build.Scope
-import io.github.deltacv.papervision.codegen.dsl.ScopeContext
+import io.github.deltacv.papervision.codegen.dsl.ScopeCtx
 import io.github.deltacv.papervision.util.loggerForThis
 
 interface GenNode<S: CodeGenSession> : PolyglotGenerator<Unit, S> {
@@ -81,6 +81,6 @@ interface GenNode<S: CodeGenSession> : PolyglotGenerator<Unit, S> {
         }
     }
 
-    fun ScopeContext.nameComment() = scope.nameComment()
+    fun ScopeCtx.nameComment() = scope.nameComment()
 
 }

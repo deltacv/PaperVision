@@ -124,7 +124,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
-                    val crosshairPositionVector = JvmOpenCv.toRuntimeVec2(crosshairPosition.genValue(current), current)
+                    val crosshairPositionVector = crosshairPosition.genValue(current).toRuntime(current)
 
                     val crosshairPoint = uniqueVariable(
                         "crosshairPoint", run {
@@ -132,7 +132,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                             val rows = drawOnValue.callValue("rows", IntType)
                             val cols = drawOnValue.callValue("cols", IntType)
 
-                            JvmOpenCv.Point.new((double(cols) / 2.v) + double(crosshairPositionVector.xValue).v, (double(rows) / 2.v) + double(crosshairPositionVector.yValue).v)
+                            JvmOpenCv.Point.new(cols / 2.v + crosshairPositionVector.xValue.v, rows / 2.v + crosshairPositionVector.yValue.v)
                         }
                     )
 
@@ -288,7 +288,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
             current {
                 val drawOnValue = drawOn.value.v
 
-                val crosshair = uniqueVariable("crosshair", CPythonLanguage.NoType.newArray())
+                val crosshair = uniqueVariable("crosshair", CPythonLanguage.NoType.newArrayOfValues())
                 val crosshairImage = uniqueVariable("crosshair_image", drawOnValue.callValue("copy", CPythonLanguage.NoType))
 
                 current.scope {
@@ -311,7 +311,10 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
                     separate()
 
-                    val (crosshairPointX, crosshairPointY) = Pair((cols / 2.v) + crosshairPositionVector.x.value.v, (rows / 2.v) + crosshairPositionVector.y.value.v)
+                    val (crosshairPointX, crosshairPointY) = Pair(
+                        (cols / 2.v) + crosshairPositionVector.x.value.v,
+                        (rows / 2.v) + crosshairPositionVector.y.value.v
+                    )
 
                     val pointX = uniqueVariable("crosshair_point_x", crosshairPointX)
                     val pointY = uniqueVariable("crosshair_point_y", crosshairPointY)

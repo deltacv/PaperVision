@@ -205,7 +205,7 @@ class OutputMatNode @JvmOverloads constructor(
             current {
                 val inputValue = input.genValue(current)
 
-                current.scope {
+                current.scope(false) {
                     if (crosshair.allLinkedAttributes.isNotEmpty()) {
                         val crosshairValue = crosshair.genValue(current)
 
@@ -283,8 +283,6 @@ class OutputMatNode @JvmOverloads constructor(
 
                     streamMat(streamId!!, inputValue.value.v, inputValue.color)
                     returnMethod(inputValue.value.v)
-
-                    appendWhiteline = false
                 }
             }
 
@@ -297,7 +295,7 @@ class OutputMatNode @JvmOverloads constructor(
                 val inputValue = input.genValue(current)
                 val dataValue = exportedData.genValue(current)
 
-                current.scope {
+                current.scope(false) {
                     val llpython = uniqueVariable(
                         "llpython", dataValue.switch(
                             ifActual = {
@@ -310,7 +308,7 @@ class OutputMatNode @JvmOverloads constructor(
                                     }
                                 }
 
-                                CPythonLanguage.newArrayOf(CPythonLanguage.NoType, *data.toTypedArray())
+                                CPythonLanguage.NoType.newArrayOfValues(*data.toTypedArray())
                             },
 
                             ifRuntime = {
@@ -330,7 +328,6 @@ class OutputMatNode @JvmOverloads constructor(
                     }
 
                     returnMethod(CPythonLanguage.tuple(crosshairValueV, inputValue.value.v, llpython))
-                    appendWhiteline = false
                 }
 
                 NoSession

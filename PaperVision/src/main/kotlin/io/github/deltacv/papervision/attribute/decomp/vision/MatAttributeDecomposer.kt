@@ -3,25 +3,29 @@ package io.github.deltacv.papervision.attribute.decomp.vision
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.decomp.AttributeDecomposer
 import io.github.deltacv.papervision.attribute.math.IntAttribute
+import io.github.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.CodeGenSession
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
+import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
+import io.github.deltacv.papervision.node.vision.ColorSpace
 import io.github.deltacv.papervision.serialization.v2.CodecType
 import io.github.deltacv.papervision.serialization.v2.DataDecoder
 import io.github.deltacv.papervision.serialization.v2.DataEncoder
+import io.github.deltacv.papervision.serialization.v2.objOrSkip
 
 @CodecType
 class MatAttributeDecomposer : AttributeDecomposer<MatAttributeDecomposer.Session>() {
 
-    val rows = IntAttribute(OUTPUT, "$[att_rows]")
-    val cols = IntAttribute(OUTPUT, "$[att_columns]")
+    val size = Vector2Attribute(OUTPUT, "$[att_size]", useSizeNaming = true)
+    val channels = IntAttribute(OUTPUT, "$[att_channels]")
 
     override fun onEnable() {
-        + rows
-        + cols
+        + size
+        + channels
     }
 
     override val generators = generatorsBuilder<GenValue, Session> {
@@ -31,8 +35,39 @@ class MatAttributeDecomposer : AttributeDecomposer<MatAttributeDecomposer.Sessio
             val session = Session()
 
             current.scope {
-                session.rows = GenValue.Int.Runtime(genInput.value.v.callValue("rows", IntType).resolved())
-                session.columns = GenValue.Int.Runtime(genInput.value.v.callValue("cols", IntType).resolved())
+                session.size = GenValue.Vec2.Runtime(
+                    GenValue.Int.Runtime(genInput.value.v.callValue("cols", IntType).resolved()),
+                    GenValue.Int.Runtime(genInput.value.v.callValue("rows", IntType).resolved()),
+                )
+
+                session.channels = GenValue.Int.Runtime(genInput.value.v.callValue("channels", IntType).resolved())
+            }
+
+            session
+        }
+
+        generatorFor(CPythonLanguage) {
+            assertGenValueType<GenValue.Mat>(genInput)
+
+            val session = Session()
+
+            current.scope {
+                val shape = genInput.value.v.propertyValue("shape", CPythonLanguage.NoType)
+
+                session.size = GenValue.Vec2.Runtime(
+                    GenValue.Int.Runtime(shape[1.v, IntType].resolved()),
+                    GenValue.Int.Runtime(shape[0.v, IntType].resolved()),
+                )
+
+                val channels = genInput.color.map {
+                    if(it == ColorSpace.GRAY) {
+                        // Grayscale images have a single channel, but np represents them with
+                        // a single value in the shape (height, width) without a channels dimension
+                        1.v
+                    } else shape[2.v, IntType]
+                }
+
+                session.channels = GenValue.Int.Runtime(channels)
             }
 
             session
@@ -43,23 +78,23 @@ class MatAttributeDecomposer : AttributeDecomposer<MatAttributeDecomposer.Sessio
         current: CodeGen.Current,
         attrib: Attribute
     ) = when(attrib) {
-        rows -> GenValue.Int.Runtime.defer { current.sessionOf(this)?.rows }
-        cols -> GenValue.Int.Runtime.defer { current.sessionOf(this)?.columns }
+        size -> GenValue.Vec2.Runtime.defer { current.sessionOf(this)?.size }
+        channels -> GenValue.Int.Runtime.defer { current.sessionOf(this)?.channels }
         else -> noValue(attrib)
     }
 
     override fun encode(encoder: DataEncoder) {
-        encoder.obj("rows", rows)
-        encoder.obj("cols", cols)
+        encoder.obj("size", size)
+        encoder.obj("channels", channels)
     }
 
     override fun decode(decoder: DataDecoder) {
-        decoder.obj("rows", rows)
-        decoder.obj("cols", cols)
+        decoder.objOrSkip("size", size)
+        decoder.objOrSkip("channels", channels)
     }
 
     class Session : CodeGenSession {
-        lateinit var rows: GenValue.Int.Runtime
-        lateinit var columns: GenValue.Int.Runtime
+        lateinit var size: GenValue.Vec2.Runtime
+        lateinit var channels: GenValue.Int.Runtime
     }
 }

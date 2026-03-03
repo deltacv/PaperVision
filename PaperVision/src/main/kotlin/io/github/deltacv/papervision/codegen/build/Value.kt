@@ -43,11 +43,9 @@ abstract class Value {
             additionalImports(type)
         }
 
-        if(type.generics != null) {
-            for(genericType in type.generics!!) {
-                if(genericType.shouldImport) {
-                    additionalImports(genericType)
-                }
+        for(genericType in type.generics) {
+            if(genericType.shouldImport) {
+                additionalImports(genericType)
             }
         }
     }
@@ -78,7 +76,7 @@ class Operation(numberType: Type, operation: String) : ConValue(numberType, oper
 
 open class AccessorVariable(type: Type, name: String) : DeclarableVariable(name, ConValue(type, name))
 
-open class DeclarableVariable(val name: String, val variableValue: Value) : ConValue(variableValue.type, name) {
+open class DeclarableVariable(val name: String, val variableValue: Value, val isNullable: Boolean = false) : ConValue(variableValue.type, name) {
 
     constructor(type: Type, name: String) : this(name, EmptyConValue(type))
 

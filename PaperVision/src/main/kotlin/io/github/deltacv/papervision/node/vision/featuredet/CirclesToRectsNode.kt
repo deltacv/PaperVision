@@ -62,8 +62,6 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
             val session = Session()
 
             current {
-                val Circle = JvmOpenCv.getCircleType(current)
-
                 val circles = circles.genValue(current)
                 if (circles !is GenValue.List.Runtime<*>) {
                     raise("Only runtime lists are supported for now")
@@ -74,11 +72,11 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
                 group {
                     private(rects)
                 }
-
+5
                 current.scope {
                     nameComment()
 
-                    foreach(AccessorVariable(Circle, "circle"), circles.value.v) {
+                    foreach(AccessorVariable(JvmOpenCv.Circle, "circle"), circles.value.v) {
                         val center = it.propertyValue("center", JvmOpenCv.Point)
                         val x = center.propertyValue("x", DoubleType)
                         val y = center.propertyValue("y", DoubleType)
@@ -115,7 +113,7 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
                 current.scope {
                     nameComment()
 
-                    val rects = uniqueVariable("circles_rects", CPythonLanguage.newArrayOf(CPythonLanguage.NoType))
+                    val rects = uniqueVariable("circles_rects", CPythonLanguage.NoType.newArrayOfValues())
                     local(rects)
 
                     separate()

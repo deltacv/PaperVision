@@ -41,10 +41,14 @@ object CPythonLanguage : LanguageBase(
         override val shouldImport = false
     }
 
-    override val IntType get() = NoType
-    override val LongType get() = NoType
-    override val FloatType get() = NoType
-    override val DoubleType get() = NoType
+    override val IntType get() = object: CPythonType("int", "int") {
+        override val shouldImport = false
+    }
+    override val LongType get() = IntType
+    override val FloatType get() = object: CPythonType("float", "float") {
+        override val shouldImport = false
+    }
+    override val DoubleType get() = FloatType
 
     override val trueValue = ConValue(BooleanType, "True")
     override val falseValue = ConValue(BooleanType, "False")
@@ -167,7 +171,7 @@ object CPythonLanguage : LanguageBase(
         return ConValue(arrayOf(type), "[]")
     }
 
-    override fun newArrayOf(type: Type, vararg values: Value): ConValue {
+    override fun newArrayOfValues(type: Type, vararg values: Value): ConValue {
         return ConValue(arrayOf(type), "[${values.csv()}]")
     }
 
@@ -193,7 +197,7 @@ object CPythonLanguage : LanguageBase(
 
     override fun nullVal(type: Type) = ConValue(type, "None")
 
-    override fun gen(codeGen: CodeGen): String = codeGen.run {
+    override fun build(codeGen: CodeGen): String = codeGen.run {
         val mainScope = Scope(0, language, importScope)
         val classBodyScope = Scope(0, language, importScope)
 
@@ -260,22 +264,29 @@ object CPythonLanguage : LanguageBase(
         }
     }
 
-    override fun int(value: Value) = callValue("int", language.IntType, value)
-    override fun int(value: Int) = int(value.toString().v)
+    override fun int(value: Value) = if(value.type != IntType && value.type != LongType)
+        callValue("int", language.IntType, value)
+    else value
+    override fun int(value: Int) = ConValue(IntType, value.toString())
 
-    override fun long(value: Value) = callValue("int", language.IntType, value)
-    override fun long(value: Long) = long(value.toString().v)
+    override fun long(value: Value) = int(value)
+    override fun long(value: Long) = ConValue(LongType, value.toString())
 
-    override fun float(value: Value) = callValue("float", language.IntType, value)
-    override fun float(value: Float) = float(value.toString().v)
+    override fun float(value: Value) = if(value.type != FloatType && value.type != DoubleType)
+        callValue("float", language.FloatType, value)
+    else value
 
-    override fun double(value: Value) = callValue("float", language.IntType, value)
-    override fun double(value: Double) = double(value.toString().v)
+    override fun float(value: Float) = ConValue(FloatType, value.toString())
+
+    override fun double(value: Value) = float(value)
+    override fun double(value: Double) = ConValue(DoubleType, value.toString())
 
     fun accessorTupleVariable(vararg names: String) = AccessorTupleVariable(*names)
     fun declaredTupleVariable(value: Value, vararg names: String) = DeclarableTupleVariable(value, *names)
 
-    fun tuple(vararg value: Value) = ConValue(NoType, "(${value.csv()})")
+    fun tuple(vararg value: Value) = ConValue(NoType, "(${value.csv()})").apply {
+        additionalImports(*value)
+    }
 
     fun namedArgument(name: String, value: Value) = ConValue(NoType, "$name=${value.value}")
 

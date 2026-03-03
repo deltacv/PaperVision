@@ -31,8 +31,7 @@ import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.ColorSpace
 import io.github.deltacv.papervision.serialization.v2.CodecType
-import io.github.deltacv.papervision.serialization.v2.DataEncoder
-import io.github.deltacv.papervision.util.hexString
+import io.github.deltacv.papervision.util.hashCodeString
 
 @CodecType(instantiable = false)
 class ScalarRangeAttribute(
@@ -89,8 +88,8 @@ class ScalarRangeAttribute(
     fun labelsForTwoScalars(): Pair<String, String> {
         if(twoScalarsCached != null) return twoScalarsCached!!
 
-        val hexMin = hexString
-        val hexMax = hexMin.hexString
+        val hexMin = hashCodeString
+        val hexMax = hexMin.hashCodeString
 
         onChange {
             val values = editorValue?.let {

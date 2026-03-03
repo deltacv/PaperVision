@@ -31,7 +31,7 @@ import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenC
 import io.github.deltacv.papervision.codegen.build.language.jvm.JavaTypes
 import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
-import io.github.deltacv.papervision.codegen.dsl.ScopeContext
+import io.github.deltacv.papervision.codegen.dsl.ScopeCtx
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -83,7 +83,7 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
 
                     rectsList("clear")
 
-                    fun ScopeContext.withPoints(points: Value) {
+                    fun ScopeCtx.withPoints(points: Value) {
                         points2f("release")
                         points("convertTo", points2f, cvTypeValue("CV_32F"))
 
@@ -123,14 +123,14 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
                     input.value.v.toString() + "_r"
                 } else null
 
-                val rectsList = uniqueVariable("${name ?: "r"}ot_rects", CPythonLanguage.NoType.newArray())
+                val rectsList = uniqueVariable("${name ?: "r"}ot_rects", CPythonLanguage.NoType.newArrayOfValues())
 
                 current.scope {
                     nameComment()
 
                     local(rectsList)
 
-                    fun ScopeContext.withPoints(points: Value) {
+                    fun ScopeCtx.withPoints(points: Value) {
                         rectsList("append", cv2.callValue("minAreaRect", CPythonLanguage.NoType, points))
                     }
 

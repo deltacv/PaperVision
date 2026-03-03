@@ -147,6 +147,11 @@ class JsonDataDecoder(
         if (!has(name)) {
             throw MalformedDataException("Data entry with name $name does not exist", obj)
         }
-        return callback(Unit)
+
+        return try {
+            callback(Unit)
+        } catch(e: Exception) {
+            throw MalformedDataException("Error reading data entry with name $name: ${e.message}", obj, e)
+        }
     }
 }

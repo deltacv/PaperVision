@@ -19,7 +19,7 @@
 package io.github.deltacv.papervision.codegen
 
 import io.github.deltacv.papervision.codegen.build.Scope
-import io.github.deltacv.papervision.codegen.dsl.CodeGenContext
+import io.github.deltacv.papervision.codegen.dsl.CodeGenCtx
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.codegen.resolve.PlaceholderResolver
 import io.github.deltacv.papervision.codegen.resolve.Resolvable
@@ -48,18 +48,15 @@ class CodeGen(
     val classEndScope   = Scope(1, language, importScope, isForPreviz)
 
     val initScope = Scope(2, language, importScope, isForPreviz)
-    val currInit  = Current(this, initScope, isForPreviz)
-
     val processFrameScope = Scope(2, language, importScope, isForPreviz)
-    val currProcessFrame  = Current(this, processFrameScope, isForPreviz)
-
     val viewportTappedScope = Scope(2, language, importScope, isForPreviz)
-    val currViewportTapped  = Current(this, viewportTappedScope, isForPreviz)
 
-    val sessions = mutableMapOf<Generator<*, *>, CodeGenSession>()
-    val busyNodes = mutableListOf<Generator<*, *>>()
+    val current = Current(this, processFrameScope, isForPreviz)
 
-    val endingNodes = mutableListOf<GenNode<*>>()
+    internal val sessions = mutableMapOf<Generator<*, *>, CodeGenSession>()
+    internal val busyNodes = mutableListOf<Generator<*, *>>()
+
+    internal val endingNodes = mutableListOf<GenNode<*>>()
 
     private val flags = mutableListOf<String>()
 
@@ -71,9 +68,15 @@ class CodeGen(
 
     var stage = Stage.CREATION
 
-    fun gen(): String {
-        val raw = language.gen(this)
+    fun build(): String {
+        if(endingNodes.isNotEmpty()) logger.info("-- Ending Nodes --")
+        for(node in endingNodes) {
+            node.genCodeIfNecessary(current)
+        }
 
+        importScope.initializeTypes(current)
+
+        val raw = language.build(this)
         return placeholderResolver.resolve(raw)
     }
 
@@ -81,19 +84,18 @@ class CodeGen(
     fun hasFlag(flag: String) = flags.contains(flag)
     fun flags() = flags.toTypedArray()
 
-    val context = CodeGenContext(this)
+    val context = CodeGenCtx(this)
 
-    inline operator fun <T> invoke(crossinline block: CodeGenContext.() -> T) = block(context)
+    inline operator fun <T> invoke(crossinline block: CodeGenCtx.() -> T) = block(context)
 
     interface LanguageHolder {
         val language: Language
     }
-
     interface ScopeHolder {
         val scope: Scope
     }
 
-    data class Current(val codeGen: CodeGen, override val scope: Scope, val isForPreviz: Boolean) : LanguageHolder, ScopeHolder{
+    data class Current(val codeGen: CodeGen, override val scope: Scope, val isForPreviz: Boolean) : LanguageHolder, ScopeHolder {
         override val language get() = codeGen.language
 
         @Suppress("UNCHECKED_CAST")
@@ -108,7 +110,7 @@ class CodeGen(
                 ?: throw IllegalStateException("Node ${node::class.simpleName} did not generate a session when requested")
         }
 
-        inline operator fun <R> invoke(crossinline scopeBlock: CodeGenContext.() -> R) = codeGen.invoke(scopeBlock)
+        inline operator fun <R> invoke(crossinline scopeBlock: CodeGenCtx.() -> R) = codeGen.invoke(scopeBlock)
     }
 
 }

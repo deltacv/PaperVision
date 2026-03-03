@@ -127,7 +127,7 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                 val minArea = minArea.genValue(current)
                 val maxArea = maxArea.genValue(current)
 
-                val contoursVar = uniqueVariable("by_area_contours", CPythonLanguage.newArrayOf(CPythonLanguage.NoType))
+                val contoursVar = uniqueVariable("by_area_contours", CPythonLanguage.NoType.newArrayOfValues())
 
                 current.scope {
                     local(contoursVar)

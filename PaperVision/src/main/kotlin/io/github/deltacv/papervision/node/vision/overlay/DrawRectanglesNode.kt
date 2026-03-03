@@ -32,7 +32,7 @@ import io.github.deltacv.papervision.codegen.build.language.cpython.CPythonOpenC
 import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import io.github.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
-import io.github.deltacv.papervision.codegen.dsl.ScopeContext
+import io.github.deltacv.papervision.codegen.dsl.ScopeCtx
 import io.github.deltacv.papervision.codegen.dsl.generatorsBuilder
 import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -61,11 +61,11 @@ open class DrawRectanglesNode
     val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
-        + inputMat.rebuildOnChange()
+        +inputMat.rebuildOnChange()
 
-        + lineParams
+        +lineParams
 
-        + rectangles.rebuildOnChange()
+        +rectangles.rebuildOnChange()
 
         if (!isDrawOnInput) {
             +outputMat.enablePrevizButton().rebuildOnChange()
@@ -104,12 +104,18 @@ open class DrawRectanglesNode
                     if (rectanglesList !is GenValue.List.Runtime<*>) {
                         for (rectangle in (rectanglesList as GenValue.List.Actual<*>).elements) {
                             if (rectangle is GenValue.Rect.Components) {
-                                Imgproc(
-                                    "rectangle", drawMat,
-                                    JvmOpenCv.toRectInst(rectangle, current).value.v,
-                                    lineParams.color.value.v,
-                                    lineParams.thicknessValue.v
-                                )
+                                val inst = JvmOpenCv.toRectInst(rectangle, current).value.v
+
+                                val nullables = findNullables(inst)
+
+                                ifCondition(nullables.joinWithAnd { it notEqualsTo language.nullValue }) {
+                                    Imgproc(
+                                        "rectangle", drawMat,
+                                        inst,
+                                        lineParams.color.value.v,
+                                        lineParams.thicknessValue.v
+                                    )
+                                }
                             } else if (rectangle is GenValue.Rect.Inst) {
                                 ifCondition(
                                     rectangle.value.v notEqualsTo language.nullValue and
@@ -177,7 +183,7 @@ open class DrawRectanglesNode
                     val colorScalar =
                         CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
 
-                    fun ScopeContext.runtimeRect(rectValue: Value) {
+                    fun ScopeCtx.runtimeRect(rectValue: Value) {
                         ifCondition(rectValue notEqualsTo language.nullValue) {
                             val rectangle = CPythonLanguage.declaredTupleVariable(
                                 rectValue,
@@ -203,16 +209,27 @@ open class DrawRectanglesNode
                     if (rectanglesList !is GenValue.List.Runtime<*>) {
                         for (rectangle in (rectanglesList as GenValue.List.Actual<*>).elements) {
                             if (rectangle is GenValue.Rect.Components) {
-                                cv2(
-                                    "rectangle", target,
-                                    CPythonLanguage.tuple(rectangle.x.v, rectangle.y.v),
-                                    CPythonLanguage.tuple(
-                                        rectangle.x.v + rectangle.w.v,
-                                        rectangle.y.v + rectangle.h.v
-                                    ),
-                                    colorScalar,
-                                    thickness.v
+                                val pos = rectangle.position.toRuntime(current)
+                                val size = rectangle.size.toRuntime(current)
+
+                                val tl = CPythonLanguage.tuple(
+                                    pos.xValue.v, pos.yValue.v
                                 )
+                                val br = CPythonLanguage.tuple(
+                                    pos.xValue.v + size.xValue.v,
+                                    pos.yValue.v + size.yValue.v
+                                )
+
+                                val nullables = findNullables(tl, br)
+
+                                ifCondition(nullables.joinWithAnd { it notEqualsTo nullValue }) {
+                                    cv2(
+                                        "rectangle", target,
+                                        tl, br,
+                                        colorScalar,
+                                        thickness.v
+                                    )
+                                }
                             } else if (rectangle is GenValue.Rect.Inst) {
                                 runtimeRect(rectangle.value.v)
                             }

@@ -21,22 +21,22 @@ package io.github.deltacv.papervision.codegen.dsl
 import io.github.deltacv.papervision.codegen.*
 import io.github.deltacv.papervision.codegen.build.*
 
-class CodeGenContext(val codeGen: CodeGen) : LanguageContext(codeGen.language) {
+class CodeGenCtx(val codeGen: CodeGen) : LanguageCtx(codeGen.language) {
 
     fun enum(name: String, vararg values: String) {
         codeGen.classStartScope.enumClass(name, *values)
     }
 
-    fun initScope(block: ScopeContext.() -> Unit) {
-        codeGen.initScope(block)
+    fun initScope(block: ScopeCtx.() -> Unit) {
+        codeGen.initScope(block = block)
     }
 
-    fun processFrameScope(block: ScopeContext.() -> Unit) {
-        codeGen.processFrameScope(block)
+    fun processFrameScope(block: ScopeCtx.() -> Unit) {
+        codeGen.processFrameScope(block = block)
     }
 
-    fun onViewportTappedScope(block: ScopeContext.() -> Unit) {
-        codeGen.viewportTappedScope(block)
+    fun onViewportTappedScope(block: ScopeCtx.() -> Unit) {
+        codeGen.viewportTappedScope(block = block)
     }
 
     fun public(variable: DeclarableVariable, label: String? = null) =
@@ -58,7 +58,7 @@ class CodeGenContext(val codeGen: CodeGen) : LanguageContext(codeGen.language) {
         block()
     }
 
-    fun uniqueVariable(name: String, value: Value) = variable(tryName(name), value)
+    fun uniqueVariable(name: String, value: Value, isNullable: Boolean = false) = variable(tryName(name), value, isNullable)
 
     fun tryName(name: String) = codeGen.classStartScope.tryName(name)
 
@@ -66,10 +66,10 @@ class CodeGenContext(val codeGen: CodeGen) : LanguageContext(codeGen.language) {
         vis: Visibility, returnType: Type,
         vararg parameters: Parameter,
         isStatic: Boolean = false, isFinal: Boolean = false, isOverride: Boolean = true,
-        scopeBlock: ScopeContext.() -> Unit
+        scopeBlock: ScopeCtx.() -> Unit
     ) {
         val s = Scope(2, codeGen.language)
-        scopeBlock(ScopeContext(s))
+        scopeBlock(ScopeCtx(s))
 
         codeGen.classEndScope.method(
             vis, returnType, this, s, *parameters,

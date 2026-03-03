@@ -24,11 +24,7 @@ import io.github.deltacv.papervision.codegen.Visibility
 import io.github.deltacv.papervision.codegen.build.*
 import io.github.deltacv.papervision.node.vision.ColorSpace
 
-class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
-
-    var appendWhiteline: Boolean
-        get() = scope.appendWhiteline
-        set(value) { scope.appendWhiteline = value }
+class ScopeCtx(val scope: Scope) : LanguageCtx(scope.language) {
 
     operator fun String.invoke(vararg parameters: Value) {
         scope.methodCall(this, *parameters)
@@ -77,6 +73,8 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
     infix fun String.local(v: Value) =
         scope.localVariable(DeclarableVariable(this, v))
 
+    fun findNullables(vararg value: Value) = scope.findNullables(*value)
+
     fun local(v: DeclarableVariable) = scope.localVariable(v)
 
     fun instanceVariable(
@@ -95,48 +93,52 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
     infix fun DeclarableVariable.instanceSet(v: Value) =
         scope.instanceVariableSet(this, v)
 
-    fun ifCondition(condition: Condition, block: ScopeContext.() -> Unit) {
-        val ifScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
-        block(ScopeContext(ifScope))
+    fun ifCondition(condition: Condition?, block: ScopeCtx.() -> Unit) {
+        if(condition == null) {
+            block(this)
+        } else {
+            val ifScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
+            block(ScopeCtx(ifScope))
 
-        scope.ifCondition(condition, ifScope)
+            scope.ifCondition(condition, ifScope)
+        }
     }
 
-    fun <T: Value> foreach(variable: T, list: Value, block: ScopeContext.(T) -> Unit) {
+    fun <T: Value> foreach(variable: T, list: Value, block: ScopeCtx.(T) -> Unit) {
         val loopScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
-        block(ScopeContext(loopScope), variable)
+        block(ScopeCtx(loopScope), variable)
 
         scope.foreachLoop(variable, list, loopScope)
     }
 
-    fun <T: Value> forLoop(variable: T, start: Value, max: Value, step: Value?, block: ScopeContext.(T) -> Unit) {
+    fun <T: Value> forLoop(variable: T, start: Value, max: Value, step: Value?, block: ScopeCtx.(T) -> Unit) {
         val loopScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
-        block(ScopeContext(loopScope), variable)
+        block(ScopeCtx(loopScope), variable)
 
         scope.forLoop(variable, start, max, step, loopScope)
     }
 
-    fun <T: Value> forLoop(variable: T, start: Value, max: Value, block: ScopeContext.(T) -> Unit) =
+    fun <T: Value> forLoop(variable: T, start: Value, max: Value, block: ScopeCtx.(T) -> Unit) =
         forLoop(variable, start, max, null, block)
 
     fun constructor(
-        vis: Visibility, clazz: Type, vararg parameters: Parameter, block: ScopeContext.() -> Unit
+        vis: Visibility, clazz: Type, vararg parameters: Parameter, block: ScopeCtx.() -> Unit
     ) {
         val constructorScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
-        block(ScopeContext(constructorScope))
+        block(ScopeCtx(constructorScope))
 
         scope.constructor(vis, clazz.className, constructorScope, *parameters)
     }
 
-    fun deferredBlock(resolvable: Resolvable<ScopeContext.() -> Unit>) {
+    fun deferredBlock(resolvable: Resolvable<ScopeCtx.() -> Unit>) {
         val block = resolvable.resolve()
 
         if(block != null) {
-            block(ScopeContext(scope))
+            block(ScopeCtx(scope))
         } else {
             val placeholder = Resolvable.DependentPlaceholder(resolvable) {
                 val newScope = Scope(scope.tabsCount, scope.language, scope.importScope)
-                it(ScopeContext(newScope))
+                it(ScopeCtx(newScope))
 
                 newScope.get()
             }
@@ -149,10 +151,10 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         vis: Visibility, returnType: Type, name: String,
         vararg parameters: Parameter, isStatic: Boolean = false,
         isFinal: Boolean = false, isOverride: Boolean = false,
-        isSynchronized: Boolean = false, block: ScopeContext.() -> Unit
+        isSynchronized: Boolean = false, block: ScopeCtx.() -> Unit
     ) {
         val methodScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
-        block(ScopeContext(methodScope))
+        block(ScopeCtx(methodScope))
 
         scope.method(vis, returnType, name, methodScope, *parameters, isStatic = isStatic, isFinal = isFinal, isSynchronized = isSynchronized, isOverride = isOverride)
     }
@@ -161,20 +163,14 @@ class ScopeContext(val scope: Scope) : LanguageContext(scope.language) {
         scope.returnMethod(value)
     }
 
-    fun beforeReturning(block: ScopeContext.() -> Unit) {
-        scope.beforeReturning {
-            block(ScopeContext(it))
-        }
-    }
-
     fun clazz(
         vis: Visibility, name: String,
         extends: Type? = null, vararg implements: Type,
         isStatic: Boolean = false, isFinal: Boolean = false,
-        block: ScopeContext.() -> Unit
+        block: ScopeCtx.() -> Unit
     ) {
         val clazzScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
-        block(ScopeContext(clazzScope))
+        block(ScopeCtx(clazzScope))
 
         scope.clazz(vis, name, clazzScope, extends, *implements, isStatic = isStatic, isFinal = isFinal)
     }

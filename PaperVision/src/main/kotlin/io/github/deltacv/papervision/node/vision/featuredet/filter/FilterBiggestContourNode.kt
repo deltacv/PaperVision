@@ -127,7 +127,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
                     val contoursList = if(inputValue is GenValue.List.Runtime<*>) {
                         inputValue.value.v
                     } else {
-                        val list = uniqueVariable("contours_list", CPythonLanguage.NoType.newArray())
+                        val list = uniqueVariable("contours_list", CPythonLanguage.NoType.newArrayOfValues())
                         local(list)
 
                         for(element in (inputValue as GenValue.List.Actual<*>).elements) {
