@@ -19,7 +19,7 @@
 package io.github.deltacv.papervision.codegen.resolve
 
 import io.github.deltacv.papervision.id.IdElement
-import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import kotlin.getValue
 
@@ -121,7 +121,7 @@ sealed class Resolvable<T> {
 
         override fun toString() = placeholder
 
-        override val id by IdContainerStacks.local.peekNonNull<Placeholder<*>>().nextIdLazy(this)
+        override val id by IdContainerStack.local.peekNonNull<Placeholder<*>>().nextIdLazy(this)
     }
 
     data class DependentPlaceholder<P, T>(val dependency: Resolvable<P>, val resolver: (P) -> T?) : Placeholder<T>(resolver = {

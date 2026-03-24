@@ -29,7 +29,7 @@ import io.github.deltacv.papervision.codegen.*
 import io.github.deltacv.papervision.exception.NodeGenException
 import io.github.deltacv.papervision.gui.editor.NodeEditor
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.node.vision.OutputMatNode
 import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
 import io.github.deltacv.papervision.serialization.v1.BasicNodeData
@@ -48,12 +48,8 @@ import org.deltacv.mai18n.tr
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-interface Type {
-    val name: String
-}
-
 abstract class Node<S: CodeGenSession>(
-    allowDelete: Boolean = true,
+    val allowDelete: Boolean = true,
     val joinActionStack: Boolean = true,
     val rebuildOnLink: Boolean = true
 ) : DrawableIdElementBase<Node<*>>(),
@@ -63,18 +59,14 @@ abstract class Node<S: CodeGenSession>(
     DataSerializable<NodeSerializationData>,
     DataCodec
 {
-
     private val logger by loggerForThis()
 
-    override val idContainer = IdContainerStacks.local.peekNonNull<Node<*>>()
+    override val idContainer = IdContainerStack.local.peekNonNull<Node<*>>()
     override val requestedId get() = if(forgetSerializedId) null else serializedId
 
     private var beforeDeletingPosition = ImVec2()
 
     val description by lazy { this::class.java.getAnnotation(PaperNode::class.java)?.description }
-
-    var allowDelete = allowDelete
-        private set
 
     var serializedId: Int? = null
         private set

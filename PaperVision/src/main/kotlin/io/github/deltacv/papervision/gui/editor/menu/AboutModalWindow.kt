@@ -1,22 +1,4 @@
-/*
- * PaperVision
- * Copyright (C) 2026 Sebastian Erives, deltacv
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-package io.github.deltacv.papervision.gui.editor
+package io.github.deltacv.papervision.gui.editor.menu
 
 import imgui.ImGui
 import imgui.ImVec2
@@ -27,7 +9,7 @@ import io.github.deltacv.papervision.gui.util.ARCH
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.OS
 import io.github.deltacv.papervision.gui.util.getMemoryUsageMB
-import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.io.resourceToString
 import io.github.deltacv.papervision.util.flags
 import org.deltacv.mai18n.tr
@@ -82,11 +64,11 @@ class AboutModalWindow : Window() {
         val OS_VERSION = System.getProperty("os.version")
 
         var elementCount = 0
-        for(container in IdContainerStacks.local.all()) {
+        for(container in IdContainerStack.Companion.local.all()) {
             elementCount += container.inmutable.size
         }
 
-        centeredText("System details: $OS $OS_VERSION $ARCH running on Java ${System.getProperty("java.version")} ${System.getProperty("java.vendor")}")
+        centeredText("System details: ${OS} $OS_VERSION ${ARCH} running on Java ${System.getProperty("java.version")} ${System.getProperty("java.vendor")}")
         centeredText("Current heap memory usage: ${getMemoryUsageMB()} MB | Element count: $elementCount")
 
         ImGui.newLine()

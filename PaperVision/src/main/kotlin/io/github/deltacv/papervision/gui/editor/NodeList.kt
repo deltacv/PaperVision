@@ -35,7 +35,7 @@ import io.github.deltacv.papervision.gui.isModalWindowOpen
 import io.github.deltacv.papervision.gui.style.opacity
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.id.container.IdContainer
-import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode
@@ -108,13 +108,13 @@ class NodeList(
 
     override fun onEnable() {
         // use different id stacks for the node list, we dont want these nodes on the actual editor
-        IdContainerStacks.local.push(listNodes)
-        IdContainerStacks.local.push(listAttributes)
+        IdContainerStack.local.push(listNodes)
+        IdContainerStack.local.push(listAttributes)
 
         headers = Headers(keyManager) { nodes }
 
-        IdContainerStacks.local.pop<Node<*>>()
-        IdContainerStacks.local.pop<Attribute>()
+        IdContainerStack.local.pop<Node<*>>()
+        IdContainerStack.local.pop<Attribute>()
     }
 
     override fun preDrawContents() {
@@ -136,8 +136,8 @@ class NodeList(
             return
         }
 
-        IdContainerStacks.local.push(listNodes)
-        IdContainerStacks.local.push(listAttributes)
+        IdContainerStack.local.push(listNodes)
+        IdContainerStack.local.push(listAttributes)
 
         val size = paperVision.window.size
 
@@ -332,8 +332,8 @@ class NodeList(
 
         headers.size = size
 
-        IdContainerStacks.local.pop<Node<*>>()
-        IdContainerStacks.local.pop<Attribute>()
+        IdContainerStack.local.pop<Node<*>>()
+        IdContainerStack.local.pop<Attribute>()
 
         handleClick(!headers.isHeaderHovered)
     }

@@ -18,7 +18,9 @@
 
 package io.github.deltacv.papervision.gui.util
 
+import java.awt.Desktop
 import java.lang.management.ManagementFactory
+import java.net.URI
 
 enum class OperatingSystem {
     WINDOWS,
@@ -66,4 +68,17 @@ fun getMemoryUsageMB(): Long {
 fun getProcessCPULoad(): Double {
     val osBean = ManagementFactory.getOperatingSystemMXBean() as com.sun.management.OperatingSystemMXBean
     return osBean.processCpuLoad
+}
+
+fun browserOpen(url: String) {
+    try {
+        val uri = URI(url)
+        Desktop.getDesktop().browse(uri)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+fun openPaperVisionDocs() {
+    browserOpen("https://docs.deltacv.org/papervision/")
 }

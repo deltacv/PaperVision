@@ -21,7 +21,7 @@ package io.github.deltacv.papervision.gui.util
 import imgui.ImFont
 import imgui.ImFontConfig
 import imgui.ImGui
-import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.id.StatedIdElementBase
 import io.github.deltacv.papervision.util.loggerForThis
 
@@ -106,12 +106,12 @@ class Font internal constructor(
     val ttfPath: String?,
     val size: Float
 ) : StatedIdElementBase<Font>() {
-    override val idContainer get() = IdContainerStacks.local.peekNonNull<Font>()
+    override val idContainer get() = IdContainerStack.local.peekNonNull<Font>()
     override val requestedId = name.hashCode()
 
     companion object {
         fun find(name: String) =
-            IdContainerStacks.local.peekNonNull<Font>()[name] ?: throw IllegalArgumentException("Font '$name' not found")
+            IdContainerStack.local.peekNonNull<Font>()[name] ?: throw IllegalArgumentException("Font '$name' not found")
 
 
         fun findLazy(name: String) = lazy { find(name) }

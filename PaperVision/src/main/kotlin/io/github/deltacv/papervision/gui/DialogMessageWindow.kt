@@ -32,12 +32,15 @@ import java.awt.datatransfer.StringSelection
 import kotlin.getValue
 
 class DialogMessageWindow(
-    override var title: String,
     val message: String,
+    title: String = "mis_message",
     val textArea: String? = null,
     val font: Font? = null,
     override val modal: ModalMode = ModalMode.Modal()
 ): Window() {
+
+    override var title = tr(title)
+
     override val windowFlags = flags(
         ImGuiWindowFlags.NoResize,
         ImGuiWindowFlags.NoCollapse,

@@ -19,21 +19,22 @@
 package io.github.deltacv.papervision.id.container
 
 import io.github.deltacv.papervision.id.IdElement
+import kotlin.reflect.KClass
 
-class IdContainerStacks {
+class IdContainerStack {
 
     companion object {
         // Thread-local instance of IdContainerStack
-        private val threadLocalStack = ThreadLocal.withInitial { IdContainerStacks() }
+        private val threadLocalStack = ThreadLocal.withInitial { IdContainerStack() }
 
         // Accessor for the current thread's stack
-        val local: IdContainerStacks
+        val local: IdContainerStack
             get() = threadLocalStack.get()
     }
 
-    private val stacks = mutableMapOf<Class<out IdElement>, ArrayDeque<IdContainer<*>>>()
+    private val stacks = mutableMapOf<KClass<out IdElement>, ArrayDeque<IdContainer<*>>>()
 
-    fun <T: IdElement> push(clazz: Class<T>, container: IdContainer<out T>) {
+    fun <T: IdElement> push(clazz: KClass<T>, container: IdContainer<out T>) {
         val stack = stacks[clazz] ?: ArrayDeque()
 
         stack.addLast(container)
@@ -41,18 +42,18 @@ class IdContainerStacks {
         stacks[clazz] = stack
     }
 
-    inline fun <reified T: IdElement> push(container: IdContainer<out T>) = push(T::class.java, container)
+    inline fun <reified T: IdElement> push(container: IdContainer<out T>) = push(T::class, container)
 
     @Suppress("UNCHECKED_CAST")
-    fun <T: IdElement> peek(clazz: Class<T>): IdContainer<T>? {
+    fun <T: IdElement> peek(clazz: KClass<T>): IdContainer<T>? {
         return if(stacks.containsKey(clazz)) {
             stacks[clazz]!!.last() as IdContainer<T> // uhhhh.... this is fine lol
         } else null
     }
 
-    inline fun <reified T: IdElement> peek() = peek(T::class.java)
+    inline fun <reified T: IdElement> peek() = peek(T::class)
 
-    inline fun <reified T: IdElement> peekNonNull() = peek(T::class.java) ?: throw NullPointerException("No IdElementContainer was found for ${T::class.java.typeName} in the stack")
+    inline fun <reified T: IdElement> peekNonNull() = peek(T::class) ?: throw NullPointerException("No IdElementContainer was found for ${T::class.java.typeName} in the stack")
 
     inline fun <reified T: IdElement> peekSingle(): T? {
         val container = peek<T>() ?: return null
@@ -66,9 +67,9 @@ class IdContainerStacks {
 
     inline fun <reified T: IdElement> peekSingleNonNull() = peekSingle<T>() ?: throw NullPointerException("No IdElement was found for ${T::class.java.typeName} in the stack")
 
-    fun <T: IdElement> pop(clazz: Class<T>) = stacks[clazz]?.removeLast() != null
+    fun <T: IdElement> pop(clazz: KClass<T>) = stacks[clazz]?.removeLast() != null
 
-    inline fun <reified T: IdElement> pop() = pop(T::class.java)
+    inline fun <reified T: IdElement> pop() = pop(T::class)
 
     fun all(): List<IdContainer<*>> {
         val all = mutableListOf<IdContainer<*>>()

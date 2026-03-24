@@ -32,6 +32,7 @@ import io.github.deltacv.papervision.action.editor.DeleteLinksAction
 import io.github.deltacv.papervision.action.editor.DeleteNodesAction
 import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.attribute.AttributeMode
+import io.github.deltacv.papervision.gui.ConfirmationModalWindow
 import io.github.deltacv.papervision.gui.LayoutDirection
 import io.github.deltacv.papervision.gui.SizingMode
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
@@ -41,8 +42,10 @@ import io.github.deltacv.papervision.gui.display.ImageDisplayWindow
 import io.github.deltacv.papervision.gui.TooltipPopup
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.WindowGroup
-import io.github.deltacv.papervision.gui.editor.menu.RightClickMenuPopup
+import io.github.deltacv.papervision.gui.editor.menu.AboutModalWindow
+import io.github.deltacv.papervision.gui.editor.menu.ContextMenuPopup
 import io.github.deltacv.papervision.gui.isModalWindowOpen
+import io.github.deltacv.papervision.gui.util.openPaperVisionDocs
 import io.github.deltacv.papervision.id.DrawableIdElement
 import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.node.DrawNode
@@ -53,7 +56,6 @@ import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.node.PaperNodeRegistry
 import io.github.deltacv.papervision.node.vision.InputMatNode
 import io.github.deltacv.papervision.node.vision.OutputMatNode
-import io.github.deltacv.papervision.serialization.v1.PaperVisionSerializer
 import io.github.deltacv.papervision.serialization.v2.PaperVisionProject
 import io.github.deltacv.papervision.serialization.v2.json.JsonCodec
 import io.github.deltacv.papervision.util.ElapsedTime
@@ -158,7 +160,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     // Popup state
     private val popupSelection = mutableListOf<DrawableIdElement>()
-    private var currentRightClickMenuPopup: RightClickMenuPopup? = null
+    private var currentContextMenuPopup: ContextMenuPopup? = null
 
     // Display
     val outputImageDisplay by lazy { ImageDisplay(paperVision.previzManager.stream) }
@@ -245,6 +247,14 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         options[FontAwesomeIcons.EarthAmericas] = Option("mis_changelanguage") {
             paperVision.showWelcome(askLanguage = true)
+        }
+
+        options[FontAwesomeIcons.Book] = Option("mis_docs") {
+            ConfirmationModalWindow("mis_opendocs").apply {
+                onConfirm {
+                    openPaperVisionDocs()
+                }
+            }.enable()
         }
     }
 
@@ -383,7 +393,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             editorHovered
         ) {
 
-            currentRightClickMenuPopup = RightClickMenuPopup(
+            currentContextMenuPopup = ContextMenuPopup(
                 nodeList,
                 ::undo, ::redo, ::cut, ::copy, ::paste,
                 popupSelection
@@ -659,7 +669,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     }
 
     private fun updateRightClickMenuSelection() {
-        if (currentRightClickMenuPopup?.isVisible == true) return
+        if (currentContextMenuPopup?.isVisible == true) return
 
         popupSelection.clear()
 

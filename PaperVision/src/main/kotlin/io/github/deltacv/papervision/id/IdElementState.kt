@@ -41,10 +41,10 @@ internal class IdElementState<T: IdElement>(
         }
 
     val isEnabled: Boolean
-        get() = internalId?.let { idContainer.has(it, self) } ?: false
+        get() = internalId?.let { idContainer.contains(it, self) } ?: false
 
     fun enable() {
-        if(internalId == null || !idContainer.has(id, self)) {
+        if(internalId == null || !idContainer.contains(id, self)) {
             internalId = provideId()
             onEnableCallback()
             hasEnabled = true

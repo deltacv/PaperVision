@@ -71,8 +71,8 @@ open class QueuedChangeEmitter<C>(
     private val queueSizeLimit = queueSize
 
     final override fun processChanges() {
-        while (true) {
-            val change = queue.removeFirstOrNull() ?: break
+        while (queue.isNotEmpty()) {
+            val change = queue.removeFirst()
 
             _current = change
             try {

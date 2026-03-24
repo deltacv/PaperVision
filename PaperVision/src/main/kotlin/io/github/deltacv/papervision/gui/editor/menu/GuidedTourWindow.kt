@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.gui.editor
+package io.github.deltacv.papervision.gui.editor.menu
 
 import imgui.ImGui
 import imgui.ImVec2
@@ -24,6 +24,7 @@ import imgui.flag.ImGuiWindowFlags
 import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.Window
+import io.github.deltacv.papervision.gui.editor.NodeEditor
 import io.github.deltacv.papervision.node.vision.featuredet.FindContoursNode
 import io.github.deltacv.papervision.node.vision.imageproc.ThresholdNode
 import io.github.deltacv.papervision.node.vision.overlay.DrawContoursNode

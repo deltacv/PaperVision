@@ -32,7 +32,7 @@ import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.engine.previz.ClientPrevizManager
 import io.github.deltacv.papervision.gui.*
 import io.github.deltacv.papervision.gui.display.ImageDisplay
-import io.github.deltacv.papervision.gui.editor.IntroModalWindow
+import io.github.deltacv.papervision.gui.editor.menu.IntroModalWindow
 import io.github.deltacv.papervision.gui.editor.NodeEditor
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
@@ -44,7 +44,7 @@ import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.util.defaultFontConfig
 import io.github.deltacv.papervision.id.*
 import io.github.deltacv.papervision.id.container.IdContainer
-import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.id.container.SingleIdContainer
 import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.io.TextureProcessorQueue
@@ -120,7 +120,7 @@ class PaperVision(
 
     lateinit var defaultFont: Font
 
-    fun init() = withStacks {
+    fun init() = withIdContainers {
         logger.info("Starting PaperVision...\n\n${IntroModalWindow.iconLogo}\n")
         logger.info("Using the ${platformSetupCallback.name} platform")
 
@@ -217,7 +217,7 @@ class PaperVision(
     }
 
     private fun dumpStartupDiagnostics() {
-        logger.debug("=== PaperVision JVM startup diagnostics ===")
+        logger.debug("--  PaperVision JVM startup diagnostics --")
 
         logger.debug("java.version = {}", System.getProperty("java.version"))
         logger.debug("java.home = {}", System.getProperty("java.home"))
@@ -264,7 +264,7 @@ class PaperVision(
         }
     }
 
-    fun process() = withStacks {
+    fun process() = withIdContainers {
         onUpdate.run()
         engineClient.process()
 
@@ -334,33 +334,33 @@ class PaperVision(
         fontManager.makeFont(name, path, defaultFontConfig(size), ranges)
 
     /** Executes a block of code with all containers pushed/popped safely */
-    private inline fun withStacks(crossinline block: () -> Unit) {
-        IdContainerStacks.local.push(nodes)
-        IdContainerStacks.local.push(attributes)
-        IdContainerStacks.local.push(links)
-        IdContainerStacks.local.push(windows)
-        IdContainerStacks.local.push(textures)
-        IdContainerStacks.local.push(textureProcessorQueues)
-        IdContainerStacks.local.push(fonts)
-        IdContainerStacks.local.push(streamDisplays)
-        IdContainerStacks.local.push(actions)
-        IdContainerStacks.local.push(popups)
-        IdContainerStacks.local.push(misc)
+    private inline fun withIdContainers(crossinline block: () -> Unit) {
+        IdContainerStack.local.push(nodes)
+        IdContainerStack.local.push(attributes)
+        IdContainerStack.local.push(links)
+        IdContainerStack.local.push(windows)
+        IdContainerStack.local.push(textures)
+        IdContainerStack.local.push(textureProcessorQueues)
+        IdContainerStack.local.push(fonts)
+        IdContainerStack.local.push(streamDisplays)
+        IdContainerStack.local.push(actions)
+        IdContainerStack.local.push(popups)
+        IdContainerStack.local.push(misc)
 
         try {
             block()
         } finally {
-            IdContainerStacks.local.pop<Node<*>>()
-            IdContainerStacks.local.pop<Attribute>()
-            IdContainerStacks.local.pop<Link>()
-            IdContainerStacks.local.pop<Window>()
-            IdContainerStacks.local.pop<PlatformTexture>()
-            IdContainerStacks.local.pop<TextureProcessorQueue>()
-            IdContainerStacks.local.pop<Font>()
-            IdContainerStacks.local.pop<ImageDisplay>()
-            IdContainerStacks.local.pop<Action>()
-            IdContainerStacks.local.pop<Popup>()
-            IdContainerStacks.local.pop<Misc>()
+            IdContainerStack.local.pop<Node<*>>()
+            IdContainerStack.local.pop<Attribute>()
+            IdContainerStack.local.pop<Link>()
+            IdContainerStack.local.pop<Window>()
+            IdContainerStack.local.pop<PlatformTexture>()
+            IdContainerStack.local.pop<TextureProcessorQueue>()
+            IdContainerStack.local.pop<Font>()
+            IdContainerStack.local.pop<ImageDisplay>()
+            IdContainerStack.local.pop<Action>()
+            IdContainerStack.local.pop<Popup>()
+            IdContainerStack.local.pop<Misc>()
         }
     }
 }

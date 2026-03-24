@@ -6,7 +6,7 @@ import io.github.deltacv.papervision.engine.bridge.NoOpPaperVisionEngineBridge
 import io.github.deltacv.papervision.gui.ButtonWindow
 import io.github.deltacv.papervision.gui.ToastWindow
 import io.github.deltacv.papervision.gui.editor.menu.OptionsWindow
-import io.github.deltacv.papervision.gui.editor.menu.SourceCodeExportSelectLanguageWindow
+import io.github.deltacv.papervision.gui.editor.menu.SourceCodeLanguageWindow
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 
@@ -56,7 +56,7 @@ class SourceCodeExportButtonWindow(
 ) {
     init {
         onClick {
-            SourceCodeExportSelectLanguageWindow(paperVision, nodeEditorSizeSupplier).enable()
+            SourceCodeLanguageWindow(paperVision, nodeEditorSizeSupplier).enable()
         }
     }
 }

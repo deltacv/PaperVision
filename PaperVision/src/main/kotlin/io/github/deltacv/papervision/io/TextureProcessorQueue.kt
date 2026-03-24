@@ -20,7 +20,7 @@ package io.github.deltacv.papervision.io
 
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.container.IdContainer
-import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.platform.ColorSpace
 import io.github.deltacv.papervision.platform.PlatformTexture
 import io.github.deltacv.papervision.platform.PlatformTextureFactory
@@ -332,7 +332,7 @@ class TextureProcessorQueue(
         bufferPool.getOrCreate(size, memoryBehavior)
 
     override val idContainer: IdContainer<TextureProcessorQueue>
-            by lazy { IdContainerStacks.local.peekNonNull() }
+            by lazy { IdContainerStack.local.peekNonNull() }
 
     // Small data class to represent a queued texture operation.
     @Suppress("ArrayInDataClass")

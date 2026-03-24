@@ -42,7 +42,7 @@ import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @PaperNode(
     name = "nod_filterbiggest_rotrect",
-    category = NodeCategory.FEATURE_DET,
+    category = NodeCategory.CLASSIFICATION,
     description = "des_filterbiggest_rotrect"
 )
 @CodecType

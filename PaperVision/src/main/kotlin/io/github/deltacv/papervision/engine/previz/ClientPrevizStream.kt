@@ -21,7 +21,7 @@ package io.github.deltacv.papervision.engine.previz
 import io.github.deltacv.papervision.engine.client.ByteMessageReceiver
 import io.github.deltacv.papervision.engine.client.ByteMessageHandler
 import io.github.deltacv.papervision.engine.ByteMessages
-import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.io.TextureProcessorQueue
 import io.github.deltacv.papervision.io.bytes
 import io.github.deltacv.papervision.io.scaleToFit
@@ -55,7 +55,7 @@ class ClientPrevizStream(
     private var requestedMinimize = false
 
     // get the texture container of the current thread
-    val textureQueue = IdContainerStacks.local.peekSingleNonNull<TextureProcessorQueue>()
+    val textureQueue = IdContainerStack.local.peekSingleNonNull<TextureProcessorQueue>()
 
     var offlineTexture: PlatformTexture? = null
         private set

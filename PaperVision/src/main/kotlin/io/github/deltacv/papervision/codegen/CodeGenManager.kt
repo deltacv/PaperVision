@@ -34,7 +34,7 @@ import io.github.deltacv.papervision.gui.Popup
 import io.github.deltacv.papervision.gui.TooltipPopup
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.id.container.IdContainer
-import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.node.DrawNode
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.util.hashCodeString
@@ -51,9 +51,9 @@ class CodeGenManager(val paperVision: PaperVision) {
     ): String? {
         val placeholders = IdContainer<Resolvable.Placeholder<*>>()
 
-        IdContainerStacks.local.push(placeholders) // all placeholders created during code gen will be caught here
+        IdContainerStack.local.push(placeholders) // all placeholders created during code gen will be caught here
 
-        for(popup in IdContainerStacks.local.peekNonNull<Popup>().inmutable) {
+        for(popup in IdContainerStack.local.peekNonNull<Popup>().inmutable) {
             if(popup.label == "Gen-Error") {
                 popup.delete()
             }
@@ -104,9 +104,9 @@ class CodeGenManager(val paperVision: PaperVision) {
             codeGen.stage = CodeGen.Stage.ENDED_ERROR
 
             DialogMessageWindow(
-                tr("win_codegen_error"),
-                tr("mis_codegen_error"),
-                ex.stackTraceToString(),
+                message = "mis_codegen_error",
+                title = "win_codegen_error",
+                textArea = ex.stackTraceToString(),
                 font = Font.find("calcutta-big")
             ).enable()
 
@@ -125,7 +125,7 @@ class CodeGenManager(val paperVision: PaperVision) {
 
         logger.info("-- CodeGen #${codeGen.hashCodeString} OK --")
 
-        IdContainerStacks.local.pop<Resolvable.Placeholder<*>>() // we're done with placeholders
+        IdContainerStack.local.pop<Resolvable.Placeholder<*>>() // we're done with placeholders
 
         return result.trim()
     }

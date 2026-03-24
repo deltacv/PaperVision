@@ -61,7 +61,7 @@ class OptionsWindow(
             }
 
             ImGui.sameLine()
-            ImGui.indent(ImGui.getItemRectSizeX() * SourceCodeExportSelectLanguageWindow.Companion.SEPARATION_MULTIPLIER)
+            ImGui.indent(ImGui.getItemRectSizeX() * SourceCodeLanguageWindow.Companion.SEPARATION_MULTIPLIER)
         }
 
         ImGui.popStyleColor()

@@ -176,6 +176,7 @@ des_colorthresh,"Performs a threshold in the input image<br>and returns a binary
 des_drawrects,Draws the rectangles on a copy of the<br>given image and outputs the result.,Dibuja los rectangulos en una copia de la<br>imagen dada y devuelve el resultado.
 des_drawrotated_rects,Draws the rotated rectangles on a copy<br>of the given image and outputs the result.,Dibuja los rectangulos rotados en una copia de la<br>imagen dada y devuelve el resultado.
 des_lineparameters,Specify the visual properties for<br>a node that will draw lines.,Especifica las propiedades visuales<br>para un nodo que dibujará líneas.
+des_composerect,Composes a straight rectangle,Compone un rectángulo recto
 des_drawrects_onimage,Draws the rectangles in the passed image.,Dibuja los rectangulos en la imagen de entrada
 des_drawcontours,Draws the contours on a copy of the<br>given image and outputs the result.,Dibuja los contornos en una copia de la<br>imagen dada y devuelve el resultado.
 des_drawcontours_onimage,Draws the contours on the input image,Dibuja los contornos en la imagen de entrada.
@@ -290,4 +291,10 @@ mis_undo,Undo,Deshacer
 mis_redo,Redo,Rehacer
 mis_addnode,Add Node,Agregar Nodo
 mis_about,About,Acerca de
+mis_docs,Documentation,Documentación
+mis_opendocs,Do you want to open PaperVision's documentation in your web browser?,¿Quieres abrir la documentación de PaperVision en tu navegador web?
+mis_confirmaction,Confirm Action,Confirmar Acción
+mis_confirm,Confirm,Confirmar
+mis_cancel,Cancel,Cancelar
+mis_message,Message,Mensaje
 mis_codegen_error,An unexpected error occurred while generating the code<br>Please report this issue to the developers.,Ocurrió un error inesperado al generar el código<br>Por favor reporta este problema a los desarrolladores.

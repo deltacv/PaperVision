@@ -31,7 +31,7 @@ import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.util.flags
 
-class RightClickMenuPopup(
+class ContextMenuPopup(
     val nodeList: NodeList,
     val undo: () -> Unit,
     val redo: () -> Unit,
@@ -53,12 +53,12 @@ class RightClickMenuPopup(
         ImGui.pushStyleColor(ImGuiCol.Button, 0)
 
         if(ImGui.button(tr("mis_cut"))) {
-            cut(selection.filter { it is Node<*> }.map { it as Node<*> })
+            cut(selection.filterIsInstance<Node<*>>().map { it })
             ImGui.closeCurrentPopup()
         }
 
         if(ImGui.button(tr("mis_copy"))) {
-            copy(selection.filter { it is Node<*> }.map { it as Node<*> })
+            copy(selection.filterIsInstance<Node<*>>().map { it })
             ImGui.closeCurrentPopup()
         }
 

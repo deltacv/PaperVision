@@ -28,7 +28,7 @@ class GeneratorCtx<I, S: CodeGenSession>(
 ) {
     fun throwLanguageNotSupported(): Nothing =
         throw NoSuchElementException(
-            "No generator found for language ${current.language.javaClass.simpleName}"
+            "No generator found for language ${current.language::class.simpleName}"
         )
 }
 

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.gui.editor
+package io.github.deltacv.papervision.gui.editor.menu
 
 import imgui.ImGui
 import imgui.ImVec2
@@ -25,7 +25,6 @@ import imgui.extension.texteditor.TextEditorLanguageDefinition
 import imgui.flag.ImGuiWindowFlags
 import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.codegen.language.Language
-import io.github.deltacv.papervision.gui.ToastWindow
 import io.github.deltacv.papervision.gui.TooltipPopup
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.Window

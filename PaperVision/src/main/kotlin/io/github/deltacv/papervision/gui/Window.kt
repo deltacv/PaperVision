@@ -25,7 +25,7 @@ import imgui.flag.ImGuiMouseButton
 import imgui.flag.ImGuiWindowFlags
 import imgui.type.ImBoolean
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.flags
 import org.deltacv.mai18n.tr
@@ -36,7 +36,7 @@ abstract class Window(
 
     companion object;
 
-    override val idContainer by lazy { IdContainerStacks.local.peekNonNull<Window>() }
+    override val idContainer by lazy { IdContainerStack.local.peekNonNull<Window>() }
 
     abstract var title: String
     abstract val windowFlags: Int
@@ -221,5 +221,5 @@ abstract class Window(
     }
 }
 
-val Window.Companion.isModalWindowOpen get() = IdContainerStacks.local.peekNonNull<Window>().inmutable.any { it.isModal && it.isEnabled }
-val Window.Companion.isAnyWindowHovered get() = IdContainerStacks.local.peekNonNull<Window>().inmutable.any { it.hovered }
+val Window.Companion.isModalWindowOpen get() = IdContainerStack.local.peekNonNull<Window>().inmutable.any { it.isModal && it.isEnabled }
+val Window.Companion.isAnyWindowHovered get() = IdContainerStack.local.peekNonNull<Window>().inmutable.any { it.hovered }

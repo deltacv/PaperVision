@@ -27,7 +27,7 @@ import io.github.deltacv.papervision.codegen.build.language.jvm.enableJavaTarget
 import io.github.deltacv.papervision.codegen.dsl.LanguageCtx
 import io.github.deltacv.papervision.codegen.dsl.ScopeCtx
 
-class JvmTargetsContext(context: LanguageCtx) {
+class JvmTargetsCtx(context: LanguageCtx) {
     val rectTargets = context.run {
         DeclarableVariable("rectTargets", JavaTypes.HashMap(JavaTypes.String, JvmOpenCv.Rect).new())
     }
@@ -48,10 +48,10 @@ class JvmTargetsContext(context: LanguageCtx) {
     }
 }
 
-fun <T> CodeGen.Current.jvmTargets(enableTargetsIfNeeded: Boolean = true, block: JvmTargetsContext.() -> T): T {
+fun <T> CodeGen.Current.jvmTargets(enableTargetsIfNeeded: Boolean = true, block: JvmTargetsCtx.() -> T): T {
     if(enableTargetsIfNeeded) {
         enableJavaTargets()
     }
 
-    return block(JvmTargetsContext(codeGen.context))
+    return block(JvmTargetsCtx(codeGen.context))
 }

@@ -33,6 +33,10 @@ import kotlin.math.max
  */
 open class IdContainer<T : IdElement> : Collection<T> {
 
+    companion object {
+        private const val SPARSITY_THRESHOLD = 1000
+    }
+
     private val logger by loggerForThis()
 
     protected val slots = mutableListOf<T?>()
@@ -45,7 +49,6 @@ open class IdContainer<T : IdElement> : Collection<T> {
     private var nextExternalId = 0
 
     private var useHashMapping = false
-    private val sparsityThreshold = 1000
 
     var stackPointer: Int = 1
     var stackPointerFollowing = true
@@ -82,7 +85,7 @@ open class IdContainer<T : IdElement> : Collection<T> {
     private fun shouldEnableHashMapping(requestedId: Int): Boolean {
         if (useHashMapping) return false // dont enable again if already enabled
         if (requestedId < 0) return true // negative IDs are always sparse (slots can't have negative indices)
-        return requestedId - slots.size > sparsityThreshold // if requested ID is far beyond current slots, likely sparse
+        return requestedId - slots.size > SPARSITY_THRESHOLD // if requested ID is far beyond current slots, likely sparse
     }
 
     private fun resolveIdAllocating(externalId: Int): Int {
@@ -135,7 +138,7 @@ open class IdContainer<T : IdElement> : Collection<T> {
      * Assigns an element to an external ID.
      */
     open fun requestId(element: T, id: Int): Int {
-        if (has(id, element)) return id
+        if (contains(id, element)) return id
 
         val internalId = resolveIdAllocating(id)
 
@@ -280,7 +283,7 @@ open class IdContainer<T : IdElement> : Collection<T> {
     /**
      * Returns true if ID exists and has element.
      */
-    fun has(id: Int): Boolean {
+    fun contains(id: Int): Boolean {
         if (!useHashMapping) {
             return id in 0 until slots.size && slots[id] != null
         }
@@ -288,12 +291,12 @@ open class IdContainer<T : IdElement> : Collection<T> {
         return internal in 0 until slots.size && slots[internal] != null
     }
 
-    fun has(id: String) = has(id.hashCode())
+    fun contains(id: String) = contains(id.hashCode())
 
     /**
      * Checks ID → element match.
      */
-    fun has(id: Int, elem: T): Boolean {
+    fun contains(id: Int, elem: T): Boolean {
         if (!useHashMapping) {
             return id in 0 until slots.size && slots[id] == elem
         }

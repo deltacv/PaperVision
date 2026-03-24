@@ -26,7 +26,7 @@ import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.engine.client.message.TunerValue
 import io.github.deltacv.papervision.exception.AttributeGenException
 import io.github.deltacv.papervision.id.DrawableIdElementBase
-import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.Node
 import io.github.deltacv.papervision.serialization.v1.AttributeSerializationData
@@ -55,7 +55,7 @@ abstract class Attribute :
 
     private val logger by loggerForThis()
 
-    override val idContainer get() = IdContainerStacks.local.peekNonNull<Attribute>()
+    override val idContainer get() = IdContainerStack.local.peekNonNull<Attribute>()
 
     override val requestedId get() = if(forgetSerializedId || (hasParentNode && parentNode.forgetSerializedId))
         null // generate new id
@@ -190,10 +190,8 @@ abstract class Attribute :
     fun raise(message: String): Nothing = throw AttributeGenException(this, message)
 
     fun warn(message: String) {
-        println("WARN: $message") // TODO: Warnings system...
+        logger.warn(message) // TODO: Warnings system...
     }
-
-    fun requireAttachedAttribute() = raiseAssert(hasLink, "err_musthave_attachedattrib")
 
     @OptIn(ExperimentalContracts::class)
     fun raiseAssert(condition: Boolean, message: String) {
@@ -210,6 +208,8 @@ abstract class Attribute :
             warn(message)
         }
     }
+
+    fun requireAttachedAttribute() = raiseAssert(hasLink, "err_musthave_attachedattrib")
 
     abstract fun acceptLink(other: Attribute): LinkAcceptance
 

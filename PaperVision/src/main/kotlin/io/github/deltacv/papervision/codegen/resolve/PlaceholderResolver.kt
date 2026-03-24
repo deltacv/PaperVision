@@ -3,7 +3,7 @@ package io.github.deltacv.papervision.codegen.resolve
 import io.github.deltacv.papervision.codegen.build.Scope
 import io.github.deltacv.papervision.codegen.build.Value
 import io.github.deltacv.papervision.id.container.IdContainer
-import io.github.deltacv.papervision.id.container.IdContainerStacks
+import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.util.loggerFor
 
 class PlaceholderResolver(
@@ -17,7 +17,7 @@ class PlaceholderResolver(
     ): String {
         var resolved = preprocessed
 
-        val placeholders = IdContainerStacks.local.peekNonNull<Resolvable.Placeholder<*>>()
+        val placeholders = IdContainerStack.local.peekNonNull<Resolvable.Placeholder<*>>()
 
         logger.info("Resolving active placeholders: ${placeholders.size}")
         placeholders.forEach { logger.debug("{} = {}", it.placeholder, it.resolve().toString().replace("\n", "\\n")) }
