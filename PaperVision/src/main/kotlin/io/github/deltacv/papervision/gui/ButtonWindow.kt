@@ -1,6 +1,7 @@
 package io.github.deltacv.papervision.gui
 
 import imgui.ImGui
+import imgui.ImVec4
 import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiStyleVar
 import imgui.flag.ImGuiWindowFlags
@@ -11,7 +12,7 @@ import io.github.deltacv.papervision.util.flags
 import org.deltacv.mai18n.tr
 
 open class ButtonWindow(
-    var buttonText: String,
+    open var buttonText: String,
     var buttonFont: Font?,
     var buttonTooltip: String? = null,
     var buttonTooltipFont: Font? = null,
@@ -45,15 +46,18 @@ open class ButtonWindow(
      * We only set background color here.
      */
     override fun preDrawContents() {
-        val style = ImGui.getStyle()
+        val (base, hover, active) = colors
 
         val color = when {
-            isPressed -> style.getColor(ImGuiCol.ButtonActive)
-            buttonHovered -> style.getColor(ImGuiCol.ButtonHovered)
-            else -> style.getColor(ImGuiCol.Button)
+            isPressed -> active
+            buttonHovered -> hover
+            else -> base
         }
 
-        ImGui.pushStyleColor(ImGuiCol.WindowBg, color)
+        ImGui.pushStyleColor(
+            ImGuiCol.WindowBg,
+            ImGui.colorConvertU32ToFloat4(color)
+        )
         // Remove window padding so button fills entire window
         ImGui.pushStyleVar(ImGuiStyleVar.WindowPadding, 0f, 0f)
     }
@@ -112,4 +116,16 @@ open class ButtonWindow(
         ImGui.popStyleVar() // WindowPadding
         ImGui.popStyleColor() // WindowBg
     }
+
+    open val colors get() = Colors(
+        base = ImGui.getColorU32(ImGuiCol.Button),
+        hover = ImGui.getColorU32(ImGuiCol.ButtonHovered),
+        active = ImGui.getColorU32(ImGuiCol.ButtonActive)
+    )
+
+    data class Colors(
+        val base: Int,
+        val hover: Int,
+        val active: Int
+    )
 }

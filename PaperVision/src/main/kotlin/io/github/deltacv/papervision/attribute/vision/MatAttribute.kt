@@ -75,15 +75,11 @@ class MatAttribute(
             ImGui.pushFont(fontAwesome.imfont)
                 val text = if (isPrevizEnabled) FontAwesomeIcons.EyeSlash else FontAwesomeIcons.Eye
 
-                ImGui.pushStyleColor(ImGuiCol.Button, 0)
-
                 isPrevizEnabled = ImGuiEx.toggleButton(
                     text, isPrevizEnabled
                 )
 
                 drawAfterTextSize = ImGui.getItemRectSize()
-
-                ImGui.popStyleColor()
             ImGui.popFont()
         }
 

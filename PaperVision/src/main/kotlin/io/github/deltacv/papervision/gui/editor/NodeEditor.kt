@@ -44,6 +44,7 @@ import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.WindowGroup
 import io.github.deltacv.papervision.gui.editor.menu.AboutModalWindow
 import io.github.deltacv.papervision.gui.editor.menu.ContextMenuPopup
+import io.github.deltacv.papervision.gui.editor.menu.EmptyStateWindow
 import io.github.deltacv.papervision.gui.isModalWindowOpen
 import io.github.deltacv.papervision.gui.util.openPaperVisionDocs
 import io.github.deltacv.papervision.id.DrawableIdElement
@@ -122,6 +123,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     lateinit var sourceCodeExportButton: SourceCodeExportButtonWindow
         private set
 
+    private val emptyStateWindow = EmptyStateWindow()
+
     // Panning state
     val editorPanning = ImVec2(0f, 0f)
     val editorPanningDelta = ImVec2(0f, 0f)
@@ -191,6 +194,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         restoreEditorPanning()
 
         nodeList.enable()
+        emptyStateWindow.enable()
     }
 
     override fun delete() {
@@ -225,7 +229,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         optionsButton = OptionsButtonWindow(options)
 
         val group = WindowGroup(
-            nodeListButton, sourceCodeExportButton, playButton, optionsButton,
+            nodeListButton, optionsButton, sourceCodeExportButton, playButton,
             direction = LayoutDirection.RIGHT_TO_LEFT,
             spacing = 25f,
             sizingMode = SizingMode.GridFixed(ImVec2(90f, 95f))
@@ -315,6 +319,10 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         if (!flagsNode.isEnabled) {
             flagsNode.enable()
+        }
+
+        if(emptyStateWindow.isEnabled && nodes.inmutable.find { !it.allowDelete } != null) {
+            // emptyStateWindow.delete()
         }
 
         ImNodes.beginNodeEditor()

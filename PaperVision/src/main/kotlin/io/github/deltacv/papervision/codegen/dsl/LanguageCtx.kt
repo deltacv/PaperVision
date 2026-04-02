@@ -178,6 +178,8 @@ open class LanguageCtx(override val language: Language): CodeGen.LanguageHolder 
 
     operator fun Value.get(index: Value, type: Type) = language.arrayValue(this, index, type)
 
+    operator fun Value.get(type: Type, vararg indexes: Value) = language.arrayValueMultiple(this, indexes.toList(), type)
+
     fun enumValue(type: Type, constantName: String) = language.enumValue(type, constantName)
 
     fun cvtColorValue(a: ColorSpace, b: ColorSpace) = language.cvtColorValue(a, b)

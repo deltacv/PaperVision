@@ -181,6 +181,10 @@ object CPythonLanguage : LanguageBase(
         type, "${from.value}[${index.value}]"
     )
 
+    override fun arrayValueMultiple(from: Value, indices: List<Value>, type: Type): ConValue {
+        return ConValue(type, "${from.value}[${indices.csv()}]")
+    }
+
     override fun block(start: String, body: Scope, indent: Int): String {
         val bodyStr = body.get().trimIndent().prependIndent("\t".repeat(indent + 1))
         val startIndent = "\t".repeat(indent)

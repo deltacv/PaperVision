@@ -19,6 +19,7 @@
 package io.github.deltacv.papervision.gui.style
 
 import imgui.ImColor
+import imgui.ImGui
 import imgui.ImVec4
 import kotlin.math.roundToInt
 
@@ -29,7 +30,17 @@ fun rgbaColor(r: Int, g: Int, b: Int, a: Int) = ImColor.rgba(
     a.toFloat() / 255f
 )
 
-fun hexColor(hex: String) = ImColor.rgb(hex)
+fun hexColor(hex: String, alpha: Float = 1f): Int {
+    val col = ImColor.rgb(hex)
+    val a = (alpha * 255).toInt()
+    return (col and 0x00FFFFFF) or (a shl 24)
+}
+
+fun ImVec4.opacity(opacity: Float): ImVec4 {
+    val clampedOpacity = opacity.coerceIn(0f, 1f)
+    this.w = clampedOpacity
+    return this
+}
 
 fun Int.opacity(opacity: Float): Int {
     // Ensure the opacity is within 0 and 1

@@ -7,6 +7,7 @@ import io.github.deltacv.papervision.gui.ButtonWindow
 import io.github.deltacv.papervision.gui.ToastWindow
 import io.github.deltacv.papervision.gui.editor.menu.OptionsWindow
 import io.github.deltacv.papervision.gui.editor.menu.SourceCodeLanguageWindow
+import io.github.deltacv.papervision.gui.style.hexColor
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 
@@ -81,11 +82,23 @@ class PlayButtonWindow(
         }
     }
 
-    override fun preDrawContents() {
-        buttonText = if (paperVision.previzManager.previzRunning) {
-            FontAwesomeIcons.Stop
-        } else FontAwesomeIcons.Play
+    override var buttonText = FontAwesomeIcons.Play
+        get() =
+            if (paperVision.previzManager.previzRunning) {
+                FontAwesomeIcons.Stop
+            } else FontAwesomeIcons.Play
 
-        super.preDrawContents()
+    override val colors get() = if(paperVision.previzManager.previzRunning) {
+        Colors(
+            base = hexColor("#6B3A3A", 0.8f),
+            hover = hexColor("#8A4D4D"),
+            active = hexColor("#552E2E")
+        )
+    } else {
+        Colors(
+            base = hexColor("#3A5F4B", 0.8f),
+            hover = hexColor("#4C7A60"),
+            active = hexColor("#2F4F3E")
+        )
     }
 }

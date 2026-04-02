@@ -7,6 +7,7 @@ import io.github.deltacv.papervision.Build
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.util.ARCH
 import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.util.ImGuiEx
 import io.github.deltacv.papervision.gui.util.OS
 import io.github.deltacv.papervision.gui.util.getMemoryUsageMB
 import io.github.deltacv.papervision.id.container.IdContainerStack
@@ -43,7 +44,7 @@ class AboutModalWindow : Window() {
         ImGui.newLine()
 
         ImGui.pushFont(imguiFont.imfont)
-        centeredText(icon)
+        ImGuiEx.centeredText(icon)
         ImGui.popFont()
 
         ImGui.newLine()
@@ -51,12 +52,12 @@ class AboutModalWindow : Window() {
 
         ImGui.pushFont(monoFont.imfont)
 
-        centeredText("PaperVision v${Build.VERSION_STRING} built on ${Build.BUILD_DATE}")
+        ImGuiEx.centeredText("PaperVision v${Build.VERSION_STRING} built on ${Build.BUILD_DATE}")
 
         if(Build.IS_DEV) {
-            centeredText("You are running a development build. Report any issues to the developers.")
+            ImGuiEx.centeredText("You are running a development build. Report any issues to the developers.")
         } else {
-            centeredText("You are running a stable build.")
+            ImGuiEx.centeredText("You are running a stable build.")
         }
 
         ImGui.newLine()
@@ -68,8 +69,8 @@ class AboutModalWindow : Window() {
             elementCount += container.inmutable.size
         }
 
-        centeredText("System details: ${OS} $OS_VERSION ${ARCH} running on Java ${System.getProperty("java.version")} ${System.getProperty("java.vendor")}")
-        centeredText("Current heap memory usage: ${getMemoryUsageMB()} MB | Element count: $elementCount")
+        ImGuiEx.centeredText("System details: ${OS} $OS_VERSION ${ARCH} running on Java ${System.getProperty("java.version")} ${System.getProperty("java.vendor")}")
+        ImGuiEx.centeredText("Current heap memory usage: ${getMemoryUsageMB()} MB | Element count: $elementCount")
 
         ImGui.newLine()
 
@@ -91,15 +92,6 @@ class AboutModalWindow : Window() {
         }
 
         isFirstDraw = false
-    }
-
-    private fun centeredText(text: String) {
-        val textSize = ImGui.calcTextSize(tr(text))
-        val windowSize = ImGui.getWindowSize()
-        val pos = windowSize.x / 2 - textSize.x / 2
-        ImGui.sameLine(pos)
-        ImGui.text(tr(text))
-        ImGui.newLine()
     }
 
     private fun alignForWidth(width: Float, alignment: Float): Float {

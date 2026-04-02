@@ -38,6 +38,7 @@ nod_groupcontours_byarea,Filter Contours by Area,Filtrar Contornos por Area
 nod_groupcontours_byratio,Filter Contours by Ratio,Filtrar Contornos por Ratio
 nod_grouprects_byratio,Filter Rectangles by Ratio,Filtrar Rectangulos por Ratio
 nod_cannyedge,Canny Edge,Canny Edge
+nod_extractregion,Extract Region,Extraer Region
 nod_blobdetector,Simple Blob Detector,Detector de Blobs
 nod_keypointsto_rects,Key Points to Rectangles,Puntos Clave a Rectangulos
 nod_circlesto_rects,Circles to Rectangles,Circulos a Rectangulos
@@ -76,6 +77,7 @@ att_scale,Scale,Escala
 att_width,Width,Ancho
 att_height,Height,Alto
 att_channels,Channels,Canales
+att_region,Region,Región
 att_crosshair,Crosshair,Crosshair
 att_crosshairimage,Overlay Output,Salida del Overlay
 att_crosshairline_params,Crosshair Line,Linea del Crosshair
@@ -182,6 +184,7 @@ des_drawcontours,Draws the contours on a copy of the<br>given image and outputs 
 des_drawcontours_onimage,Draws the contours on the input image,Dibuja los contornos en la imagen de entrada.
 des_drawkeypoints,Draws the key points on a copy of the<br>given image and outputs the result.,Dibuja los puntos clave en una copia de la<br>imagen dada y devuelve el resultado.
 des_cannyedge,Filters edges in the input<br>image using the Canny algorithm.,Filtra bordes en la imagen de<br>entrada usando el algoritmo Canny.
+des_extractregion,Extracts a region from the input image<br>based on a specified rectangle.,Extrae una región de la imagen de entrada<br>basada en un rectángulo especificado.
 des_blobdetector,Detects blobs in an image<br>using OpenCV's Simple Blob Detector.,Detecta blobs en una imagen<br>usando el Detector de Blobs Simple de OpenCV.
 des_keypointsto_rects,Converts key points to<br>bounding rectangles.,Convierte puntos clave a<br>rectángulos delimitadores.
 des_circlesto_rects,Converts circles to<br>bounding rectangles.,Convierte círculos a<br>rectángulos delimitadores.
@@ -290,11 +293,14 @@ mis_delete,Delete,Eliminar
 mis_undo,Undo,Deshacer
 mis_redo,Redo,Rehacer
 mis_addnode,Add Node,Agregar Nodo
+mis_nodeeditor_emptystate1,"There's nothing here... Yet.","No hay nada aquí... Todavía."
+mis_nodeeditor_emptystate2,"Select an option to get started!","¡Selecciona una opción para comenzar!"
 mis_about,About,Acerca de
 mis_docs,Documentation,Documentación
 mis_opendocs,Do you want to open PaperVision's documentation in your web browser?,¿Quieres abrir la documentación de PaperVision en tu navegador web?
 mis_confirmaction,Confirm Action,Confirmar Acción
 mis_confirm,Confirm,Confirmar
+mis_lowercase_or,or,o
 mis_cancel,Cancel,Cancelar
 mis_message,Message,Mensaje
 mis_codegen_error,An unexpected error occurred while generating the code<br>Please report this issue to the developers.,Ocurrió un error inesperado al generar el código<br>Por favor reporta este problema a los desarrolladores.

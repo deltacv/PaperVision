@@ -126,7 +126,7 @@ val Stage4: GuidedTourStage = {
 
         Close()
 
-        nodeEditor.paperVision.nodeEditor.nodeList.highlight(ThresholdNode::class.java)
+        nodeEditor.nodeList.highlight(ThresholdNode::class.java)
     }
 }
 

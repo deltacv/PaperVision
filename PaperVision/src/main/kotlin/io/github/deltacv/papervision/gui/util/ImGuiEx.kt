@@ -159,10 +159,33 @@ object ImGuiEx {
     }
 
     fun alignForWidth(width: Float, alignment: Float): Float {
-        val windowSize = ImGui.getWindowSize()
-        val pos = windowSize.x / 2 - width / 2
-        ImGui.sameLine(pos + alignment)
+        val avail = ImGui.getContentRegionAvail().x
+        val pos = (avail - width) * alignment
 
-        return pos + alignment
+        ImGui.setCursorPosX(ImGui.getCursorPosX() + pos)
+        return pos
+    }
+
+    inline fun alignedRow(alignment: Float, crossinline content: (measuring: Boolean) -> Unit) {
+        val start = ImGui.getCursorPos()
+
+        // --- pass 1: move off-screen ---
+        ImGui.setCursorPosX(-10000f) // push far left
+        ImGui.beginGroup()
+        content(true)
+        ImGui.endGroup()
+
+        val size = ImGui.getItemRectSize()
+
+        // restore cursor
+        ImGui.setCursorPos(start)
+
+        // --- align ---
+        val avail = ImGui.getContentRegionAvail().x
+        val offset = (avail - size.x) * alignment
+        ImGui.setCursorPosX(start.x + offset)
+
+        // --- pass 2: real draw ---
+        content(false)
     }
 }

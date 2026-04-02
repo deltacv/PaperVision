@@ -143,7 +143,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
 
                     fun ScopeCtx.withRuntimeRect(rect: Value) {
                         ifCondition(rect notEqualsTo language.nullValue) {
-                            // 2 - width, 3 - height, of tuple (x, y, w, h)
+                            // index 2 for width, index 3 for height, of tuple (x, y, w, h)
                             val rectArea = rect[2.v, CPythonLanguage.NoType] * rect[3.v, CPythonLanguage.NoType]
                             val biggestRectArea = biggestRect[2.v, CPythonLanguage.NoType] * biggestRect[3.v, CPythonLanguage.NoType]
 

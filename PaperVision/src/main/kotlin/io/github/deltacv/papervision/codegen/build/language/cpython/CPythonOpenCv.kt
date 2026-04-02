@@ -70,13 +70,19 @@ object CPythonOpenCv {
         )
     }
 
-    fun rectTuple(rect: GenValue.Rect.Components, languageHolder: CodeGen.LanguageHolder) = languageHolder.language {
-        val pos = rect.position.toRuntime(languageHolder)
-        val size = rect.size.toRuntime(languageHolder)
+    fun toRectTuple(rect: GenValue.Rect, languageHolder: CodeGen.LanguageHolder) = languageHolder.language {
+        when(rect) {
+            is GenValue.Rect.Components -> {
+                val pos = rect.position.toRuntime(languageHolder)
+                val size = rect.size.toRuntime(languageHolder)
 
-        CPythonLanguage.tuple(
-            pos.xValue.v, pos.yValue.v, size.xValue.v, size.yValue.v
-        )
+                CPythonLanguage.tuple(
+                    pos.xValue.v, pos.yValue.v, size.xValue.v, size.yValue.v
+                )
+            }
+
+            is GenValue.Rect.Inst -> rect.value.v
+        }
     }
 
 }

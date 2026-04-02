@@ -51,7 +51,7 @@ import kotlin.contracts.contract
 abstract class Node<S: CodeGenSession>(
     val allowDelete: Boolean = true,
     val joinActionStack: Boolean = true,
-    val rebuildOnLink: Boolean = true
+    val rebuildOnLink: Boolean = true,
 ) : DrawableIdElementBase<Node<*>>(),
     GenNode<S>,
     GenValueMapper,

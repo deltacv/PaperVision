@@ -116,6 +116,8 @@ interface ValueBuilder {
 
     fun arrayValue(from: Value, index: Value, type: Type): Value
 
+    fun arrayValueMultiple(from: Value, indices: List<Value>, type: Type): Value
+
     fun enumValue(type: Type, constantName: String) = ConValue(type, "$type.$constantName")
 
     fun cvtColorValue(a: ColorSpace, b: ColorSpace): Value {

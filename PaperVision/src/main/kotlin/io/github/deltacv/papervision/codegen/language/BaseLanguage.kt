@@ -267,6 +267,12 @@ open class LanguageBase(
         type, "${from.value}[${index.value}]"
     )
 
+    override fun arrayValueMultiple(
+        from: Value,
+        indices: List<Value>,
+        type: Type
+    ): ConValue = throw UnsupportedOperationException("Multiple indices not supported for Java")
+
     override fun arraySize(array: Value) = ConValue(IntType, "${array.value}.length")
     override fun castValue(value: Value, castTo: Type, forceCast: Boolean) =
         if(castTo == value.type && !forceCast)
