@@ -2,7 +2,7 @@
 
 Create your custom OpenCV algorithms using a user-friendly node editor interface inspired by Blender and Unreal Engine blueprints.
 
-<img src="https://raw.githubusercontent.com/deltacv/EOCV-Sim/refs/heads/main/EOCV-Sim/src/main/resources/images/papervision.gif"/>
+<img src="https://media.deltacv.org/people/serivesmejia/papervision-hero.png" width=700px/>
 
 # Getting Started
 
