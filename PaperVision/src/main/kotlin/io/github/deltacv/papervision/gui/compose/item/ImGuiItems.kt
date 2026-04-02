@@ -2,12 +2,13 @@ package io.github.deltacv.papervision.gui.compose.item
 
 import imgui.ImGui
 import imgui.ImVec2
+import io.github.deltacv.papervision.gui.util.Font
 import org.deltacv.mai18n.tr
 
 data class ButtonItem(
     val text: String,
     val onClick: () -> Unit
-) : ComposeItem {
+) : Item {
     override fun measure(): ImVec2 {
         val textSize = ImGui.calcTextSize(tr(text))
         val pad = ImGui.getStyle().framePadding
@@ -27,7 +28,7 @@ data class ButtonItem(
 
 data class TextItem(
     val text: String
-) : ComposeItem {
+) : Item {
     override fun measure() = ImVec2(
         ImGui.calcTextSize(tr(text)).x,
         ImGui.calcTextSize(tr(text)).y
@@ -38,10 +39,22 @@ data class TextItem(
     }
 }
 
-class NewLineItem : ComposeItem {
+class NewLineItem : Item {
     override fun measure() = ImVec2(0f, ImGui.getStyle().itemSpacing.y)
 
     override fun render() {
         ImGui.newLine()
+    }
+}
+
+class PushFontItem(val font: Font) : Item {
+    override fun measure() = ImVec2(0f, 0f)
+
+    override fun render() {
+        ImGui.pushFont(font.imfont)
+    }
+
+    override fun postRender() {
+        ImGui.popFont()
     }
 }

@@ -25,6 +25,7 @@ import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.gui.util.Font
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.editor.NodeEditor
+import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.featuredet.FindContoursNode
 import io.github.deltacv.papervision.node.vision.imageproc.ThresholdNode
 import io.github.deltacv.papervision.node.vision.overlay.DrawContoursNode
@@ -96,6 +97,13 @@ val Stage3: GuidedTourStage = {
     )
 
     ImGui.text(tr("mis_guidedtour_7"))
+
+    ImGui.sameLine()
+
+    ImGui.setCursorPosY(ImGui.getCursorPosY() + 5)
+    ImGui.pushFont(Font.find("font-awesome").imfont)
+    ImGui.text(FontAwesomeIcons.ArrowDown)
+    ImGui.popFont()
 
     if (nodeEditor.paperVision.nodeEditor.nodeList.isNodesListOpen) {
         currentStage = Stage4
@@ -317,7 +325,13 @@ val Stage12: GuidedTourStage = {
     )
 
     ImGui.text(tr("mis_guidedtour_26"))
+
     ImGui.text(tr("mis_guidedtour_27"))
+    ImGui.sameLine()
+    ImGui.setCursorPosY(ImGui.getCursorPosY() + 5)
+    ImGui.pushFont(Font.find("font-awesome").imfont)
+    ImGui.text(FontAwesomeIcons.ArrowDown)
+    ImGui.popFont()
 
     if(floatingButton.isPressed) {
         currentStage = Stage13
@@ -355,7 +369,13 @@ val Stage14: GuidedTourStage = {
 
     ImGui.text(tr("mis_guidedtour_31"))
     ImGui.text(tr("mis_guidedtour_32"))
+
     ImGui.text(tr("mis_guidedtour_33"))
+    ImGui.sameLine()
+    ImGui.setCursorPosY(ImGui.getCursorPosY() + 5)
+    ImGui.pushFont(Font.find("font-awesome").imfont)
+    ImGui.text(FontAwesomeIcons.ArrowDown)
+    ImGui.popFont()
 
     if(floatingButton.isPressed) {
         delete()

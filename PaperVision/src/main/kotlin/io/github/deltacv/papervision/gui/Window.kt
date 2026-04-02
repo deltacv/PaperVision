@@ -207,9 +207,9 @@ abstract class Window(
 
     open fun postDrawContents() { }
 
-    fun centerWindow() {
+    fun centerWindow(offset: ImVec2? = null) {
         val displaySize = ImGui.getMainViewport().size
-        position = ImVec2((displaySize.x - size.x) / 2, (displaySize.y - size.y) / 2)
+        position = ImVec2(((displaySize.x - size.x) / 2) + (offset?.x ?: 0f), ((displaySize.y - size.y) / 2) + (offset?.y ?: 0f))
     }
 
     sealed class ModalMode {

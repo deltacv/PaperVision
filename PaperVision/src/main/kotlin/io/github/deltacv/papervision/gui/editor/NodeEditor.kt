@@ -123,7 +123,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     lateinit var sourceCodeExportButton: SourceCodeExportButtonWindow
         private set
 
-    private val emptyStateWindow = EmptyStateWindow()
+    private val emptyStateWindow = EmptyStateWindow(this)
 
     // Panning state
     val editorPanning = ImVec2(0f, 0f)

@@ -1,14 +1,15 @@
-package io.github.deltacv.papervision.gui.compose.item
+package io.github.deltacv.papervision.gui.compose.item.layout
 
 import imgui.ImGui
 import imgui.ImVec2
+import io.github.deltacv.papervision.gui.compose.item.Item
 
 data class AlignedRowItem(
-    val children: List<ComposeItem>,
+    val children: List<Item>,
     val alignment: Float,
     val spacing: Float,
     val width: Float
-) : ComposeItem {
+) : Item {
 
     override fun measure(): ImVec2 {
         var w = 0f

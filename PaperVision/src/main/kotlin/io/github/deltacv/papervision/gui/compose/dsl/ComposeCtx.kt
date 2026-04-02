@@ -4,8 +4,13 @@ import imgui.ImGui
 import imgui.ImVec2
 import io.github.deltacv.papervision.gui.compose.Compose
 import io.github.deltacv.papervision.gui.compose.item.*
+import io.github.deltacv.papervision.gui.compose.item.layout.AlignedRowItem
+import io.github.deltacv.papervision.gui.util.Font
 
 class ComposeCtx(val composer: Compose) {
+    fun pushFont(font: Font) {
+        composer.add(PushFontItem(font))
+    }
 
     fun button(text: String, onClick: () -> Unit = {}) {
         composer.add(ButtonItem(text, onClick))
@@ -38,25 +43,29 @@ class ComposeCtx(val composer: Compose) {
 
         rowCtx.content()
 
-        composer.add(AlignedRowItem(
-            children = rowComposer.items,
-            alignment = alignment,
-            spacing = spacing,
-            width = width
-        ))
+        composer.add(
+            AlignedRowItem(
+                children = rowComposer.items,
+                alignment = alignment,
+                spacing = spacing,
+                width = width
+            )
+        )
     }
 }
 
-/**
- * Función de entrada (Entry point)
- */
 fun compose(
     size: ImVec2 = ImGui.getContentRegionAvail(),
     content: ComposeCtx.() -> Unit
-) {
+): Compose {
     val composer = Compose(size)
     val ctx = ComposeCtx(composer)
 
     ctx.content()
-    composer.renderAll()
+    return composer
 }
+
+fun composeRender(
+    size: ImVec2 = ImGui.getContentRegionAvail(),
+    content: ComposeCtx.() -> Unit
+) = compose(size, content).renderAll()
