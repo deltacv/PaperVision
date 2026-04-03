@@ -7,3 +7,6 @@ fun interface Property<T> {
 class ConstantProperty<T>(private val value: T) : Property<T> {
     override fun get() = value
 }
+
+
+

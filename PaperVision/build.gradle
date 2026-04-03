@@ -73,3 +73,6 @@ tasks.register('writeBuildClassJava') {
 }
 
 build.dependsOn writeBuildClassJava
+
+
+

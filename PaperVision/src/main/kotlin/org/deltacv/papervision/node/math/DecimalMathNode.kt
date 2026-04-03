@@ -107,3 +107,6 @@ class DecimalMathNode : DrawNode<DecimalMathNode.Session>() {
         lateinit var result: GenValue.Double.Runtime
     }
 }
+
+
+

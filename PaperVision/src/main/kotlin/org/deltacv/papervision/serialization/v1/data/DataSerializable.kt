@@ -25,3 +25,6 @@ interface DataSerializable<D: Any> {
     fun serialize(): D
     fun deserialize(data: D)
 }
+
+
+

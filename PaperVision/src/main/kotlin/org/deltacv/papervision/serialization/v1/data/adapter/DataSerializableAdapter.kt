@@ -37,3 +37,6 @@ object DataSerializableAdapter : JsonSerializer<DataSerializable<*>>, JsonDeseri
     }
 
 }
+
+
+

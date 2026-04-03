@@ -27,3 +27,6 @@ class PaperNodeAnnotationProcessorProvider : SymbolProcessorProvider {
         return _root_ide_package_.org.deltacv.papervision.annotation.papernode.PaperNodeAnnotationProcessor(environment)
     }
 }
+
+
+

@@ -29,3 +29,6 @@ interface PaperVisionEngine {
     fun acceptMessage(message: PaperVisionEngineMessage)
     fun sendResponse(response: PaperVisionEngineMessageResponse)
 }
+
+
+

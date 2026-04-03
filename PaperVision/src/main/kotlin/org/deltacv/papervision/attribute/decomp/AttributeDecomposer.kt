@@ -78,3 +78,6 @@ abstract class AttributeDecomposer<S: CodeGenSession> :
     }
 
 }
+
+
+

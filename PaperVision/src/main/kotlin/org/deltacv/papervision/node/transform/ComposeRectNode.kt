@@ -82,3 +82,6 @@ class ComposeRectNode : DrawNode<ComposeRectNode.Session>() {
         lateinit var rect: GenValue.Rect.Components
     }
 }
+
+
+

@@ -5,3 +5,6 @@ annotation class CodecType(
     val name: String = "",
     val instantiable: Boolean = true
 )
+
+
+

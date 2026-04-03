@@ -102,3 +102,6 @@ class AboutModalWindow : Window() {
         return pos + alignment
     }
 }
+
+
+

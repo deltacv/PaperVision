@@ -4,3 +4,6 @@ interface DataCodec {
     fun encode(encoder: DataEncoder)
     fun decode(decoder: DataDecoder)
 }
+
+
+

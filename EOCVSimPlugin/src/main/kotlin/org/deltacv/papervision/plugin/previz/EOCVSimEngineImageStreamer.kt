@@ -20,13 +20,13 @@ package org.deltacv.papervision.plugin.previz
 
 import com.qualcomm.robotcore.util.ElapsedTime
 import com.qualcomm.robotcore.util.MovingStatistics
-import org.deltacv.eocvsim.stream.ImageStreamer
+import io.github.deltacv.eocvsim.stream.ImageStreamer
 import org.deltacv.papervision.engine.PaperVisionEngine
 import org.deltacv.papervision.engine.ByteMessageTag
 import org.deltacv.papervision.util.ReusableBufferPool
 import org.deltacv.papervision.util.loggerFor
-import org.deltacv.vision.external.util.extension.aspectRatio
-import org.deltacv.vision.external.util.extension.clipTo
+import io.github.deltacv.vision.external.util.extension.aspectRatio
+import io.github.deltacv.vision.external.util.extension.clipTo
 import org.deltacv.mackjpeg.MackJPEG
 import org.deltacv.mackjpeg.PixelFormat
 import org.deltacv.mackjpeg.exception.JPEGException
@@ -356,3 +356,6 @@ class EOCVSimEngineImageStreamer(
         ids.clear()
     }
 }
+
+
+

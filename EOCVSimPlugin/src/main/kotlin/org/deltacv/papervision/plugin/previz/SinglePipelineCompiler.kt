@@ -53,3 +53,6 @@ object SinglePipelineCompiler {
         throw IllegalStateException("No OpenCvPipeline subclass found in the provided source code.")
     }
 }
+
+
+

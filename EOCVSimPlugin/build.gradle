@@ -73,7 +73,7 @@ tasks.register('signPlugin') {
         def exitValue = project.exec {
             commandLine 'java',
                     '-classpath', commonJarPath,
-                    'org.deltacv.eocvsim.plugin.security.PluginSigningTool',
+                    'io.github.deltacv.eocvsim.plugin.security.PluginSigningTool',
                     "--plugin=${jarFile}",
                     '--authority=deltacv',
                     "--key=$signingKey"
@@ -176,3 +176,6 @@ ksp {
     arg("moduleName", "EOCVSimPlugin")
     arg("polymorphicSerializableMetadataPackage", "org.deltacv.papervision.serialization.generated")
 }
+
+
+

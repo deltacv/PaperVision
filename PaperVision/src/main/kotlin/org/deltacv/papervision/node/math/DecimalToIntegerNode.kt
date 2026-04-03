@@ -123,3 +123,6 @@ class DecimalToIntegerNode : DrawNode<DecimalToIntegerNode.Session>(){
         lateinit var output: GenValue.Int.Runtime
     }
 }
+
+
+

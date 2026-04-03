@@ -42,3 +42,6 @@ data class Range2d(override val min: Double, override val max: Double) : Range<D
 
     override fun clip(x: Double) = if(x < min) min else if(x > max) max else x
 }
+
+
+

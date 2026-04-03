@@ -47,3 +47,6 @@ class CircleAttribute(
 
     override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Circle>(current)
 }
+
+
+

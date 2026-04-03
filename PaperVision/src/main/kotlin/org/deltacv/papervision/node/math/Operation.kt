@@ -8,3 +8,6 @@ enum class Operation(val icon: String) {
     MULTIPLY("X"),
     DIVIDE(FontAwesomeIcons.Divide),
 }
+
+
+

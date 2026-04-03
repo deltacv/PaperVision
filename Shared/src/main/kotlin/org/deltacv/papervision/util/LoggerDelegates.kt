@@ -27,3 +27,6 @@ inline fun <reified T> Any.loggerFor() = lazy { LoggerFactory.getLogger(T::class
 
 fun Any.loggerForThis() = lazy { LoggerFactory.getLogger(this::class.java)!! }
 fun Any.loggerOf(name: String) = lazy { LoggerFactory.getLogger(name)!! }
+
+
+

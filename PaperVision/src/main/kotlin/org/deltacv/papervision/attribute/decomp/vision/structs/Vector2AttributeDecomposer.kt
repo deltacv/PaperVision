@@ -74,3 +74,6 @@ class Vector2AttributeDecomposer : AttributeDecomposer<Vector2AttributeDecompose
         lateinit var y: GenValue.Int.Runtime
     }
 }
+
+
+

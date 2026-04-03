@@ -38,3 +38,6 @@ open class ErrorResponse(val reason: String, val stackTrace: Array<String>? = nu
 
     override fun toString() = "ErrorResponse(type=\"${this::class.java.typeName}\", reason=\"$reason\", exception=\"${stackTrace?.getOrNull(0)}\")"
 }
+
+
+

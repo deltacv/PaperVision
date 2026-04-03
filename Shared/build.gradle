@@ -21,3 +21,6 @@ ksp {
     arg("moduleName", "Shared")
     arg("polymorphicSerializableMetadataPackage", "org.deltacv.papervision.serialization.generated")
 }
+
+
+

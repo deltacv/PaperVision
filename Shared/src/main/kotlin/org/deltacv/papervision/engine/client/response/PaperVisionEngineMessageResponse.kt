@@ -12,3 +12,6 @@ abstract class PaperVisionEngineMessageResponse {
         return "IpcMessageResponse(type=\"${this::class.java.typeName}\", status=\"${if(status) "OK" else "ERROR"}\")"
     }
 }
+
+
+

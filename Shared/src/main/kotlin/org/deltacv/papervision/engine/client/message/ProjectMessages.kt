@@ -24,3 +24,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 @PolymorphicSerializable(PaperVisionEngineMessage::class)
 class AskProjectGenClassNameMessage : PaperVisionEngineMessageBase()
+
+
+

@@ -92,3 +92,6 @@ class Vector2MathNode : DrawNode<Vector2MathNode.Session>() {
         lateinit var result: GenValue.Vec2.Runtime
     }
 }
+
+
+

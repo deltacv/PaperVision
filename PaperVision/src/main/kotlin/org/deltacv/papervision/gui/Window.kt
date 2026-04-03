@@ -223,3 +223,6 @@ abstract class Window(
 
 val Window.Companion.isModalWindowOpen get() = IdContainerStack.local.peekNonNull<Window>().inmutable.any { it.isModal && it.isEnabled }
 val Window.Companion.isAnyWindowHovered get() = IdContainerStack.local.peekNonNull<Window>().inmutable.any { it.hovered }
+
+
+

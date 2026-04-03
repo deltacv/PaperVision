@@ -21,3 +21,6 @@ class AnyAttribute(
 
     override fun acceptLink(other: Attribute) = linkAcceptor(other)
 }
+
+
+

@@ -27,3 +27,6 @@ fun flags(vararg flags: Int) = if(flags.isNotEmpty()) {
 
     composedFlags
 } else 0
+
+
+

@@ -48,3 +48,6 @@ class RotatedRectAttribute (
     override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.RotatedRect.Inst>(current)
 
 }
+
+
+

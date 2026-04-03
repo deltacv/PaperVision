@@ -25,3 +25,6 @@ jobs:
           PLUGINSIGNING_PRIVATE: ${{ secrets.DELTACV_PLUGINSIGNING_PRIVATE }}
         run: |
           ./gradlew -Penv=release :Shared:publishToMavenCentral :PaperVision:publishToMavenCentral :LwjglPlatform:publishToMavenCentral :EOCVSimPlugin:publishToMavenCentral --no-configuration-cache -x test -x :EOCVSimPlugin:shadowJar
+
+
+

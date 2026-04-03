@@ -107,3 +107,6 @@ class DialogMessageWindow(
         size = ImVec2(maxWidth + 10, height + 80)
     }
 }
+
+
+

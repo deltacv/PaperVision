@@ -79,3 +79,6 @@ class Vector2Attribute (
         readGenValue<GenValue.Vec2>(current, GenValue.Vec2.Actual(GenValue.Int.ZERO, GenValue.Int.ZERO))
 
 }
+
+
+

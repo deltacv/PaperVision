@@ -56,3 +56,6 @@ fun String.toValidIdentifier(
 }
 
 val Any.hashCodeString get() = Integer.toHexString(hashCode())!!
+
+
+

@@ -1039,3 +1039,6 @@ object FontAwesomeIcons {
     const val YenSign: String = "\uf157"
     const val YinYang: String = "\uf6ad"
 }
+
+
+

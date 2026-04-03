@@ -82,3 +82,6 @@ fun browserOpen(url: String) {
 fun openPaperVisionDocs() {
     browserOpen("https://docs.deltacv.org/papervision/")
 }
+
+
+

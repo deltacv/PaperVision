@@ -99,3 +99,6 @@ private fun processValue(instance: Any, valueName: String, value: JsonElement, c
         throw RuntimeException("Exception while processing json entry \"$valueName\" of ${instance::class.java.typeName}", e)
     }
 }
+
+
+

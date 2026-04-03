@@ -49,3 +49,6 @@ annotation class SerializeData
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FIELD)
 annotation class SerializeIgnore
+
+
+

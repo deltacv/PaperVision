@@ -27,3 +27,6 @@ enum class ColorSpace(val channels: Int, val channelNames: Array<String>) {
     LAB(3,   arrayOf("L", "a", "b")),
     GRAY(1,  arrayOf("Gray"))
 }
+
+
+

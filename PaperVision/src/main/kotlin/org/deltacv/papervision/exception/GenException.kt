@@ -26,3 +26,6 @@ open class GenException(message: String) : RuntimeException(message)
 class NodeGenException(val node: Node<*>, override val message: String) : GenException(message)
 
 class AttributeGenException(val attribute: Attribute, override val message: String) : GenException(message)
+
+
+

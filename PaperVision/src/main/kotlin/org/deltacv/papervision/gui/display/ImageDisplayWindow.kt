@@ -70,3 +70,6 @@ class ImageDisplayWindow(
         ImGui.text(tr(statusText, String.format("%.1f", pipelineFps)))
     }
 }
+
+
+

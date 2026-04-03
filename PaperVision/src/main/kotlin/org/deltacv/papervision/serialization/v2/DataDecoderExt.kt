@@ -30,3 +30,6 @@ fun DataDecoder.doubleListOrNull(name: String): List<Double>? = tryOrNull { if (
 fun DataDecoder.stringListOrNull(name: String): List<String>? = tryOrNull { if (has(name)) stringList(name) else null }
 fun DataDecoder.boolListOrNull(name: String): List<Boolean>? = tryOrNull { if (has(name)) boolList(name) else null }
 fun DataDecoder.objListOrNull(name: String): List<DataCodec>? = tryOrNull { if (has(name)) objList(name) else null }
+
+
+

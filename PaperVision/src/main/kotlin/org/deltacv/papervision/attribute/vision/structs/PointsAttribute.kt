@@ -48,3 +48,6 @@ class PointsAttribute (
     override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Points.Runtime>(current)
 
 }
+
+
+

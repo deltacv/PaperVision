@@ -22,7 +22,7 @@ import com.formdev.flatlaf.demo.HintManager
 import com.github.serivesmejia.eocvsim.gui.component.visualizer.pipeline.SourceSelectorPanel
 import com.github.serivesmejia.eocvsim.plugin.api.impl.EOCVSimApiImpl
 import com.github.serivesmejia.eocvsim.plugin.api.impl.VisualizerApiImpl
-import org.deltacv.eocvsim.plugin.api.VisualizerSidebarApi
+import io.github.deltacv.eocvsim.plugin.api.VisualizerSidebarApi
 import org.deltacv.papervision.plugin.PaperVisionEOCVSimPlugin
 import org.deltacv.papervision.plugin.project.PaperVisionProjectTree
 import java.awt.Font
@@ -266,3 +266,6 @@ class PaperVisionTabPanel(
         setSourceSelectorEnabled(false)
     }
 }
+
+
+

@@ -36,3 +36,6 @@ interface PaperVisionEngineBridge {
     fun sendMessage(client: PaperVisionEngineClient, message: PaperVisionEngineMessage)
     fun acceptResponse(response: PaperVisionEngineMessageResponse)
 }
+
+
+

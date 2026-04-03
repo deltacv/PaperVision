@@ -21,3 +21,6 @@ package org.deltacv.papervision.codegen
 fun interface Generator<I, S: CodeGenSession> {
     fun genCode(input: I, current: CodeGen.Current): S
 }
+
+
+

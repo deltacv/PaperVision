@@ -34,3 +34,6 @@ object SerializeIgnoreExclusionStrategy : ExclusionStrategy {
         return clazz.isAnnotationPresent(SerializeIgnore::class.java)
     }
 }
+
+
+

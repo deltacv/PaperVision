@@ -27,3 +27,6 @@ val dataSerializableGson: Gson = GsonBuilder()
     .addSerializationExclusionStrategy(SerializeIgnoreExclusionStrategy)
     .setPrettyPrinting()
     .create()
+
+
+

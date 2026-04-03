@@ -56,3 +56,6 @@ data class LinkSerializationData(
 ) {
     constructor() : this(0, 0)
 }
+
+
+

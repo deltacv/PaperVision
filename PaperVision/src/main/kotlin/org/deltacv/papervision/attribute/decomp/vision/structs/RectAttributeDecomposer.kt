@@ -103,3 +103,6 @@ class RectAttributeDecomposer : AttributeDecomposer<RectAttributeDecomposer.Sess
         lateinit var size: GenValue.Vec2.Runtime
     }
 }
+
+
+

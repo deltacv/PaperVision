@@ -26,3 +26,6 @@ tasks.withType(Jar) {
         attributes['Main-Class'] = 'org.deltacv.papervision.platform.lwjgl.AppMain'
     }
 }
+
+
+

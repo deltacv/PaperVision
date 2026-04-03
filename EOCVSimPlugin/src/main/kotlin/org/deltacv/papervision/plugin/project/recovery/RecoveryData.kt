@@ -30,3 +30,6 @@ data class RecoveredProject(
 
 @Serializable
 data class RecoveryData(val recoveryFolderPath: String, val recoveryFileName: String, val projectData: RecoveredProject)
+
+
+

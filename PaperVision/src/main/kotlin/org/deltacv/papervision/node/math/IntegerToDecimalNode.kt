@@ -70,3 +70,6 @@ class IntegerToDecimalNode : DrawNode<IntegerToDecimalNode.Session>(){
         lateinit var output: GenValue.Double.Runtime
     }
 }
+
+
+

@@ -146,3 +146,6 @@ class ClientPrevizStream(
     fun popRequestedMinimize() = requestedMinimize.also { requestedMinimize = false }
 
 }
+
+
+

@@ -179,3 +179,6 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
         lateinit var rects: GenValue.List.Runtime<GenValue.RotatedRect.Inst>
     }
 }
+
+
+
