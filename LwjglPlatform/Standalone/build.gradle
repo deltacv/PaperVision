@@ -13,7 +13,7 @@ dependencies {
 }
 
 task(runEv, dependsOn: 'classes', type: JavaExec) {
-    main = 'io.github.deltacv.papervision.platform.lwjgl.AppMain'
+    main = 'org.deltacv.papervision.platform.lwjgl.AppMain'
     classpath = sourceSets.main.runtimeClasspath
 
     if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
@@ -23,6 +23,6 @@ task(runEv, dependsOn: 'classes', type: JavaExec) {
 
 tasks.withType(Jar) {
     manifest {
-        attributes['Main-Class'] = 'io.github.deltacv.papervision.platform.lwjgl.AppMain'
+        attributes['Main-Class'] = 'org.deltacv.papervision.platform.lwjgl.AppMain'
     }
 }

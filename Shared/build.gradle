@@ -19,5 +19,5 @@ dependencies {
 
 ksp {
     arg("moduleName", "Shared")
-    arg("polymorphicSerializableMetadataPackage", "io.github.deltacv.papervision.serialization.generated")
+    arg("polymorphicSerializableMetadataPackage", "org.deltacv.papervision.serialization.generated")
 }

@@ -73,7 +73,7 @@ tasks.register('signPlugin') {
         def exitValue = project.exec {
             commandLine 'java',
                     '-classpath', commonJarPath,
-                    'io.github.deltacv.eocvsim.plugin.security.PluginSigningTool',
+                    'org.deltacv.eocvsim.plugin.security.PluginSigningTool',
                     "--plugin=${jarFile}",
                     '--authority=deltacv',
                     "--key=$signingKey"
@@ -130,7 +130,7 @@ configurations.configureEach {
 
 tasks.withType(Jar).configureEach {
     manifest {
-        attributes['Main-Class'] = 'io.github.deltacv.papervision.plugin.EOCVSimIpcPaperVisionMain'
+        attributes['Main-Class'] = 'org.deltacv.papervision.plugin.EOCVSimIpcPaperVisionMain'
     }
 }
 
@@ -174,5 +174,5 @@ dependencies {
 
 ksp {
     arg("moduleName", "EOCVSimPlugin")
-    arg("polymorphicSerializableMetadataPackage", "io.github.deltacv.papervision.serialization.generated")
+    arg("polymorphicSerializableMetadataPackage", "org.deltacv.papervision.serialization.generated")
 }
