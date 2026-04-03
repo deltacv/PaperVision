@@ -30,7 +30,7 @@ import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.attribute.misc.ListAttribute
 import io.github.deltacv.papervision.engine.client.message.TunerChangeValueMessage
 import io.github.deltacv.papervision.engine.client.message.TunerValue
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.font.Font
 
 interface AttributeType<A: TypedAttribute<*>> {
     val icon: String

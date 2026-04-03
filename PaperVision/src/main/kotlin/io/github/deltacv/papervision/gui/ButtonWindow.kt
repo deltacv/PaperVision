@@ -1,11 +1,10 @@
 package io.github.deltacv.papervision.gui
 
 import imgui.ImGui
-import imgui.ImVec4
 import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiStyleVar
 import imgui.flag.ImGuiWindowFlags
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.flags

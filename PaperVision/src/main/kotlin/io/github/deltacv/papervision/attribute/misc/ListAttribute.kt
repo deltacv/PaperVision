@@ -30,7 +30,7 @@ import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.engine.client.message.TunerValue
-import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.font.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.serialization.v1.data.DataSerializable
@@ -40,7 +40,6 @@ import io.github.deltacv.papervision.serialization.v1.AttributeSerializationData
 import io.github.deltacv.papervision.serialization.v2.CodecType
 import io.github.deltacv.papervision.serialization.v2.DataDecoder
 import io.github.deltacv.papervision.serialization.v2.DataEncoder
-import io.github.deltacv.papervision.serialization.v2.MalformedDataException
 
 @CodecType(instantiable = false)
 open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(

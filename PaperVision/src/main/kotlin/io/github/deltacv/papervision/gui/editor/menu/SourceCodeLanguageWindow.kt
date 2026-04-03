@@ -30,8 +30,8 @@ import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.engine.client.message.AskProjectGenClassNameMessage
 import io.github.deltacv.papervision.engine.client.response.StringResponse
 import io.github.deltacv.papervision.gui.Window
-import io.github.deltacv.papervision.gui.util.Font
-import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.font.Font
+import io.github.deltacv.papervision.gui.font.FontAwesomeIcons
 import io.github.deltacv.papervision.util.flags
 import io.github.deltacv.papervision.util.loggerForThis
 

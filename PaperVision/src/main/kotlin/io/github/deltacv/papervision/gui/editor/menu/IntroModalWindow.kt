@@ -24,7 +24,7 @@ import imgui.flag.ImGuiWindowFlags
 import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.editor.NodeEditor
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.gui.util.ImGuiEx
 import io.github.deltacv.papervision.io.resourceToString
 import io.github.deltacv.papervision.util.event.PaperEventHandler

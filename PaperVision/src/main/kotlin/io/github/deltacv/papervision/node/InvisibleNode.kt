@@ -29,7 +29,7 @@ import io.github.deltacv.papervision.serialization.v2.DataEncoder
 
 @SerializeIgnore
 @CodecType
-open class InvisibleNode : Node<NoSession>(allowDelete = false) {
+open class InvisibleNode : Node<NoSession>(isDeletable = false) {
 
     private val invisibleColor = rgbaColor(0, 0, 0, 0)
 

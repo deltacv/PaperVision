@@ -22,7 +22,7 @@ import imgui.app.Application
 import io.github.deltacv.papervision.engine.client.response.JsonElementResponse
 import io.github.deltacv.papervision.engine.client.response.OkResponse
 import io.github.deltacv.papervision.engine.client.response.PaperVisionEngineMessageResponse
-import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.font.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.editor.Option
 import io.github.deltacv.papervision.gui.TooltipPopup
 import io.github.deltacv.papervision.platform.lwjgl.PaperVisionApp

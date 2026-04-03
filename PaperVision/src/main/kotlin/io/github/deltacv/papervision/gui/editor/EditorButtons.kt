@@ -8,8 +8,8 @@ import io.github.deltacv.papervision.gui.ToastWindow
 import io.github.deltacv.papervision.gui.editor.menu.OptionsWindow
 import io.github.deltacv.papervision.gui.editor.menu.SourceCodeLanguageWindow
 import io.github.deltacv.papervision.gui.style.hexColor
-import io.github.deltacv.papervision.gui.util.Font
-import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.font.Font
+import io.github.deltacv.papervision.gui.font.FontAwesomeIcons
 
 class NodeListButton(
     val nodeList: NodeList,

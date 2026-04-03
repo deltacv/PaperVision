@@ -5,9 +5,11 @@ import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.compose.dsl.composeRender
+import io.github.deltacv.papervision.gui.compose.property.type.Text
+import io.github.deltacv.papervision.gui.compose.property.type.asProperty
 import io.github.deltacv.papervision.gui.editor.NodeEditor
 import io.github.deltacv.papervision.gui.style.opacity
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.util.flags
 
 class EmptyStateWindow(val editor: NodeEditor) : Window() {
@@ -25,20 +27,20 @@ class EmptyStateWindow(val editor: NodeEditor) : Window() {
     )
 
     override fun preDrawContents() {
-        ImGui.pushStyleColor(ImGuiCol.WindowBg, ImGui.getStyle().getColor(ImGuiCol.WindowBg).opacity(0.5f))
+        ImGui.pushStyleColor(ImGuiCol.WindowBg, ImGui.getStyle().getColor(ImGuiCol.WindowBg).opacity(0.3f))
         super.preDrawContents()
     }
 
     override fun drawContents() {
         composeRender {
-            pushFont(Font.find("calcutta-big"))
+            val bigFont = Font.find("calcutta-big")
 
-            alignedText("mis_nodeeditor_emptystate1", 0.5f)
-            alignedText("mis_nodeeditor_emptystate2", 0.5f)
+            alignedText(Text("mis_nodeeditor_emptystate1", bigFont), 0.5)
+            alignedText(Text("mis_nodeeditor_emptystate2", bigFont), 0.5)
 
             newLine()
 
-            alignedRow(0.5f) {
+            alignedRow(0.5) {
                 button("mis_guidedtour") {
                     GuidedTourWindow(editor).enable()
                     delete()

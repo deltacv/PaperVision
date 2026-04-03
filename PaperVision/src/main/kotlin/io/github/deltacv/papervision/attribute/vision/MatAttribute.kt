@@ -19,18 +19,17 @@
 package io.github.deltacv.papervision.attribute.vision
 
 import imgui.ImGui
-import imgui.flag.ImGuiCol
 import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.attribute.AttributeType
 import io.github.deltacv.papervision.attribute.decomp.vision.MatAttributeDecomposer
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
-import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.font.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.display.ImageDisplayNode
 import io.github.deltacv.papervision.gui.style.rgbaColor
 import io.github.deltacv.papervision.gui.util.ImGuiEx
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.serialization.v1.data.SerializeIgnore
 import io.github.deltacv.papervision.serialization.v2.CodecType
 

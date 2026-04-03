@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.deltacv.papervision.gui.util
+package io.github.deltacv.papervision.gui.font
 
 /**
  * Font Awesome icons codepoints, can be used to render icons with imgui in any place where text can be rendered.

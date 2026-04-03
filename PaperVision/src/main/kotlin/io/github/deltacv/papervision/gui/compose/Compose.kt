@@ -1,23 +1,23 @@
 package io.github.deltacv.papervision.gui.compose
 
 import imgui.ImVec2
+import io.github.deltacv.papervision.gui.compose.item.ContainerItem
 import io.github.deltacv.papervision.gui.compose.item.Item
 
-class Compose(val availableSize: ImVec2) {
-    private val _items = mutableListOf<Item>()
-    val items get() = _items as List<Item>
+class Compose(val availableSize: ImVec2) : ContainerItem {
+    private val _children = mutableListOf<Item>()
 
     fun add(item: Item) {
-        _items.add(item)
+        _children.add(item)
     }
 
     fun renderAll() {
-        for (node in _items) {
-            node.render()
-        }
-
-        for(node in _items) {
-            node.postRender()
-        }
+        render()
+        postRender()
     }
+
+    override fun measure() = availableSize
+
+    override val parent = this
+    override val children get() = _children as List<Item>
 }

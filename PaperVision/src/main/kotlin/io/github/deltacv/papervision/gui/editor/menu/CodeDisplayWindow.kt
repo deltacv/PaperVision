@@ -26,7 +26,7 @@ import imgui.flag.ImGuiWindowFlags
 import org.deltacv.mai18n.tr
 import io.github.deltacv.papervision.codegen.language.Language
 import io.github.deltacv.papervision.gui.TooltipPopup
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.platform.PlatformFileFilter
 import io.github.deltacv.papervision.platform.PlatformWindow

@@ -28,6 +28,16 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class PaperEventHandler(val name: String, val catchExceptions: Boolean = true) : Runnable {
 
+    companion object {
+        fun batchOnce(vararg eventHandler: PaperEventHandler, listener: PaperOnceEventListener): List<PaperEventListenerId> {
+            return eventHandler.map { it.once(listener) }
+        }
+
+        fun batchAttach(vararg eventHandler: PaperEventHandler, listener: PaperEventListener): List<PaperEventListenerId> {
+            return eventHandler.map { it.attach(listener) }
+        }
+    }
+
     // ------------------------------------------------------------
     // config
     // ------------------------------------------------------------

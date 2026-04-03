@@ -49,7 +49,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 abstract class Node<S: CodeGenSession>(
-    val allowDelete: Boolean = true,
+    val isDeletable: Boolean = true,
     val joinActionStack: Boolean = true,
     val rebuildOnLink: Boolean = true,
 ) : DrawableIdElementBase<Node<*>>(),
@@ -117,7 +117,7 @@ abstract class Node<S: CodeGenSession>(
     }
 
     override fun delete() {
-        if(allowDelete) {
+        if(isDeletable) {
             forceDelete()
         }
     }
@@ -134,7 +134,7 @@ abstract class Node<S: CodeGenSession>(
     }
 
     override fun restore() {
-        if(allowDelete) {
+        if(isDeletable) {
             forceRestore()
         }
     }

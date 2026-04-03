@@ -33,7 +33,7 @@ import io.github.deltacv.papervision.attribute.Attribute
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.isModalWindowOpen
 import io.github.deltacv.papervision.gui.style.opacity
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.id.container.IdContainer
 import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.io.KeyManager

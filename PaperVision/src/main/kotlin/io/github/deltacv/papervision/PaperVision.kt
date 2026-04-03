@@ -36,12 +36,12 @@ import io.github.deltacv.papervision.gui.editor.menu.IntroModalWindow
 import io.github.deltacv.papervision.gui.editor.NodeEditor
 import io.github.deltacv.papervision.gui.style.CurrentStyles
 import io.github.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
-import io.github.deltacv.papervision.gui.util.Font
-import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
-import io.github.deltacv.papervision.gui.util.FontManager
+import io.github.deltacv.papervision.gui.font.Font
+import io.github.deltacv.papervision.gui.font.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.font.FontManager
 import io.github.deltacv.papervision.gui.Popup
 import io.github.deltacv.papervision.gui.Window
-import io.github.deltacv.papervision.gui.util.defaultFontConfig
+import io.github.deltacv.papervision.gui.font.defaultFontConfig
 import io.github.deltacv.papervision.id.*
 import io.github.deltacv.papervision.id.container.IdContainer
 import io.github.deltacv.papervision.id.container.IdContainerStack

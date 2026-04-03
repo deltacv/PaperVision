@@ -32,7 +32,7 @@ import io.github.deltacv.papervision.gui.ToastWindow
 import io.github.deltacv.papervision.gui.DialogMessageWindow
 import io.github.deltacv.papervision.gui.Popup
 import io.github.deltacv.papervision.gui.TooltipPopup
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.id.container.IdContainer
 import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.node.DrawNode

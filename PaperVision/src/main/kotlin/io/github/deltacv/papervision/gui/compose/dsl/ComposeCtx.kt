@@ -5,39 +5,40 @@ import imgui.ImVec2
 import io.github.deltacv.papervision.gui.compose.Compose
 import io.github.deltacv.papervision.gui.compose.item.*
 import io.github.deltacv.papervision.gui.compose.item.layout.AlignedRowItem
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.compose.property.Property
+import io.github.deltacv.papervision.gui.compose.property.type.Text
+import io.github.deltacv.papervision.gui.compose.property.type.asProperty
 
 class ComposeCtx(val composer: Compose) {
-    fun pushFont(font: Font) {
-        composer.add(PushFontItem(font))
+    fun button(text: Property<Text>, onClick: () -> Unit = {}) {
+        composer.add(ButtonItem(composer, text, onClick))
     }
+    fun button(text: Text, onClick: () -> Unit = {}) = button(text.asProperty(), onClick)
+    fun button(text: String, onClick: () -> Unit = {}) = button(Text(text), onClick)
 
-    fun button(text: String, onClick: () -> Unit = {}) {
-        composer.add(ButtonItem(text, onClick))
+    fun text(text: Property<Text>) {
+        composer.add(TextItem(composer, text))
     }
+    fun text(text: Text) = text(text.asProperty())
+    fun text(text: String) = text(Text(text))
 
-    fun text(text: String) {
-        composer.add(TextItem(text))
-    }
-
-    fun alignedText(text: String, alignment: Float) {
+    fun alignedText(text: Property<Text>, alignment: Double) {
         alignedRow(alignment) {
             text(text)
         }
     }
+    fun alignedText(text: Text, alignment: Double) = alignedText(text.asProperty(), alignment)
+    fun alignedText(text: String, alignment: Double) = alignedText(Text(text), alignment)
 
     fun newLine() {
-        composer.add(NewLineItem())
+        composer.add(NewLineItem(composer))
     }
 
     fun alignedRow(
-        alignment: Float,
-        spacing: Float = 5f,
-        // Opcional: permitir que la fila use un ancho específico o el total
-        width: Float = composer.availableSize.x,
+        alignment: Double,
+        spacing: Double = 5.0,
         content: ComposeCtx.() -> Unit
     ) {
-        // Creamos un sub-composer para capturar los hijos de la fila
         val rowComposer = Compose(composer.availableSize)
         val rowCtx = ComposeCtx(rowComposer)
 
@@ -45,10 +46,10 @@ class ComposeCtx(val composer: Compose) {
 
         composer.add(
             AlignedRowItem(
-                children = rowComposer.items,
+                parent = composer,
+                children = rowComposer.children,
                 alignment = alignment,
-                spacing = spacing,
-                width = width
+                spacing = spacing
             )
         )
     }

@@ -21,7 +21,7 @@ package io.github.deltacv.papervision.gui
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.id.DrawableIdElementBase
 import io.github.deltacv.papervision.id.container.IdContainerStack
 import io.github.deltacv.papervision.util.ElapsedTime

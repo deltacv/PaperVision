@@ -7,7 +7,7 @@ import imgui.flag.ImGuiTreeNodeFlags
 import imgui.flag.ImGuiWindowFlags
 import io.github.deltacv.papervision.gui.Table
 import io.github.deltacv.papervision.gui.Window
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.io.KeyManager
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.Node

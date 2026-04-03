@@ -40,7 +40,7 @@ import io.github.deltacv.papervision.codegen.language.interpreted.CPythonLanguag
 import io.github.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import io.github.deltacv.papervision.codegen.resolve.resolved
 import io.github.deltacv.papervision.gui.util.ImGuiEx
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.node.PaperNode
 import io.github.deltacv.papervision.node.NodeCategory
 import io.github.deltacv.papervision.node.DrawNode

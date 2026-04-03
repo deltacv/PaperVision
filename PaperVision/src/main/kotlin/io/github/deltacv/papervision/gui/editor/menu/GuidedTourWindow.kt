@@ -22,13 +22,14 @@ import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
 import org.deltacv.mai18n.tr
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.gui.Window
 import io.github.deltacv.papervision.gui.editor.NodeEditor
-import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.font.FontAwesomeIcons
 import io.github.deltacv.papervision.node.vision.featuredet.FindContoursNode
 import io.github.deltacv.papervision.node.vision.imageproc.ThresholdNode
 import io.github.deltacv.papervision.node.vision.overlay.DrawContoursNode
+import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.flags
 
 val Next: GuidedTourWindow.() -> Boolean = {
@@ -386,6 +387,10 @@ class GuidedTourWindow(
     val nodeEditor: NodeEditor
 ) : Window() {
 
+    companion object {
+        val onStart = PaperEventHandler("GuidedTourWindow-OnStart")
+    }
+
     val font = Font.find("calcutta-big")
 
     override var title = "$[mis_guidedtour]"
@@ -403,6 +408,10 @@ class GuidedTourWindow(
         ImGuiWindowFlags.AlwaysAutoResize,
         ImGuiWindowFlags.NoResize
     )
+
+    override fun onEnable() {
+        onStart.run()
+    }
 
     override fun drawContents() {
         if(nodeEditor.paperVision.nodes.size > 4 && currentStage == IntroStage) {

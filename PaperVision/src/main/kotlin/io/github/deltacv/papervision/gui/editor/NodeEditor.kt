@@ -35,7 +35,7 @@ import io.github.deltacv.papervision.attribute.AttributeMode
 import io.github.deltacv.papervision.gui.ConfirmationModalWindow
 import io.github.deltacv.papervision.gui.LayoutDirection
 import io.github.deltacv.papervision.gui.SizingMode
-import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.font.FontAwesomeIcons
 import io.github.deltacv.papervision.gui.display.ImageDisplay
 import io.github.deltacv.papervision.gui.display.ImageDisplayNode
 import io.github.deltacv.papervision.gui.display.ImageDisplayWindow
@@ -45,6 +45,8 @@ import io.github.deltacv.papervision.gui.WindowGroup
 import io.github.deltacv.papervision.gui.editor.menu.AboutModalWindow
 import io.github.deltacv.papervision.gui.editor.menu.ContextMenuPopup
 import io.github.deltacv.papervision.gui.editor.menu.EmptyStateWindow
+import io.github.deltacv.papervision.gui.editor.menu.GuidedTourWindow
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.gui.isModalWindowOpen
 import io.github.deltacv.papervision.gui.util.openPaperVisionDocs
 import io.github.deltacv.papervision.id.DrawableIdElement
@@ -109,6 +111,9 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             field = value
         }
 
+    val hasUserNodes
+        get() = nodes.inmutable.any { it.isDeletable }
+
     // UI components
     val nodeList by lazy { NodeList(paperVision, keyManager, PaperNodeRegistry.nodes) }
 
@@ -124,6 +129,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         private set
 
     private val emptyStateWindow = EmptyStateWindow(this)
+
+    val onNodeInsert = PaperEventHandler("NodeEditor-OnNodeInsert")
 
     // Panning state
     val editorPanning = ImVec2(0f, 0f)
@@ -194,7 +201,20 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         restoreEditorPanning()
 
         nodeList.enable()
+
         emptyStateWindow.enable()
+
+        PaperEventHandler.batchOnce(GuidedTourWindow.onStart, onNodeInsert, onEditorPan) {
+            emptyStateWindow.delete()
+        }
+
+        paperVision.onDeserialization.once {
+            if(hasUserNodes) {
+                emptyStateWindow.delete()
+            } else {
+                emptyStateWindow.enable()
+            }
+        }
     }
 
     override fun delete() {
@@ -254,7 +274,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
 
         options[FontAwesomeIcons.Book] = Option("mis_docs") {
-            ConfirmationModalWindow("mis_opendocs").apply {
+            ConfirmationModalWindow("mis_opendocs", font = Font.find("calcutta-big")).apply {
                 onConfirm {
                     openPaperVisionDocs()
                 }
@@ -321,7 +341,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             flagsNode.enable()
         }
 
-        if(emptyStateWindow.isEnabled && nodes.inmutable.find { !it.allowDelete } != null) {
+        if(emptyStateWindow.isEnabled && nodes.inmutable.find { !it.isDeletable } != null) {
             // emptyStateWindow.delete()
         }
 
@@ -543,7 +563,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
 
         return try {
-            selectedNodes.map { nodes[it]!! }.filter { it.allowDelete }
+            selectedNodes.map { nodes[it]!! }.filter { it.isDeletable }
         } catch (_: IndexOutOfBoundsException) {
             null
         }
@@ -652,6 +672,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         } else {
             action.execute()
         }
+
+        onNodeInsert.run()
 
         return node
     }

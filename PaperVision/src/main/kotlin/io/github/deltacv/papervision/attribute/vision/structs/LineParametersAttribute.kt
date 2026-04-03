@@ -27,8 +27,8 @@ import io.github.deltacv.papervision.attribute.TypedAttribute
 import io.github.deltacv.papervision.codegen.CodeGen
 import io.github.deltacv.papervision.codegen.GenValue
 import io.github.deltacv.papervision.codegen.resolve.resolved
-import io.github.deltacv.papervision.gui.util.Font
-import io.github.deltacv.papervision.gui.util.FontAwesomeIcons
+import io.github.deltacv.papervision.gui.font.Font
+import io.github.deltacv.papervision.gui.font.FontAwesomeIcons
 import io.github.deltacv.papervision.node.Link
 import io.github.deltacv.papervision.node.vision.overlay.LineParametersNode
 import io.github.deltacv.papervision.serialization.v2.CodecType

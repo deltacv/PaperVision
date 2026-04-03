@@ -1,9 +1,9 @@
 package io.github.deltacv.papervision.gui
 
-import imgui.ImGui
 import imgui.flag.ImGuiWindowFlags
-import io.github.deltacv.papervision.gui.util.Font
-import io.github.deltacv.papervision.gui.util.ImGuiEx
+import io.github.deltacv.papervision.gui.compose.dsl.composeRender
+import io.github.deltacv.papervision.gui.compose.property.type.Text
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.util.event.PaperEventHandler
 import io.github.deltacv.papervision.util.flags
 import org.deltacv.mai18n.tr
@@ -19,6 +19,7 @@ class ConfirmationModalWindow(
     override val windowFlags = flags(
         ImGuiWindowFlags.NoResize,
         ImGuiWindowFlags.NoMove,
+        ImGuiWindowFlags.AlwaysAutoResize,
         ImGuiWindowFlags.NoCollapse
     )
 
@@ -27,32 +28,21 @@ class ConfirmationModalWindow(
     val onConfirm = PaperEventHandler("ConfirmationModalWindow-$title-OnConfirm")
     val onCancel = PaperEventHandler("ConfirmationModalWindow-$title-OnCancel")
 
-    override fun drawContents() {
-        font?.let { ImGui.pushFont(it.imfont) }
+    override fun drawContents() = composeRender {
+        alignedText(Text(message, font), 0.5)
 
-        ImGui.text(tr(message))
+        newLine()
 
-        font?.let { ImGui.popFont() }
+        alignedRow(0.5) {
+            button("mis_confirm") {
+                onConfirm.run()
+                delete()
+            }
 
-        ImGui.newLine()
-
-        var width = 0f
-        width += ImGui.calcTextSize(tr("mis_confirm")).x
-        width += ImGui.getStyle().itemSpacing.x + 30f
-        width += ImGui.calcTextSize(tr("mis_cancel")).x
-
-        ImGuiEx.alignForWidth(width, 0.5f)
-
-        if (ImGui.button(tr("mis_confirm"))) {
-            onConfirm.run()
-            delete()
-        }
-
-        ImGui.sameLine()
-
-        if (ImGui.button(tr("mis_cancel"))) {
-            onCancel.run()
-            delete()
+            button("mis_cancel") {
+                onCancel.run()
+                delete()
+            }
         }
     }
 }

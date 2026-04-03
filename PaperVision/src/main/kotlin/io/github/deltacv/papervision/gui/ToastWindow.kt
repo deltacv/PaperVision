@@ -22,7 +22,7 @@ import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
 import org.deltacv.mai18n.tr
-import io.github.deltacv.papervision.gui.util.Font
+import io.github.deltacv.papervision.gui.font.Font
 import io.github.deltacv.papervision.util.ElapsedTime
 import io.github.deltacv.papervision.util.flags
 
