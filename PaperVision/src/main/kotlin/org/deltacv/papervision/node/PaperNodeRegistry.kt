@@ -18,9 +18,10 @@
 
 package org.deltacv.papervision.node
 
-import org.deltacv.papervision.gui.editor.CategorizedNodes
 import org.deltacv.papervision.node.generated.PaperVisionPaperNodeMetadata
 import org.deltacv.papervision.util.loggerForThis
+
+typealias CategorizedNodes = Map<NodeCategory, MutableList<Class<out Node<*>>>>
 
 @Suppress("UNCHECKED_CAST")
 object PaperNodeRegistry {

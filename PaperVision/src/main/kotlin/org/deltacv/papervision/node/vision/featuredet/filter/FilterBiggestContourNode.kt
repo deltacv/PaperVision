@@ -154,7 +154,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
 
                     local(biggestContour)
 
-                    ifCondition(CPythonLanguage.valueIsNot(contoursList, CPythonLanguage.NoType)) {
+                    ifCondition(contoursList isNotInstanceOf nullType) {
                         biggestContour set "max".callValue(
                             CPythonLanguage.NoType,
                             contoursList,

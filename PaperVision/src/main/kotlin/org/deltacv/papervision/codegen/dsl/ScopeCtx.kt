@@ -93,15 +93,18 @@ class ScopeCtx(val scope: Scope) : LanguageCtx(scope.language) {
     infix fun DeclarableVariable.instanceSet(v: Value) =
         scope.instanceVariableSet(this, v)
 
-    fun ifCondition(condition: Condition?, block: ScopeCtx.() -> Unit) {
-        if(condition == null) {
+    fun ifCondition(condition: Condition?, block: ScopeCtx.() -> Unit): IfChainCtx {
+        if (condition == null) {
             block(this)
-        } else {
-            val ifScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
-            block(ScopeCtx(ifScope))
-
-            scope.ifCondition(condition, ifScope)
+            return IfChainCtx(scope, null, false)
         }
+
+        val ifScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
+        block(ScopeCtx(ifScope))
+
+        val chain = scope.ifCondition(condition, ifScope)
+
+        return IfChainCtx(scope, chain, true)
     }
 
     fun <T: Value> foreach(variable: T, list: Value, block: ScopeCtx.(T) -> Unit) {
@@ -177,6 +180,31 @@ class ScopeCtx(val scope: Scope) : LanguageCtx(scope.language) {
 
     fun comment(text: String) {
         scope.comment(text)
+    }
+
+    class IfChainCtx(
+        private val scope: Scope,
+        private val chain: Scope.IfChain?,
+        private val enabled: Boolean
+    ) {
+        fun elseIf(condition: Condition, block: ScopeCtx.() -> Unit): IfChainCtx {
+            if (!enabled) return this
+
+            val elseIfScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
+            block(ScopeCtx(elseIfScope))
+
+            chain!!.elseIf(condition, elseIfScope)
+            return this
+        }
+
+        fun elseCondition(block: ScopeCtx.() -> Unit) {
+            if (!enabled) return
+
+            val elseScope = Scope(scope.tabsCount + 1, scope.language, scope.importScope)
+            block(ScopeCtx(elseScope))
+
+            chain!!.elseCondition(elseScope)
+        }
     }
 
 }

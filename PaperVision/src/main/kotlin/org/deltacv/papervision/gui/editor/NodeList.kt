@@ -45,8 +45,7 @@ import org.deltacv.papervision.util.ElapsedTime
 import org.deltacv.papervision.util.flags
 import org.deltacv.papervision.util.loggerForThis
 import org.deltacv.mai18n.tr
-
-typealias CategorizedNodes = Map<NodeCategory, MutableList<Class<out Node<*>>>>
+import org.deltacv.papervision.node.CategorizedNodes
 
 class NodeList(
     val paperVision: PaperVision,

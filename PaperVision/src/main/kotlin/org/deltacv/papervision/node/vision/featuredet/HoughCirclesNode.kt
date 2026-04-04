@@ -212,7 +212,7 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
 
                     local(circles)
 
-                    ifCondition(CPythonLanguage.valueIsNot(circles, CPythonLanguage.NoType)) {
+                    ifCondition(circles isNotInstanceOf nullType) {
                         circles set circles[csv(0.v, CPythonLanguage.sliceValue()), CPythonLanguage.NoType] // "[0, :]"
                     }
 

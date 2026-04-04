@@ -127,7 +127,7 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
                     )
                     local(output)
 
-                    ifCondition(CPythonLanguage.valueIsNot(circlesValue.value.v, CPythonLanguage.NoType)) {
+                    ifCondition(circlesValue.value.v isNotInstanceOf nullType) {
                         foreach(CPythonLanguage.accessorTupleVariable("x", "y", "r"), circlesValue.value.v) {
                             CPythonOpenCv.cv2("circle",
                                 output,

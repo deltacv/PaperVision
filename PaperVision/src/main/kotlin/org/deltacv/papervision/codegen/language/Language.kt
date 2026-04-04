@@ -45,7 +45,8 @@ interface Language : ValueBuilder, CodeGen.LanguageHolder {
 
     val VoidType get() = StandardTypes.cvoid
 
-    val nullValue get() = ConValue(VoidType, "null")
+    val nullType get() = VoidType
+    val nullValue get() = ConValue(nullType, "null")
 
     operator fun <R> invoke(block: LanguageCtx.() -> R) = LanguageCtx(this).block()
 
@@ -191,6 +192,8 @@ interface Language : ValueBuilder, CodeGen.LanguageHolder {
     fun returnDeclaration(value: Value? = null): String
 
     fun ifStatementDeclaration(condition: Condition): String
+    fun elseIfStatementDeclaration(condition: Condition): String
+    fun elseStatementDeclaration(): String
 
     fun forLoopDeclaration(variable: Value, start: Value, max: Value, step: Value?): String
     fun foreachLoopDeclaration(variable: Value, iterable: Value): String

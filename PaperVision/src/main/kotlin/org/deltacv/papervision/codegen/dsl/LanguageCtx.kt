@@ -53,6 +53,7 @@ open class LanguageCtx(override val language: Language): CodeGen.LanguageHolder 
 
     val VoidType get() = language.VoidType
 
+    val nullType = language.nullType
     val nullValue = language.nullValue
 
     val Type.nullValue get() = language.nullVal(this)
@@ -71,6 +72,9 @@ open class LanguageCtx(override val language: Language): CodeGen.LanguageHolder 
 
     infix fun Condition.and(right: Condition) = language.and(this, right)
     infix fun Condition.or(right: Condition) = language.or(this, right)
+
+    infix fun Value.isInstanceOf(type: Type) = language.isInstanceOf(this, type)
+    infix fun Value.isNotInstanceOf(type: Type) = language.isNotInstanceOf(this, type)
 
     fun <T: Value> List<T>.joinWithAnd(joiner: (T) -> Condition): Condition? {
         if(isEmpty()) return null

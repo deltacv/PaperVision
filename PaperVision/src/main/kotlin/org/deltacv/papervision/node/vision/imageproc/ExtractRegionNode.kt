@@ -61,8 +61,11 @@ class ExtractRegionNode : DrawNode<ExtractRegionNode.Session>() {
 
                     ifCondition(regionRect.value.v notEqualsTo nullValue) {
                         outputMat instanceSet inputMat.value.v.callValue("submat", JvmOpenCv.Mat, regionRect.value.v)
-                        output.streamIfEnabled(outputMat, inputMat.color)
+                    }.elseCondition {
+                        outputMat instanceSet inputMat.value.v
                     }
+
+                    output.streamIfEnabled(outputMat, inputMat.color)
                 }
 
                 session.output = GenValue.Mat(outputMat.resolved(), inputMat.color)
@@ -84,18 +87,22 @@ class ExtractRegionNode : DrawNode<ExtractRegionNode.Session>() {
                     val rectVar = uniqueVariable("roi_rect", regionRect)
                     local(rectVar)
 
-                    val x = rectVar[0.v, CPythonLanguage.NoType]
-                    val y = rectVar[1.v, CPythonLanguage.NoType]
-                    val w = rectVar[2.v, CPythonLanguage.NoType]
-                    val h = rectVar[3.v, CPythonLanguage.NoType]
-
-                    val roi = inputMat.value.v[CPythonLanguage.NoType, CPythonLanguage.sliceValue(
-                        y,
-                        y + h
-                    ), CPythonLanguage.sliceValue(x, x + w)]
-
-                    val roiVar = uniqueVariable("${inputMat.value.v}_roi", roi)
+                    val roiVar = uniqueVariable("${inputMat.value.v}_roi", inputMat.value.v)
                     local(roiVar)
+
+                    ifCondition(rectVar isNotInstanceOf  nullType) {
+                        val x = rectVar[0.v, CPythonLanguage.NoType]
+                        val y = rectVar[1.v, CPythonLanguage.NoType]
+                        val w = rectVar[2.v, CPythonLanguage.NoType]
+                        val h = rectVar[3.v, CPythonLanguage.NoType]
+
+                        val roi = inputMat.value.v[CPythonLanguage.NoType, CPythonLanguage.sliceValue(
+                            y,
+                            y + h
+                        ), CPythonLanguage.sliceValue(x, x + w)]
+
+                        roiVar instanceSet roi
+                    }
 
                     session.output = GenValue.Mat(roiVar.resolved(), inputMat.color)
                 }

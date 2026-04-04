@@ -53,12 +53,13 @@ object CPythonLanguage : LanguageBase(
     override val trueValue = ConValue(BooleanType, "True")
     override val falseValue = ConValue(BooleanType, "False")
 
+    override val nullType = NoType
     override val nullValue = ConValue(NoType, "None")
 
     override fun newImportBuilder() = PythonImportBuilder(this)
 
-    fun valueIs(value: Value, type: Type) = condition("${value.value} is ${type.className}")
-    fun valueIsNot(value: Value, type: Type) = condition("${value.value} is not ${type.className}")
+    override fun isInstanceOf(value: Value, type: Type) = condition("${value.value} is ${type.className}")
+    override fun isNotInstanceOf(value: Value, type: Type) = condition("${value.value} is not ${type.className}")
 
     override fun and(left: Condition, right: Condition) = condition("(${left.value}) and (${right.value})")
     override fun or(left: Condition, right: Condition) = condition("(${left.value}) or (${right.value})")
@@ -115,6 +116,8 @@ object CPythonLanguage : LanguageBase(
     }
 
     override fun ifStatementDeclaration(condition: Condition) = "if ${condition.value}"
+    override fun elseIfStatementDeclaration(condition: Condition) = "elif ${condition.value}"
+    override fun elseStatementDeclaration() = "else"
 
     override fun forLoopDeclaration(variable: Value, start: Value, max: Value, step: Value?) =
         "for ${variable.value} in range(${start.value}, ${max.value}${step?.let { ", $it" } ?: ""})"

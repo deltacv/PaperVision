@@ -118,7 +118,7 @@ class CirclesToRectsNode : DrawNode<CirclesToRectsNode.Session>() {
 
                     separate()
 
-                    ifCondition(CPythonLanguage.valueIsNot(circles.value.v, CPythonLanguage.NoType)) {
+                    ifCondition(circles.value.v isNotInstanceOf  nullType) {
                         foreach(CPythonLanguage.accessorTupleVariable("x", "y", "r"), circles.value.v) {
                             rects("append",
                                 CPythonLanguage.tuple(

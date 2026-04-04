@@ -90,6 +90,14 @@ open class LanguageBase(
 
     override fun nullVal(type: Type) = ConValue(type, "null")
 
+    override fun isInstanceOf(
+        value: Value,
+        type: Type
+    ) = condition("${value.value} instanceof ${type.shortNameWithGenerics}").apply {
+        additionalImports(value)
+        additionalImports(type)
+    }
+
     override fun arrayOf(type: Type): Type {
         var originalType = type
 
@@ -191,6 +199,8 @@ open class LanguageBase(
         } else "return") + semicolonIfNecessary()
 
     override fun ifStatementDeclaration(condition: Condition) = "if(${condition.value})"
+    override fun elseIfStatementDeclaration(condition: Condition) = " else if(${condition.value})"
+    override fun elseStatementDeclaration() = " else"
 
     override fun forLoopDeclaration(variable: Value, start: Value, max: Value, step: Value?): String {
         val stepStr = if(step == null || step.value == "1") {
