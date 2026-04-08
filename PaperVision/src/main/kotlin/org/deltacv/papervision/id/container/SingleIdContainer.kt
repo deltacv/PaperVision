@@ -5,7 +5,7 @@ import org.deltacv.papervision.id.IdElement
 /**
  * Container restricted to a single element.
  */
-class SingleIdContainer<T : IdElement> : IdContainer<T>() {
+class SingleIdContainer<T : IdElement> : DenseIdContainer<T>() {
 
     /**
      * Assigns an element to an ID.
@@ -31,8 +31,5 @@ class SingleIdContainer<T : IdElement> : IdContainer<T>() {
     /**
      * Returns the contained element or null.
      */
-    fun get(): T? = slots.firstOrNull { it != null }
+    fun get(): T? = inmutable.firstOrNull()
 }
-
-
-

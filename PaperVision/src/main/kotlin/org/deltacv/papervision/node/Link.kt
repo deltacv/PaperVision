@@ -70,7 +70,7 @@ class Link(
         }
         if(bAttrib?.links?.contains(this) == false) {
             bAttrib?.links?.add(this)
-            aAttrib?.onLink?.run()
+            bAttrib?.onLink?.run()
         }
 
         if(aAttrib == null || bAttrib == null) {

@@ -5,12 +5,12 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.superclasses
 
 sealed interface PolyglotMapping {
-    data class LanguagesInst(val languages: List<Language>) : PolyglotMapping {
+    data class LanguageInsts(val languages: List<Language>) : PolyglotMapping {
         override fun match(language: Language) =
             languages.mapNotNull { it::class.inheritanceDistance(language) }.minOrNull() ?: -1
     }
 
-    data class LanguagesClass(val languageClasses: List<KClass<out Language>>) : PolyglotMapping {
+    data class LanguageClasses(val languageClasses: List<KClass<out Language>>) : PolyglotMapping {
         override fun match(language: Language) =
             languageClasses.mapNotNull { it.inheritanceDistance(language) }.minOrNull() ?: -1
     }

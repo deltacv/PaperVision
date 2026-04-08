@@ -18,9 +18,9 @@
 
 package org.deltacv.papervision.codegen.language.jvm
 
-import org.deltacv.papervision.codegen.language.LanguageBase
+import org.deltacv.papervision.codegen.language.BaseLanguage
 
-object JavaLanguage : LanguageBase()
+object JavaLanguage : BaseLanguage()
 
 
 

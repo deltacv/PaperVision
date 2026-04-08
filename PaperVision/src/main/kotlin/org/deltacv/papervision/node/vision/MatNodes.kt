@@ -34,7 +34,7 @@ import org.deltacv.papervision.codegen.build.Value
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import org.deltacv.papervision.codegen.dsl.generatorsBuilder
-import org.deltacv.papervision.codegen.language.LanguageBase
+import org.deltacv.papervision.codegen.language.BaseLanguage
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
 import org.deltacv.papervision.node.NodeCategory
@@ -201,7 +201,7 @@ class OutputMatNode @JvmOverloads constructor(
     }
 
     override val generators = generatorsBuilder {
-        generatorFor<LanguageBase> {
+        generatorFor<BaseLanguage> {
             current {
                 val inputValue = input.genValue(current)
 

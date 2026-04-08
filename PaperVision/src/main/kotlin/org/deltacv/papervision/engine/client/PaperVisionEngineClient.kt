@@ -21,11 +21,12 @@ package org.deltacv.papervision.engine.client
 import org.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
 import org.deltacv.papervision.engine.ByteMessageTag
 import org.deltacv.papervision.engine.ByteMessages
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.BufferOverflow
 import org.deltacv.papervision.engine.client.message.PaperVisionEngineMessage
 import org.deltacv.papervision.engine.client.response.PaperVisionEngineMessageResponse
 import org.deltacv.papervision.util.event.PaperEventHandler
 import org.deltacv.papervision.util.loggerForThis
-import java.util.concurrent.ConcurrentHashMap
 
 class ClientByteMessageReceiver : ByteMessageReceiver()
 
@@ -44,9 +45,9 @@ class PaperVisionEngineClient(
 
     val onProcess = PaperEventHandler("PaperVisionEngineClient-OnProcess")
 
-    private val messagesAwaitingResponse = ConcurrentHashMap<Int, AwaitingMessageData>()
+    private val messagesAwaitingResponse = mutableMapOf<Int, AwaitingMessageData>()
 
-    private val bytesQueue = mutableListOf<ByteArray>()
+    private val bytesChannel = Channel<ByteArray>(capacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     fun connect() {
         logger.info("Connecting through bridge ${bridge.javaClass.simpleName}")
@@ -60,19 +61,15 @@ class PaperVisionEngineClient(
 
     fun acceptResponse(response: PaperVisionEngineMessageResponse) {
         val data = messagesAwaitingResponse[response.id] ?: return
-
-        data.message.acceptResponse(response)
-
-        if(!data.message.persistent) {
+        if (!data.message.persistent) {
             messagesAwaitingResponse.remove(response.id)
         }
+
+        data.message.acceptResponse(response)
     }
 
-    @Suppress("SENSELESS_COMPARISON") // uh, I have gotten NPEs from bytes being null somehow
     fun acceptBytes(bytes: ByteArray) {
-        synchronized(bytesQueue) {
-            bytesQueue.add(bytes)
-        }
+        bytesChannel.trySend(bytes)
     }
 
     fun sendMessage(message: PaperVisionEngineMessage) {
@@ -81,29 +78,41 @@ class PaperVisionEngineClient(
     }
 
     fun process() {
-        for(data in messagesAwaitingResponse.values) {
-            val timeMillis = System.currentTimeMillis() - data.timestamp
+        val now = System.currentTimeMillis()
+        val droppedOrphans = mutableListOf<Int>()
+        
+        val activeTrackingState = messagesAwaitingResponse.toMap()
+        
+        for((id, data) in activeTrackingState) {
+            val timeMillis = now - data.timestamp
             data.message.acceptElapsedTime(timeMillis)
+            
+            // Hard TTL bound to purge orphaned requests disconnected from network
+            if (timeMillis > 5000L && !data.message.persistent) {
+                droppedOrphans.add(id)
+            }
+        }
+        
+        if (droppedOrphans.isNotEmpty()) {
+            for (id in droppedOrphans) {
+                messagesAwaitingResponse.remove(id)
+            }
         }
 
-        synchronized(bytesQueue) {
-            val binaryMessages = bytesQueue.toTypedArray()
-
-            @Suppress("SENSELESS_COMPARISON")
-            binaryMessages.forEach {
-                if(it == null) return@forEach
-
-                val tag = ByteMessageTag(ByteMessages.tagFromBytes(it))
-                val id = ByteMessages.idFromBytes(it)
-                bytesQueue.remove(it)
-
-                byteReceiver.callHandlers(id, tag.toString(), it, ByteMessages.messageLengthFromBytes(it))
+        val binaryMessages = buildList {
+            while (true) {
+                val bytes = bytesChannel.tryReceive().getOrNull() ?: break
+                add(bytes)
             }
+        }
+
+        binaryMessages.forEach {
+            val tag = ByteMessageTag(ByteMessages.tagFromBytes(it))
+            val id = ByteMessages.idFromBytes(it)
+
+            byteReceiver.callHandlers(id, tag.toString(), it, ByteMessages.messageLengthFromBytes(it))
         }
 
         onProcess.run()
     }
 }
-
-
-

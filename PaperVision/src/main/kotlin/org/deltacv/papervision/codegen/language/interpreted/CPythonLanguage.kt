@@ -24,12 +24,12 @@ import org.deltacv.papervision.codegen.build.*
 import org.deltacv.papervision.codegen.build.language.cpython.CPythonType
 import org.deltacv.papervision.codegen.csv
 import org.deltacv.papervision.codegen.language.Language
-import org.deltacv.papervision.codegen.language.LanguageBase
+import org.deltacv.papervision.codegen.language.BaseLanguage
 import org.deltacv.papervision.node.vision.ColorSpace
 import org.deltacv.papervision.util.loggerForThis
 import kotlin.text.isNotBlank
 
-object CPythonLanguage : LanguageBase(
+object CPythonLanguage : BaseLanguage(
     usesSemicolon = false
 ) {
 

@@ -46,6 +46,9 @@ import org.deltacv.papervision.id.*
 import org.deltacv.papervision.id.container.IdContainer
 import org.deltacv.papervision.id.container.IdContainerStack
 import org.deltacv.papervision.id.container.SingleIdContainer
+import org.deltacv.papervision.id.container.DenseIdContainer
+import org.deltacv.papervision.id.container.SparseIdContainer
+import org.deltacv.papervision.id.container.StackIdContainer
 import org.deltacv.papervision.io.KeyManager
 import org.deltacv.papervision.io.TextureProcessorQueue
 import org.deltacv.papervision.node.Link
@@ -103,17 +106,17 @@ class PaperVision(
 
     val nodeEditor by lazy { NodeEditor(this, keyManager) }
 
-    val nodes                  = IdContainer<Node<*>>()
-    val attributes             = IdContainer<Attribute>()
-    val links                  = IdContainer<Link>()
-    val windows                = IdContainer<Window>()
-    val textures               = IdContainer<PlatformTexture>()
-    val textureProcessorQueues = SingleIdContainer<TextureProcessorQueue>()
-    val fonts                  = IdContainer<Font>()
-    val streamDisplays         = IdContainer<ImageDisplay>()
-    val actions                = IdContainer<Action>()
-    val misc                   = IdContainer<Misc>()
-    val popups                 = IdContainer<Popup>()
+    val nodes: IdContainer<Node<*>>                                = DenseIdContainer()
+    val attributes: IdContainer<Attribute>                         = DenseIdContainer()
+    val links: IdContainer<Link>                                   = DenseIdContainer()
+    val windows: IdContainer<Window>                               = DenseIdContainer()
+    val textures: IdContainer<PlatformTexture>                     = DenseIdContainer()
+    val textureProcessorQueues: IdContainer<TextureProcessorQueue> = SingleIdContainer()
+    val fonts: IdContainer<Font>                                   = SparseIdContainer()
+    val streamDisplays: IdContainer<ImageDisplay>                  = DenseIdContainer()
+    val actions: StackIdContainer<Action>                   = StackIdContainer()
+    val popups: IdContainer<Popup>                                 = DenseIdContainer()
+    val misc: IdContainer<Misc>                                    = SparseIdContainer()
 
     lateinit var engineClient: PaperVisionEngineClient
     lateinit var previzManager: ClientPrevizManager

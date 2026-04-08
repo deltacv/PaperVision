@@ -45,7 +45,7 @@ open class ButtonWindow(
      * We only set background color here.
      */
     override fun preDrawContents() {
-        val (base, hover, active) = colors
+        val (base, hover, active) = buttonColors
 
         val color = when {
             isPressed -> active
@@ -116,7 +116,7 @@ open class ButtonWindow(
         ImGui.popStyleColor() // WindowBg
     }
 
-    open val colors get() = Colors(
+    open val buttonColors get() = Colors(
         base = ImGui.getColorU32(ImGuiCol.Button),
         hover = ImGui.getColorU32(ImGuiCol.ButtonHovered),
         active = ImGui.getColorU32(ImGuiCol.ButtonActive)

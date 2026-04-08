@@ -289,7 +289,7 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
         val count = listAttributes.size.toString()
         val elementName = count + if (count.length == 1) " " else ""
 
-        val element = elementAttributeType.new(AttributeMode.INPUT, elementName)
+        val element = elementAttributeType.new(mode, elementName)
         if(enable) element.enable() // enables the new element
 
         element.drawType = false // hides the variable type

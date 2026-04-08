@@ -19,6 +19,7 @@
 package org.deltacv.papervision.platform.animation
 
 import org.deltacv.papervision.id.container.IdContainer
+import org.deltacv.papervision.id.container.DenseIdContainer
 import org.deltacv.papervision.platform.ColorSpace
 import org.deltacv.papervision.platform.PlatformTexture
 import java.lang.UnsupportedOperationException
@@ -60,7 +61,7 @@ abstract class PlatformTextureAnimation : PlatformTexture() {
         throw UnsupportedOperationException("setJpeg() is not supported on animations")
 
     companion object {
-        val animations = IdContainer<PlatformTextureAnimation>()
+        val animations: IdContainer<PlatformTextureAnimation> = DenseIdContainer()
     }
 
 }

@@ -32,7 +32,8 @@ import org.deltacv.mackjpeg.PixelFormat
 import java.nio.ByteBuffer
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 
 /**
  * TextureProcessorQueue: Handles queuing, decoding, and creation of textures.
@@ -55,13 +56,18 @@ class TextureProcessorQueue(
         private val logger by loggerFor<TextureProcessorQueue>()
     }
 
-    // Thread pool for JPEG decompression. Daemon threads so they don't block JVM shutdown.
-    private val jpegWorkers: ExecutorService = Executors.newFixedThreadPool(5) { r ->
-        Thread(r).apply {
-            isDaemon = true
-            name = "JPEG-Decomp-Worker-$id"
-        }
-    }
+    private val jpegWorkers: ExecutorService = ThreadPoolExecutor(
+        5, 5,
+        0L, TimeUnit.MILLISECONDS,
+        ArrayBlockingQueue(10),
+        { r ->
+            Thread(r).apply {
+                isDaemon = true
+                name = "JPEG-Decomp-Worker-$id"
+            }
+        },
+        ThreadPoolExecutor.DiscardOldestPolicy()
+    )
 
     // Pool that maintains reusable byte[] buffers to avoid frequent GC pressure.
     private val bufferPool = ReusableBufferPool(REUSABLE_BUFFER_QUEUE_SIZE)

@@ -48,13 +48,13 @@ class MaskNode : DrawNode<MaskNode.Session>(){
     val inputMat = MatAttribute(INPUT, "$[att_input]")
     val maskMat  = MatAttribute(INPUT, "$[att_binarymask]")
 
-    val outputMat = MatAttribute(OUTPUT, "$[att_output]").enablePrevizButton()
+    val outputMat = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
         + inputMat.rebuildOnChange()
         + maskMat.rebuildOnChange()
 
-        + outputMat.rebuildOnChange()
+        + outputMat.enablePrevizButton().rebuildOnChange()
     }
 
     override val generators = generatorsBuilder {

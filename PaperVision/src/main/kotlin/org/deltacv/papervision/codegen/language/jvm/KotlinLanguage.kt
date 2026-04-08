@@ -23,9 +23,9 @@ import org.deltacv.papervision.codegen.build.*
 import org.deltacv.papervision.codegen.build.language.jvm.JavaTypes
 import org.deltacv.papervision.codegen.build.language.KotlinTypes
 import org.deltacv.papervision.codegen.csv
-import org.deltacv.papervision.codegen.language.LanguageBase
+import org.deltacv.papervision.codegen.language.BaseLanguage
 
-object KotlinLanguage : LanguageBase(usesSemicolon = false) {
+object KotlinLanguage : BaseLanguage(usesSemicolon = false) {
 
     init {
         mutableExcludedImports.add(KotlinTypes.Unit)

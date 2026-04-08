@@ -88,17 +88,17 @@ class PlayButtonWindow(
                 FontAwesomeIcons.Stop
             } else FontAwesomeIcons.Play
 
-    override val colors get() = if(paperVision.previzManager.previzRunning) {
+    override val buttonColors get() = if (paperVision.previzManager.previzRunning) {
         Colors(
-            base = hexColor("#6B3A3A", 0.8f),
-            hover = hexColor("#8A4D4D"),
-            active = hexColor("#552E2E")
+            base = hexColor("#B94A48"),
+            hover = hexColor("#D96C6A"),
+            active = hexColor("#7A2F2D")
         )
     } else {
         Colors(
-            base = hexColor("#3A5F4B", 0.8f),
-            hover = hexColor("#4C7A60"),
-            active = hexColor("#2F4F3E")
+            base = hexColor("#4C8C6B"),   // muted green
+            hover = hexColor("#66A885"),  // softer highlight
+            active = hexColor("#3A6F55")  // darker press
         )
     }
 }

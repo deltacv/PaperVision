@@ -130,6 +130,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     private val emptyStateWindow = EmptyStateWindow(this)
 
+    val onLink = PaperEventHandler("NodeEditor-OnLink")
     val onNodeInsert = PaperEventHandler("NodeEditor-OnNodeInsert")
 
     // Panning state
@@ -204,7 +205,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         emptyStateWindow.enable()
 
-        PaperEventHandler.batchOnce(GuidedTourWindow.onStart, onNodeInsert, onEditorPan) {
+        PaperEventHandler.batchOnce(GuidedTourWindow.onStart, onNodeInsert, onLink, onEditorPan) {
             emptyStateWindow.delete()
         }
 
@@ -752,6 +753,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         // If attributes are null, create link without validation
         if (startAttrib == null || endAttrib == null) {
             CreateLinkAction(Link(start, end)).enable()
+            onLink.run()
             return
         }
 
@@ -808,6 +810,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             paperVision.onUpdate.once {
                 link.triggerOnChange()
             }
+            onLink.run()
         }
     }
 

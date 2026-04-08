@@ -33,7 +33,7 @@ import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants
 import org.eclipse.jface.text.Document
 import org.eclipse.text.edits.TextEdit
 
-open class LanguageBase(
+open class BaseLanguage(
     val usesSemicolon: Boolean = true,
     val genInClass: Boolean = true,
     val optimizeImports: Boolean = true
@@ -408,7 +408,7 @@ open class LanguageBase(
         Visibility.PACKAGE_PRIVATE -> ""
     }
 
-    class BaseImportBuilder(val lang: LanguageBase) : Language.ImportBuilder {
+    class BaseImportBuilder(val lang: BaseLanguage) : Language.ImportBuilder {
         private val imports = mutableMapOf<String, MutableList<String>>()
 
         override fun import(type: Type) {

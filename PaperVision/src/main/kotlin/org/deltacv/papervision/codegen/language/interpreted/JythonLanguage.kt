@@ -22,9 +22,9 @@ import org.deltacv.papervision.codegen.Visibility
 import org.deltacv.papervision.codegen.build.*
 import org.deltacv.papervision.codegen.csv
 import org.deltacv.papervision.codegen.language.Language
-import org.deltacv.papervision.codegen.language.LanguageBase
+import org.deltacv.papervision.codegen.language.BaseLanguage
 
-object JythonLanguage : LanguageBase(
+object JythonLanguage : BaseLanguage(
     usesSemicolon = false,
     genInClass = false,
     optimizeImports = false

@@ -33,6 +33,7 @@ import org.deltacv.papervision.gui.DialogMessageWindow
 import org.deltacv.papervision.gui.Popup
 import org.deltacv.papervision.gui.TooltipPopup
 import org.deltacv.papervision.gui.font.Font
+import org.deltacv.papervision.id.container.DenseIdContainer
 import org.deltacv.papervision.id.container.IdContainer
 import org.deltacv.papervision.id.container.IdContainerStack
 import org.deltacv.papervision.node.DrawNode
@@ -49,7 +50,7 @@ class CodeGenManager(val paperVision: PaperVision) {
         language: Language = JavaLanguage,
         isForPreviz: Boolean = false
     ): String? {
-        val placeholders = IdContainer<Resolvable.Placeholder<*>>()
+        val placeholders = DenseIdContainer<Resolvable.Placeholder<*>>()
 
         IdContainerStack.local.push(placeholders) // all placeholders created during code gen will be caught here
 

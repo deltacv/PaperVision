@@ -45,6 +45,7 @@ import org.deltacv.papervision.util.ElapsedTime
 import org.deltacv.papervision.util.flags
 import org.deltacv.papervision.util.loggerForThis
 import org.deltacv.mai18n.tr
+import org.deltacv.papervision.id.container.DenseIdContainer
 import org.deltacv.papervision.node.CategorizedNodes
 
 class NodeList(
@@ -57,8 +58,8 @@ class NodeList(
         const val PLUS_FONT_SIZE = 60f
     }
 
-    val listNodes = IdContainer<Node<*>>()
-    val listAttributes = IdContainer<Attribute>()
+    val listNodes = DenseIdContainer<Node<*>>()
+    val listAttributes = DenseIdContainer<Attribute>()
 
     private val logger by loggerForThis()
 

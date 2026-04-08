@@ -21,9 +21,9 @@ package org.deltacv.papervision.codegen.language.interpreted
 import org.deltacv.papervision.codegen.Visibility
 import org.deltacv.papervision.codegen.build.*
 import org.deltacv.papervision.codegen.csv
-import org.deltacv.papervision.codegen.language.LanguageBase
+import org.deltacv.papervision.codegen.language.BaseLanguage
 
-object JavascriptLanguage : LanguageBase(genInClass = false, optimizeImports = false) {
+object JavascriptLanguage : BaseLanguage(genInClass = false, optimizeImports = false) {
 
     override val Parameter.string get() = name
 
