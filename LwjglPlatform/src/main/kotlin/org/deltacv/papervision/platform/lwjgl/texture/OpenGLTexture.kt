@@ -38,13 +38,14 @@ data class OpenGLTexture(
 
     override fun set(bytes: ByteArray, colorSpace: ColorSpace) {
         val expectedSize = width * height * colorSpace.channels
-        if (expectedSize != bytes.size) {
-            throw IllegalArgumentException("Buffer size does not match resolution (expected $expectedSize, got ${bytes.size}, channels: ${colorSpace.channels}, width: $width, height: $height)")
+        if (bytes.size < expectedSize) {
+            throw IllegalArgumentException("Buffer too small (expected >= $expectedSize, got ${bytes.size}, channels: ${colorSpace.channels}, width: $width, height: $height)")
         }
 
-        val buffer = MemoryUtil.memAlloc(bytes.size)
+        // Only copy the exact pixel data needed; the pool buffer may be larger (power-of-two).
+        val buffer = MemoryUtil.memAlloc(expectedSize)
         try {
-            buffer.put(bytes).flip()
+            buffer.put(bytes, 0, expectedSize).flip()
             set(buffer, colorSpace)
         } finally {
             MemoryUtil.memFree(buffer)
@@ -87,6 +88,9 @@ data class OpenGLTexture(
     }
 
     override fun setJpeg(bytes: ByteArray) {
+        // bytes may be a pool buffer larger than the actual JPEG data; only send the
+        // meaningful prefix to stbi (stbi still finds the EOI marker correctly,
+        // but trimming avoids uploading megabytes of zero-padding).
         val buffer = MemoryUtil.memAlloc(bytes.size).put(bytes).flip()
         try {
             loadJpeg(buffer) { set(it, ColorSpace.RGB) }

@@ -42,7 +42,7 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
             TunerChangeValueMessage::class
         )
     }
-
+    
     private val highFrequencyMessages = mutableMapOf<String, MutableList<Long>>()
 
     private val clients = mutableListOf<PaperVisionEngineClient>()
@@ -117,7 +117,7 @@ class EOCVSimIpcEngineBridge(private val port: Int) : PaperVisionEngineBridge {
         }
     }
 
-    override fun broadcastBytes(bytes: ByteArray) {
+    override fun broadcastBytes(bytes: ByteArray) { 
         for(client in clients) {
             client.acceptBytes(bytes)
         }

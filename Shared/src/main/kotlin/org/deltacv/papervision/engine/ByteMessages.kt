@@ -68,22 +68,16 @@ object ByteMessages {
     }
 
     fun messageFromBytes(bytes: ByteArray): ByteArray {
-        // first four bytes are the size of the tag string
-        val tagSize = ByteBuffer.wrap(bytes, 0, 4).getInt()
-
-        val messageOffset = 4 + tagSize + 4
-        val messageSize = bytes.size - messageOffset
+        val messageOffset = messageOffsetFromBytes(bytes)
+        val messageSize = messageLengthFromBytes(bytes)
 
         // next messageSize bytes are the message
         return bytes.copyOfRange(messageOffset, messageOffset + messageSize)
     }
 
     fun messageFromBytes(bytes: ByteArray, target: ByteArray) {
-        // first four bytes are the size of the tag string
-        val tagSize = ByteBuffer.wrap(bytes, 0, 4).getInt()
-
-        val messageOffset = 4 + tagSize + 4
-        val messageSize = bytes.size - messageOffset
+        val messageOffset = messageOffsetFromBytes(bytes)
+        val messageSize = messageLengthFromBytes(bytes)
 
         if(target.size < messageSize) {
             throw IllegalArgumentException("Target array is too small to fit the message")
@@ -93,19 +87,43 @@ object ByteMessages {
         System.arraycopy(bytes, messageOffset, target, 0, messageSize)
     }
 
+    fun headerSize(tag: ByteArray) = 4 + tag.size + 4 + 4
+    fun headerSize(tag: ByteMessageTag) = headerSize(tag.content)
+
+    fun writeHeader(tag: ByteArray, id: Int, payloadSize: Int, target: ByteBuffer) {
+        target.putInt(tag.size)
+        target.put(tag)
+        target.putInt(id)
+        target.putInt(payloadSize)
+    }
+
+    fun writeHeader(tag: ByteMessageTag, id: Int, payloadSize: Int, target: ByteBuffer) =
+        writeHeader(tag.content, id, payloadSize, target)
+
     fun toBytes(tag: ByteArray, id: Int, message: ByteArray): ByteArray {
-        val buffer = ByteBuffer.allocate(4 + tag.size + 4 + message.size)
+        // header: tagSize(4) + tag(n) + id(4) + payloadSize(4) + payload
+        val buffer = ByteBuffer.allocate(4 + tag.size + 4 + 4 + message.size)
         buffer.putInt(tag.size)
         buffer.put(tag)
         buffer.putInt(id)
+        buffer.putInt(message.size)
         buffer.put(message)
 
         return buffer.array()
     }
+    fun toBytes(tag: ByteMessageTag, id: Int, message: ByteArray) = toBytes(tag.content, id, message)
 
-    fun messageLengthFromBytes(it: ByteArray) = it.size - messageOffsetFromBytes(it)
+    fun messageOffsetFromBytes(it: ByteArray): Int {
+        val tagSize = ByteBuffer.wrap(it, 0, 4).getInt()
+        // header = [4: tagSize][tagSize: tag][4: id][4: payloadSize]
+        return 4 + tagSize + 4 + 4
+    }
 
-    fun messageOffsetFromBytes(it: ByteArray) = 4 + tagFromBytes(it).size + 4
+    fun messageLengthFromBytes(bytes: ByteArray): Int {
+        val tagSize = ByteBuffer.wrap(bytes, 0, 4).getInt()
+        // payloadSize field sits immediately after the id field
+        return ByteBuffer.wrap(bytes, 4 + tagSize + 4, 4).getInt()
+    }
 }
 
 

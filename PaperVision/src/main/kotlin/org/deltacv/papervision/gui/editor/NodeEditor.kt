@@ -51,6 +51,7 @@ import org.deltacv.papervision.gui.isModalWindowOpen
 import org.deltacv.papervision.gui.util.openPaperVisionDocs
 import org.deltacv.papervision.id.DrawableIdElement
 import org.deltacv.papervision.io.KeyManager
+import org.deltacv.papervision.node.DirectedNodeGraph
 import org.deltacv.papervision.node.DrawNode
 import org.deltacv.papervision.node.FlagsNode
 import org.deltacv.papervision.node.InvisibleNode
@@ -145,6 +146,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     private val scrollTimer = ElapsedTime()
     private val rightClickMenuPopupTimer = ElapsedTime()
     private val justDeletedLinkTimer = ElapsedTime()
+
+    val graph = DirectedNodeGraph()
 
     // Clipboard state
     private var pasteCount = 0
@@ -803,7 +806,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         val link = Link(input, output)
         CreateLinkAction(link).enable()
 
-        if (Node.checkSimpleRecursion(inputAttrib.parentNode, outputAttrib.parentNode)) {
+        if (checkCycle(outputAttrib.parentNode, inputAttrib.parentNode)) {
             TooltipPopup.showWarning("err_couldntlink_recursion")
             link.delete()
         } else {
@@ -812,6 +815,21 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             }
             onLink.run()
         }
+    }
+
+    private fun checkCycle(from: Node<*>, to: Node<*>): Boolean {
+        graph.clear()
+        for(link in links.inmutable) {
+            val aNode = link.aAttrib?.parentNode ?: continue
+            val bNode = link.bAttrib?.parentNode ?: continue
+
+            val outputNode = if(link.aAttrib?.mode == AttributeMode.OUTPUT) aNode else bNode
+            val inputNode = if(link.aAttrib?.mode == AttributeMode.INPUT) aNode else bNode
+
+            graph.addEdge(outputNode.id, inputNode.id)
+        }
+
+        return graph.hasCycleIfAdded(from.id, to.id)
     }
 
     private fun handleDeleteLink() {

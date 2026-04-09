@@ -23,14 +23,16 @@ import com.qualcomm.robotcore.util.MovingStatistics
 import io.github.deltacv.eocvsim.stream.ImageStreamer
 import org.deltacv.papervision.engine.PaperVisionEngine
 import org.deltacv.papervision.engine.ByteMessageTag
-import org.deltacv.papervision.util.ReusableBufferPool
+import org.deltacv.papervision.util.MemoryPool
 import org.deltacv.papervision.util.loggerFor
 import io.github.deltacv.vision.external.util.extension.aspectRatio
 import io.github.deltacv.vision.external.util.extension.clipTo
 import org.deltacv.mackjpeg.MackJPEG
 import org.deltacv.mackjpeg.PixelFormat
 import org.deltacv.mackjpeg.exception.JPEGException
+import org.deltacv.papervision.engine.ByteMessages
 import org.libjpegturbo.turbojpeg.TJ
+import org.lwjgl.system.MemoryUtil
 import org.opencv.core.*
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
@@ -50,6 +52,8 @@ class EOCVSimEngineImageStreamer(
 
     companion object {
         val logger by loggerFor<EOCVSimEngineImageStreamer>()
+
+        const val JPEG_WORKER_THREADS = 5
 
         init {
             if (MackJPEG.getSupportedBackend() == null) {
@@ -74,18 +78,18 @@ class EOCVSimEngineImageStreamer(
 
     private val changeCheckLock = mutableMapOf<Int, Any>()
 
-    private val bufferPool = ReusableBufferPool(5)
-    private val matRecycler = MatRecycler(10)
+    private val bufferPool = MemoryPool(JPEG_WORKER_THREADS * 3)
+    private val matRecycler = MatRecycler(JPEG_WORKER_THREADS * 3)
 
     // message -> currently active
     private val reportedJpegExceptions = mutableMapOf<String, Boolean>()
 
     val tag by lazy { ByteMessageTag.fromString(previzNameProvider()) }
 
-    private val jpegWorkers = Executors.newFixedThreadPool(5) { r ->
+    private val jpegWorkers = Executors.newFixedThreadPool(JPEG_WORKER_THREADS) { r ->
         val t = Thread(r)
         t.isDaemon = true
-        t.name = "JPEG-Comp-Worker-${t.id}"
+        t.name = "JPEG-Worker-${t.id}"
 
         t
     }
@@ -135,12 +139,15 @@ class EOCVSimEngineImageStreamer(
                     // resize
                     scaleToFit(targetImage, targetImage)
 
+                    val expectedSize = targetImage.rows() * targetImage.cols() * 3
                     val imageBuffer = bufferPool.getOrCreate(
-                        targetImage.rows() * targetImage.cols() * 3, // width * height * 3 (RGB)
-                        ReusableBufferPool.MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
+                        expectedSize,
+                        MemoryPool.MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED,
+                        MemoryPool.AllocationMode.EXACT
                     ) ?: return@submit
 
-                    // memcpy the mat data to the imageBuffer array
+                    // MemoryPool in EXACT mode returns exactly expectedSize bytes,
+                    // so Mat.get() will safely fill the array without asserting out-of-bounds.
                     targetImage.get(0, 0, imageBuffer)
 
                     val width = targetImage.cols()
@@ -149,9 +156,11 @@ class EOCVSimEngineImageStreamer(
                     compressor.setImage(imageBuffer, width, height, PixelFormat.RGB)
                     compressor.setQuality(streamQualityFormula(id).coerceIn(1, 100))
 
+                    val headerSize = ByteMessages.headerSize(tag)
+
                     val jpegBuffer = bufferPool.getOrCreate(
-                        TJ.bufSize(width, height, TJ.SAMP_420), // hope this is enough
-                        ReusableBufferPool.MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
+                        TJ.bufSize(width, height, TJ.SAMP_420) + headerSize,
+                        MemoryPool.MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
                     ) ?: return@submit
 
                     try {
@@ -173,7 +182,7 @@ class EOCVSimEngineImageStreamer(
 
                             // only log on first occurrence or if it was previously resolved
                             synchronized(reportedJpegExceptions) {
-                                if (reportedJpegExceptions.getOrDefault(msg, false) != true) {
+                                if (!reportedJpegExceptions.getOrDefault(msg, false)) {
                                     reportedJpegExceptions[msg] = true
                                     logger.error("MackJPEG compression error, falling back to OpenCV for id=$id: $msg", e)
                                 }
@@ -190,14 +199,11 @@ class EOCVSimEngineImageStreamer(
                         }
 
                         // offset jpeg data to leave space for the header
-                        System.arraycopy(jpegBuffer, 0, jpegBuffer, 4 + tag.content.size + 4, jpegSize)
+                        System.arraycopy(jpegBuffer, 0, jpegBuffer, headerSize, jpegSize)
 
                         // append header to jpegBuffer, uses a ByteBuffer for convenience
                         val byteMessageBuffer = ByteBuffer.wrap(jpegBuffer)
-
-                        byteMessageBuffer.putInt(tag.content.size) // tag size
-                        byteMessageBuffer.put(tag.content) // tag
-                        byteMessageBuffer.putInt(id) // id
+                        ByteMessages.writeHeader(tag, id, jpegSize, byteMessageBuffer)
                         // data is already in place thanks to the System.arraycopy above
 
                         ipcEngine.sendBytes(jpegBuffer)

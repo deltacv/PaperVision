@@ -34,14 +34,15 @@ import kotlin.use
 object OpenGLTextureFactory : PlatformTextureFactory {
 
     override fun create(width: Int, height: Int, bytes: ByteArray, colorSpace: ColorSpace): OpenGLTexture {
-        val buffer = MemoryUtil.memAlloc(bytes.size)
-        buffer.put(bytes)
+        val expectedSize = width * height * colorSpace.channels
+        // Only copy the exact pixel data needed; pool buffers may be larger (power-of-two).
+        val buffer = MemoryUtil.memAlloc(expectedSize)
+        buffer.put(bytes, 0, expectedSize)
         buffer.flip()
 
         val texture = try {
             create(width, height, buffer, colorSpace)
         } finally {
-            // make sure buffer is always freed
             MemoryUtil.memFree(buffer)
         }
 

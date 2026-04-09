@@ -64,21 +64,7 @@ class Link(
     fun getOtherAttribute(me: Attribute) = if(me == aAttrib) bAttrib else aAttrib
 
     override fun draw() {
-        if(aAttrib?.links?.contains(this) == false) {
-            aAttrib?.links?.add(this)
-            aAttrib?.onLink?.run()
-        }
-        if(bAttrib?.links?.contains(this) == false) {
-            bAttrib?.links?.add(this)
-            bAttrib?.onLink?.run()
-        }
-
         if(aAttrib == null || bAttrib == null) {
-            val aPresent = "(${if(aAttrib == null) "missing" else "present"})"
-            val bPresent = "(${if(bAttrib == null) "missing" else "present"})"
-
-            logger.warn("Link $id has invalid attributes (a: #${a} $aPresent, b: #${b} $bPresent), deleting link")
-            delete()
             return
         }
 
@@ -103,13 +89,17 @@ class Link(
         }
     }
 
-    override fun onEnable() {}
+    override fun onEnable() {
+        restore()
+    }
 
     override fun delete() {
-        if(aAttrib?.enabledLinks?.contains(this) == true) {
+        if(aAttrib?.links?.contains(this) == true) {
+            aAttrib?.links?.remove(this)
             aAttrib?.onUnlink?.run()
         }
-        if(bAttrib?.enabledLinks?.contains(this) == true) {
+        if(bAttrib?.links?.contains(this) == true) {
+            bAttrib?.links?.remove(this)
             bAttrib?.onUnlink?.run()
         }
 
@@ -118,10 +108,12 @@ class Link(
     }
 
     override fun restore() {
-        if(aAttrib?.links?.contains(this) == true) {
+        if(aAttrib?.links?.contains(this) == false) {
+            aAttrib?.links?.add(this)
             aAttrib?.onLink?.run()
         }
-        if(bAttrib?.links?.contains(this) == true) {
+        if(bAttrib?.links?.contains(this) == false) {
+            bAttrib?.links?.add(this)
             bAttrib?.onLink?.run()
         }
 

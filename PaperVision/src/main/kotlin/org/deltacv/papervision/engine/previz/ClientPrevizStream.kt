@@ -109,7 +109,9 @@ class ClientPrevizStream(
 
             startedStreamIds[id] = System.currentTimeMillis()
             // offer to texture queue
-            textureQueue.offerJpegAsync(id, width, height, bytes, dataOffset = ByteMessages.messageOffsetFromBytes(bytes))
+            textureQueue.offerJpegAsync(id, width, height, bytes,
+                dataOffset = ByteMessages.messageOffsetFromBytes(bytes),
+                dataLength = length)
         }
     }
 

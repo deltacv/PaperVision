@@ -27,6 +27,7 @@ import org.java_websocket.handshake.ClientHandshake
 import org.java_websocket.server.WebSocketServer
 import java.lang.Exception
 import java.net.InetSocketAddress
+import java.nio.ByteBuffer
 
 class EOCVSimIpcEngine : MessageHandlerPaperVisionEngine() {
 
@@ -36,7 +37,7 @@ class EOCVSimIpcEngine : MessageHandlerPaperVisionEngine() {
         start()
     }
 
-    override fun sendBytes(bytes: ByteArray){
+    override fun sendBytes(bytes: ByteArray) {
         server.broadcast(bytes)
     }
 
