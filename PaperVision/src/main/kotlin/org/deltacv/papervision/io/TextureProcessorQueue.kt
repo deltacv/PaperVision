@@ -18,13 +18,9 @@
 
 package org.deltacv.papervision.io
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import org.deltacv.papervision.id.DrawableIdElementBase
 import org.deltacv.papervision.id.container.IdContainer
 import org.deltacv.papervision.id.container.IdContainerStack
@@ -37,15 +33,6 @@ import org.deltacv.mackjpeg.MackJPEG
 import org.deltacv.mackjpeg.PixelFormat
 import java.nio.ByteBuffer
 
-/**
- * TextureProcessorQueue: Handles queuing, decoding, and creation of textures.
- *
- * Responsibilities:
- *  - Accept raw or JPEG texture data (sync or async)
- *  - Reuse byte[] buffers to reduce allocations via MemoryPool
- *  - Decompress JPEGs asynchronously via MackJPEG when available using Coroutines
- *  - Create or update PlatformTexture instances on the render thread via draw()
- */
 class TextureProcessorQueue(
     val textureFactory: PlatformTextureFactory
 ) : DrawableIdElementBase<TextureProcessorQueue>() {
@@ -55,28 +42,36 @@ class TextureProcessorQueue(
         private val logger by loggerFor<TextureProcessorQueue>()
     }
 
-    // CoroutineScope for async JPEG decompression workers.
-    // SupervisorJob ensures one failing coroutine doesn't tear the whole scope down.
     private val workerScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-
-    // Pool of reusable byte-array buffers organized in power-of-two tiers.
     private val memoryPool = MemoryPool(tierCapacity = 8)
 
-    // Lock-free channel capped at QUEUED_TEXTURE_CAPACITY.
-    // Oldest frames are dropped automatically when the channel is full so the
-    // render thread always processes the most recent data available.
     private val queuedTextures = Channel<FutureTexture>(
         capacity = QUEUED_TEXTURE_CAPACITY,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
-    // Map of current textures by ID — only accessed on the render thread.
     private val textures = mutableMapOf<Int, PlatformTexture>()
+
+    // ------------------------ BLOCKING WRAPPERS ------------------------
+
+    private fun getOrCreateReusableBufferBlocking(
+        size: Int,
+        memoryBehavior: MemoryPool.MemoryBehavior
+    ): ByteArray? = runBlocking {
+        memoryPool.getOrCreate(size, memoryBehavior)
+    }
+
+    private fun returnReusableBufferBlocking(buffer: ByteArray) = runBlocking {
+        memoryPool.returnBuffer(buffer)
+    }
+
+    private fun clearPoolBlocking() = runBlocking {
+        memoryPool.clear()
+    }
 
     // ------------------------ Render/update loop ------------------------
 
     override fun draw() {
-        // Drain everything currently in the channel; tryReceive() is non-blocking.
         while (true) {
             val future = queuedTextures.tryReceive().getOrNull() ?: break
             try {
@@ -90,7 +85,6 @@ class TextureProcessorQueue(
         }
     }
 
-    // Attempt to update an existing texture with new bytes.
     private fun processExistingTexture(future: FutureTexture): Boolean {
         val existing = textures[future.id] ?: return false
 
@@ -107,7 +101,6 @@ class TextureProcessorQueue(
         return false
     }
 
-    // Create a new PlatformTexture based on the future's payload and store it in the map.
     private fun createNewTexture(future: FutureTexture) {
         require(future.id >= 0) { "ID of new texture must be positive !" }
 
@@ -120,7 +113,7 @@ class TextureProcessorQueue(
         textures[future.id] = newTex
     }
 
-    // ------------------------ Public API: offering textures ------------------------
+    // ------------------------ Public API ------------------------
 
     fun offerJpeg(
         id: Int,
@@ -138,10 +131,6 @@ class TextureProcessorQueue(
         memoryBehavior: MemoryPool.MemoryBehavior = MemoryPool.MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED
     ) = offer(id, width, height, data, jpeg = true, memoryBehavior = memoryBehavior)
 
-    /**
-     * Asynchronously decompress JPEG and enqueue raw pixels for the render thread.
-     * If MackJPEG backend is not available we fall back to the synchronous path.
-     */
     fun offerJpegAsync(
         id: Int,
         width: Int,
@@ -153,9 +142,7 @@ class TextureProcessorQueue(
     ) {
         val backend = MackJPEG.getSupportedBackend()
         if (backend == null) {
-            // Fallback: wrap a slice so the sync path also sees exactly dataLength bytes.
-            offerJpeg(id, width, height,
-                ByteBuffer.wrap(data, dataOffset, dataLength), memoryBehavior)
+            offerJpeg(id, width, height, ByteBuffer.wrap(data, dataOffset, dataLength), memoryBehavior)
             return
         }
 
@@ -169,13 +156,13 @@ class TextureProcessorQueue(
                     decompressor.setJPEG(offsetData, dataLength)
 
                     val outputSize = decompressor.decodedWidth * decompressor.decodedHeight * 3
-                    val buffer = getOrCreateReusableBuffer(outputSize, memoryBehavior) ?: return@use
+                    val buffer = memoryPool.getOrCreate(outputSize, memoryBehavior) ?: return@use
 
                     try {
                         decompressor.decompress(buffer, PixelFormat.RGB)
                     } catch (e: Exception) {
                         logger.warn("Failed to decompress JPEG #$id", e)
-                        returnReusableBuffer(buffer)
+                        memoryPool.returnBuffer(buffer)
                         return@use
                     }
 
@@ -189,7 +176,7 @@ class TextureProcessorQueue(
                         jpeg = false
                     )
                 } finally {
-                    if (dataOffset != 0) returnReusableBuffer(offsetData)
+                    if (dataOffset != 0) memoryPool.returnBuffer(offsetData)
                 }
             }
         }
@@ -228,14 +215,16 @@ class TextureProcessorQueue(
 
     fun clear() {
         workerScope.cancel()
-        // Drain any remaining buffered futures and reclaim their pooled byte arrays.
+
         while (true) {
             val future = queuedTextures.tryReceive().getOrNull() ?: break
             returnReusableBuffer(future.data)
         }
+
         textures.values.forEach { it.delete() }
         textures.clear()
-        memoryPool.clear()
+
+        clearPoolBlocking()
     }
 
     // ------------------------ Internal helpers ------------------------
@@ -249,10 +238,8 @@ class TextureProcessorQueue(
         colorSpace: ColorSpace,
         jpeg: Boolean
     ) {
-        // trySend is non-blocking; DROP_OLDEST policy handles back-pressure automatically.
         val result = queuedTextures.trySend(FutureTexture(id, width, height, buffer, dataSize, colorSpace, jpeg))
         if (result.isFailure) {
-            // Channel closed (e.g., after clear()); reclaim buffer.
             returnReusableBuffer(buffer)
         }
     }
@@ -265,7 +252,6 @@ class TextureProcessorQueue(
     ): ByteArray? {
         if (offset == 0 && dataLength == data.size) return data
 
-        // Round up to nearest 4KiB to reduce tier churn on small offset variance.
         val roundedLength = ((dataLength / 4096) + 1) * 4096
 
         val dest = getOrCreateReusableBuffer(roundedLength, memoryBehavior) ?: return null
@@ -273,21 +259,23 @@ class TextureProcessorQueue(
         return dest
     }
 
-    private fun returnReusableBuffer(buffer: ByteArray) = memoryPool.returnBuffer(buffer)
+    private fun returnReusableBuffer(buffer: ByteArray) =
+        returnReusableBufferBlocking(buffer)
 
-    private fun getOrCreateReusableBuffer(size: Int, memoryBehavior: MemoryPool.MemoryBehavior) =
-        memoryPool.getOrCreate(size, memoryBehavior)
+    private fun getOrCreateReusableBuffer(
+        size: Int,
+        memoryBehavior: MemoryPool.MemoryBehavior
+    ) = getOrCreateReusableBufferBlocking(size, memoryBehavior)
 
     override val idContainer: IdContainer<TextureProcessorQueue>
             by lazy { IdContainerStack.local.peekNonNull() }
 
-    @Suppress("ArrayInDataClass")
-    private data class FutureTexture(
+    private class FutureTexture(
         val id: Int,
         val width: Int,
         val height: Int,
         val data: ByteArray,
-        val dataSize: Int,   // actual valid bytes — may be < data.size for power-of-two pool buffers
+        val dataSize: Int,
         val colorSpace: ColorSpace,
         val jpeg: Boolean
     )

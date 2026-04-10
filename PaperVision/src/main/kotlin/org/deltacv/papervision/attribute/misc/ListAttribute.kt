@@ -99,50 +99,59 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
             }
 
             serializationData = null
-        } else if(!wasDecoded) {
-            // oh god... (it's been only 10 minutes and i have already forgotten how this works)
-            if (lastLength != fixedLength) {
-                if (fixedLength != null && (lastLength == null || lastLength == 0)) {
-                    repeat(fixedLength!!) {
-                        createElement()
-                    }
-                } else if (lastLength != null) {
-                    val delta = (fixedLength ?: 0) - (lastLength ?: 0)
-
-                    if (delta < 0) {
-                        repeat(-delta) {
-                            val last = listAttributes[listAttributes.size - 1]
-                            last.delete()
-
-                            listAttributes.remove(last)
-                            deleteQueue.add(last)
-                        }
-                    } else {
-                        repeat(delta) {
-                            if (deleteQueue.isNotEmpty()) {
-                                val last = deleteQueue[deleteQueue.size - 1]
-                                last.restore()
-
-                                listAttributes.add(last)
-                                deleteQueue.remove(last)
-                            } else {
-                                createElement()
-                            }
-                        }
-                    }
-                } else {
-                    for (attribute in listAttributes.toTypedArray<Attribute>()) {
-                        attribute.delete()
-                    }
-                }
-            } else {
+        } else {
+            if (wasDecoded) {
                 for (attribute in listAttributes) {
                     attribute.enable() // enable decoded attributes
                 }
+                wasDecoded = false // Consume decoded state so future resizes work correctly
+                // If the element was decoded, the fixedLength might not be up-to-date yet
+                // if the parent node updates its properties lazily after decoding.
+                // We sync lastLength with the actual decoded size to prevent incorrect resizing!
+                lastLength = if (fixedLength != null) listAttributes.size else null
+            } else {
+                if (lastLength != fixedLength) {
+                    if (fixedLength != null && (lastLength == null || lastLength == 0)) {
+                        repeat(fixedLength!!) {
+                            createElement()
+                        }
+                    } else if (lastLength != null) {
+                        val delta = (fixedLength ?: 0) - (lastLength ?: 0)
+
+                        if (delta < 0) {
+                            repeat(-delta) {
+                                val last = listAttributes[listAttributes.size - 1]
+                                last.delete()
+
+                                listAttributes.remove(last)
+                                deleteQueue.add(last)
+                            }
+                        } else {
+                            repeat(delta) {
+                                if (deleteQueue.isNotEmpty()) {
+                                    val last = deleteQueue.removeAt(deleteQueue.size - 1)
+                                    last.restore()
+
+                                    listAttributes.add(last)
+                                } else {
+                                    createElement()
+                                }
+                            }
+                        }
+                    } else {
+                        for (attribute in listAttributes.toTypedArray<Attribute>()) {
+                            attribute.delete()
+                        }
+                    }
+                } else {
+                    for (attribute in listAttributes) {
+                        attribute.enable() 
+                    }
+                }
+                
+                lastLength = fixedLength
             }
         }
-
-        lastLength = fixedLength
     }
 
     override fun delete() {

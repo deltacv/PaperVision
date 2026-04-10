@@ -6,6 +6,7 @@ import org.deltacv.papervision.node.Link
 import org.deltacv.papervision.node.Node
 import org.deltacv.papervision.node.vision.InputMatNode
 import org.deltacv.papervision.node.vision.OutputMatNode
+import org.deltacv.papervision.util.loggerForThis
 
 class PaperVisionProject(
     val nodes: MutableList<Node<*>> = mutableListOf(),
@@ -22,6 +23,8 @@ class PaperVisionProject(
             return project
         }
     }
+
+    val logger by loggerForThis()
 
     override fun encode(encoder: DataEncoder) {
         encoder.objList("nodes", nodes)
@@ -45,6 +48,8 @@ class PaperVisionProject(
     }
 
     fun apply(paperVision: PaperVision) {
+        logger.info("Applying project with ${nodes.size} nodes and ${links.size} links to PaperVision instance.")
+
         // clear existing state
         for (node in paperVision.nodes.inmutable) {
             if (node != paperVision.nodeEditor.originNode)
@@ -91,7 +96,12 @@ class PaperVisionProject(
 
         paperVision.onUpdate.once {
             for (link in links) {
-                link.enable()
+                if (link.aAttrib != null && link.bAttrib != null) {
+                    link.enable()
+                } else {
+                    logger.debug("Cleaning up orphaned link during project application: {}", link)
+                    link.delete()
+                }
             }
             paperVision.onDeserialization.run()
         }

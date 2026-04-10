@@ -44,24 +44,14 @@ class ImageDisplayNode(
 
     val input = EmptyInputAttribute(this)
 
-    override fun drawNode() {
-        ImNodes.pushColorStyle(ImNodesCol.Pin, MatAttribute.styleColor)
-        ImNodes.pushColorStyle(ImNodesCol.PinHovered, MatAttribute.styleHoveredColor)
-
-        ImNodes.beginInputAttribute(input.id)
-        ImNodes.endInputAttribute()
-
-        ImNodes.popColorStyle()
-        ImNodes.popColorStyle()
-
-        ImGui.sameLine()
-
-        imageDisplay.draw()
+    override fun onEnable() {
+        + input
     }
 
-    override fun delete() {
-        super.delete()
-        input.delete()
+    override fun drawNode() {
+        input.drawHere()
+
+        imageDisplay.draw()
     }
 
     override fun genCode(input: Unit, current: CodeGen.Current) = NoSession

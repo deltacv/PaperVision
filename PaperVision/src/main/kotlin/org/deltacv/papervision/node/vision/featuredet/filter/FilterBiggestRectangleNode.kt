@@ -21,12 +21,14 @@ package org.deltacv.papervision.node.vision.featuredet.filter
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.misc.ListAttribute
 import org.deltacv.papervision.attribute.rebuildOnChange
+import org.deltacv.papervision.attribute.rebuildOnLink
 import org.deltacv.papervision.attribute.vision.structs.RectAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.codegen.build.Value
 import org.deltacv.papervision.codegen.build.DeclarableVariable
+import org.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.dsl.ScopeCtx
 import org.deltacv.papervision.codegen.dsl.generatorsBuilder
@@ -49,11 +51,13 @@ import org.deltacv.papervision.serialization.v2.DataEncoder
 class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>() {
 
     val input = ListAttribute(INPUT, "$[att_rects]", RectAttribute)
+    val fallback = RectAttribute(INPUT, "$[att_fallback]")
     val output = RectAttribute(OUTPUT, "$[att_biggestrect]")
 
     override fun onEnable() {
-        + input.rebuildOnChange()
-        + output.rebuildOnChange()
+        + input.rebuildOnLink()
+        + fallback.rebuildOnLink()
+        + output
     }
 
     override val generators = generatorsBuilder {
@@ -62,6 +66,10 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                 val session = Session()
 
                 val rectsList = input.genValue(current)
+
+                val fallbackRect = if(fallback.hasLink)
+                    fallback.genValue(current)
+                else null
 
                 val biggestRect = uniqueVariable("biggestRect", JvmOpenCv.Rect.nullValue, isNullable = true)
 
@@ -120,6 +128,15 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                             }
                         }
                     }
+
+                    ifCondition(biggestRect equalsTo biggestRect.nullValue) {
+                        if (fallbackRect != null) {
+                            biggestRect instanceSet JvmOpenCv.toRectInst(fallbackRect, current).value.v
+                        } else {
+                            // if no fallback provided, set to a default rect of (0, 0, 0, 0)
+                            biggestRect instanceSet JvmOpenCv.Rect.new()
+                        }
+                    }
                 }
 
                 session.biggestRect = GenValue.Rect.Inst(biggestRect.resolved())
@@ -133,6 +150,9 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                 val session = Session()
 
                 val rectsList = input.genValue(current)
+                val fallbackRect = if(fallback.hasLink)
+                    fallback.genValue(current)
+                else null
 
                 val biggestRect = uniqueVariable("biggest_rect", CPythonLanguage.nullValue, isNullable = true)
 
@@ -190,6 +210,15 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                                 separate()
                                 withRuntimeRect(element.value.v)
                             }
+                        }
+                    }
+
+                    ifCondition(biggestRect equalsTo CPythonLanguage.nullValue) {
+                        if (fallbackRect != null) {
+                            biggestRect instanceSet CPythonOpenCv.toRectTuple(fallbackRect, current)
+                        } else {
+                            // if no fallback provided, set to a default rect of (0, 0, 0, 0)
+                            biggestRect instanceSet CPythonLanguage.tuple(0.v, 0.v, 0.v, 0.v)
                         }
                     }
                 }

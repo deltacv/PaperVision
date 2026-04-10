@@ -71,6 +71,7 @@ nod_sumintegers,Sum Integers,Sumar Enteros
 nod_codesnippet,Code Snippet,Trozo de Codigo
 att_input,Input,Entrada
 att_output,Output,Salida
+att_fallback,Fallback,Valor Alternativo
 att_position,Position,Posicion
 att_size,Size,Tamaño
 att_scale,Scale,Escala

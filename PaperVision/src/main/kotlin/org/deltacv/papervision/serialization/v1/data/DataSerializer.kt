@@ -22,6 +22,7 @@ import com.google.gson.*
 import com.google.gson.reflect.TypeToken
 import org.deltacv.papervision.serialization.v1.data.adapter.dataSerializableGson
 
+@Deprecated("Use the v2 serialization system instead. Will be completely removed in a future version.")
 object DataSerializer {
 
     val type = object : TypeToken<Map<String, List<DataSerializable<*>>>>() {}.type

@@ -115,8 +115,9 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     val hasUserNodes
         get() = nodes.inmutable.any { it.isDeletable }
+    val hasUserLinks
+        get() = links.inmutable.any { it.isDeletable }
 
-    // UI components
     val nodeList by lazy { NodeList(paperVision, keyManager, PaperNodeRegistry.nodes) }
 
     val options = mutableMapOf<String, Option>()
@@ -214,7 +215,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
 
         paperVision.onDeserialization.once {
-            if(hasUserNodes) {
+            if(hasUserNodes || hasUserLinks) {
                 emptyStateWindow.delete()
             } else {
                 emptyStateWindow.enable()
@@ -697,8 +698,10 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             window.delete()
         }
 
-        val link = Link(attribute.id, window.input.id, false, shouldSerialize = false)
-        link.enable()
+        paperVision.onUpdate.once {
+            val link = Link(attribute.id, window.input.id, isDeletable = false, shouldSerialize = false)
+            link.enable()
+        }
 
         return window
     }
@@ -883,7 +886,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         for (linkId in selectedLinks) {
             links[linkId]?.run {
-                if (isDestroyableByUser) {
+                if (isDeletable) {
                     linksToDelete.add(this)
                 }
             }

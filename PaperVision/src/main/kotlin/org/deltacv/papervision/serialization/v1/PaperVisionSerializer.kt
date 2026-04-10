@@ -30,6 +30,7 @@ import org.deltacv.papervision.serialization.v1.data.DataSerializable
 import org.deltacv.papervision.serialization.v1.data.DataSerializer
 import org.deltacv.papervision.serialization.v1.data.adapter.dataSerializableGson
 
+@Deprecated("Use the v2 serialization system instead. Will be completely removed in a future version.")
 object PaperVisionSerializer {
 
     fun serialize(nodes: List<Node<*>>, links: List<Link>): String {

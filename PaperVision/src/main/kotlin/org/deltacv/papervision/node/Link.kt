@@ -37,7 +37,7 @@ import org.deltacv.papervision.util.loggerForThis
 class Link(
     a: Int = -1,
     b: Int = -1,
-    val isDestroyableByUser: Boolean = true,
+    val isDeletable: Boolean = true,
     override val shouldSerialize: Boolean = true
 ) : DrawableIdElementBase<Link>(),
     DataSerializable<LinkSerializationData>,

@@ -29,7 +29,6 @@ class DecomposerNode : DrawNode<NoSession>() {
     private var previousLinkedAttribute: Attribute? = null
     private var wasJustDecoded = false
     private var decodedWaitFrames = 0
-    private var hasLoggedFirstDraw = false
 
     val input = AnyAttribute(INPUT, "$[att_attribute]", linkAcceptor = {
         if (it is TypedAttribute<*>) {
@@ -48,10 +47,6 @@ class DecomposerNode : DrawNode<NoSession>() {
 
     override fun drawNode() {
         val currentLinkedAttribute = input.availableLinkedAttribute
-
-        if(!hasLoggedFirstDraw) {
-            hasLoggedFirstDraw = true
-        }
 
         if(wasJustDecoded) {
             if(currentLinkedAttribute != null) {

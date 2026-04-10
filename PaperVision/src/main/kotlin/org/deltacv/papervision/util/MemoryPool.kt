@@ -18,10 +18,8 @@
 
 package org.deltacv.papervision.util
 
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.slf4j.LoggerFactory
 
 /**
  * A tiered byte-array pool that avoids per-exact-size pool fragmentation.
@@ -47,19 +45,17 @@ class MemoryPool(
     enum class MemoryBehavior { ALLOCATE_WHEN_EXHAUSTED, DISCARD_WHEN_EXHAUSTED }
     enum class AllocationMode { EXACT, POWER_OF_TWO }
 
-    private val logger = LoggerFactory.getLogger(MemoryPool::class.java)
-
     private class TierEntry(val size: Int) {
-        val deque  = ArrayDeque<ByteArray>()
-        val mutex  = Mutex()
+        val deque = ArrayDeque<ByteArray>()
+        val mutex = Mutex()
     }
 
-    private val tiers      = mutableListOf<TierEntry>()
-    private val tiersLock  = Mutex()
+    private val tiers = mutableListOf<TierEntry>()
+    private val tiersLock = Mutex()
 
     /** Returns (and lazily creates) the tier that exactly matches [size]. */
-    private fun tierFor(size: Int): TierEntry = runBlocking {
-        tiersLock.withLock {
+    private suspend fun tierFor(size: Int): TierEntry {
+        return tiersLock.withLock {
             tiers.firstOrNull { it.size == size }
                 ?: TierEntry(size).also { entry ->
                     tiers.add(entry)
@@ -72,7 +68,7 @@ class MemoryPool(
      * Returns a buffer whose size is >= [size], taken from the smallest fitting tier.
      * Null is returned only when `behavior == DISCARD_WHEN_EXHAUSTED` and the pool is empty.
      */
-    fun getOrCreate(
+    suspend fun getOrCreate(
         size: Int,
         behavior: MemoryBehavior = MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED,
         mode: AllocationMode = AllocationMode.POWER_OF_TWO
@@ -87,8 +83,11 @@ class MemoryPool(
 
         val entry = tierFor(tierSize)
 
-        // Pop under the per-tier mutex; allocate outside to avoid holding the lock during GC.
-        val pooled = runBlocking { entry.mutex.withLock { entry.deque.removeLastOrNull() } }
+        // Lock only for deque access
+        val pooled = entry.mutex.withLock {
+            entry.deque.removeLastOrNull()
+        }
+
         return pooled ?: when (behavior) {
             MemoryBehavior.ALLOCATE_WHEN_EXHAUSTED -> ByteArray(tierSize)
             MemoryBehavior.DISCARD_WHEN_EXHAUSTED  -> null
@@ -96,27 +95,28 @@ class MemoryPool(
     }
 
     /**
-     * Returns a buffer to its natural tier.  The buffer's size must match an existing
-     * tier exactly (i.e. be a power-of-two when the pool is used in POWER_OF_TWO mode);
-     * buffers that don't match any tier are silently discarded rather than corrupting state.
+     * Returns a buffer to its natural tier.
      */
-    fun returnBuffer(buffer: ByteArray) {
-        val entry = runBlocking { tiersLock.withLock { tiers.firstOrNull { it.size == buffer.size } } } ?: return
-        runBlocking {
-            entry.mutex.withLock {
-                if (entry.deque.size < tierCapacity) {
-                    entry.deque.addLast(buffer)
-                }
-                // If tier is full, discard — the GC will handle it.
+    suspend fun returnBuffer(buffer: ByteArray) {
+        val entry = tiersLock.withLock {
+            tiers.firstOrNull { it.size == buffer.size }
+        } ?: return
+
+        entry.mutex.withLock {
+            if (entry.deque.size < tierCapacity) {
+                entry.deque.addLast(buffer)
             }
         }
     }
 
-    /** Drop all pooled buffers, allowing them to be GC'd immediately. */
-    fun clear() {
-        // Snapshot the tier list under the structural lock, then clear each tier
-        // under its own mutex so in-flight getOrCreate / returnBuffer calls stay safe.
-        val snapshot = runBlocking { tiersLock.withLock { tiers.toList() } }
-        snapshot.forEach { entry -> runBlocking { entry.mutex.withLock { entry.deque.clear() } } }
+    /** Drop all pooled buffers. */
+    suspend fun clear() {
+        val snapshot = tiersLock.withLock { tiers.toList() }
+
+        snapshot.forEach { entry ->
+            entry.mutex.withLock {
+                entry.deque.clear()
+            }
+        }
     }
 }
