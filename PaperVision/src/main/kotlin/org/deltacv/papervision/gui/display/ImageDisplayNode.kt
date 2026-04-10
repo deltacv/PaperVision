@@ -34,7 +34,8 @@ import org.deltacv.papervision.serialization.v2.DataEncoder
 @PaperNode(
     name = "nod_previewdisplay",
     category = NodeCategory.HIGH_LEVEL_CV,
-    showInList = false
+    showInList = false,
+    instantiable = false
 )
 @SerializeIgnore
 class ImageDisplayNode(

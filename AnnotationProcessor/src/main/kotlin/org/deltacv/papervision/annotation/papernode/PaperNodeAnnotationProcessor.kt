@@ -18,13 +18,17 @@
 
 package org.deltacv.papervision.annotation.papernode
 
+import com.google.devtools.ksp.getConstructors
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
+import com.google.devtools.ksp.validate
 import com.squareup.kotlinpoet.*
 
 class PaperNodeAnnotationProcessor(
     private val environment: SymbolProcessorEnvironment
 ) : SymbolProcessor {
+
+    private val logger = environment.logger
 
     private val moduleName = environment.options["moduleName"] ?: ""
     private val packageName: String = environment.options["paperNodeClassesMetadataPackage"] ?: "org.deltacv.papervision.node.generated"
@@ -41,38 +45,92 @@ class PaperNodeAnnotationProcessor(
     )
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val annotatedSymbols = resolver.getSymbolsWithAnnotation("org.deltacv.papervision.node.PaperNode")
+        val symbols = resolver.getSymbolsWithAnnotation("org.deltacv.papervision.node.PaperNode")
+            .filterIsInstance<KSClassDeclaration>()
 
-        val classList = annotatedSymbols.filterIsInstance<KSClassDeclaration>()
+        val deferred = symbols.filterNot { it.validate() }.toList()
+        val valid = symbols.filter { it.validate() }
 
-        generateRegistrationFile(classList)
+        generateRegistrationFile(valid)
 
-        return emptyList()
+        return deferred
     }
 
     private fun generateRegistrationFile(classes: Sequence<KSClassDeclaration>) {
-        val entries = classes.map { cls ->
+        data class Entry(val className: ClassName, val category: String, val instantiable: Boolean)
+
+        val entries = mutableListOf<Entry>()
+        var hasErrors = false
+
+        for (cls in classes) {
+            if (cls.qualifiedName == null) {
+                logger.error("Could not resolve qualified name for ${cls.simpleName.asString()}", cls)
+                hasErrors = true
+                continue
+            }
+
             val annotation = cls.annotations.first { it.shortName.asString() == "PaperNode" }
             val categoryDecl = annotation.arguments
                 .first { it.name?.asString() == "category" }
                 .value as KSClassDeclaration
+                
+            val instantiable = annotation.arguments
+                .first { it.name?.asString() == "instantiable" }
+                .value as Boolean
 
-            val className = ClassName(cls.packageName.asString(), cls.simpleName.asString())
-            className to categoryDecl.simpleName.asString()
-        }.toList()
+            if (instantiable) {
+                val hasNoArgCtor =
+                    cls.primaryConstructor?.parameters?.all { it.hasDefault } == true ||
+                    cls.getConstructors().any { ctor ->
+                        ctor.parameters.isEmpty() || ctor.parameters.all { it.hasDefault }
+                    }
+
+                if (!hasNoArgCtor) {
+                    logger.error(
+                        "Class ${cls.qualifiedName!!.asString()} is annotated with @PaperNode(instantiable = true) " +
+                        "but has no no-arg constructor. Add a no-arg constructor, provide " +
+                        "default values for all constructor parameters, or set instantiable = false.",
+                        cls
+                    )
+                    hasErrors = true
+                    continue
+                }
+            }
+
+            entries += Entry(
+                ClassName(cls.packageName.asString(), cls.simpleName.asString()),
+                categoryDecl.simpleName.asString(),
+                instantiable
+            )
+        }
+
+        if (hasErrors) return
+
+        if (entries.isEmpty()) return
 
         val sourceFiles = classes.map { it.containingFile!! }.toList()
 
         val registerAllFun = FunSpec.builder("registerAll")
             .also { func ->
-                for ((className, category) in entries) {
-                    func.addStatement(
-                        "%T.registerNode(%T::class.java,·%T.%L)",
-                        paperNodeRegistryClass,
-                        className,
-                        nodeCategoryClass,
-                        category
-                    )
+                for ((className, category, instantiable) in entries) {
+                    if (instantiable) {
+                        func.addStatement(
+                            "%T.registerNode(%T::class, %T.%L) { %T() }",
+                            paperNodeRegistryClass,
+                            className,
+                            nodeCategoryClass,
+                            category,
+                            className
+                        )
+                    } else {
+                        func.addStatement(
+                            "%T.registerNode(%T::class, %T.%L)",
+                            paperNodeRegistryClass,
+                            className,
+                            nodeCategoryClass,
+                            category
+                        )
+                    }
                 }
             }
             .build()
@@ -101,6 +159,3 @@ class PaperNodeAnnotationProcessor(
         }
     }
 }
-
-
-

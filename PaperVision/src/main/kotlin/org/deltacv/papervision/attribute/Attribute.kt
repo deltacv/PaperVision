@@ -175,7 +175,7 @@ abstract class Attribute :
         } else link.aAttrib
     }
 
-    val allLinkedAttributes get() = enabledLinks.map {
+    val allLinkedAttributes get() = links.map {
         if(it.aAttrib == this) {
             it.bAttrib
         } else it.aAttrib

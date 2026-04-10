@@ -54,13 +54,13 @@ class DeleteNodesAction(
     val nodes: List<Node<*>>
 ) : Action() {
     override fun undo() {
-        nodes.forEach {
-            if(it.isEnabled) return
+        for(node in nodes) {
+            if(node.isEnabled) continue
 
-            if(it.hasEnabled) {
-                it.restore()
+            if(node.hasEnabled) {
+                node.restore()
             } else {
-                it.enable()
+                node.enable()
             }
         }
     }

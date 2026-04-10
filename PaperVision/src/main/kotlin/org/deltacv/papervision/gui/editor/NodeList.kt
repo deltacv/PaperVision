@@ -28,25 +28,21 @@ import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiCond
 import imgui.flag.ImGuiMouseButton
 import imgui.flag.ImGuiWindowFlags
+import org.deltacv.mai18n.tr
 import org.deltacv.papervision.PaperVision
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.gui.Window
+import org.deltacv.papervision.gui.font.Font
 import org.deltacv.papervision.gui.isModalWindowOpen
 import org.deltacv.papervision.gui.style.opacity
-import org.deltacv.papervision.gui.font.Font
-import org.deltacv.papervision.id.container.IdContainer
+import org.deltacv.papervision.id.container.DenseIdContainer
 import org.deltacv.papervision.id.container.IdContainerStack
 import org.deltacv.papervision.io.KeyManager
-import org.deltacv.papervision.node.NodeCategory
-import org.deltacv.papervision.node.DrawNode
-import org.deltacv.papervision.node.Node
-import org.deltacv.papervision.node.PaperNode
+import org.deltacv.papervision.node.*
 import org.deltacv.papervision.util.ElapsedTime
 import org.deltacv.papervision.util.flags
 import org.deltacv.papervision.util.loggerForThis
-import org.deltacv.mai18n.tr
-import org.deltacv.papervision.id.container.DenseIdContainer
-import org.deltacv.papervision.node.CategorizedNodes
+import kotlin.reflect.KClass
 
 class NodeList(
     val paperVision: PaperVision,
@@ -76,7 +72,7 @@ class NodeList(
 
     private lateinit var listContext: ImNodesEditorContext
 
-    private var highlightedNodeClass: Class<out Node<*>>? = null
+    private var highlightedNodeClass: KClass<out Node<*>>? = null
     private var highlightedNode: Int? = null
 
     private var highlightTimer = ElapsedTime()
@@ -285,7 +281,7 @@ class NodeList(
 
         if (highlightedNodeClass != null) {
             for (node in listNodes) {
-                if (node::class.java == highlightedNodeClass) {
+                if (node::class == highlightedNodeClass) {
                     if (node.id != highlightedNode) {
                         highlightedNode = node.id
 
@@ -342,7 +338,7 @@ class NodeList(
         if (ImGui.isMouseClicked(ImGuiMouseButton.Left)) {
             if (hoveredNode >= 0 && !headers.isHeaderHovered) {
                 val instance = paperVision.nodeEditor.addNode(
-                    listNodes[hoveredNode]!!::class.java
+                    listNodes[hoveredNode]!!::class
                 ) // add node with the class by using reflection
 
                 if (instance is DrawNode<*>) {
@@ -362,7 +358,7 @@ class NodeList(
         }
     }
 
-    fun highlight(nodeClass: Class<out Node<*>>) {
+    fun highlight(nodeClass: KClass<out Node<*>>) {
         highlightedNodeClass = nodeClass
     }
 
@@ -408,14 +404,14 @@ class NodeList(
             val list = mutableListOf<Node<*>>()
 
             for (nodeClass in nodeClasses) {
-                if (nodeClass.getAnnotation(PaperNode::class.java)?.showInList == false) {
+                if (nodeClass.paperNodeAnnotation?.showInList == false) {
                     continue
                 }
 
-                val instance = Node.instantiateNode(nodeClass)
+                val instance = PaperNodeRegistry.instantiate(nodeClass)
 
                 if (instance == null) {
-                    logger.warn("Skipping node ${nodeClass.typeName}")
+                    logger.warn("Skipping node ${nodeClass.simpleName}")
                     continue
                 }
 
@@ -429,7 +425,7 @@ class NodeList(
 
             if (list.isNotEmpty()) {
                 // sort alphabetically
-                list.sortBy { if (it is DrawNode<*>) it.annotationData.name else it::class.java.simpleName }
+                list.sortBy { if (it is DrawNode<*>) it.annotationData.name else it::class.simpleName }
                 map[category] = list
             }
         }

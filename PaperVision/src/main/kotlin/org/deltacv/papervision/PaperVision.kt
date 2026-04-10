@@ -114,7 +114,7 @@ class PaperVision(
     val textureProcessorQueues: IdContainer<TextureProcessorQueue> = SingleIdContainer()
     val fonts: IdContainer<Font>                                   = SparseIdContainer()
     val streamDisplays: IdContainer<ImageDisplay>                  = DenseIdContainer()
-    val actions: StackIdContainer<Action>                   = StackIdContainer()
+    val actions: StackIdContainer<Action>                          = StackIdContainer()
     val popups: IdContainer<Popup>                                 = DenseIdContainer()
     val misc: IdContainer<Misc>                                    = SparseIdContainer()
 
@@ -151,8 +151,8 @@ class PaperVision(
         config.load()
 
         // serialize and log
-        keyManager.addShortcut(keyManager.keys.NativeLeftSuper, keyManager.keys.ArrowDown) {
-            logger.info("-- Serialized project for Ctrl + Down debugging --")
+        keyManager.addShortcut(keyManager.keys.NativeLeftSuper, keyManager.keys.Spacebar) {
+            logger.info("-- Serialized project for Ctrl + Spacebar debugging --")
             logger.info(JsonCodec().encode(PaperVisionProject.from(this)))
         }
 

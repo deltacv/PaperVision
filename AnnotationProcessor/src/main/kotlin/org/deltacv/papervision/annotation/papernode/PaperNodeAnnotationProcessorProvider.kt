@@ -24,7 +24,7 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
 class PaperNodeAnnotationProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return _root_ide_package_.org.deltacv.papervision.annotation.papernode.PaperNodeAnnotationProcessor(environment)
+        return PaperNodeAnnotationProcessor(environment)
     }
 }
 

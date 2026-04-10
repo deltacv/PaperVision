@@ -46,9 +46,9 @@ class DeleteLinksAction(
     val links: List<Link>
 ) : Action() {
     override fun undo() {
-        links.forEach {
-            if(it.isEnabled) return
-            it.enable()
+        for(link in links) {
+            if(link.isEnabled) continue
+            link.restore()
         }
     }
 

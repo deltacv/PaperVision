@@ -23,7 +23,8 @@ annotation class PaperNode(
     val name: String,
     val category: NodeCategory,
     val description: String = "",
-    val showInList: Boolean = true
+    val showInList: Boolean = true,
+    val instantiable: Boolean = true
 )
 
 

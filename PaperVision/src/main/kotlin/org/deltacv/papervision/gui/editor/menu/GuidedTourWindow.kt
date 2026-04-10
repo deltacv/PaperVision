@@ -135,7 +135,7 @@ val Stage4: GuidedTourStage = {
 
         Close()
 
-        nodeEditor.nodeList.highlight(ThresholdNode::class.java)
+        nodeEditor.nodeList.highlight(ThresholdNode::class)
     }
 }
 
@@ -197,7 +197,7 @@ val Stage7: GuidedTourStage = {
         ImGui.text(tr("mis_guidedtour_15"))
         Close()
 
-        nodeEditor.paperVision.nodeEditor.nodeList.highlight(FindContoursNode::class.java)
+        nodeEditor.paperVision.nodeEditor.nodeList.highlight(FindContoursNode::class)
     } else {
         centerWindow()
 
@@ -246,7 +246,7 @@ val Stage9: GuidedTourStage = {
         ImGui.text(tr("mis_guidedtour_18"))
         Close()
 
-        nodeEditor.paperVision.nodeEditor.nodeList.highlight(DrawContoursNode::class.java)
+        nodeEditor.paperVision.nodeEditor.nodeList.highlight(DrawContoursNode::class)
     } else {
         centerWindow()
 

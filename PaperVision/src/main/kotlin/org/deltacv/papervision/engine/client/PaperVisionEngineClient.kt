@@ -22,6 +22,9 @@ import org.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
 import org.deltacv.papervision.engine.ByteMessageTag
 import org.deltacv.papervision.engine.ByteMessages
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.channels.BufferOverflow
 import org.deltacv.papervision.engine.client.message.PaperVisionEngineMessage
 import org.deltacv.papervision.engine.client.response.PaperVisionEngineMessageResponse
@@ -46,6 +49,7 @@ class PaperVisionEngineClient(
     val onProcess = PaperEventHandler("PaperVisionEngineClient-OnProcess")
 
     private val messagesAwaitingResponse = mutableMapOf<Int, AwaitingMessageData>()
+    private val mapMutex = Mutex()
 
     private val bytesChannel = Channel<ByteArray>(capacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
@@ -60,9 +64,9 @@ class PaperVisionEngineClient(
     }
 
     fun acceptResponse(response: PaperVisionEngineMessageResponse) {
-        val data = messagesAwaitingResponse[response.id] ?: return
+        val data = runBlocking { mapMutex.withLock { messagesAwaitingResponse[response.id] } } ?: return
         if (!data.message.persistent) {
-            messagesAwaitingResponse.remove(response.id)
+            runBlocking { mapMutex.withLock { messagesAwaitingResponse.remove(response.id) } }
         }
 
         data.message.acceptResponse(response)
@@ -73,29 +77,32 @@ class PaperVisionEngineClient(
     }
 
     fun sendMessage(message: PaperVisionEngineMessage) {
-        messagesAwaitingResponse[message.id] = AwaitingMessageData(message, System.currentTimeMillis())
+        runBlocking { mapMutex.withLock { messagesAwaitingResponse[message.id] = AwaitingMessageData(message, System.currentTimeMillis()) } }
         bridge.sendMessage(this, message)
     }
 
     fun process() {
         val now = System.currentTimeMillis()
         val droppedOrphans = mutableListOf<Int>()
-        
-        val activeTrackingState = messagesAwaitingResponse.toMap()
-        
-        for((id, data) in activeTrackingState) {
+
+        // Snapshot under the lock so JPEG-worker mutations don't race with our iteration.
+        val activeTrackingState = runBlocking { mapMutex.withLock { messagesAwaitingResponse.toMap() } }
+
+        for ((id, data) in activeTrackingState) {
             val timeMillis = now - data.timestamp
             data.message.acceptElapsedTime(timeMillis)
-            
+
             // Hard TTL bound to purge orphaned requests disconnected from network
             if (timeMillis > 5000L && !data.message.persistent) {
                 droppedOrphans.add(id)
             }
         }
-        
+
         if (droppedOrphans.isNotEmpty()) {
-            for (id in droppedOrphans) {
-                messagesAwaitingResponse.remove(id)
+            runBlocking {
+                mapMutex.withLock {
+                    droppedOrphans.forEach { messagesAwaitingResponse.remove(it) }
+                }
             }
         }
 

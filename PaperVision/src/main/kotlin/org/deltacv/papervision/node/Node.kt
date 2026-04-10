@@ -47,6 +47,8 @@ import org.deltacv.papervision.util.loggerForThis
 import org.deltacv.mai18n.tr
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+import kotlin.reflect.KClass
+import kotlin.reflect.full.primaryConstructor
 
 abstract class Node<S: CodeGenSession>(
     val isDeletable: Boolean = true,
@@ -317,16 +319,6 @@ abstract class Node<S: CodeGenSession>(
 
         @JvmStatic protected val INPUT = AttributeMode.INPUT
         @JvmStatic protected val OUTPUT = AttributeMode.OUTPUT
-
-        fun instantiateNode(nodeClazz: Class<out Node<*>>): Node<*>? = try {
-            nodeClazz.getConstructor().newInstance()
-        } catch (e: NoSuchMethodException) {
-            logger.warn("Node class ${nodeClazz.name} does not have a no-arg constructor", e)
-            null
-        } catch (e: Exception) {
-            logger.warn("Error instantiating node class ${nodeClazz.name}", e)
-            null
-        }
 
         fun checkSimpleRecursion(from: Node<*>, to: Node<*>): Boolean {
             val linksBetween = Link.getLinksBetween(from, to)

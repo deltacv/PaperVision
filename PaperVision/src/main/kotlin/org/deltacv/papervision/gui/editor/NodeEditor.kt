@@ -66,6 +66,7 @@ import org.deltacv.papervision.util.ElapsedTime
 import org.deltacv.papervision.util.event.PaperEventHandler
 import org.deltacv.papervision.util.flags
 import org.deltacv.papervision.util.loggerForThis
+import kotlin.reflect.KClass
 
 data class Option(
     val description: String,
@@ -659,8 +660,8 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         return if (count > 0) ImVec2(totalX / count, totalY / count) else null
     }
 
-    fun addNode(nodeClazz: Class<out Node<*>>): Node<*> {
-        val instance = Node.instantiateNode(nodeClazz)
+    fun addNode(nodeClazz: KClass<out Node<*>>): Node<*> {
+        val instance = PaperNodeRegistry.instantiate(nodeClazz)
             ?: throw IllegalArgumentException(
                 "Node $nodeClazz could not be instantiated, is it a valid Node subclass?"
             )
@@ -876,7 +877,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         if (ImNodes.numSelectedLinks() <= 0) return
 
         val selectedLinks = IntArray(ImNodes.numSelectedLinks())
-        ImNodes.getSelectedLinks(selectedLinks)
+          ImNodes.getSelectedLinks(selectedLinks)
 
         val linksToDelete = mutableListOf<Link>()
 
