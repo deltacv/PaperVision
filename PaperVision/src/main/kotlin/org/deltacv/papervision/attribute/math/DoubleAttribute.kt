@@ -169,6 +169,3 @@ class DoubleAttribute(
         nextValue = decoder.doubleOrNull("value") ?: decoder.intOrNull("value")?.toDouble() ?: 0.0
     }
 }
-
-
-

@@ -273,6 +273,7 @@ abstract class Node<S: CodeGenSession>(
 
     override fun decode(decoder: DataDecoder) {
         serializedId = decoder.int("id")
+        idContainer.reserveId(serializedId!!)
         logger.debug("Decoded node with id {} ({})", serializedId, CodecTypeRegistry.nameOf(this::class))
     }
 

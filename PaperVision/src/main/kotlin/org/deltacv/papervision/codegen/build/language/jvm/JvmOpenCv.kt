@@ -95,6 +95,17 @@ object JvmOpenCv {
 
     val RotatedRect = Type("RotatedRect", "org.opencv.core")
 
+    fun toRotatedRectInst(rect: GenValue.RotatedRect, langHolder: CodeGen.LanguageHolder) = when (rect) {
+        is GenValue.RotatedRect.Components -> langHolder.language {
+            GenValue.RotatedRect.Inst(RotatedRect.new(
+                Point.new(rect.x.v, rect.y.v),
+                Size.new(rect.w.v, rect.h.v),
+                rect.angle.v
+            ).resolved())
+        }
+        is GenValue.RotatedRect.Inst -> rect
+    }
+
     val Point = Type("Point", "org.opencv.core")
     val KeyPoint = Type("KeyPoint", "org.opencv.core")
 

@@ -108,6 +108,13 @@ class Link(
     }
 
     override fun restore() {
+        if(aAttrib == null || bAttrib == null) return
+
+        if(aAttrib === bAttrib) {
+            logger.warn("Ignoring self-link (attribute {} to attribute {})", a, b)
+            return
+        }
+
         if(aAttrib?.links?.contains(this) == false) {
             aAttrib?.links?.add(this)
             aAttrib?.onLink?.run()

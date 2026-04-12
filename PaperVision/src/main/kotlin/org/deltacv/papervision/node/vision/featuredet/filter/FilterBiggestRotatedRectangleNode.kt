@@ -20,25 +20,26 @@ package org.deltacv.papervision.node.vision.featuredet.filter
 
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.misc.ListAttribute
-import org.deltacv.papervision.attribute.rebuildOnChange
+import org.deltacv.papervision.attribute.rebuildOnLink
 import org.deltacv.papervision.attribute.vision.structs.RotatedRectAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
-import org.deltacv.papervision.codegen.build.Value
 import org.deltacv.papervision.codegen.build.DeclarableVariable
+import org.deltacv.papervision.codegen.build.Value
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.dsl.ScopeCtx
 import org.deltacv.papervision.codegen.dsl.generatorsBuilder
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
-import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.DrawNode
+import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.PaperNode
 import org.deltacv.papervision.serialization.v2.CodecType
 import org.deltacv.papervision.serialization.v2.DataDecoder
 import org.deltacv.papervision.serialization.v2.DataEncoder
+import org.deltacv.papervision.serialization.v2.objOrSkip
 
 @PaperNode(
     name = "nod_filterbiggest_rotrect",
@@ -49,11 +50,13 @@ import org.deltacv.papervision.serialization.v2.DataEncoder
 class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangleNode.Session>() {
 
     val input = ListAttribute(INPUT, "$[att_rotrects]", RotatedRectAttribute)
+    val fallback = RotatedRectAttribute(INPUT, "$[att_fallback]")
     val output = RotatedRectAttribute(OUTPUT, "$[att_biggestrot_rect]")
 
     override fun onEnable() {
-        + input.rebuildOnChange()
-        + output.rebuildOnChange()
+        + input.rebuildOnLink()
+        + fallback.rebuildOnLink()
+        + output
     }
 
     override val generators = generatorsBuilder {
@@ -63,7 +66,11 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
 
                 val rectsList = input.genValue(current)
 
-                val biggestRect = uniqueVariable("biggestRotRect", JvmOpenCv.RotatedRect.nullValue)
+                val fallbackRect = if(fallback.hasLink)
+                    fallback.genValue(current)
+                else null
+
+                val biggestRect = uniqueVariable("biggestRotRect", JvmOpenCv.RotatedRect.nullValue, isNullable = true)
 
                 group {
                     private(biggestRect)
@@ -120,6 +127,14 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                             }
                         }
                     }
+
+                    ifCondition(biggestRect equalsTo biggestRect.nullValue) {
+                        if (fallbackRect != null) {
+                            biggestRect instanceSet JvmOpenCv.toRotatedRectInst(fallbackRect, current).value.v
+                        } else {
+                            biggestRect instanceSet JvmOpenCv.RotatedRect.new()
+                        }
+                    }
                 }
 
                 session.biggestRect = GenValue.RotatedRect.Inst(biggestRect.resolved())
@@ -134,7 +149,11 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
 
                 val rectsList = input.genValue(current)
 
-                val biggestRect = uniqueVariable("biggest_rect", CPythonLanguage.nullValue)
+                val fallbackRect = if(fallback.hasLink)
+                    fallback.genValue(current)
+                else null
+
+                val biggestRect = uniqueVariable("biggest_rect", CPythonLanguage.nullValue, isNullable = true)
 
                 current.scope {
                     nameComment()
@@ -180,7 +199,7 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                                     biggestRect[2.v, CPythonLanguage.NoType] * biggestRect[3.v, CPythonLanguage.NoType]
 
                                 ifCondition(
-                                    biggestRect equalsTo CPythonLanguage.nullValue or (rectArea greaterThan biggestRectArea)
+                                    (biggestRect equalsTo CPythonLanguage.nullValue) or (rectArea greaterThan biggestRectArea)
                                 ) {
                                     biggestRect instanceSet rect
                                 }
@@ -188,6 +207,18 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
                                 separate()
                                 withRuntimeRect(element.value.v)
                             }
+                        }
+                    }
+
+                    ifCondition(biggestRect equalsTo CPythonLanguage.nullValue) {
+                        if (fallbackRect != null) {
+                            biggestRect instanceSet org.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.toRotatedRectTuple(fallbackRect, current)
+                        } else {
+                            biggestRect instanceSet CPythonLanguage.tuple(
+                                CPythonLanguage.tuple(0.v, 0.v),
+                                CPythonLanguage.tuple(0.v, 0.v),
+                                0.v
+                            )
                         }
                     }
                 }
@@ -210,13 +241,15 @@ class FilterBiggestRotatedRectangleNode : DrawNode<FilterBiggestRotatedRectangle
     override fun encode(encoder: DataEncoder) {
         super.encode(encoder)
         encoder.obj("input", input)
+        encoder.obj("fallback", fallback)
         encoder.obj("output", output)
     }
 
     override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
-        decoder.obj("input", input)
-        decoder.obj("output", output)
+        decoder.objOrSkip("input", input)
+        decoder.objOrSkip("fallback", fallback)
+        decoder.objOrSkip("output", output)
     }
 
     class Session : CodeGenSession {

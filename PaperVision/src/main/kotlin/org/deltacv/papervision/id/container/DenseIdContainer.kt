@@ -37,7 +37,10 @@ open class DenseIdContainer<T : IdElement> : AbstractIdContainer<T>() {
 
     override fun nextId(element: T): Int {
         val id = nextExternalId++
-        slots.add(element)
+
+        while (slots.size <= id) slots.add(null)
+        slots[id] = element
+
         if (!elements.contains(element)) elements.add(element)
         markInmutableDirty()
         return id
@@ -45,7 +48,10 @@ open class DenseIdContainer<T : IdElement> : AbstractIdContainer<T>() {
 
     override fun nextId(): Int {
         val id = nextExternalId++
-        slots.add(null)
+
+        while (slots.size <= id) slots.add(null)
+        // slot at id remains null, but the size is ensured
+
         markInmutableDirty()
         return id
     }

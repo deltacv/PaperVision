@@ -30,6 +30,7 @@ import org.deltacv.mai18n.tr
 import org.deltacv.papervision.attribute.misc.ListAttribute
 import org.deltacv.papervision.engine.client.message.TunerChangeValueMessage
 import org.deltacv.papervision.engine.client.message.TunerValue
+import org.deltacv.papervision.exception.AttributeGenException
 import org.deltacv.papervision.gui.font.Font
 
 interface AttributeType<A: TypedAttribute<*>> {
@@ -225,10 +226,24 @@ abstract class TypedAttribute<R: GenValue>(
                     tr("err_musthave_attachedattrib")
                 )
 
-                val value = linkedAttrib.genValue(current)
-                raiseAssert(value is R, tr("err_attachedattrib_isnot", R::class.simpleName ?: "unknown"))
+                if(linkedAttrib === this) {
+                    raise("err_cannotlink_toself")
+                }
 
-                value
+                if(current.codeGen.isBusy(this)) {
+                    raise("err_recursiondetected")
+                }
+
+                current.codeGen.markBusy(this)
+
+                try {
+                    val value = linkedAttrib.genValue(current)
+                    raiseAssert(value is R, tr("err_attachedattrib_isnot", R::class.simpleName ?: "unknown"))
+
+                    value
+                } finally {
+                    current.codeGen.unmarkBusy(this)
+                }
             } else {
                 inputFieldValue
             }

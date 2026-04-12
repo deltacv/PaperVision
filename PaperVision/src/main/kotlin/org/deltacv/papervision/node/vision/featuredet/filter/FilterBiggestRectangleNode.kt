@@ -41,6 +41,7 @@ import org.deltacv.papervision.node.PaperNode
 import org.deltacv.papervision.serialization.v2.CodecType
 import org.deltacv.papervision.serialization.v2.DataDecoder
 import org.deltacv.papervision.serialization.v2.DataEncoder
+import org.deltacv.papervision.serialization.v2.objOrSkip
 
 @PaperNode(
     name = "nod_filterbiggest_rect",
@@ -241,13 +242,15 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
     override fun encode(encoder: DataEncoder) {
         super.encode(encoder)
         encoder.obj("input", input)
+        encoder.obj("fallback", fallback)
         encoder.obj("output", output)
     }
 
     override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
-        decoder.obj("input", input)
-        decoder.obj("output", output)
+        decoder.objOrSkip("input", input)
+        decoder.objOrSkip("fallback", fallback)
+        decoder.objOrSkip("output", output)
     }
 
     class Session : CodeGenSession {

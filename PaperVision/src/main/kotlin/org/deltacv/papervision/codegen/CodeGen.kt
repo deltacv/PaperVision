@@ -18,6 +18,7 @@
 
 package org.deltacv.papervision.codegen
 
+import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.codegen.build.Scope
 import org.deltacv.papervision.codegen.dsl.CodeGenCtx
 import org.deltacv.papervision.codegen.language.Language
@@ -54,7 +55,17 @@ class CodeGen(
     val current = Current(this, processFrameScope, isForPreviz)
 
     internal val sessions = mutableMapOf<Generator<*, *>, CodeGenSession>()
-    internal val busyNodes = mutableListOf<Generator<*, *>>()
+
+    private val busyNodes = mutableListOf<Generator<*, *>>()
+    private val busyAttributes = mutableListOf<Attribute>()
+
+    fun isBusy(node: Generator<*, *>) = busyNodes.contains(node)
+    fun markBusy(node: Generator<*, *>) = busyNodes.add(node)
+    fun unmarkBusy(node: Generator<*, *>) = busyNodes.remove(node)
+
+    fun isBusy(attribute: Attribute) = busyAttributes.contains(attribute)
+    fun markBusy(attribute: Attribute) = busyAttributes.add(attribute)
+    fun unmarkBusy(attribute: Attribute) = busyAttributes.remove(attribute)
 
     internal val endingNodes = mutableListOf<GenNode<*>>()
 

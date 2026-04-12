@@ -42,6 +42,7 @@ import org.deltacv.papervision.node.PaperNode
 import org.deltacv.papervision.serialization.v2.CodecType
 import org.deltacv.papervision.serialization.v2.DataDecoder
 import org.deltacv.papervision.serialization.v2.DataEncoder
+import org.deltacv.papervision.serialization.v2.objOrSkip
 
 @PaperNode(
     name = "nod_boundingrotated_rect",
@@ -171,8 +172,8 @@ class BoundingRotatedRectsNode : DrawNode<BoundingRotatedRectsNode.Session>() {
 
     override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
-        decoder.obj("contours", contours)
-        decoder.obj("outputRects", outputRects)
+        decoder.objOrSkip("contours", contours)
+        decoder.objOrSkip("outputRects", outputRects)
     }
 
     class Session : CodeGenSession {

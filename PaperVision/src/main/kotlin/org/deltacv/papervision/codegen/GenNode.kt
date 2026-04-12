@@ -56,8 +56,8 @@ interface GenNode<S: CodeGenSession> : PolyglotGenerator<Unit, S> {
         if(session == null) {
             // prevents duplicate code in weird edge cases
             // (it's so hard to consider and test every possibility with nodes...)
-            if(!codeGen.busyNodes.contains(this)) {
-                codeGen.busyNodes.add(this)
+            if(!codeGen.isBusy(this)) {
+                codeGen.markBusy(this)
 
                 val name = genNodeName
 
@@ -65,7 +65,7 @@ interface GenNode<S: CodeGenSession> : PolyglotGenerator<Unit, S> {
 
                 codeGen.sessions[this] = genCode(Unit, current)
 
-                codeGen.busyNodes.remove(this)
+                codeGen.unmarkBusy(this)
 
                 logger.info("DONE generating code for ${name ?: this}")
 

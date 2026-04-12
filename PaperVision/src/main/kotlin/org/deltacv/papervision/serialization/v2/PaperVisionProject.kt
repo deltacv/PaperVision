@@ -69,10 +69,12 @@ class PaperVisionProject(
                     paperVision.nodeEditor.inputNode = node
                     createdInputNode = true
                 }
+
                 is OutputMatNode -> {
                     paperVision.nodeEditor.outputNode = node
                     createdOutputNode = true
                 }
+
                 is FlagsNode -> {
                     if (hasAddedFlags) {
                         throw IllegalStateException("Only one FlagsNode can be present in the node editor.")
@@ -107,6 +109,3 @@ class PaperVisionProject(
         }
     }
 }
-
-
-

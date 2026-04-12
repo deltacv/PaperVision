@@ -85,6 +85,20 @@ object CPythonOpenCv {
         }
     }
 
+    fun toRotatedRectTuple(rect: GenValue.RotatedRect, languageHolder: CodeGen.LanguageHolder) = languageHolder.language {
+        when(rect) {
+            is GenValue.RotatedRect.Components -> {
+                CPythonLanguage.tuple(
+                    CPythonLanguage.tuple(rect.x.v, rect.y.v),
+                    CPythonLanguage.tuple(rect.w.v, rect.h.v),
+                    rect.angle.v
+                )
+            }
+
+            is GenValue.RotatedRect.Inst -> rect.value.v
+        }
+    }
+
 }
 
 
