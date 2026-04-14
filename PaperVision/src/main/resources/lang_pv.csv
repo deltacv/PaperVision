@@ -24,6 +24,8 @@ nod_pipelineoutput,Pipeline Output,Salida
 nod_binarymask,Binary Mask,Mascara Binaria
 nod_colorthresh,Color Threshold,Umbral de Color
 nod_cvtcolor,Convert Color,Convertir Color
+nod_avgcolor,Average Color,Color Promedio
+nod_extractchannel,Extract Channel,Extraer Canal
 nod_blur,Blur,Difuminado
 nod_bitwiseor,Bitwise OR,OR Bitwise
 nod_bitwiseand,Bitwise AND,AND Bitwise
@@ -176,6 +178,8 @@ des_bitwiseand,Performs a bitwise AND operation<br>on two binary images.,Realiza
 des_bitwisexor,Performs a bitwise XOR operation<br>on two binary images.,Realiza una operación XOR a nivel<br>de bits en dos imágenes binarias.
 des_bitwisenot,Performs a bitwise NOT operation<br>on a binary image.,Realiza una operación NOT a nivel<br>de bits en una imagen binaria.
 des_cvtcolor,"Converts a Mat from its current color space<br>to the specified color space. If the mat is already<br>in the specified color space, no conversion is made.","Convierte un Mat de su espacio de color actual<br>al espacio de color especificado. Si el Mat ya está<br>en el espacio de color especificado,<br>no se realiza ninguna conversión."
+des_avgcolor,Calculates the average of each color<br>channel of the input image,Calcula el promedio de cada<br>canal de color de la imagen de entrad
+des_extractchannel,Extracts a single color channel<br>from the input image,Extrae un solo canal de<br>color de la imagen de entrada
 des_erodedilate,Erodes and dilates the areas<br>of a given binary image.,Erosiona y dilata las áreas<br>de una imagen binaria dada.
 des_binarymask,"Takes a normal image and performs a mask<br>based on a binary image, discards or includes areas<br>from the normal image based on the binary image.","Toma una imagen normal y aplica una máscara basada<br>en una imagen binaria, descartando o incluyendo áreas<br>de la imagen normal según la imagen binaria."
 des_colorthresh,"Performs a threshold in the input image<br>and returns a binary image, discarding<br>the pixels that were outside the range.","Realiza un umbral en la imagen de entrada<br>y devuelve una imagen binaria, descartando<br>los píxeles que estaban fuera del rango."

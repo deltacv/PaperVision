@@ -86,7 +86,7 @@ class ScalarAttribute(
             values?.getOrElse(3) { GenValue.Double.ZERO } ?: GenValue.Double.ZERO,
         )
 
-        return readGenValue(current, value)
+        return readGenValue<GenValue.Scalar>(current, value)
     }
 
 }

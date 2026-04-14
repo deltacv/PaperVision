@@ -17,12 +17,17 @@ import org.deltacv.papervision.node.DrawNode
 import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.PaperNode
 import org.deltacv.papervision.node.vision.ColorSpace
+import org.deltacv.papervision.serialization.v2.CodecType
+import org.deltacv.papervision.serialization.v2.DataDecoder
+import org.deltacv.papervision.serialization.v2.DataEncoder
+import org.deltacv.papervision.serialization.v2.objOrSkip
 
 @PaperNode(
-    name = "nod_averagecolor",
+    name = "nod_avgcolor",
     category = NodeCategory.IMAGE_PROC,
-    description = "des_averagecolor"
+    description = "des_avgcolor"
 )
+@CodecType
 class AverageColorNode : DrawNode<AverageColorNode.Session>() {
 
     val input = MatAttribute(INPUT, "$[att_input]")
@@ -42,14 +47,15 @@ class AverageColorNode : DrawNode<AverageColorNode.Session>() {
             current {
                 val inputValue = input.genValue(current)
 
-                val outputVar = uniqueVariable("${inputValue.value.v}Avg", JvmOpenCv.Scalar.new())
+                val outputVar = uniqueVariable("${inputValue.value.v}Avg", JvmOpenCv.Scalar.new(0.v, 0.v, 0.v, 0.v))
 
                 group {
                     private(outputVar)
                 }
 
                 current.scope {
-                    outputVar instanceSet inputValue.value.v.callValue("mean", JvmOpenCv.Scalar)
+                    nameComment()
+                    outputVar instanceSet JvmOpenCv.Core.callValue("mean", JvmOpenCv.Scalar, inputValue.value.v)
                 }
 
                 session.output = GenValue.Scalar.Inst(outputVar.resolved())
@@ -96,6 +102,18 @@ class AverageColorNode : DrawNode<AverageColorNode.Session>() {
                 GenValue.Double.Runtime.defer { current.sessionOf(this)?.elementGenValues?.get(index) }
             } else noValue(attrib)
         }
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("input", input)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.objOrSkip("input", input)
+        decoder.objOrSkip("output", output)
     }
 
     class Session : CodeGenSession {

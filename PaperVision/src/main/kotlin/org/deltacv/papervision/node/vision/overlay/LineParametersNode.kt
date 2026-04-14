@@ -28,6 +28,7 @@ import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.dsl.polyglot
+import org.deltacv.papervision.codegen.language.BaseLanguage
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -62,19 +63,35 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
     }
 
     override val generators = polyglot {
-        generatorFor(JavaLanguage) {
+        generatorFor<BaseLanguage> {
             val session = Session()
 
             current {
                 val lineColorValue = lineColor.genValue(current)
+                val lineThicknessValue = lineThickness.genValue(current)
 
                 val lineColorVar = uniqueVariable("lineColor", JvmOpenCv.Scalar(lineColorValue, current))
-
-                val lineThicknessVar = uniqueVariable("lineThickness", lineThickness.genValue(current).v)
+                val lineThicknessVar = uniqueVariable("lineThickness", lineThicknessValue.v)
 
                 group {
                     public(lineColorVar, lineColor.label())
                     public(lineThicknessVar, lineThickness.label())
+                }
+
+                if(lineColorValue is GenValue.Scalar.Inst || lineThicknessValue is GenValue.Int.Runtime) {
+                    current.scope {
+                        nameComment()
+
+                        // if these are runtime values, we need to set them to the line variables
+                        // to reflect any changes that might have happened since it was first set
+                        // (e.g. through a tuner)
+                        if(lineColorValue is GenValue.Scalar.Inst) {
+                            lineColorVar instanceSet JvmOpenCv.Scalar(lineColorValue, current)
+                        }
+                        if(lineThicknessValue is GenValue.Int.Runtime) {
+                            lineThicknessVar instanceSet lineThickness.genValue(current).v
+                        }
+                    }
                 }
 
                 session.lineParameters = GenValue.LineParameters.Runtime(GenValue.Scalar.Inst(lineColorVar.resolved()), GenValue.Int.Runtime(lineThicknessVar.resolved()))

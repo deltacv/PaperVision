@@ -111,7 +111,7 @@ class CodeGenManager(val paperVision: PaperVision) {
                 font = Font.find("calcutta-big")
             ).enable()
 
-            logger.error("-- CodeGen #${codeGen.hashCodeString}FAILED due to ${if(ex is GenException) "gen" else "unknown"} exception --", ex)
+            logger.error("-- CodeGen #${codeGen.hashCodeString} FAILED due to ${if(ex is GenException) "gen" else "unknown"} exception --", ex)
             return null
         }
 

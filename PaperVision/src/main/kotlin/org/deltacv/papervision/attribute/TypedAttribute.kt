@@ -313,11 +313,11 @@ abstract class TypedAttribute<R: GenValue>(
     open fun readEditorValue(): EditorValue? = null
     open fun readTunerValue(): TunerValue? = null
 
-    override val editorValue get() = when {
+    override val internalEditorValue get() = when {
         mode == AttributeMode.INPUT -> availableLinkedAttribute?.editorValue ?: readEditorValue()
         else -> readEditorValue()
     }
-    override val tunerValue get() = when {
+    override val internalTunerValue get() = when {
         mode == AttributeMode.INPUT -> readTunerValue()
         else -> null
     }

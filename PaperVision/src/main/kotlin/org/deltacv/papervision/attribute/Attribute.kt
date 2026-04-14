@@ -92,6 +92,8 @@ abstract class Attribute :
         private set
 
     private var lastFrameDrawn = -1
+    private var isProcessingEditorValue = false
+    private var isProcessingTunerValue = false
 
     val onDelete = PaperEventHandler("OnDelete-${this::class.simpleName}")
 
@@ -216,8 +218,31 @@ abstract class Attribute :
 
     abstract fun genValue(current: CodeGen.Current): GenValue
 
-    open val editorValue: EditorValue? = null
-    open val tunerValue: TunerValue? = null
+    open val editorValue: EditorValue?
+        get() {
+            if(isProcessingEditorValue) return EditorValue.Null
+            isProcessingEditorValue = true
+            try {
+                return internalEditorValue
+            } finally {
+                isProcessingEditorValue = false
+            }
+        }
+
+    protected open val internalEditorValue: EditorValue? get() = null
+
+    open val tunerValue: TunerValue?
+        get() {
+            if(isProcessingTunerValue) return TunerValue.NullValue
+            isProcessingTunerValue = true
+            try {
+                return internalTunerValue
+            } finally {
+                isProcessingTunerValue = false
+            }
+        }
+
+    protected open val internalTunerValue: TunerValue? get() = null
 
     fun rebuildPreviz() {
         if(!isOnEditor) return
