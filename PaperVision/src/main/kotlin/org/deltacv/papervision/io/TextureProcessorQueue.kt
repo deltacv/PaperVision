@@ -267,8 +267,7 @@ class TextureProcessorQueue(
         memoryBehavior: MemoryPool.MemoryBehavior
     ) = getOrCreateReusableBufferBlocking(size, memoryBehavior)
 
-    override val idContainer: IdContainer<TextureProcessorQueue>
-            by lazy { IdContainerStack.local.peekNonNull() }
+    override val idContainer: IdContainer<TextureProcessorQueue> by lazy { IdContainerStack.local.peekNonNull() }
 
     private class FutureTexture(
         val id: Int,

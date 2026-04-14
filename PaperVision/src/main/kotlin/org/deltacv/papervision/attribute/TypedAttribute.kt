@@ -30,7 +30,6 @@ import org.deltacv.mai18n.tr
 import org.deltacv.papervision.attribute.misc.ListAttribute
 import org.deltacv.papervision.engine.client.message.TunerChangeValueMessage
 import org.deltacv.papervision.engine.client.message.TunerValue
-import org.deltacv.papervision.exception.AttributeGenException
 import org.deltacv.papervision.gui.font.Font
 
 interface AttributeType<A: TypedAttribute<*>> {
@@ -60,7 +59,7 @@ abstract class TypedAttribute<R: GenValue>(
     val doEditorChangeChecking: Boolean = false
 ) : Attribute() {
 
-    abstract var variableName: String?
+    abstract var attributeName: String?
 
     open val styleColor get() = attributeType.styleColor
     open val styleHoveredColor get() = attributeType.styleHoveredColor
@@ -68,32 +67,44 @@ abstract class TypedAttribute<R: GenValue>(
     open val linkColor get() = styleColor
     open val linkHoveredColor get() = styleHoveredColor
 
-    var drawDescriptiveText = true
-    var drawType = true
+    data class Layout(
+        val showLabel: Boolean = true,
+        val showType: Boolean = true,
+        val isInline: Boolean = false,
+        val labelFont: Font? = null
+    )
 
-    var inlineInput = false
+    var layout = Layout()
+
+    fun configureLayout(
+        showLabel: Boolean = layout.showLabel,
+        showType: Boolean = layout.showType,
+        isInline: Boolean = layout.isInline,
+        labelFont: Font? = layout.labelFont
+    ) {
+        layout = layout.copy(showLabel = showLabel, showType = showType, isInline = isInline, labelFont = labelFont)
+    }
 
     open var icon = attributeType.icon
 
     open var drawAfterTextSize = ImVec2()
         protected set
 
-    private var isFirstDraw = true
-    private var isSecondDraw = false
+    enum class Stage { INIT, MEASURE, READY }
+    private var stage = Stage.INIT
 
     private var cachedLabels = mutableMapOf<Int?, String>()
 
-    private val finalVarName by lazy {
-        variableName ?: if (mode == AttributeMode.INPUT) "$[mis_input]" else "$[mis_output]"
-    }
+    protected val finalVarName get() =
+        attributeName ?: if (mode == AttributeMode.INPUT) "$[mis_input]" else "$[mis_output]"
 
     val nodeSize = ImVec2()
 
     private var previousLinkedAttributes: List<Attribute?> = emptyList()
     private var previousGet: Any? = null
 
-    private val monospaceFont by Font.findLazy("jetbrains-mono")
-    private val fontAwesome by Font.findLazy("font-awesome")
+    protected val monospaceFont by Font.findLazy("jetbrains-mono")
+    protected val fontAwesome by Font.findLazy("font-awesome")
 
     override fun draw() {
         ImNodes.pushColorStyle(ImNodesCol.Pin, styleColor)
@@ -106,66 +117,28 @@ abstract class TypedAttribute<R: GenValue>(
     }
 
     override fun drawAttribute() {
-        if(isSecondDraw) {
-            ImNodes.getNodeDimensions(nodeSize, parentNode.id)
-            isSecondDraw = false
-        }
-
-        if(isFirstDraw) {
-            isSecondDraw = true
-            isFirstDraw = false
-        }
-
-        if(inlineInput) {
-            ImGui.pushFont(monospaceFont.imfont)
-        }
-
-        if(drawDescriptiveText) {
-            val t = tr(finalVarName)
-
-            if(mode == AttributeMode.INPUT) {
-                ImGui.pushFont(fontAwesome.imfont)
-                ImGui.text(icon)
-                ImGui.popFont()
-
-                ImGui.sameLine()
-
-                ImGui.text(t)
-
-                drawAfterText()
-            } else {
-                val textSize = ImGui.calcTextSize(t)
-
-                ImGui.pushFont(fontAwesome.imfont)
-                textSize.plus(ImGui.calcTextSize(icon))
-                ImGui.popFont()
-
-                textSize.plus(drawAfterTextSize)
-
-                if(parentNode.nodeAttributes.size > 1) {
-                    ImGui.indent(nodeSize.x - (textSize.x))
-                } else {
-                    ImGui.indent(textSize.x * 0.6f)
-                }
-
-                ImGui.text(t)
-                ImGui.sameLine()
-
-                ImGui.pushFont(fontAwesome.imfont)
-                ImGui.text(icon)
-                ImGui.popFont()
-
-                drawAfterText()
+        when(stage) {
+            Stage.INIT -> stage = Stage.MEASURE
+            Stage.MEASURE -> {
+                ImNodes.getNodeDimensions(nodeSize, parentNode.id)
+                stage = Stage.READY
             }
-        } else if(!inlineInput) {
+            Stage.READY -> {}
+        }
+
+        val pushedFont = layout.labelFont ?: (if(layout.isInline) monospaceFont else null)
+
+        pushedFont?.push()
+
+        if(layout.showLabel) {
+            drawLabel(tr(finalVarName))
+        } else if(!layout.isInline) {
             ImGui.text("")
         } else {
             drawAfterText()
         }
 
-        if(inlineInput) {
-            ImGui.popFont()
-        }
+        pushedFont?.pop()
 
         if(doLinkChangeChecking) {
             val currentLinkedAttribs = availableLinkedAttributes
@@ -204,8 +177,58 @@ abstract class TypedAttribute<R: GenValue>(
 
     open fun drawAfterText() { }
 
+    protected fun drawLabel(text: String, customIcon: String = icon, customIconFont: Font = fontAwesome) {
+        val hasIcon = customIcon.isNotEmpty()
+
+        if(mode == AttributeMode.INPUT) {
+            if(hasIcon) {
+                ImGui.pushFont(customIconFont.imfont)
+                ImGui.text(customIcon)
+                ImGui.popFont()
+                ImGui.sameLine()
+            }
+
+            ImGui.text(text)
+            drawAfterText()
+        } else {
+            var labelWidth = ImGui.calcTextSize(text).x
+
+            if(hasIcon) {
+                ImGui.pushFont(customIconFont.imfont)
+                labelWidth += ImGui.calcTextSize(customIcon).x + ImGui.getStyle().itemSpacingX
+                ImGui.popFont()
+            }
+
+            labelWidth += drawAfterTextSize.x
+
+            // Align to the right side of the node.
+            // 8.0f is a common horizontal padding for ImNodes pins from the node edge.
+            val padding = 8.0f
+            val indentValue = nodeSize.x - labelWidth - padding
+
+            if(indentValue > 0) {
+                ImGui.indent(indentValue)
+            }
+
+            ImGui.text(text)
+
+            if(hasIcon) {
+                ImGui.sameLine()
+                ImGui.pushFont(customIconFont.imfont)
+                ImGui.text(customIcon)
+                ImGui.popFont()
+            }
+
+            drawAfterText()
+
+            if(indentValue > 0) {
+                ImGui.unindent(indentValue)
+            }
+        }
+    }
+
     protected fun inlineIfNeeded() {
-        if(inlineInput) {
+        if(layout.isInline) {
             ImGui.sameLine()
         }
     }
@@ -287,12 +310,12 @@ abstract class TypedAttribute<R: GenValue>(
         }
     }
 
-    open fun readEditorValue(): Any? = null
+    open fun readEditorValue(): EditorValue? = null
     open fun readTunerValue(): TunerValue? = null
 
     override val editorValue get() = when {
-        mode == AttributeMode.INPUT -> readEditorValue()
-        else -> null
+        mode == AttributeMode.INPUT -> availableLinkedAttribute?.editorValue ?: readEditorValue()
+        else -> readEditorValue()
     }
     override val tunerValue get() = when {
         mode == AttributeMode.INPUT -> readTunerValue()

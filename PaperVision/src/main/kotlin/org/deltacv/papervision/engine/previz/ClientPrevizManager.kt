@@ -39,7 +39,6 @@ class ClientPrevizManager(
     val defaultPrevizStreamHeight: Int,
     val codeGenManager: CodeGenManager,
     val client: PaperVisionEngineClient,
-    val byteReceiverProvider: (() -> ByteMessageReceiver)? = null
 ) {
 
     val offlineImages = arrayOf(
@@ -123,7 +122,7 @@ class ClientPrevizManager(
 
                     stream = ClientPrevizStream(
                         previzName,
-                        byteReceiverProvider?.invoke() ?: client.byteReceiver,
+                        client.byteReceiver,
                         livePipelineStatistics,
                         width = streamWidth,
                         height = streamHeight,

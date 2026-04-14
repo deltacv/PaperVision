@@ -33,7 +33,7 @@ import org.deltacv.papervision.codegen.build.AccessorVariable
 import org.deltacv.papervision.codegen.build.Value
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.BaseLanguage
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -97,11 +97,12 @@ class InputMatNode @JvmOverloads constructor(
         }
     }
 
-    @SerializeData
+    @SerializeData 
     val output = MatAttribute(OUTPUT, "$[att_input]")
 
     override fun onEnable() {
-        +output.rebuildOnChange()
+        output.colorSpace = ColorSpace.RGBA
+        + output.rebuildOnChange()
     }
 
     fun ensureAttributeExists() { // prevent weird oopsies due to the special way these persistent buddies are handled
@@ -109,7 +110,7 @@ class InputMatNode @JvmOverloads constructor(
         output.enable()
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorForAny { NoSession }
     }
 
@@ -200,7 +201,7 @@ class OutputMatNode @JvmOverloads constructor(
         exportedData.enable()
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor<BaseLanguage> {
             current {
                 val inputValue = input.genValue(current)

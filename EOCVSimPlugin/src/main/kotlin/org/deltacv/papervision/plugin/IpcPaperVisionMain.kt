@@ -25,7 +25,7 @@ import org.deltacv.papervision.engine.client.response.PaperVisionEngineMessageRe
 import org.deltacv.papervision.gui.font.FontAwesomeIcons
 import org.deltacv.papervision.gui.editor.Option
 import org.deltacv.papervision.gui.TooltipPopup
-import org.deltacv.papervision.platform.lwjgl.PaperVisionApp
+import org.deltacv.papervision.platform.lwjgl.LWJGLPaperVisionApp
 import org.deltacv.papervision.plugin.gui.imgui.CloseConfirmWindow
 import org.deltacv.papervision.plugin.gui.imgui.InputSourceWindow
 import org.deltacv.papervision.plugin.engine.EOCVSimIpcEngineBridge
@@ -49,7 +49,7 @@ class IpcPaperVisionMain : Callable<Int?> {
     @CommandLine.Option(names = ["-q", "--queryproject"], description = ["Asks the engine for the current project on startup"])
     var queryProject: Boolean = false
 
-    private lateinit var app: PaperVisionApp
+    private lateinit var app: LWJGLPaperVisionApp
 
     private var userCloseRequestsCount = 0
 
@@ -60,7 +60,7 @@ class IpcPaperVisionMain : Callable<Int?> {
 
         val bridge = EOCVSimIpcEngineBridge(ipcPort)
 
-        app = PaperVisionApp(bridge, false, ::paperVisionUserCloseListener)
+        app = LWJGLPaperVisionApp(bridge, false, ::paperVisionUserCloseListener)
 
         app.paperVision.onUpdate.once {
             if (queryProject) {

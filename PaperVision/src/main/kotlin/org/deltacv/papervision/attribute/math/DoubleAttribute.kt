@@ -25,6 +25,7 @@ import imgui.type.ImFloat
 import imgui.type.ImInt
 import org.deltacv.papervision.attribute.AttributeMode
 import org.deltacv.papervision.attribute.AttributeType
+import org.deltacv.papervision.attribute.EditorValue
 import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
@@ -43,7 +44,7 @@ import org.deltacv.papervision.util.Range2d
 @CodecType(instantiable = false)
 class DoubleAttribute(
     override val mode: AttributeMode,
-    override var variableName: String? = null,
+    override var attributeName: String? = null,
     initialValue: Double = 0.0
 ) : TypedAttribute<GenValue.Double>(
     Companion,
@@ -137,7 +138,7 @@ class DoubleAttribute(
         isSlider = false
     }
 
-    override fun readEditorValue() = value.get()
+    override fun readEditorValue() = EditorValue.Double(value.get())
 
     override fun readTunerValue() = TunerValue.DoubleValue(value.get())
 

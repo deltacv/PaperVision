@@ -29,7 +29,7 @@ import org.deltacv.papervision.serialization.v2.CodecType
 
 @CodecType(instantiable = false)
 class KeyPointAttribute(override val mode: AttributeMode,
-                        override var variableName: String? = null
+                        override var attributeName: String? = null
 ) : TypedAttribute<GenValue.KeyPoint>(Companion) {
 
     companion object : AttributeType<KeyPointAttribute> {

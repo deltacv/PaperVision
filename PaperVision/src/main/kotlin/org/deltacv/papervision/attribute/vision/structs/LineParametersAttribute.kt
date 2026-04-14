@@ -36,7 +36,7 @@ import org.deltacv.papervision.serialization.v2.CodecType
 @CodecType(instantiable = false)
 class LineParametersAttribute(
     override val mode: AttributeMode,
-    override var variableName: String? = null
+    override var attributeName: String? = null
 ) : TypedAttribute<GenValue.LineParameters>(Companion) {
 
     companion object : AttributeType<LineParametersAttribute> {
@@ -44,8 +44,6 @@ class LineParametersAttribute(
 
         override fun new(mode: AttributeMode, variableName: String) = LineParametersAttribute(mode, variableName)
     }
-
-    private val fontAwesome = Font.find("font-awesome")
 
     override fun drawAfterText() {
         if(mode == AttributeMode.INPUT) {

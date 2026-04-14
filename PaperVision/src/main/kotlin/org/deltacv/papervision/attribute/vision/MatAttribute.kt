@@ -22,6 +22,8 @@ import imgui.ImGui
 import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.attribute.AttributeMode
 import org.deltacv.papervision.attribute.AttributeType
+import org.deltacv.papervision.attribute.EditorValue
+import org.deltacv.papervision.attribute.misc.EnumAttribute
 import org.deltacv.papervision.attribute.decomp.vision.MatAttributeDecomposer
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
@@ -30,15 +32,28 @@ import org.deltacv.papervision.gui.display.ImageDisplayNode
 import org.deltacv.papervision.gui.style.rgbaColor
 import org.deltacv.papervision.gui.util.ImGuiEx
 import org.deltacv.papervision.gui.font.Font
+import org.deltacv.papervision.node.vision.ColorSpace
 import org.deltacv.papervision.serialization.v1.data.SerializeIgnore
 import org.deltacv.papervision.serialization.v2.CodecType
 
 @CodecType(instantiable = false)
 class MatAttribute(
     override val mode: AttributeMode,
-    override var variableName: String? = null,
+    override var attributeName: String? = null,
     var allowPrevizButton: Boolean = false
-) : TypedAttribute<GenValue.Mat>(Companion) {
+) : TypedAttribute<GenValue.Mat>(Companion, doEditorChangeChecking = true) {
+
+    var colorSpace: ColorSpace = ColorSpace.GENERIC
+        set(value) {
+            field = value
+            onChange.run()
+        }
+
+    var isBinary: Boolean = false
+        set(value) {
+            field = value
+            onChange.run()
+        }
 
     companion object: AttributeType<MatAttribute> {
         override val icon = FontAwesomeIcons.Image
@@ -65,8 +80,6 @@ class MatAttribute(
     var displayWindow: ImageDisplayNode? = null
         private set
 
-    private val fontAwesome by Font.findLazy("font-awesome")
-
     override fun drawAfterText() {
         if(mode == AttributeMode.OUTPUT && allowPrevizButton && isOnEditor) {
             ImGui.sameLine()
@@ -86,7 +99,7 @@ class MatAttribute(
         wasPrevizJustEnabled = wasButtonToggled && isPrevizEnabled
 
         if(wasPrevizJustEnabled) {
-            displayWindow = editor.startImageDisplayFor(this)
+            displayWindow = parentNode.editor.startImageDisplayFor(this)
 
             displayWindow!!.onDelete.once {
                 isPrevizEnabled = false
@@ -98,7 +111,7 @@ class MatAttribute(
         }
 
         if(wasButtonToggled) {
-            editor.onDraw.once {
+            parentNode.editor.onDraw.once {
                 onChange.run()
             }
         }
@@ -106,7 +119,28 @@ class MatAttribute(
         prevIsPrevizEnabled = isPrevizEnabled
     }
 
+    override fun readEditorValue() = EditorValue.Image(colorSpace, isBinary)
+
     override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Mat>(current)
+
+    fun bindColorSpace(other: EnumAttribute<ColorSpace>) = apply {
+        colorSpace = other.currentValue
+        other.onChange {
+            colorSpace = other.currentValue
+        }
+    }
+
+    fun bindColorSpace(other: MatAttribute) = apply {
+        val otherVal = other.editorValue as? EditorValue.Image
+        colorSpace = otherVal?.colorSpace ?: ColorSpace.GENERIC
+        isBinary = otherVal?.isBinary ?: false
+        
+        other.onChange {
+            val v = other.editorValue as? EditorValue.Image
+            colorSpace = v?.colorSpace ?: ColorSpace.GENERIC
+            isBinary = v?.isBinary ?: false
+        }
+    }
 
     fun enablePrevizButton() = apply { allowPrevizButton = true }
 
@@ -119,6 +153,3 @@ class MatAttribute(
     }
 
 }
-
-
-

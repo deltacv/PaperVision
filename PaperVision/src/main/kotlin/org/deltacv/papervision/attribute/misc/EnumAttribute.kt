@@ -34,13 +34,14 @@ import org.deltacv.papervision.serialization.v2.CodecType
 import org.deltacv.papervision.serialization.v2.DataDecoder
 import org.deltacv.papervision.serialization.v2.DataEncoder
 import org.deltacv.mai18n.tr
+import org.deltacv.papervision.attribute.EditorValue
 import kotlin.enums.EnumEntries
 
 @CodecType(instantiable = false)
 class EnumAttribute<T: Enum<T>>(
     override val mode: AttributeMode,
-    override var variableName: String?,
-    val values: EnumEntries<T>,
+    override var attributeName: String?,
+    val values: List<T>,
     val enumNameFont: Font? = null,
     val enumToNameConverter: (T) -> String = { it.name } // by default, just use the name of the enum value, but allow for customization
 ) : TypedAttribute<GenValue.Enum<T>>(
@@ -85,7 +86,7 @@ class EnumAttribute<T: Enum<T>>(
         LinkAcceptance.Reject
     }
 
-    override fun readEditorValue() = values[currentIndex.get()]
+    override fun readEditorValue() = EditorValue.Enum(currentValue)
 
     @Suppress("UNCHECKED_CAST")
     override fun genValue(current: CodeGen.Current): GenValue.Enum<T> {

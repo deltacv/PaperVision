@@ -30,7 +30,7 @@ import org.deltacv.papervision.serialization.v2.CodecType
 @CodecType(instantiable = false)
 class RotatedRectAttribute (
     override val mode: AttributeMode,
-    override var variableName: String? = null
+    override var attributeName: String? = null
 ) : TypedAttribute<GenValue.RotatedRect>(Companion) {
 
     companion object : AttributeType<RotatedRectAttribute> {

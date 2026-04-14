@@ -22,6 +22,7 @@ import imgui.ImGui
 import imgui.type.ImBoolean
 import org.deltacv.papervision.attribute.AttributeMode
 import org.deltacv.papervision.attribute.AttributeType
+import org.deltacv.papervision.attribute.EditorValue
 import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
@@ -35,7 +36,7 @@ import org.deltacv.papervision.serialization.v2.DataEncoder
 @CodecType(instantiable = false)
 class BooleanAttribute(
     override val mode: AttributeMode,
-    override var variableName: String? = null
+    override var attributeName: String? = null
 ) : TypedAttribute<GenValue.Boolean>(
     Companion,
     doEditorChangeChecking = true // takes advantage of readEditorValue for change checking, so we don't have to do it manually
@@ -58,7 +59,7 @@ class BooleanAttribute(
         }
     }
 
-    override fun readEditorValue() = value.get()
+    override fun readEditorValue() = EditorValue.Boolean(value.get())
 
     override fun readTunerValue() = TunerValue.BooleanValue(value.get())
 

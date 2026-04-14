@@ -1,7 +1,9 @@
 package org.deltacv.papervision.codegen
 
+typealias PolyglotGeneratorMap<I, S> = Map<PolyglotMapping, Generator<I, S>>
+
 interface PolyglotGenerator<I, S: CodeGenSession> : Generator<I, S> {
-    val generators: Map<PolyglotMapping, Generator<I, S>>
+    val generators: PolyglotGeneratorMap<I, S>
 
     override fun genCode(input: I, current: CodeGen.Current): S {
         var currentCloseness = Int.MAX_VALUE

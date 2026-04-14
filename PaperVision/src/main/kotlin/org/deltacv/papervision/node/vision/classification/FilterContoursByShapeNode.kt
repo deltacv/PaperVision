@@ -31,7 +31,7 @@ import org.deltacv.papervision.codegen.build.language.jvm.JavaTypes
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Size
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
 import org.deltacv.papervision.node.NodeCategory
@@ -75,15 +75,15 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
         + sides.rebuildOnChange()
 
         sides.onChange {
-            if (sides.readEditorValue() < 3  && previousSides >= 3) {
+            if (sides.readEditorValue().value < 3  && previousSides >= 3) {
                 sides.value.set(0)
                 shape.currentIndex.set(Shape.Circle.ordinal)
-            } else if (sides.readEditorValue() in 1..2) {
+            } else if (sides.readEditorValue().value in 1..2) {
                 sides.value.set(3)
                 shape.currentIndex.set(Shape.Triangle.ordinal)
             } else {
                 for ((i, shapeE) in Shape.entries.withIndex()) {
-                    if (sides.readEditorValue() == shapeE.sides) {
+                    if (sides.readEditorValue().value == shapeE.sides) {
                         shape.currentIndex.set(i)
                         return@onChange
                     }
@@ -113,10 +113,10 @@ class FilterContoursByShapeNode : DrawNode<FilterContoursByShapeNode.Session>() 
             firstDraw = false
         }
 
-        if(sides.readEditorValue() < 0) sides.value.set(0)
+        if(sides.readEditorValue().value < 0) sides.value.set(0)
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             current {
                 val session = Session()

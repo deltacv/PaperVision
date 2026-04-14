@@ -113,8 +113,19 @@ class Font internal constructor(
         fun find(name: String) =
             IdContainerStack.local.peekNonNull<Font>()[name] ?: throw IllegalArgumentException("Font '$name' not found")
 
-
         fun findLazy(name: String) = lazy { find(name) }
+    }
+
+    fun push() {
+        ImGui.pushFont(imfont)
+    }
+
+    fun pop() {
+        if(ImGui.getFont().ptr == imfont.ptr) {
+            ImGui.popFont()
+        } else {
+            throw IllegalStateException("Attempted to pop font '$name' but it was not on top of the stack")
+        }
     }
 }
 
@@ -124,6 +135,3 @@ fun defaultFontConfig(size: Float) = ImFontConfig().apply {
     pixelSnapH = false
     sizePixels = size
 }
-
-
-

@@ -23,6 +23,7 @@ import imgui.flag.ImGuiInputTextFlags
 import imgui.type.ImInt
 import org.deltacv.papervision.attribute.AttributeMode
 import org.deltacv.papervision.attribute.AttributeType
+import org.deltacv.papervision.attribute.EditorValue
 import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
@@ -40,7 +41,7 @@ import org.deltacv.papervision.util.Range2i
 @CodecType(instantiable = false)
 class IntAttribute(
     override val mode: AttributeMode,
-    override var variableName: String? = null,
+    override var attributeName: String? = null,
     initialValue: Int = 0
 ) : TypedAttribute<GenValue.Int>(
     Companion,
@@ -103,7 +104,7 @@ class IntAttribute(
         isSlider = false
     }
 
-    override fun readEditorValue() = value.get()
+    override fun readEditorValue() = EditorValue.Int(value.get())
     override fun readTunerValue() = TunerValue.IntValue(value.get())
 
     override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Int>(

@@ -20,7 +20,6 @@ package org.deltacv.papervision.node.vision.featuredet.filter
 
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.misc.ListAttribute
-import org.deltacv.papervision.attribute.rebuildOnChange
 import org.deltacv.papervision.attribute.rebuildOnLink
 import org.deltacv.papervision.attribute.vision.structs.RectAttribute
 import org.deltacv.papervision.codegen.CodeGen
@@ -31,7 +30,7 @@ import org.deltacv.papervision.codegen.build.DeclarableVariable
 import org.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.dsl.ScopeCtx
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -61,7 +60,7 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
         + output
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             current {
                 val session = Session()

@@ -27,7 +27,7 @@ import org.deltacv.papervision.codegen.NoSession
 import org.deltacv.papervision.codegen.build.AccessorVariable
 import org.deltacv.papervision.codegen.build.DeclarableVariable
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.dsl.jvm.jvmTargets
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -54,7 +54,7 @@ class ExportTargetsNode : DrawNode<NoSession>() {
         + label
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             current {
                 val targetsValue = inputTargets.genValue(current)
@@ -119,7 +119,7 @@ class ExportRotTargetsNode : DrawNode<NoSession>() {
         + label
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             current {
                 val targetsValue = inputTargets.genValue(current)

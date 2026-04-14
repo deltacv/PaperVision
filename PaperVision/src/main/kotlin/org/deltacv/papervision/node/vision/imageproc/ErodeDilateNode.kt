@@ -27,7 +27,7 @@ import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -64,10 +64,11 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
         + dilateValue
         dilateValue.sliderMode(Range2i(0, 50))
 
+        outputMat.bindColorSpace(inputMat)
         + outputMat.enablePrevizButton().rebuildOnChange()
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             current {
                 val session = Session()

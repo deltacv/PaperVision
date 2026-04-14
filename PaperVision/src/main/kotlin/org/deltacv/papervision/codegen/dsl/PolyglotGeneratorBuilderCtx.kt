@@ -96,13 +96,10 @@ class PolyglotGeneratorBuilderCtx<I, S: CodeGenSession> {
         generators.put(PolyglotMapping.AnyLanguage, generator)
 }
 
-inline fun <I, S: CodeGenSession> generatorsBuilder(init: PolyglotGeneratorBuilderCtx<I, S>.() -> Unit) = PolyglotGeneratorBuilderCtx<I, S>().run {
+inline fun <I, S: CodeGenSession> polyglot(init: PolyglotGeneratorBuilderCtx<I, S>.() -> Unit) = PolyglotGeneratorBuilderCtx<I, S>().run {
     init()
     generators
 }
 
-@JvmName("generatorsBuilderUnit")
-inline fun <S: CodeGenSession> generatorsBuilder(init: PolyglotGeneratorBuilderCtx<Unit, S>.() -> Unit) = generatorsBuilder<Unit, S>(init)
-
-
-
+@JvmName("polyglotUnit")
+inline fun <S: CodeGenSession> polyglot(init: PolyglotGeneratorBuilderCtx<Unit, S>.() -> Unit) = polyglot<Unit, S>(init)

@@ -80,7 +80,7 @@ object ImGuiEx {
 
     private val valuesStringCache = mutableMapOf<Class<*>, Array<String>>()
 
-    fun <T: Enum<T>> enumCombo(values: Array<T>, currentItem: ImInt): T {
+    fun <T: Enum<T>> enumCombo(values: List<T>, currentItem: ImInt): T {
         val clazz = values[0]::class.java
 
         val valuesStrings = if (valuesStringCache.containsKey(clazz)) {

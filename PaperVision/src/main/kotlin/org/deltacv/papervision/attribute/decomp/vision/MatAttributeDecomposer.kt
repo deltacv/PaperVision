@@ -7,7 +7,7 @@ import org.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -28,7 +28,7 @@ class MatAttributeDecomposer : AttributeDecomposer<MatAttributeDecomposer.Sessio
         + channels
     }
 
-    override val generators = generatorsBuilder<GenValue, Session> {
+    override val generators = polyglot<GenValue, Session> {
         generatorFor(JavaLanguage) {
             assertGenValueType<GenValue.Mat>(genInput)
 

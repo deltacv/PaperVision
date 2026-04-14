@@ -27,7 +27,7 @@ import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -61,7 +61,7 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
         + output.rebuildOnChange()
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             val session = Session()
 

@@ -26,7 +26,7 @@ import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -54,10 +54,11 @@ class MaskNode : DrawNode<MaskNode.Session>(){
         + inputMat.rebuildOnChange()
         + maskMat.rebuildOnChange()
 
+        outputMat.bindColorSpace(inputMat)
         + outputMat.enablePrevizButton().rebuildOnChange()
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             current {
                 val session = Session()

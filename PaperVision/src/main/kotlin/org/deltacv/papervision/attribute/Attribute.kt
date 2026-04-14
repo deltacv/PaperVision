@@ -81,15 +81,17 @@ abstract class Attribute :
     val isOnEditor get() = parentNode.isOnEditor
     val editor get() = parentNode.editor
 
+    enum class DrawState { IDLE, DRAWING, SKIPPED }
+
     var showAttributesCircles = true
 
     var forgetSerializedId = false
         private set
 
-    private var cancelNextDraw = false
-
-    var wasLastDrawCancelled = false
+    var drawState = DrawState.IDLE
         private set
+
+    private var lastFrameDrawn = -1
 
     val onDelete = PaperEventHandler("OnDelete-${this::class.simpleName}")
 
@@ -105,21 +107,18 @@ abstract class Attribute :
 
     fun drawHere() {
         draw()
-        cancelNextDraw = true
     }
 
     override fun draw() {
-        if(cancelNextDraw) {
-            cancelNextDraw = false
-            wasLastDrawCancelled = true
+        val currentFrame = ImGui.getFrameCount()
+        if (lastFrameDrawn == currentFrame) {
+            drawState = DrawState.SKIPPED
             return
         }
+        lastFrameDrawn = currentFrame
+        drawState = DrawState.DRAWING
 
         processChanges()
-
-        if(wasLastDrawCancelled) {
-            wasLastDrawCancelled = false
-        }
 
         if(parentNode.showAttributesCircles && showAttributesCircles) {
             if (mode == AttributeMode.INPUT) {
@@ -139,6 +138,8 @@ abstract class Attribute :
                 ImNodes.endOutputAttribute()
             }
         }
+
+        drawState = DrawState.IDLE
     }
 
     override fun delete() {
@@ -215,7 +216,7 @@ abstract class Attribute :
 
     abstract fun genValue(current: CodeGen.Current): GenValue
 
-    open val editorValue: Any? = null
+    open val editorValue: EditorValue? = null
     open val tunerValue: TunerValue? = null
 
     fun rebuildPreviz() {

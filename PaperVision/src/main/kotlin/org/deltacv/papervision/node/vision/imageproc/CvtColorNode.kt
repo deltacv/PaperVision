@@ -29,7 +29,7 @@ import org.deltacv.papervision.codegen.resolve.Resolvable
 import org.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -52,16 +52,17 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
     val input  = MatAttribute(INPUT, "$[att_input]")
     val output = MatAttribute(OUTPUT, "$[att_output]").enablePrevizButton()
 
-    val convertTo = EnumAttribute(INPUT, "$[att_convertto]", ColorSpace.entries)
+    val convertTo = EnumAttribute(INPUT, "$[att_convertto]", ColorSpace.options)
 
     override fun onEnable() {
         + input.rebuildOnChange()
         + convertTo.rebuildOnChange()
 
+        output.bindColorSpace(convertTo)
         + output.rebuildOnChange()
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             current {
                 val session = Session()

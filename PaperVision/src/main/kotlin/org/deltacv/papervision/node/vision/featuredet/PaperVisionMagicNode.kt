@@ -37,6 +37,7 @@ class PaperVisionMagicNode : DrawNode<NoSession>() {
 
     override fun onEnable() {
         + input
+        output.bindColorSpace(input)
         + output
     }
 

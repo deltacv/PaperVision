@@ -75,9 +75,9 @@ class Link(
         }
 
         typedAttrib?.run {
-            ImNodes.pushColorStyle(ImNodesCol.Link, styleColor)
-            ImNodes.pushColorStyle(ImNodesCol.LinkHovered, styleHoveredColor)
-            ImNodes.pushColorStyle(ImNodesCol.LinkSelected, styleHoveredColor)
+            ImNodes.pushColorStyle(ImNodesCol.Link, linkColor)
+            ImNodes.pushColorStyle(ImNodesCol.LinkHovered, linkHoveredColor)
+            ImNodes.pushColorStyle(ImNodesCol.LinkSelected, linkHoveredColor)
         }
 
         ImNodes.link(id, a, b)
@@ -103,7 +103,7 @@ class Link(
             bAttrib?.onUnlink?.run()
         }
 
-        idContainer.removeId(id)
+        super.delete()
         triggerOnChange()
     }
 
@@ -124,7 +124,7 @@ class Link(
             bAttrib?.onLink?.run()
         }
 
-        idContainer[id] = this
+        super.restore()
         triggerOnChange()
     }
 

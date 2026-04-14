@@ -26,6 +26,7 @@ import org.deltacv.papervision.attribute.AnyAttribute
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.AttributeMode
 import org.deltacv.papervision.attribute.AttributeType
+import org.deltacv.papervision.attribute.EditorValue
 import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
@@ -44,10 +45,10 @@ import org.deltacv.papervision.serialization.v2.DataEncoder
 @CodecType(instantiable = false)
 open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
     override val mode: AttributeMode,
-    override var variableName: String? = null,
+    override var attributeName: String? = null,
     val elementAttributeType: AttributeType<E>,
     length: Int? = null,
-    val allowAddOrDelete: Boolean = true
+    val allowModification: Boolean = true
 ) : TypedAttribute<GenValue.List<ER>>(Companion) {
 
     companion object : AttributeType<ListAttribute<*, *>> {
@@ -82,7 +83,7 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
             onEnable()
         }
 
-    private val allowMutation get() = allowAddOrDelete && fixedLength == null
+    private val allowMutation get() = allowModification && fixedLength == null
 
     private var serializationData: Data? = null
     private var wasDecoded = false
@@ -178,7 +179,7 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
             val linkedAttribute = availableLinkedAttribute!!
 
             // the user might be crazy and try to link an attribute that is already linked to one of our elements
-            // this caused a funny bug during testing, so, please don't do that (not that you can do it anymore)
+            // this caused a funny bug during testing, so, please don't do that (not that you can anymore)
             val alreadyLinkedAttribute = listAttributes.find {
                 it.availableLinkedAttribute == linkedAttribute
             }
@@ -214,7 +215,7 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
                 if (isDrawAttributeTextOverridden) {
                     ImGui.sameLine()
                 } else {
-                    attrib.inlineInput = true
+                    attrib.configureLayout(isInline = true)
                 }
 
                 attrib.draw()
@@ -223,6 +224,7 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
 
         lastHasLink = hasLink
     }
+
     // accept either another ListAttribute with the same element type
     // or a TypedAttribute with the same type as the element type
     override fun acceptLink(other: Attribute): LinkAcceptance {
@@ -301,7 +303,7 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
         val element = elementAttributeType.new(mode, elementName)
         if(enable) element.enable() // enables the new element
 
-        element.drawType = false // hides the variable type
+        element.layout = element.layout.copy(showType = false) // hides the variable type
         element.onChange.attach {
             emitChange(element.peekChange())
         }
@@ -317,10 +319,10 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
                 if(relatedLink != null) {
                     val associatedAction = relatedLink.associatedAction
                     if(associatedAction != null) {
-                        // sneakily insert ourselves into the action stack by killing and impersonating the original action
-                        // that created the original link (hopefully he got the chance to say goodbye to his family)
-                        // this avoids glitches when the user tries to undo/redo the creation of this new link
-                        // otherwise, the stack would try to address the original link, which doesn't exist anymore
+                        // sneakily insert ourselves into the action stack by killing and impersonating
+                        // the original action that created the original link this avoids glitches when the
+                        // user tries to undo/redo the creation of this new link. otherwise, the stack would
+                        // try to address the original link, which doesn't exist anymore.
                         associatedAction.idContainer[associatedAction.id] = action
                     }
                 }
@@ -331,6 +333,11 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
 
         onElementCreation(element)
         return element
+    }
+
+    fun findIndex(element: Attribute): Int? {
+        val index = listAttributes.indexOf(element)
+        return if(index == -1) null else index
     }
 
     open fun onElementCreation(element: Attribute) {}
@@ -386,15 +393,9 @@ open class ListAttribute<E: TypedAttribute<ER>, ER: GenValue>(
         listAttributes.map { it.tunerValue ?: TunerValue.NullValue }
     )
 
-    override fun readEditorValue(): Array<Any?> {
-        val list = mutableListOf<Any?>()
-
-        for(attribute in listAttributes) {
-            list.add(attribute.editorValue)
-        }
-
-        return list.toTypedArray()
-    }
+    override fun readEditorValue() = EditorValue.List(
+        listAttributes.map { it.editorValue ?: EditorValue.Null }
+    )
 
     // ------------------ Serialization v1 ------------------
 

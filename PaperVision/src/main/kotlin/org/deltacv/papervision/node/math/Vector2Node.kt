@@ -19,14 +19,13 @@
 package org.deltacv.papervision.node.math
 
 import org.deltacv.papervision.attribute.Attribute
-import org.deltacv.papervision.attribute.math.DoubleAttribute
 import org.deltacv.papervision.attribute.math.IntAttribute
 import org.deltacv.papervision.node.DrawNode
 import org.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -60,7 +59,7 @@ class Vector2Node @JvmOverloads constructor(
         + result
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             val session = Session()
 

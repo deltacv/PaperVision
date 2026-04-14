@@ -7,7 +7,7 @@ import org.deltacv.papervision.attribute.decomp.AttributeDecomposer
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.codegen.NoSession
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.node.DrawNode
 import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.PaperNode
@@ -76,7 +76,7 @@ class DecomposerNode : DrawNode<NoSession>() {
         }
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorForAny { _, current ->
             decomposer?.let {
                 current.codeGen.sessions[it] = it.genCode(input.genValue(current), current)

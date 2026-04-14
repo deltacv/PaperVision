@@ -33,7 +33,7 @@ import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
 import org.deltacv.papervision.codegen.dsl.ScopeCtx
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -68,13 +68,14 @@ open class DrawRectanglesNode
         +rectangles.rebuildOnChange()
 
         if (!isDrawOnInput) {
+            outputMat.bindColorSpace(inputMat)
             +outputMat.enablePrevizButton().rebuildOnChange()
         } else {
-            inputMat.variableName = "$[att_drawon_image]"
+            inputMat.attributeName = "$[att_drawon_image]"
         }
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             current {
                 val session = Session()

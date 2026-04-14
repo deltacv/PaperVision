@@ -29,7 +29,7 @@ import org.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
 import org.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -56,7 +56,7 @@ class FilterBiggestContourNode : DrawNode<FilterBiggestContourNode.Session>() {
         + output.rebuildOnChange()
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             current {
                 val session = Session()

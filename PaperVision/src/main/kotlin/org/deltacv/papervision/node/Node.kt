@@ -47,8 +47,6 @@ import org.deltacv.papervision.util.loggerForThis
 import org.deltacv.mai18n.tr
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
-import kotlin.reflect.KClass
-import kotlin.reflect.full.primaryConstructor
 
 abstract class Node<S: CodeGenSession>(
     val isDeletable: Boolean = true,
@@ -112,7 +110,7 @@ abstract class Node<S: CodeGenSession>(
             attribute.parentNode = this
             attribute.draw()
 
-            if(i < total.size - 1 && !attribute.wasLastDrawCancelled) {
+            if(i < total.size - 1 && attribute.drawState != Attribute.DrawState.SKIPPED) {
                 ImGui.newLine() // make a new blank line if this isn't the last attribute
             }
         }
@@ -278,7 +276,7 @@ abstract class Node<S: CodeGenSession>(
     }
 
     fun noValue(attrib: Attribute): Nothing {
-        val name = (attrib as? TypedAttribute<*>)?.variableName ?: attrib::class.simpleName ?: attrib.toString()
+        val name = (attrib as? TypedAttribute<*>)?.attributeName ?: attrib::class.simpleName ?: attrib.toString()
         raise(tr("err_attrib_nothandled_bythis", tr(name)))
     }
 

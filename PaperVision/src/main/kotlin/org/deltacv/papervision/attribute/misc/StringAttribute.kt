@@ -23,6 +23,7 @@ import imgui.flag.ImGuiInputTextFlags
 import imgui.type.ImString
 import org.deltacv.papervision.attribute.AttributeMode
 import org.deltacv.papervision.attribute.AttributeType
+import org.deltacv.papervision.attribute.EditorValue
 import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
@@ -36,7 +37,7 @@ import org.deltacv.papervision.serialization.v2.DataEncoder
 @CodecType(instantiable = false)
 class StringAttribute(
     override val mode: AttributeMode,
-    override var variableName: String? = null
+    override var attributeName: String? = null
 ) : TypedAttribute<GenValue.String>(
     Companion,
     doEditorChangeChecking = true // takes advantage of readEditorValue for change checking, so we don't have to do it manually
@@ -77,7 +78,7 @@ class StringAttribute(
         }
     }
 
-    override fun readEditorValue() = value.get()
+    override fun readEditorValue() = EditorValue.String(value.get())
 
     override fun genValue(current: CodeGen.Current) = readGenValue(
         current, GenValue.String(value.get().resolved())

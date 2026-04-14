@@ -23,7 +23,7 @@ import org.deltacv.papervision.attribute.vision.structs.RectAttribute
 import org.deltacv.papervision.attribute.vision.structs.RotatedRectAttribute
 import org.deltacv.papervision.codegen.NoSession
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.dsl.jvm.jvmTargets
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
@@ -50,7 +50,7 @@ class ExportTargetNode : DrawNode<NoSession>() {
         + label
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             current.jvmTargets {
                 current.scope {
@@ -97,7 +97,7 @@ class ExportRotTarget : DrawNode<NoSession>() {
         + label
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             current.jvmTargets {
                 current.scope {

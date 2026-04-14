@@ -31,7 +31,7 @@ import org.deltacv.papervision.serialization.v2.CodecType
 @CodecType(instantiable = false)
 class RectAttribute (
     override val mode: AttributeMode,
-    override var variableName: String? = null
+    override var attributeName: String? = null
 ) : TypedAttribute<GenValue.Rect>(Companion) {
 
     companion object : AttributeType<RectAttribute> {

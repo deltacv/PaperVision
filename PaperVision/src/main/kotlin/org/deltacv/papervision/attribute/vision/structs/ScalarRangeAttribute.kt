@@ -21,9 +21,11 @@ package org.deltacv.papervision.attribute.vision.structs
 import imgui.ImGui
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.AttributeMode
+import org.deltacv.papervision.attribute.EditorValue
 import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.attribute.math.RangeAttribute
 import org.deltacv.papervision.attribute.misc.ListAttribute
+import org.deltacv.papervision.attribute.vision.MatAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.engine.client.message.TunerValue
@@ -44,30 +46,31 @@ class ScalarRangeAttribute(
         set(value) {
             fixedLength = value.channels
             field = value
+            updateElementNames()
         }
 
-    private val defaultImGuiFont by Font.findLazy("default-20")
+    private val monoFont by Font.findLazy("jetbrains-mono")
 
     override var icon = FontAwesomeIcons.GripVertical
 
-    override fun drawAttributeText(index: Int, attrib: Attribute): Boolean {
-        if(index < color.channelNames.size) {
-            val name = color.channelNames[index]
-            val elementName = name + if(name.length == 1) " " else ""
-
-            if(attrib is TypedAttribute<*>) {
-                attrib.drawDescriptiveText = false
-                attrib.inlineInput = true
+    private fun updateElementNames() {
+        for ((i, element) in listAttributes.withIndex()) {
+            if (i < color.channelNames.size) {
+                element.attributeName = color.channelNames[i]
+                element.configureLayout(showLabel = true, isInline = true, showType = false, labelFont = monoFont)
             }
-
-            ImGui.pushFont(defaultImGuiFont.imfont)
-            ImGui.text(elementName)
-            ImGui.popFont()
-
-            return true
         }
+    }
 
-        return false
+    override fun onElementCreation(element: Attribute) {
+        updateElementNames()
+    }
+
+    fun bindColorSpace(other: MatAttribute) = apply {
+        color = (other.editorValue as? EditorValue.Image)?.colorSpace ?: ColorSpace.GENERIC
+        other.onChange {
+            color = (other.editorValue as? EditorValue.Image)?.colorSpace ?: ColorSpace.GENERIC
+        }
     }
 
     override fun genValue(current: CodeGen.Current): GenValue.ScalarRange {
@@ -92,18 +95,18 @@ class ScalarRangeAttribute(
         val hexMax = hexMin.hashCodeString
 
         onChange {
-            val values = editorValue?.let {
-                it as Array<*>
+            val list = editorValue?.let {
+                it as? EditorValue.List
             } ?: return@onChange
 
             val minValues = mutableListOf(0.0, 0.0, 0.0, 0.0)
             val maxValues = mutableListOf(0.0, 0.0, 0.0, 0.0)
 
-            for((i, value) in values.withIndex()) {
-                val valueArr = value as Array<*>
+            for((i, value) in list.values.withIndex()) {
+                val value = value as? EditorValue.Range ?: continue
 
-                minValues[i] = valueArr[0] as Double
-                maxValues[i] = valueArr[1] as Double
+                minValues[i] = value.min
+                maxValues[i] = value.max
             }
 
             broadcastLabelMessageFor(hexMin, TunerValue.ListValue(minValues.map { TunerValue.DoubleValue(it) }))

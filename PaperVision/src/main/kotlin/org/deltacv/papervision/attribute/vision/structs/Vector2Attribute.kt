@@ -36,7 +36,7 @@ import org.deltacv.papervision.serialization.v2.CodecType
 @CodecType(instantiable = false)
 class Vector2Attribute (
     override val mode: AttributeMode,
-    override var variableName: String? = null,
+    override var attributeName: String? = null,
     val useSizeNaming: Boolean = false
 ) : TypedAttribute<GenValue.Vec2>(Companion) {
 
@@ -47,8 +47,6 @@ class Vector2Attribute (
 
         override fun newDecomposer() = Vector2AttributeDecomposer()
     }
-
-    private val fontAwesome = Font.find("font-awesome")
 
     override fun drawAfterText() {
         if(mode == AttributeMode.INPUT) {

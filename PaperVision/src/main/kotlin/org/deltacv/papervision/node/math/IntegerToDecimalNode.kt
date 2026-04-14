@@ -6,8 +6,7 @@ import org.deltacv.papervision.attribute.math.IntAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
-import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.resolve.resolved
 import org.deltacv.papervision.node.DrawNode
 import org.deltacv.papervision.node.NodeCategory
@@ -31,7 +30,7 @@ class IntegerToDecimalNode : DrawNode<IntegerToDecimalNode.Session>(){
         + output
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorForAny {
             val session = Session()
 

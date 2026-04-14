@@ -23,6 +23,7 @@ import imgui.type.ImBoolean
 import imgui.type.ImInt
 import org.deltacv.papervision.attribute.AttributeMode
 import org.deltacv.papervision.attribute.AttributeType
+import org.deltacv.papervision.attribute.EditorValue
 import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
@@ -41,7 +42,7 @@ import org.deltacv.papervision.util.event.PaperEventHandler
 @CodecType(instantiable = false)
 class RangeAttribute(
     override val mode: AttributeMode,
-    override var variableName: String? = null,
+    override var attributeName: String? = null,
     minDefault: Int = 0,
     maxDefault: Int = 255,
     val valueMutator: (Int) -> Double = { it.toDouble() }
@@ -150,7 +151,10 @@ class RangeAttribute(
         }
     }
 
-    override fun readEditorValue() = arrayOf(valueMutator(minValue.get()), valueMutator(maxValue.get()))
+    override fun readEditorValue() = EditorValue.Range(
+        valueMutator(minValue.get()),
+        valueMutator(maxValue.get())
+    )
 
     override fun readTunerValue() = TunerValue.ListValue(listOf(
         TunerValue.DoubleValue(valueMutator(minValue.get())),

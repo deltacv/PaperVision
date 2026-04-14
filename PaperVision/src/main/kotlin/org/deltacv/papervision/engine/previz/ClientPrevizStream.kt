@@ -96,7 +96,7 @@ class ClientPrevizStream(
         }
     }
 
-    private val defaultByteMessageHandler: ByteMessageHandler = { id, tag, bytes, length ->
+    private val byteMessageHandler: ByteMessageHandler = { id, tag, bytes, length ->
         if (tag.startsWith(sessionName)) {
             if(!startedStreamIds.containsKey(id) || System.currentTimeMillis() - startedStreamIds[id]!! > 5000) {
                 val lastFrameInfo = if(startedStreamIds.containsKey(id))
@@ -111,14 +111,15 @@ class ClientPrevizStream(
             // offer to texture queue
             textureQueue.offerJpegAsync(id, width, height, bytes,
                 dataOffset = ByteMessages.messageOffsetFromBytes(bytes),
-                dataLength = length)
+                dataLength = length
+            )
         }
     }
 
     fun start() {
         logger.info("Starting pipeline stream of $sessionName at {}x{}", width, height)
 
-        byteReceiver.addHandler(defaultByteMessageHandler)
+        byteReceiver.addHandler(byteMessageHandler)
 
         isStarted = true
     }
@@ -126,7 +127,7 @@ class ClientPrevizStream(
     fun stop() {
         isStarted = false
 
-        byteReceiver.removeHandler(defaultByteMessageHandler)
+        byteReceiver.removeHandler(byteMessageHandler)
         byteReceiver.stop()
     }
 

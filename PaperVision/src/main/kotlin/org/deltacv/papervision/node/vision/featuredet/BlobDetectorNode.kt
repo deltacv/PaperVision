@@ -31,7 +31,7 @@ import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -91,7 +91,7 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
         + output
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             val session = Session()
 

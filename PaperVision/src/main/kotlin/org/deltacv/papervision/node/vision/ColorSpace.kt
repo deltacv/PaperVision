@@ -18,15 +18,17 @@
 
 package org.deltacv.papervision.node.vision
 
-enum class ColorSpace(val channels: Int, val channelNames: Array<String>) {
+enum class ColorSpace(val channels: Int, val channelNames: Array<String>, val isOption: Boolean = true) {
     RGBA(4,  arrayOf("R", "G", "B", "A")),
     RGB(3,   arrayOf("R", "G", "B")),
     BGR(3,   arrayOf("B", "G", "R")),
     HSV(3,   arrayOf("H", "S", "V")),
-    YCrCb(3, arrayOf("Y", "Cr", "Cb")),
+    YCrCb(3, arrayOf("Y ", "Cr", "Cb")),
     LAB(3,   arrayOf("L", "a", "b")),
-    GRAY(1,  arrayOf("Gray"))
+    GRAY(1,  arrayOf("Gray")),
+    GENERIC(4, arrayOf("A", "B", "C", "D"), false);
+
+    companion object {
+        val options by lazy { entries.filter { it.isOption } }
+    }
 }
-
-
-

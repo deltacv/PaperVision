@@ -31,20 +31,18 @@ import org.deltacv.papervision.platform.platformSetup
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWKeyCallback
 
-class PaperVisionApp @JvmOverloads constructor(
+class LWJGLPaperVisionApp @JvmOverloads constructor(
     val bridge: PaperVisionEngineBridge? = null,
     val showWelcomeWindow: Boolean = false,
-    val windowCloseListener: (() -> Boolean)? = null,
-    val previzByteMessageReceiverProvider: (() -> ByteMessageReceiver)? = null
+    val windowCloseListener: (() -> Boolean)? = null
 ) : Application() {
 
     val setup = platformSetup("LWJGL") {
         window = glfwWindow
         textureFactory = OpenGLTextureFactory
         keys = GlfwKeys
-        showWelcomeWindow = this@PaperVisionApp.showWelcomeWindow
+        showWelcomeWindow = this@LWJGLPaperVisionApp.showWelcomeWindow
         engineBridge = bridge
-        previzByteMessageReceiverProvider = this@PaperVisionApp.previzByteMessageReceiverProvider
     }
 
     val glfwWindow = GlfwWindow { handle }

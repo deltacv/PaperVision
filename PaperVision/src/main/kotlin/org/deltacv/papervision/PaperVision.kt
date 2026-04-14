@@ -181,7 +181,7 @@ class PaperVision(
 
         engineClient = PaperVisionEngineClient(setup.engineBridge ?: NoOpPaperVisionEngineBridge)
         previzManager = ClientPrevizManager(
-            160, 120, codeGenManager, engineClient, setup.previzByteMessageReceiverProvider
+            160, 120, codeGenManager, engineClient
         )
         engineClient.connect()
 

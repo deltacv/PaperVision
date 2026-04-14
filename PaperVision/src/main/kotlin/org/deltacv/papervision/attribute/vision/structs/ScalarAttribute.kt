@@ -18,12 +18,13 @@
 
 package org.deltacv.papervision.attribute.vision.structs
 
-import imgui.ImGui
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.AttributeMode
+import org.deltacv.papervision.attribute.EditorValue
 import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.attribute.math.DoubleAttribute
 import org.deltacv.papervision.attribute.misc.ListAttribute
+import org.deltacv.papervision.attribute.vision.MatAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.gui.font.Font
@@ -39,40 +40,39 @@ class ScalarAttribute(
     variableName: String? = null
 ) : ListAttribute<DoubleAttribute, GenValue.Double>(mode, variableName, DoubleAttribute, color.channels) {
 
-    var color = color
+    var colorSpace = color
         set(value) {
             fixedLength = value.channels
             field = value
+            updateElementNames()
         }
 
     override var icon = FontAwesomeIcons.GripHorizontal
 
-    private val defaultImGuiFont by Font.findLazy("default-20")
+    private val monoFont by Font.findLazy("jetbrains-mono")
 
-    override fun drawAttributeText(index: Int, attrib: Attribute): Boolean {
-        if(index < color.channelNames.size) {
-            val name = color.channelNames[index]
-            val elementName = name + if(name.length == 1) " " else ""
-
-            if(attrib is TypedAttribute<*>) {
-                attrib.drawDescriptiveText = false
-                attrib.inlineInput = true
+    private fun updateElementNames() {
+        for ((i, element) in listAttributes.withIndex()) {
+            if (i < colorSpace.channelNames.size) {
+                element.attributeName = colorSpace.channelNames[i]
+                element.configureLayout(showLabel = true, isInline = true, showType = false, labelFont = monoFont)
             }
-
-            ImGui.pushFont(defaultImGuiFont.imfont)
-            ImGui.text(elementName)
-            ImGui.popFont()
-
-            return true
         }
-
-        return false
     }
 
     override fun onElementCreation(element: Attribute) {
+        updateElementNames()
+
         if(element is DoubleAttribute) {
             element.roundValues = true
             element.sliderMode(Range2d(0.0, 255.0))
+        }
+    }
+
+    fun bindColorSpace(other: MatAttribute) = apply {
+        colorSpace = (other.editorValue as? EditorValue.Image)?.colorSpace ?: ColorSpace.GENERIC
+        other.onChange {
+            colorSpace = (other.editorValue as? EditorValue.Image)?.colorSpace ?: ColorSpace.GENERIC
         }
     }
 

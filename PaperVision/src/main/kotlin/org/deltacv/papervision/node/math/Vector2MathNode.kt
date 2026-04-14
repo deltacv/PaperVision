@@ -7,7 +7,7 @@ import org.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.resolve.resolved
 import org.deltacv.papervision.gui.font.Font
 import org.deltacv.papervision.node.DrawNode
@@ -39,7 +39,7 @@ class Vector2MathNode : DrawNode<Vector2MathNode.Session>() {
         +result
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorForAny {
             val session = Session()
 

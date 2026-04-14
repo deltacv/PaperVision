@@ -23,7 +23,7 @@ package org.deltacv.papervision.platform.lwjgl
 import imgui.app.Application
 
 fun main() {
-    Application.launch(PaperVisionApp(showWelcomeWindow = true))
+    Application.launch(LWJGLPaperVisionApp(showWelcomeWindow = true))
 }
 
 

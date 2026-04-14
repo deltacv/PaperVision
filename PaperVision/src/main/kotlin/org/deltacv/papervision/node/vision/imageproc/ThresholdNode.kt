@@ -35,7 +35,7 @@ import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Core
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Scalar
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -60,20 +60,22 @@ import org.deltacv.papervision.serialization.v2.intOrNull
 class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
     val input = MatAttribute(INPUT, "$[att_input]")
-    val scalar = ScalarRangeAttribute(INPUT, ColorSpace.entries[0], "$[att_threshold]")
+    val scalar = ScalarRangeAttribute(INPUT, ColorSpace.options[0], "$[att_threshold]")
 
     val output = MatAttribute(OUTPUT, "$[att_binaryoutput]")
 
     override fun onEnable() {
         + input.rebuildOnChange()
         + scalar
+        output.colorSpace = ColorSpace.GRAY
+        output.isBinary = true
         + output.enablePrevizButton().rebuildOnChange()
     }
 
     @SerializeData
     private var colorValue = ImInt()
 
-    private var lastColor = ColorSpace.entries.first()
+    private var lastColor = ColorSpace.options.first()
 
     private val fontAwesome = Font.find("font-awesome")
 
@@ -90,7 +92,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         ImGui.text(tr("att_colorspace"))
 
         ImGui.pushItemWidth(110.0f)
-        val color = ImGuiEx.enumCombo(ColorSpace.entries.toTypedArray(), colorValue)
+        val color = ImGuiEx.enumCombo(ColorSpace.options, colorValue)
         ImGui.popItemWidth()
 
         ImGui.newLine()
@@ -103,7 +105,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
         lastColor = color
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor(JavaLanguage) {
             current {
                 val session = Session()

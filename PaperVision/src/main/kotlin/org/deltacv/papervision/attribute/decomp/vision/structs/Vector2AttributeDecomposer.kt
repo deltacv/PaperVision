@@ -7,7 +7,7 @@ import org.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.serialization.v2.CodecType
 import org.deltacv.papervision.serialization.v2.DataDecoder
 import org.deltacv.papervision.serialization.v2.DataEncoder
@@ -23,12 +23,12 @@ class Vector2AttributeDecomposer : AttributeDecomposer<Vector2AttributeDecompose
         +y
 
         if (linkedAttribute is Vector2Attribute && (linkedAttribute as Vector2Attribute).useSizeNaming) {
-            x.variableName = "$[att_width]"
-            y.variableName = "$[att_height]"
+            x.attributeName = "$[att_width]"
+            y.attributeName = "$[att_height]"
         }
     }
 
-    override val generators = generatorsBuilder<GenValue, Session> {
+    override val generators = polyglot<GenValue, Session> {
         generatorForAny {
             assertGenValueType<GenValue.Vec2>(genInput)
 

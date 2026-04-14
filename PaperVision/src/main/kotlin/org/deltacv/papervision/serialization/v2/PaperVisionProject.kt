@@ -33,14 +33,14 @@ class PaperVisionProject(
 
     override fun decode(decoder: DataDecoder) {
         val decodedNodes = decoder.objList("nodes").map {
-            it as? Node<*> ?: throw IllegalStateException("Decoded object is not a PaperVision Node")
+            it as? Node<*> ?: throw MalformedDataException("Decoded object is not a PaperVision Node", it)
         }
 
         nodes.clear()
         nodes.addAll(decodedNodes)
 
         val decodedLinks = decoder.objList("links").map {
-            it as? Link ?: throw IllegalStateException("Decoded object is not a PaperVision Link")
+            it as? Link ?: throw MalformedDataException("Decoded object is not a PaperVision Link", it)
         }
 
         links.clear()
@@ -48,7 +48,7 @@ class PaperVisionProject(
     }
 
     fun apply(paperVision: PaperVision) {
-        logger.info("Applying project with ${nodes.size} nodes and ${links.size} links to PaperVision instance.")
+        logger.info("Loading project with ${nodes.size} nodes and ${links.size} links")
 
         // clear existing state
         for (node in paperVision.nodes.inmutable) {
@@ -66,11 +66,17 @@ class PaperVisionProject(
         for (node in nodes) {
             when (node) {
                 is InputMatNode -> {
+                    if(createdInputNode) {
+                        throw IllegalStateException("Only one InputMatNode can be present in the node editor.")
+                    }
                     paperVision.nodeEditor.inputNode = node
                     createdInputNode = true
                 }
 
                 is OutputMatNode -> {
+                    if(createdOutputNode) {
+                        throw IllegalStateException("Only one OutputMatNode can be present in the node editor.")
+                    }
                     paperVision.nodeEditor.outputNode = node
                     createdOutputNode = true
                 }
@@ -87,9 +93,11 @@ class PaperVisionProject(
         }
 
         if (!createdInputNode) {
+            // If the project doesn't have an input node, create a default one to ensure the node editor is in a valid state
             paperVision.nodeEditor.inputNode = InputMatNode().apply { enable() }
         }
         if (!createdOutputNode) {
+            // If the project doesn't have an output node, create a default one to ensure the node editor is in a valid state
             paperVision.nodeEditor.outputNode = OutputMatNode().apply { enable() }
         }
 

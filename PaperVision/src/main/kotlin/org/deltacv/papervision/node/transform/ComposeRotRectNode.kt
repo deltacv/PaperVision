@@ -7,7 +7,7 @@ import org.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.node.DrawNode
 import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.PaperNode
@@ -37,7 +37,7 @@ class ComposeRotRectNode : DrawNode<ComposeRotRectNode.Session>() {
         + output
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorForAny {
             current {
                 val session = Session()

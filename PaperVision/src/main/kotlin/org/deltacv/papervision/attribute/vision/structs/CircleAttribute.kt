@@ -30,7 +30,7 @@ import org.deltacv.papervision.serialization.v2.CodecType
 @CodecType(instantiable = false)
 class CircleAttribute(
     override val mode: AttributeMode,
-    override var variableName: String?
+    override var attributeName: String?
 ) : TypedAttribute<GenValue.Circle>(Companion) {
 
     companion object : AttributeType<CircleAttribute> {

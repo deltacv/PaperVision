@@ -30,7 +30,7 @@ import org.deltacv.papervision.serialization.v2.CodecType
 @CodecType(instantiable = false)
 class PointsAttribute (
     override val mode: AttributeMode,
-    override var variableName: String? = null
+    override var attributeName: String? = null
 ) : TypedAttribute<GenValue.Points>(Companion) {
 
     companion object : AttributeType<PointsAttribute> {

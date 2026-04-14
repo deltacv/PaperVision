@@ -20,7 +20,6 @@ package org.deltacv.papervision.node.vision.featuredet
 
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.misc.ListAttribute
-import org.deltacv.papervision.attribute.rebuildOnChange
 import org.deltacv.papervision.attribute.rebuildOnLink
 import org.deltacv.papervision.attribute.vision.MatAttribute
 import org.deltacv.papervision.attribute.vision.structs.PointsAttribute
@@ -32,10 +31,9 @@ import org.deltacv.papervision.codegen.build.language.jvm.JavaTypes
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Mat
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.MatOfPoint
-import org.deltacv.papervision.codegen.dsl.generatorsBuilder
+import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.BaseLanguage
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
-import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
 import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.DrawNode
@@ -60,7 +58,7 @@ class FindContoursNode : DrawNode<FindContoursNode.Session>() {
         + outputPoints
     }
 
-    override val generators = generatorsBuilder {
+    override val generators = polyglot {
         generatorFor<BaseLanguage> {
             current {
                 val session = Session()
