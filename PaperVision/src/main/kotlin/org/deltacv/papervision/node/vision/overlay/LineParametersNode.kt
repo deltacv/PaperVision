@@ -82,7 +82,7 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
                     current.scope {
                         nameComment()
 
-                        // if these are runtime values, we need to set them to the line variables
+                        // if these are inst/runtime values, we need to set them to the line variables
                         // to reflect any changes that might have happened since it was first set
                         // (e.g. through a tuner)
                         if(lineColorValue is GenValue.Scalar.Inst) {

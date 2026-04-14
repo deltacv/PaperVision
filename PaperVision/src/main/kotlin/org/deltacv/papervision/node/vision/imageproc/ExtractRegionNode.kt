@@ -2,6 +2,7 @@ package org.deltacv.papervision.node.vision.imageproc
 
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.rebuildOnChange
+import org.deltacv.papervision.attribute.rebuildOnLink
 import org.deltacv.papervision.attribute.vision.MatAttribute
 import org.deltacv.papervision.attribute.vision.structs.RectAttribute
 import org.deltacv.papervision.codegen.CodeGen
@@ -17,6 +18,9 @@ import org.deltacv.papervision.node.DrawNode
 import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.PaperNode
 import org.deltacv.papervision.serialization.v2.CodecType
+import org.deltacv.papervision.serialization.v2.DataDecoder
+import org.deltacv.papervision.serialization.v2.DataEncoder
+import org.deltacv.papervision.serialization.v2.objOrSkip
 
 @PaperNode(
     name = "nod_extractregion",
@@ -31,11 +35,11 @@ class ExtractRegionNode : DrawNode<ExtractRegionNode.Session>() {
     val output = MatAttribute(OUTPUT, "$[att_output]")
 
     override fun onEnable() {
-        + input.rebuildOnChange()
-        + region
+        + input.rebuildOnLink()
+        + region.rebuildOnLink()
 
         output.bindColorSpace(input)
-        + output.enablePrevizButton().rebuildOnChange()
+        + output.enablePrevizButton()
     }
 
     override val generators = polyglot {
@@ -54,14 +58,18 @@ class ExtractRegionNode : DrawNode<ExtractRegionNode.Session>() {
 
                 current.scope {
                     nameComment()
+
                     ifCondition(outputMat notEqualsTo nullValue) {
                         outputMat("release")
                     }
 
                     separate()
 
-                    ifCondition(regionRect.value.v notEqualsTo nullValue) {
-                        outputMat instanceSet inputMat.value.v.callValue("submat", JvmOpenCv.Mat, regionRect.value.v)
+                    val regionRectVar = uniqueVariable("regionRect", regionRect.value.v)
+                    local(regionRectVar)
+
+                    ifCondition(regionRectVar notEqualsTo nullValue) {
+                        outputMat instanceSet inputMat.value.v.callValue("submat", JvmOpenCv.Mat, regionRectVar)
                     }.elseCondition {
                         outputMat instanceSet inputMat.value.v
                     }
@@ -116,6 +124,20 @@ class ExtractRegionNode : DrawNode<ExtractRegionNode.Session>() {
     override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute) = when(attrib) {
         output -> GenValue.Mat.defer { current.sessionOf(this)?.output }
         else -> noValue(attrib)
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("input", input)
+        encoder.obj("region", region)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.objOrSkip("input", input)
+        decoder.objOrSkip("region", region)
+        decoder.objOrSkip("output", output)
     }
 
     class Session : CodeGenSession {
