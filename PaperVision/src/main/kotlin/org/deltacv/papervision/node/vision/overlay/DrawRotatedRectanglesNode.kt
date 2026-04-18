@@ -136,7 +136,7 @@ open class DrawRotatedRectanglesNode
                     if (rectanglesList !is GenValue.List.Runtime<*>) {
                         for (rectangle in (rectanglesList as GenValue.List.Actual<*>).elements) {
                             if (rectangle is GenValue.RotatedRect.Components) {
-                                TODO("")
+                                TODO("implement rotated rect drawing for components")
                             } else if (rectangle is GenValue.RotatedRect.Inst) {
                                 drawRuntimeRect(rectangle.value.v)
                             }

@@ -75,6 +75,15 @@ class ScopeCtx(val scope: Scope) : LanguageCtx(scope.language) {
 
     fun findNullables(vararg value: Value) = scope.findNullables(*value)
 
+    fun public(variable: DeclarableVariable, label: String? = null) =
+        scope.instanceVariable(Visibility.PUBLIC, variable, label)
+    fun private(variable: DeclarableVariable) =
+        scope.instanceVariable(Visibility.PRIVATE, variable)
+    fun protected(variable: DeclarableVariable) =
+        scope.instanceVariable(Visibility.PROTECTED, variable)
+    fun packagePrivate(variable: DeclarableVariable) =
+        scope.instanceVariable(Visibility.PACKAGE_PRIVATE, variable)
+
     fun local(v: DeclarableVariable) = scope.localVariable(v)
 
     fun instanceVariable(

@@ -44,6 +44,7 @@ import org.deltacv.papervision.serialization.v1.data.SerializeData
 import org.deltacv.papervision.serialization.v2.CodecType
 import org.deltacv.papervision.serialization.v2.DataDecoder
 import org.deltacv.papervision.serialization.v2.DataEncoder
+import org.deltacv.papervision.serialization.v2.objOrSkip
 
 @PaperNode(
     name = "nod_pipelineinput",
@@ -51,7 +52,7 @@ import org.deltacv.papervision.serialization.v2.DataEncoder
     showInList = false
 )
 @CodecType
-class InputMatNode @JvmOverloads constructor(
+class InputMatNode constructor(
     var windowSizeSupplier: (() -> ImVec2)? = null
 ) : DrawNode<NoSession>(allowDelete = false) {
 
@@ -112,6 +113,16 @@ class InputMatNode @JvmOverloads constructor(
 
     override val generators = polyglot {
         generatorForAny { NoSession }
+    }
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.obj("output", output)
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        decoder.objOrSkip("output", output)
     }
 
     override fun getGenValueOf(

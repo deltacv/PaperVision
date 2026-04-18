@@ -104,8 +104,8 @@ class FilterContoursByRatioNode : DrawNode<FilterContoursByRatioNode.Session>() 
                 val points2f = uniqueVariable("${pointsVarName.v}2f", JvmOpenCv.MatOfPoint2f.new())
 
                 group {
-                    public(minRatioVar, minRatio.label())
-                    public(maxRatioVar, maxRatio.label())
+                    public(minRatioVar, minRatio.tunerLabel())
+                    public(maxRatioVar, maxRatio.tunerLabel())
 
                     private(contoursVar)
 

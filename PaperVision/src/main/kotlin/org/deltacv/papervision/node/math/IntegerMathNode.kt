@@ -59,8 +59,8 @@ class IntegerMathNode : DrawNode<IntegerMathNode.Session>() {
                         secondV = uniqueVariable("integerMathSecond", secondValue.v)
 
                     group {
-                        if (firstV is DeclarableVariable) public(firstV, first.label())
-                        if (secondV is DeclarableVariable) public(secondV, second.label())
+                        if (firstV is DeclarableVariable) public(firstV, first.tunerLabel())
+                        if (secondV is DeclarableVariable) public(secondV, second.tunerLabel())
                     }
                 }
 
@@ -68,9 +68,7 @@ class IntegerMathNode : DrawNode<IntegerMathNode.Session>() {
                     Operation.PLUS -> firstV + secondV
                     Operation.MINUS -> firstV - secondV
                     Operation.MULTIPLY -> firstV * secondV
-                    Operation.DIVIDE -> {
-                        firstV / secondV
-                    }
+                    Operation.DIVIDE -> firstV / secondV
                 }
 
                 session.result = GenValue.Int.Runtime(resultValue.resolved())

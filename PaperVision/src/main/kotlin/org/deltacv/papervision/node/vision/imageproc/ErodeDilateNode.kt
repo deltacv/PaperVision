@@ -87,8 +87,8 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                 val output = uniqueVariable("${input.value}ErodedDilated", JvmOpenCv.Mat.new())
 
                 group {
-                    public(erodeValVariable, erodeValue.label())
-                    public(dilateValVariable, dilateValue.label())
+                    public(erodeValVariable, erodeValue.tunerLabel())
+                    public(dilateValVariable, dilateValue.tunerLabel())
                     private(element)
                     private(output)
                 }
@@ -160,7 +160,6 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                     cv2.MORPH_RECT,
                     CPythonLanguage.tuple(erodeVal.v, erodeVal.v)
                 ))
-                public(elementErode)
 
                 val elementDilate = uniqueVariable("element_dilate", cv2.callValue(
                     "getStructuringElement",
@@ -168,7 +167,11 @@ class ErodeDilateNode : DrawNode<ErodeDilateNode.Session>() {
                     cv2.MORPH_RECT,
                     CPythonLanguage.tuple(dilateVal.v, dilateVal.v)
                 ))
-                public(elementDilate)
+
+                group {
+                    public(elementErode)
+                    public(elementDilate)
+                }
 
                 current.scope {
                     nameComment()

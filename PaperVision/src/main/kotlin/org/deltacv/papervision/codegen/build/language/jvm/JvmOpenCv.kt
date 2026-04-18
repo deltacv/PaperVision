@@ -18,15 +18,14 @@
 
 package org.deltacv.papervision.codegen.build.language.jvm
 
+import org.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
-import org.deltacv.papervision.codegen.GenValue.Vec2.Actual
-import org.deltacv.papervision.codegen.GenValue.Vec2.Runtime
 import org.deltacv.papervision.codegen.Visibility
 import org.deltacv.papervision.codegen.build.ConValue
+import org.deltacv.papervision.codegen.build.DeclarableVariable
 import org.deltacv.papervision.codegen.build.Parameter
 import org.deltacv.papervision.codegen.build.Type
-import org.deltacv.papervision.codegen.build.DeclarableVariable
 import org.deltacv.papervision.codegen.build.language.StandardTypes
 import org.deltacv.papervision.codegen.resolve.Resolvable
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -87,7 +86,7 @@ object JvmOpenCv {
             val pos = rect.position.toRuntime(langHolder)
             val size = rect.size.toRuntime(langHolder)
 
-            GenValue.Rect.Inst(Rect.new(pos.xValue.v, pos.yValue.v, size.xValue.v, size.yValue.v).resolved())
+            GenValue.Rect.Inst(Rect.new(pos.x.v, pos.y.v, size.x.v, size.y.v).resolved())
         }
 
         is GenValue.Rect.Inst -> rect
@@ -97,12 +96,15 @@ object JvmOpenCv {
 
     fun toRotatedRectInst(rect: GenValue.RotatedRect, langHolder: CodeGen.LanguageHolder) = when (rect) {
         is GenValue.RotatedRect.Components -> langHolder.language {
-            GenValue.RotatedRect.Inst(RotatedRect.new(
-                Point.new(rect.x.v, rect.y.v),
-                Size.new(rect.w.v, rect.h.v),
-                rect.angle.v
-            ).resolved())
+            GenValue.RotatedRect.Inst(
+                RotatedRect.new(
+                    Point.new(rect.x.v, rect.y.v),
+                    Size.new(rect.w.v, rect.h.v),
+                    rect.angle.v
+                ).resolved()
+            )
         }
+
         is GenValue.RotatedRect.Inst -> rect
     }
 
@@ -111,6 +113,34 @@ object JvmOpenCv {
 
     object SimpleBlobDetector : Type("SimpleBlobDetector", "org.opencv.features2d") {
         val Params = Type("SimpleBlobDetector_Params", "org.opencv.features2d")
+    }
+
+    fun toPrevizVec2(
+        vec: GenValue.Vec2,
+        labelSource: Vector2Attribute,
+        prefix: String = "vec",
+        current: CodeGen.Current
+    ) = current {
+        if (codeGen.isForPreviz) {
+            val x = uniqueVariable("${prefix}X", vec.x.v, allocateName = true)
+            val y = uniqueVariable("${prefix}Y", vec.y.v, allocateName = true)
+
+            deferredGroup(Resolvable.PairPlaceholder(vec.x.isActual.value, vec.y.isActual.value)) {
+                if(it.first) public(x, labelSource.tunerLabel(0))
+                if(it.second) public(y, labelSource.tunerLabel(1))
+            }
+
+            GenValue.Vec2.Runtime(
+                GenValue.Int.Runtime(Resolvable.DependentPlaceholder(vec.x.isActual.value) {
+                    if(it) x else vec.x.v
+                }),
+                GenValue.Int.Runtime(Resolvable.DependentPlaceholder(vec.y.isActual.value) {
+                    if(it) y else vec.y.v
+                })
+            )
+        } else {
+            vec
+        }
     }
 
     fun toRuntimeLineParameters(

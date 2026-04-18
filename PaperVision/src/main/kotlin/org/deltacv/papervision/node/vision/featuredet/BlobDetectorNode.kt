@@ -133,20 +133,20 @@ class BlobDetectorNode : DrawNode<BlobDetectorNode.Session>() {
                 group {
                     // fyi with the indices;
                     // 0 = min, 1 = max
-                    public(minArea, area.label(0))
-                    public(maxArea, area.label(1))
+                    public(minArea, area.tunerLabel(0))
+                    public(maxArea, area.tunerLabel(1))
 
-                    public(minThreshold, threshold.label(0))
-                    public(maxThreshold, threshold.label(1))
+                    public(minThreshold, threshold.tunerLabel(0))
+                    public(maxThreshold, threshold.tunerLabel(1))
 
-                    public(minCircularity, circularity.label(0))
-                    public(maxCircularity, circularity.label(1))
+                    public(minCircularity, circularity.tunerLabel(0))
+                    public(maxCircularity, circularity.tunerLabel(1))
 
-                    public(minConvexity, convexity.label(0))
-                    public(maxConvexity, convexity.label(1))
+                    public(minConvexity, convexity.tunerLabel(0))
+                    public(maxConvexity, convexity.tunerLabel(1))
 
-                    public(minInertia, inertia.label(0))
-                    public(maxInertia, inertia.label(1))
+                    public(minInertia, inertia.tunerLabel(0))
+                    public(maxInertia, inertia.tunerLabel(1))
                 }
 
                 group {

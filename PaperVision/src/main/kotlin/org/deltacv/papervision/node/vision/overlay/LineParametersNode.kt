@@ -30,7 +30,6 @@ import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.BaseLanguage
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
-import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
 import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.DrawNode
@@ -74,8 +73,8 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
                 val lineThicknessVar = uniqueVariable("lineThickness", lineThicknessValue.v)
 
                 group {
-                    public(lineColorVar, lineColor.label())
-                    public(lineThicknessVar, lineThickness.label())
+                    public(lineColorVar, lineColor.tunerLabel())
+                    public(lineThicknessVar, lineThickness.tunerLabel())
                 }
 
                 if(lineColorValue is GenValue.Scalar.Inst || lineThicknessValue is GenValue.Int.Runtime) {

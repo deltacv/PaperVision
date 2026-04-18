@@ -6,13 +6,17 @@ import org.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
+import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.dsl.polyglot
+import org.deltacv.papervision.codegen.language.BaseLanguage
+import org.deltacv.papervision.codegen.resolve.resolved
 import org.deltacv.papervision.node.DrawNode
 import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.PaperNode
 import org.deltacv.papervision.serialization.v2.CodecType
 import org.deltacv.papervision.serialization.v2.DataDecoder
 import org.deltacv.papervision.serialization.v2.DataEncoder
+import org.deltacv.papervision.serialization.v2.objOrSkip
 
 @PaperNode(
     name = "nod_composerect",
@@ -35,29 +39,22 @@ class ComposeRectNode : DrawNode<ComposeRectNode.Session>() {
 
     override val generators = polyglot {
         generatorForAny {
-            current {
-                val session = Session()
+            val session = Session()
 
-                var positionValue = positionAtt.genValue(current)
-                var sizeValue = sizeAtt.genValue(current)
+            var positionValue = JvmOpenCv.toPrevizVec2(positionAtt.genValue(current), positionAtt, "rect", current)
+            var sizeValue = JvmOpenCv.toPrevizVec2(sizeAtt.genValue(current), sizeAtt, "rectSize", current)
 
-                val (x, y) = when(positionValue) {
-                    is GenValue.Vec2.Runtime -> positionValue.xValue to positionValue.yValue
-                    is GenValue.Vec2.Actual -> positionValue.x to positionValue.y
-                }
-                val (w, h) = when(sizeValue) {
-                    is GenValue.Vec2.Runtime -> sizeValue.xValue to sizeValue.yValue
-                    is GenValue.Vec2.Actual -> sizeValue.x to sizeValue.y
-                }
+            session.rect = GenValue.Rect.Components.wrap(
+                positionValue.x, positionValue.y,
+                sizeValue.x, sizeValue.y,
+                current
+            )
 
-                session.rect = GenValue.Rect.Components.wrap(x, y, w, h, current)
-
-                session
-            }
+            session
         }
     }
 
-    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute) = when(attrib) {
+    override fun getGenValueOf(current: CodeGen.Current, attrib: Attribute) = when (attrib) {
         output -> current.nonNullSessionOf(this).rect // cannot defer rect
         else -> noValue(attrib)
     }
@@ -71,9 +68,9 @@ class ComposeRectNode : DrawNode<ComposeRectNode.Session>() {
 
     override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
-        decoder.obj("position", positionAtt)
-        decoder.obj("size", sizeAtt)
-        decoder.obj("output", output)
+        decoder.objOrSkip("position", positionAtt)
+        decoder.objOrSkip("size", sizeAtt)
+        decoder.objOrSkip("output", output)
     }
 
     class Session : CodeGenSession {

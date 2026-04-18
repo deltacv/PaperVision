@@ -59,7 +59,7 @@ class DoubleAttribute(
     val value = ImDouble(initialValue)
     private val sliderValue = ImFloat(initialValue.toFloat())
 
-    private val sliderId by Misc.newMiscId()
+    private val sliderId by Misc.newId()
 
     private var nextValue: Double? = null
 

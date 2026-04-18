@@ -3,10 +3,12 @@ package org.deltacv.papervision.node.math
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.misc.EnumAttribute
 import org.deltacv.papervision.attribute.rebuildOnChange
+import org.deltacv.papervision.attribute.rebuildOnLink
 import org.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
+import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.resolve.resolved
 import org.deltacv.papervision.gui.font.Font
@@ -32,30 +34,31 @@ class Vector2MathNode : DrawNode<Vector2MathNode.Session>() {
     val result = Vector2Attribute(OUTPUT, "$[att_result]")
 
     override fun onEnable() {
-        +first
-        +operation.rebuildOnChange()
-        +second
+        + first
+        + operation.rebuildOnChange()
+        + second
 
-        +result
+        + result.rebuildOnLink()
     }
 
     override val generators = polyglot {
         generatorForAny {
             val session = Session()
 
-            var firstValue = first.genValue(current).toRuntime(current)
-            var secondValue = second.genValue(current).toRuntime(current)
+            val firstValue = JvmOpenCv.toPrevizVec2(first.genValue(current), first, "first", current)
+            val operationValue = operation.genValue(current)
+            val secondValue = JvmOpenCv.toPrevizVec2(second.genValue(current), second, "second", current)
 
             current {
-                fun operate(first: GenValue.Int, second: GenValue.Int) = when (operation.genValue(current).value) {
+                fun operate(first: GenValue.Int, second: GenValue.Int) = when(operationValue.value) {
                     Operation.PLUS -> first.v + second.v
                     Operation.MINUS -> first.v - second.v
                     Operation.MULTIPLY -> first.v * second.v
                     Operation.DIVIDE -> first.v / second.v
                 }
 
-                val xResultValue = operate(firstValue.xValue, secondValue.xValue)
-                val yResultValue = operate(firstValue.yValue, secondValue.yValue)
+                val xResultValue = operate(firstValue.x, secondValue.y)
+                val yResultValue = operate(firstValue.x, secondValue.y)
 
                 session.result = GenValue.Vec2.Runtime(
                     GenValue.Int.Runtime(xResultValue.resolved()),

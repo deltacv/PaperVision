@@ -60,7 +60,7 @@ class DecimalToIntegerNode : DrawNode<DecimalToIntegerNode.Session>(){
                     inputV = uniqueVariable("decimalToIntegerInput", inputV)
 
                     group {
-                        public(inputV, input.label())
+                        public(inputV, input.tunerLabel())
                     }
                 }
 

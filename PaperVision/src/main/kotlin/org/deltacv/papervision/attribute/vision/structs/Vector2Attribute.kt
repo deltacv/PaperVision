@@ -20,23 +20,32 @@ package org.deltacv.papervision.attribute.vision.structs
 
 import imgui.ImGui
 import imgui.ImVec2
+import imgui.type.ImInt
+import org.deltacv.mai18n.tr
 import org.deltacv.papervision.action.editor.CreateLinkAction
 import org.deltacv.papervision.attribute.AttributeMode
 import org.deltacv.papervision.attribute.AttributeType
+import org.deltacv.papervision.attribute.EditorValue
 import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.attribute.decomp.vision.structs.Vector2AttributeDecomposer
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
-import org.deltacv.papervision.gui.font.Font
+import org.deltacv.papervision.codegen.resolve.resolved
+import org.deltacv.papervision.engine.client.message.TunerValue
 import org.deltacv.papervision.gui.font.FontAwesomeIcons
+import org.deltacv.papervision.id.Misc
 import org.deltacv.papervision.node.Link
 import org.deltacv.papervision.node.math.Vector2Node
 import org.deltacv.papervision.serialization.v2.CodecType
+import org.deltacv.papervision.serialization.v2.DataDecoder
+import org.deltacv.papervision.serialization.v2.DataEncoder
+import org.deltacv.papervision.serialization.v2.intOrNull
 
 @CodecType(instantiable = false)
 class Vector2Attribute (
     override val mode: AttributeMode,
     override var attributeName: String? = null,
+    val showInlineInputs: Boolean = true,
     val useSizeNaming: Boolean = false
 ) : TypedAttribute<GenValue.Vec2>(Companion) {
 
@@ -47,6 +56,12 @@ class Vector2Attribute (
 
         override fun newDecomposer() = Vector2AttributeDecomposer()
     }
+
+    private val xId by Misc.newId()
+    private val yId by Misc.newId()
+
+    private val xValue = ImInt()
+    private val yValue = ImInt()
 
     override fun drawAfterText() {
         if(mode == AttributeMode.INPUT) {
@@ -73,10 +88,65 @@ class Vector2Attribute (
         }
     }
 
+    override fun drawAttribute() {
+        super.drawAttribute()
+
+        if(showInlineInputs && mode == AttributeMode.INPUT && !hasLink) {
+            inlineIfNeeded()
+
+            ImGui.pushItemWidth(80f)
+
+            val xLabel = if(useSizeNaming) "att_width" else "X"
+
+            if(ImGui.inputInt("###$xId", xValue, 0)) {
+                emitChange(ChangeType.ValueChange)
+            }
+            if(ImGui.isItemHovered()) {
+                ImGui.setTooltip(tr(xLabel))
+            }
+
+            ImGui.sameLine()
+
+            val yLabel = if(useSizeNaming) "att_height" else "Y"
+
+            if(ImGui.inputInt("###$yId", yValue, 0)) {
+                emitChange(ChangeType.ValueChange)
+            }
+            if (ImGui.isItemHovered()) {
+                ImGui.setTooltip(tr(yLabel))
+            }
+
+            ImGui.popItemWidth()
+        }
+    }
+
+    override fun readEditorValue() = EditorValue.List(listOf(
+        EditorValue.Int(xValue.get()),
+        EditorValue.Int(yValue.get())
+    ))
+    override fun readTunerValue() = TunerValue.ListValue(listOf(
+        TunerValue.IntValue(xValue.get()),
+        TunerValue.IntValue(yValue.get())
+    ))
+
     override fun genValue(current: CodeGen.Current) =
-        readGenValue<GenValue.Vec2>(current, GenValue.Vec2.Actual(GenValue.Int.ZERO, GenValue.Int.ZERO))
+        readGenValue<GenValue.Vec2>(current,
+            GenValue.Vec2.Actual(
+                GenValue.Int.Actual(xValue.get().resolved()),
+                GenValue.Int.Actual(yValue.get().resolved())
+            )
+        )
+
+    override fun encode(encoder: DataEncoder) {
+        super.encode(encoder)
+        encoder.int("x", xValue.get())
+        encoder.int("y", yValue.get())
+    }
+
+    override fun decode(decoder: DataDecoder) {
+        super.decode(decoder)
+        xValue.set(decoder.intOrNull("x") ?: 0)
+        yValue.set(decoder.intOrNull("y") ?: 0)
+    }
 
 }
-
-
-

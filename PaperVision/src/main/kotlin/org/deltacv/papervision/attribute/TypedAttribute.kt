@@ -93,7 +93,7 @@ abstract class TypedAttribute<R: GenValue>(
     enum class Stage { INIT, MEASURE, READY }
     private var stage = Stage.INIT
 
-    private var cachedLabels = mutableMapOf<Int?, String>()
+    private var cachedTunerLabels = mutableMapOf<Int?, String>()
 
     protected val finalVarName get() =
         attributeName ?: if (mode == AttributeMode.INPUT) "$[mis_input]" else "$[mis_output]"
@@ -322,29 +322,29 @@ abstract class TypedAttribute<R: GenValue>(
         else -> null
     }
 
-    fun label(indexIfApplicable: Int? = null): String {
-        if(!cachedLabels.containsKey(indexIfApplicable)) {
+    fun tunerLabel(indexIfApplicable: Int? = null): String {
+        if(!cachedTunerLabels.containsKey(indexIfApplicable)) {
             val label = id.toString() + (indexIfApplicable?.let { "_$it" } ?: "")
-            cachedLabels[indexIfApplicable] = label
+            cachedTunerLabels[indexIfApplicable] = label
 
             onChange {
                 val value = tunerValue
 
                 // if value is null we have an oopsie and we should just rebuild
-                // always rebuild on link changes, no other way to handle it
+                // however, we need to always rebuild on link changes, no other way to handle it
                 if(value == null || peekChange() is ChangeType.LinkChange) {
                     rebuildPreviz()
                     return@onChange
                 }
 
-                broadcastLabelMessageFor(label, value, indexIfApplicable)
+                broadcastTunerMessageFor(label, value, indexIfApplicable)
             }
         }
 
-        return cachedLabels[indexIfApplicable]!!
+        return cachedTunerLabels[indexIfApplicable]!!
     }
 
-    protected fun broadcastLabelMessageFor(label: String, value: TunerValue, indexIfApplicable: Int? = null) {
+    protected fun broadcastTunerMessageFor(label: String, value: TunerValue, indexIfApplicable: Int? = null) {
         if(!isOnEditor) return
 
         parentNode.editor.paperVision.engineClient.sendMessage(

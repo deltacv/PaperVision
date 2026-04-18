@@ -1,5 +1,6 @@
 package org.deltacv.papervision.codegen
 
+typealias PolyglotGeneratorMutableMap<I, S> = MutableMap<PolyglotMapping, Generator<I, S>>
 typealias PolyglotGeneratorMap<I, S> = Map<PolyglotMapping, Generator<I, S>>
 
 interface PolyglotGenerator<I, S: CodeGenSession> : Generator<I, S> {

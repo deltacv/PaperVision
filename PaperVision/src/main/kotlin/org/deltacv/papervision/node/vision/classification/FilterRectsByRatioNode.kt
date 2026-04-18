@@ -87,8 +87,8 @@ class FilterRectsByRatioNode : DrawNode<FilterRectsByRatioNode.Session>() {
                 val rectsVar = uniqueVariable("${rects.value.v}ByRatio", JavaTypes.ArrayList(JvmOpenCv.Rect).new())
 
                 group {
-                    public(minRatioVar, minRatio.label())
-                    public(maxRatioVar, maxRatio.label())
+                    public(minRatioVar, minRatio.tunerLabel())
+                    public(maxRatioVar, maxRatio.tunerLabel())
 
                     private(rectsVar)
                 }

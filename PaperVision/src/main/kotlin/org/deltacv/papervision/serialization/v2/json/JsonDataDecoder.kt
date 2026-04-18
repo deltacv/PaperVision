@@ -142,8 +142,7 @@ class JsonDataDecoder(
             .filter { it.value is JsonArray && it.value.jsonArray.all { e -> e is JsonObject && e.jsonObject.containsKey("_type") && e.jsonObject.containsKey("_data") } }
             .associate { it.key to objList(it.key) }
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun <R> safe(name: String, callback: (Unit) -> R): R {
+    private inline fun <R> safe(name: String, crossinline callback: (Unit) -> R): R {
         if (!has(name)) {
             throw MalformedDataException("Data entry with name $name does not exist", obj)
         }

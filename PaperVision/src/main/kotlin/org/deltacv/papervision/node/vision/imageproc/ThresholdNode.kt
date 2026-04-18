@@ -120,8 +120,6 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
                 val thresholdTargetMat = uniqueVariable("${targetColor.name.lowercase()}Threshold", Mat.new())
 
-                val scalarLabels = scalar.labelsForTwoScalars()
-
                 val lowerScalar = uniqueVariable("lower${targetColor.name}",
                     Scalar.new(
                         range.a.min.v,
@@ -140,12 +138,13 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
                     )
                 )
 
+                val (minLabel, maxLabel) = scalar.minMaxTunerLabels()
+
                 group {
                     // lower color scalar
-                    public(lowerScalar, scalarLabels.first)
-
+                    public(lowerScalar, minLabel)
                     // upper color scalar
-                    public(upperScalar, scalarLabels.second)
+                    public(upperScalar, maxLabel)
                     // output mat target
                     private(thresholdTargetMat)
                 }

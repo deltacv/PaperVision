@@ -35,6 +35,7 @@ import org.deltacv.papervision.codegen.build.language.jvm.JavaTypes
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import org.deltacv.papervision.codegen.dsl.polyglot
+import org.deltacv.papervision.codegen.language.BaseLanguage
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -89,7 +90,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
     }
 
     override val generators = polyglot {
-        generatorFor(JavaLanguage) {
+        generatorFor<BaseLanguage> {
             val session = Session()
 
             val inputPoints = input.genValue(current)
@@ -115,7 +116,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                     private(crosshair)
                     private(crosshairImage)
 
-                    public(crosshairSize, crosshairScale.label())
+                    public(crosshairSize, crosshairScale.tunerLabel())
                 }
 
                 current.scope {
@@ -133,7 +134,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                             val rows = drawOnValue.callValue("rows", IntType)
                             val cols = drawOnValue.callValue("cols", IntType)
 
-                            JvmOpenCv.Point.new(cols / 2.v + crosshairPositionVector.xValue.v, rows / 2.v + crosshairPositionVector.yValue.v)
+                            JvmOpenCv.Point.new(cols / 2.v + crosshairPositionVector.x.v, rows / 2.v + crosshairPositionVector.y.v)
                         }
                     )
 
@@ -313,8 +314,8 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                     separate()
 
                     val (crosshairPointX, crosshairPointY) = Pair(
-                        (cols / 2.v) + crosshairPositionVector.x.value.v,
-                        (rows / 2.v) + crosshairPositionVector.y.value.v
+                        (cols / 2.v) + crosshairPositionVector.x.v,
+                        (rows / 2.v) + crosshairPositionVector.y.v
                     )
 
                     val pointX = uniqueVariable("crosshair_point_x", crosshairPointX)

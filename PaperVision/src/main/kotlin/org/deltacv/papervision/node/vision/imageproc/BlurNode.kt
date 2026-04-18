@@ -80,7 +80,7 @@ class BlurNode : DrawNode<BlurNode.Session>() {
                 val outputMat = uniqueVariable("blur${algo.name}Mat", Mat.new())
 
                 group {
-                    public(blurValVariable, blurValue.label())
+                    public(blurValVariable, blurValue.tunerLabel())
                     private(outputMat)
                 }
 

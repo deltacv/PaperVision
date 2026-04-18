@@ -59,8 +59,8 @@ class DecimalMathNode : DrawNode<DecimalMathNode.Session>() {
                         secondV = uniqueVariable("integerMathSecond", secondValue.v)
 
                     group {
-                        if (firstV is DeclarableVariable) public(firstV, first.label())
-                        if (secondV is DeclarableVariable) public(secondV, second.label())
+                        if (firstV is DeclarableVariable) public(firstV, first.tunerLabel())
+                        if (secondV is DeclarableVariable) public(secondV, second.tunerLabel())
                     }
                 }
 

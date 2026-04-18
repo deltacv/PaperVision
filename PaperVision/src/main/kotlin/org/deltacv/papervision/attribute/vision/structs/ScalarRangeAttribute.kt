@@ -18,11 +18,9 @@
 
 package org.deltacv.papervision.attribute.vision.structs
 
-import imgui.ImGui
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.AttributeMode
 import org.deltacv.papervision.attribute.EditorValue
-import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.attribute.math.RangeAttribute
 import org.deltacv.papervision.attribute.misc.ListAttribute
 import org.deltacv.papervision.attribute.vision.MatAttribute
@@ -33,7 +31,6 @@ import org.deltacv.papervision.gui.font.Font
 import org.deltacv.papervision.gui.font.FontAwesomeIcons
 import org.deltacv.papervision.node.vision.ColorSpace
 import org.deltacv.papervision.serialization.v2.CodecType
-import org.deltacv.papervision.util.hashCodeString
 
 @CodecType(instantiable = false)
 class ScalarRangeAttribute(
@@ -88,11 +85,11 @@ class ScalarRangeAttribute(
 
     private var twoScalarsCached: Pair<String, String>? = null
 
-    fun labelsForTwoScalars(): Pair<String, String> {
+    fun minMaxTunerLabels(): Pair<String, String> {
         if(twoScalarsCached != null) return twoScalarsCached!!
 
-        val hexMin = hashCodeString
-        val hexMax = hexMin.hashCodeString
+        val hexMin = "${id}_min"
+        val hexMax = "${id}_max"
 
         onChange {
             val list = editorValue?.let {
@@ -109,8 +106,8 @@ class ScalarRangeAttribute(
                 maxValues[i] = value.max
             }
 
-            broadcastLabelMessageFor(hexMin, TunerValue.ListValue(minValues.map { TunerValue.DoubleValue(it) }))
-            broadcastLabelMessageFor(hexMax, TunerValue.ListValue(maxValues.map { TunerValue.DoubleValue(it) }))
+            broadcastTunerMessageFor(hexMin, TunerValue.ListValue(minValues.map { TunerValue.DoubleValue(it) }))
+            broadcastTunerMessageFor(hexMax, TunerValue.ListValue(maxValues.map { TunerValue.DoubleValue(it) }))
         }
 
         twoScalarsCached = Pair(hexMin, hexMax)

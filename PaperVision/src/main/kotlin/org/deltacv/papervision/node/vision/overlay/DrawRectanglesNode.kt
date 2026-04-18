@@ -214,11 +214,11 @@ open class DrawRectanglesNode
                                 val size = rectangle.size.toRuntime(current)
 
                                 val tl = CPythonLanguage.tuple(
-                                    pos.xValue.v, pos.yValue.v
+                                    pos.x.v, pos.y.v
                                 )
                                 val br = CPythonLanguage.tuple(
-                                    pos.xValue.v + size.xValue.v,
-                                    pos.yValue.v + size.yValue.v
+                                    pos.x.v + size.x.v,
+                                    pos.y.v + size.y.v
                                 )
 
                                 val nullables = findNullables(tl, br)

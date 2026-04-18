@@ -108,10 +108,10 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                                 val rect = DeclarableVariable(
                                     "rect",
                                     JvmOpenCv.Rect.new(
-                                        pos.xValue.v,
-                                        pos.yValue.v,
-                                        size.xValue.v,
-                                        size.yValue.v
+                                        pos.x.v,
+                                        pos.y.v,
+                                        size.x.v,
+                                        size.y.v
                                     )
                                 )
 
@@ -190,10 +190,10 @@ class FilterBiggestRectangleNode : DrawNode<FilterBiggestRectangleNode.Session>(
                                 val rect = uniqueVariable(
                                     "rect",
                                     CPythonLanguage.tuple(
-                                        pos.xValue.v,
-                                        pos.yValue.v,
-                                        size.xValue.v,
-                                        size.yValue.v
+                                        pos.x.v,
+                                        pos.y.v,
+                                        size.x.v,
+                                        size.y.v
                                     )
                                 )
                                 local(rect)

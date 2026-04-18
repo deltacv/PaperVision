@@ -77,7 +77,7 @@ object CPythonOpenCv {
                 val size = rect.size.toRuntime(languageHolder)
 
                 CPythonLanguage.tuple(
-                    pos.xValue.v, pos.yValue.v, size.xValue.v, size.yValue.v
+                    pos.x.v, pos.y.v, size.x.v, size.y.v
                 )
             }
 

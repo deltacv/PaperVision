@@ -8,6 +8,7 @@ import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.codegen.dsl.polyglot
+import org.deltacv.papervision.codegen.resolve.resolved
 import org.deltacv.papervision.node.DrawNode
 import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.PaperNode
@@ -46,17 +47,35 @@ class ComposeRotRectNode : DrawNode<ComposeRotRectNode.Session>() {
                 val sizeValue = sizeAtt.genValue(current)
                 val angleValue = angleAtt.genValue(current)
 
-                val (x, y) = when(positionValue) {
-                    is GenValue.Vec2.Runtime -> positionValue.xValue.toDouble(current) to positionValue.yValue.toDouble(current)
-                    is GenValue.Vec2.Actual -> positionValue.x.toDouble(current) to positionValue.y.toDouble(current)
-                }
-                
-                val (w, h) = when(sizeValue) {
-                    is GenValue.Vec2.Runtime -> sizeValue.xValue.toDouble(current) to sizeValue.yValue.toDouble(current)
-                    is GenValue.Vec2.Actual -> sizeValue.x.toDouble(current) to sizeValue.y.toDouble(current)
-                }
+                if(codeGen.isForPreviz) {
+                    val xVar = uniqueVariable("rotRectX", positionValue.x.v)
+                    val yVar = uniqueVariable("rotRectY", positionValue.y.v)
+                    val wVar = uniqueVariable("rotRectW", sizeValue.x.v)
+                    val hVar = uniqueVariable("rotRectH", sizeValue.y.v)
+                    val angleVar = uniqueVariable("rotRectAngle", angleValue.v)
 
-                session.rotRect = GenValue.RotatedRect.Components(x, y, w, h, angleValue)
+                    group {
+                        public(xVar, positionAtt.tunerLabel(0))
+                        public(yVar, positionAtt.tunerLabel(1))
+                        public(wVar, sizeAtt.tunerLabel(0))
+                        public(hVar, sizeAtt.tunerLabel(1))
+                        public(angleVar, angleAtt.tunerLabel())
+                    }
+
+                    session.rotRect = GenValue.RotatedRect.Components(
+                        GenValue.Double.Runtime(xVar.resolved()),
+                        GenValue.Double.Runtime(yVar.resolved()),
+                        GenValue.Double.Runtime(wVar.resolved()),
+                        GenValue.Double.Runtime(hVar.resolved()),
+                        GenValue.Double.Runtime(angleVar.resolved())
+                    )
+                } else {
+                    session.rotRect = GenValue.RotatedRect.Components(
+                        positionValue.x.toDouble(current), positionValue.y.toDouble(current),
+                        sizeValue.x.toDouble(current), sizeValue.y.toDouble(current),
+                        angleValue
+                    )
+                }
 
                 session
             }

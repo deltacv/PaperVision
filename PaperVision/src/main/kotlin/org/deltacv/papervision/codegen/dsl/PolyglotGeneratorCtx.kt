@@ -20,13 +20,15 @@ package org.deltacv.papervision.codegen.dsl
 
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.Generator
+import org.deltacv.papervision.codegen.PolyglotGeneratorMap
+import org.deltacv.papervision.codegen.PolyglotGeneratorMutableMap
 import org.deltacv.papervision.codegen.PolyglotMapping
 import org.deltacv.papervision.codegen.language.Language
 import kotlin.reflect.KClass
 
-class PolyglotGeneratorBuilderCtx<I, S: CodeGenSession> {
+class PolyglotGeneratorCtx<I, S: CodeGenSession> {
 
-    val generators = mutableMapOf<PolyglotMapping, Generator<I, S>>()
+    val generators: PolyglotGeneratorMutableMap<I, S> = mutableMapOf()
 
     /* ---------- INSTANCE LANGUAGES ---------- */
 
@@ -54,8 +56,7 @@ class PolyglotGeneratorBuilderCtx<I, S: CodeGenSession> {
         )
 
     @JvmName("generatorForTwoClassLanguages")
-    inline fun <reified L1: Language, reified L2: Language>
-            generatorFor(noinline init: GeneratorCtx<I, S>.() -> S) =
+    inline fun <reified L1: Language, reified L2: Language> generatorFor(noinline init: GeneratorCtx<I, S>.() -> S) =
         generator(init).also {
             generators[
                 PolyglotMapping.LanguageClasses(
@@ -96,10 +97,10 @@ class PolyglotGeneratorBuilderCtx<I, S: CodeGenSession> {
         generators.put(PolyglotMapping.AnyLanguage, generator)
 }
 
-inline fun <I, S: CodeGenSession> polyglot(init: PolyglotGeneratorBuilderCtx<I, S>.() -> Unit) = PolyglotGeneratorBuilderCtx<I, S>().run {
+inline fun <I, S: CodeGenSession> polyglot(init: PolyglotGeneratorCtx<I, S>.() -> Unit) = PolyglotGeneratorCtx<I, S>().run {
     init()
     generators
 }
 
 @JvmName("polyglotUnit")
-inline fun <S: CodeGenSession> polyglot(init: PolyglotGeneratorBuilderCtx<Unit, S>.() -> Unit) = polyglot<Unit, S>(init)
+inline fun <S: CodeGenSession> polyglot(init: PolyglotGeneratorCtx<Unit, S>.() -> Unit) = polyglot<Unit, S>(init)

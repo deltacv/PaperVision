@@ -146,6 +146,19 @@ sealed class Resolvable<T> {
             null
         }
     })
+
+    data class PairPlaceholder<P1, P2>(
+        val dependency1: Resolvable<P1>,
+        val dependency2: Resolvable<P2>
+    ) : Placeholder<Pair<P1, P2>>(resolver = {
+        val depValue1 = dependency1.resolve()
+        val depValue2 = dependency2.resolve()
+        if (depValue1 != null && depValue2 != null) {
+            Pair(depValue1, depValue2)
+        } else {
+            null
+        }
+    })
 }
 
 

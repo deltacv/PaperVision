@@ -1,6 +1,6 @@
 # PaperVision
 
-Create your custom OpenCV algorithms using a user-friendly node editor interface inspired by Blender and Unreal Engine blueprints.
+Create your custom OpenCV algorithms using a user-friendly node editor, inspired by industry-leading interfaces! Quickly prototype your vision as you edit.
 
 <img src="https://media.deltacv.org/people/serivesmejia/papervision-hero.png" width=700px/>
 

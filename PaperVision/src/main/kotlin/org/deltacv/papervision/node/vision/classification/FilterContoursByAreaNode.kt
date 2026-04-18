@@ -87,8 +87,8 @@ class FilterContoursByAreaNode : DrawNode<FilterContoursByAreaNode.Session>() {
                 val contoursVar = uniqueVariable("${contours.value.v}ByArea", JavaTypes.ArrayList(JvmOpenCv.MatOfPoint).new())
 
                 group {
-                    public(minAreaVar, minArea.label())
-                    public(maxAreaVar, maxArea.label())
+                    public(minAreaVar, minArea.tunerLabel())
+                    public(maxAreaVar, maxArea.tunerLabel())
 
                     private(contoursVar)
                 }

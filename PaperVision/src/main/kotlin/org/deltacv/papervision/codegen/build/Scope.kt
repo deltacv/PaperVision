@@ -55,6 +55,12 @@ class Scope(
     private val typesToInitialize: MutableList<Type> =
         importScope?.typesToInitialize ?: mutableListOf()
 
+    init {
+        if(importScope == this) {
+            throw IllegalArgumentException("Import scope cannot be itself")
+        }
+    }
+
     fun importType(vararg types: Type) {
         if(importScope != null) {
             importScope.importType(*types)
@@ -137,7 +143,7 @@ class Scope(
         builder.append("$tabs${language.localVariableDeclaration(variable)}")
     }
 
-    fun tryName(name: String): String {
+    fun tryName(name: String, allocate: Boolean = false): String {
         if (name !in usedNames) return name
 
         var count = 1
@@ -147,6 +153,10 @@ class Scope(
             newName = "$name$count"
             count++
         } while (newName in usedNames)
+
+        if(allocate) {
+            usedNames += newName
+        }
 
         return newName
     }
@@ -363,14 +373,24 @@ class Scope(
 
     override fun toString() = get()
 
-    inline operator fun <R> invoke(appendWhiteline: Boolean = true, crossinline block: ScopeCtx.() -> R): R {
+    inline operator fun <R> invoke(separate: Boolean = true, crossinline block: ScopeCtx.() -> R): R {
         val result = block(ScopeCtx(this))
 
-        if(appendWhiteline) {
+        if(separate) {
             newStatement()
         }
 
         return result
+    }
+
+    fun <T> deferred(dependency: Resolvable<T>, separate: Boolean = true, block: ScopeCtx.(T) -> Unit) {
+        val placeholder = Resolvable.DependentPlaceholder(dependency) { value ->
+            val scope = copy()
+            scope(separate = separate) { block(value) }
+            scope.toString()
+        }.placeholder
+
+        write(placeholder)
     }
 
     class IfChain(
@@ -386,6 +406,10 @@ class Scope(
             parent.builder.append(parent.language.block(parent.language.elseStatementDeclaration(), scope, baseIndent))
         }
     }
+
+
+
+    fun copy() = Scope(tabsCount, language, importScope, isForPreviz)
 
 }
 

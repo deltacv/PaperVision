@@ -128,6 +128,7 @@ sealed class GenValue {
     data class Enum<E : kotlin.Enum<E>>(val value: E) : GenValue()
 
     sealed class Number : GenValue() {
+        abstract val isActual: Boolean
         abstract fun toRuntime(langHolder: CodeGen.LanguageHolder): Number
 
         abstract fun value(langHolder: CodeGen.LanguageHolder): Value
@@ -143,7 +144,9 @@ sealed class GenValue {
         }
 
         data class Actual(val value: Resolvable<kotlin.Int>) : Int() {
-            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = Runtime(value.map { langHolder.language.int(it) })
+            override val isActual = Boolean.TRUE
+
+            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = Runtime(value.map { langHolder.language.int(it) }, Boolean.TRUE)
 
             override fun toInt(langHolder: CodeGen.LanguageHolder) = this
             override fun toDouble(langHolder: CodeGen.LanguageHolder) = Double.Actual(value.map { it.toDouble() })
@@ -156,7 +159,10 @@ sealed class GenValue {
             }
         }
 
-        data class Runtime(val value: Resolvable<Value>) : Int() {
+        data class Runtime(
+            val value: Resolvable<Value>,
+            override val isActual: Boolean = Boolean.FALSE
+        ) : Int() {
             override fun toRuntime(langHolder: CodeGen.LanguageHolder) = this
 
             override fun toInt(langHolder: CodeGen.LanguageHolder) = this
@@ -189,7 +195,9 @@ sealed class GenValue {
         }
 
         data class Actual(val value: Resolvable<kotlin.Float>) : Float() {
-            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = Runtime(value.map { langHolder.language.float(it) })
+            override val isActual = Boolean.TRUE
+
+            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = Runtime(value.map { langHolder.language.float(it) }, Boolean.TRUE)
 
             override fun toInt(langHolder: CodeGen.LanguageHolder) = Int.Actual(value.map { it.toInt() })
             override fun toDouble(langHolder: CodeGen.LanguageHolder) = Double.Actual(value.map { it.toDouble() })
@@ -202,7 +210,10 @@ sealed class GenValue {
             }
         }
 
-        data class Runtime(val value: Resolvable<Value>) : Float() {
+        data class Runtime(
+            val value: Resolvable<Value>,
+            override val isActual: Boolean = Boolean.FALSE
+        ) : Float() {
             override fun toRuntime(langHolder: CodeGen.LanguageHolder) = this
 
             override fun toInt(langHolder: CodeGen.LanguageHolder) = Int.Runtime(
@@ -233,20 +244,25 @@ sealed class GenValue {
         }
 
         data class Actual(val value: Resolvable<kotlin.Double>) : Double() {
+            override val isActual = Boolean.TRUE
+
             companion object {
                 fun defer(genValueResolver: () -> Actual?) = Actual(
                     Resolvable.from { genValueResolver()?.value }
                 )
             }
 
-            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = Runtime(value.map { langHolder.language.double(it) })
+            override fun toRuntime(langHolder: CodeGen.LanguageHolder) = Runtime(value.map { langHolder.language.double(it) }, Boolean.TRUE)
 
             override fun toInt(langHolder: CodeGen.LanguageHolder) = Int.Actual(value.map { it.toInt() })
             override fun toDouble(langHolder: CodeGen.LanguageHolder) = this
             override fun toFloat(langHolder: CodeGen.LanguageHolder) = Float.Actual(value.map { it.toFloat() })
         }
 
-        data class Runtime(val value: Resolvable<Value>) : Double() {
+        data class Runtime(
+            val value: Resolvable<Value>,
+            override val isActual: Boolean = Boolean.FALSE
+        ) : Double() {
             companion object {
                 fun defer(genValueResolver: () -> Runtime?) = Runtime(
                     Resolvable.from { genValueResolver()?.value }
@@ -329,7 +345,7 @@ sealed class GenValue {
         }
     }
 
-    sealed class Vec2 : GenValue() {
+    sealed class Vec2(val x: Int, val y: Int) : GenValue() {
         companion object {
             fun wrap(x: Int, y: Int, languageHolder: CodeGen.LanguageHolder): Vec2 {
                 return if (x is Int.Actual && y is Int.Actual) {
@@ -340,11 +356,11 @@ sealed class GenValue {
             }
         }
 
-        data class Actual(val x: Int.Actual, val y: Int.Actual) : Vec2() {
+        data class Actual(val actualX: Int.Actual, val actualY: Int.Actual) : Vec2(actualX, actualY) {
             companion object {
                 fun defer(genValueResolver: () -> Actual?) = Actual(
-                    Int.Actual.defer { genValueResolver()?.x },
-                    Int.Actual.defer { genValueResolver()?.y }
+                    Int.Actual.defer { genValueResolver()?.actualX },
+                    Int.Actual.defer { genValueResolver()?.actualY }
                 )
             }
 
@@ -354,11 +370,11 @@ sealed class GenValue {
             )
         }
 
-        data class Runtime(val xValue: Int.Runtime, val yValue: Int.Runtime) : Vec2() {
+        data class Runtime(val runtimeX: Int.Runtime, val runtimeY: Int.Runtime) : Vec2(runtimeX, runtimeY) {
             companion object {
                 fun defer(genValueResolver: () -> Runtime?) = Runtime(
-                    Int.Runtime.defer { genValueResolver()?.xValue },
-                    Int.Runtime.defer { genValueResolver()?.yValue }
+                    Int.Runtime.defer { genValueResolver()?.runtimeX },
+                    Int.Runtime.defer { genValueResolver()?.runtimeY }
                 )
             }
 

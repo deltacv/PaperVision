@@ -232,14 +232,14 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         engine.setMessageHandlerOf<PrevizStartMessage> {
             eocvSimApi.mainLoopHook.once {
                 if (currentPrevizSession != null) {
-                    logger.warn("Stopping current previz session ${currentPrevizSession?.sessionName} to start new one")
+                    logger.warn("Stopping current previz session '${currentPrevizSession?.sessionName}' to start new one")
                     logger.warn("It was not stopped beforehand, make sure to stop previz sessions timely")
 
                     currentPrevizSession?.stopPreviz()
                 }
 
                 val streamer = EOCVSimEngineImageStreamer(
-                    previzNameProvider = { currentPrevizSession!!.sessionName },
+                    previzNameProvider = { message.previzName },
                     Size(
                         message.streamWidth.toDouble(),
                         message.streamHeight.toDouble()
@@ -289,7 +289,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         engine.setMessageHandlerOf<PrevizSourceCodeMessage> {
             eocvSimApi.mainLoopHook.once {
                 if (currentPrevizSession?.sessionName == message.previzName) {
-                    currentPrevizSession!!.refreshPreviz(message.sourceCode)
+                    currentPrevizSession?.refreshPreviz(message.sourceCode)
                     logger.debug("Received source code\n{}", message.sourceCode)
 
                     respond(OkResponse())
@@ -369,7 +369,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         if (tunableFieldCache.containsKey(field)) {
             return tunableFieldCache[field]!!
         }
-        val tunableField = eocvSimApi.variableTunerApi.newTunableFieldInstanceOf(field, currentPrevizSession!!.latestPipeline!!)
+        val pipeline = currentPrevizSession?.latestPipeline ?: return null
+        val tunableField = eocvSimApi.variableTunerApi.newTunableFieldInstanceOf(field, pipeline)
 
         tunableFieldCache[field] = tunableField
         return tunableField

@@ -72,8 +72,8 @@ class Vector2Node @JvmOverloads constructor(
                     val y = uniqueVariable("vectorY", if (yValue is GenValue.Int.Actual) yValue.v else int(0))
 
                     group {
-                        public(x, xAttribute.label())
-                        public(y, yAttribute.label())
+                        public(x, xAttribute.tunerLabel())
+                        public(y, yAttribute.tunerLabel())
                     }
 
                     current.scope {

@@ -49,7 +49,7 @@ class DialogMessageWindow(
         ImGuiWindowFlags.NoScrollWithMouse
     )
 
-    val textAreaId by Misc.newMiscId()
+    val textAreaId by Misc.newId()
 
     override fun drawContents() {
         font?.let {

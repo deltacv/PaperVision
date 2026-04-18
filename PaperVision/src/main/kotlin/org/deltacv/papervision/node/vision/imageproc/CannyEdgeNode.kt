@@ -91,8 +91,8 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                 group {
                     private(output)
 
-                    public(firstThresholdVariable, firstThreshold.label())
-                    public(secondThresholdVariable, secondThreshold.label())
+                    public(firstThresholdVariable, firstThreshold.tunerLabel())
+                    public(secondThresholdVariable, secondThreshold.tunerLabel())
                 }
 
                 current.scope {

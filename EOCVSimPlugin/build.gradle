@@ -147,7 +147,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinx_serialization_version"
-    implementation "com.google.code.gson:gson:$gson_version" // TODO: we'll get rid of it in the next releases
+    implementation "com.google.code.gson:gson:$gson_version" // TODO: we'll get rid of it soon enough
 
     implementation "ch.qos.logback:logback-classic:$logback_classic_version"
 

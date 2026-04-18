@@ -122,12 +122,12 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
                     private(circlesMatVar)
                     private(circlesListVar)
 
-                    public(minDistanceVar, minDistance.label())
-                    public(minRadiusVar, radiusRange.label(0))
-                    public(maxRadiusVar, radiusRange.label(1))
-                    public(param1Var, param1.label())
-                    public(param2Var, param2.label())
-                    public(downscaleVar, downscale.label())
+                    public(minDistanceVar, minDistance.tunerLabel())
+                    public(minRadiusVar, radiusRange.tunerLabel(0))
+                    public(maxRadiusVar, radiusRange.tunerLabel(1))
+                    public(param1Var, param1.tunerLabel())
+                    public(param2Var, param2.tunerLabel())
+                    public(downscaleVar, downscale.tunerLabel())
                 }
 
                 current.scope {

@@ -37,6 +37,7 @@ import org.deltacv.papervision.serialization.v2.CodecType
 import org.deltacv.papervision.serialization.v2.DataDecoder
 import org.deltacv.papervision.serialization.v2.DataEncoder
 import org.deltacv.papervision.serialization.v2.boolOrNull
+import org.deltacv.papervision.serialization.v2.intOrNull
 import org.deltacv.papervision.util.event.PaperEventHandler
 
 @CodecType(instantiable = false)
@@ -94,9 +95,9 @@ class RangeAttribute(
     private var prevMin: Int? = null
     private var prevMax: Int? = null
 
-    private val toggleId by Misc.newMiscId()
-    private val minId by Misc.newMiscId()
-    private val maxId by Misc.newMiscId()
+    private val toggleId by Misc.newId()
+    private val minId by Misc.newId()
+    private val maxId by Misc.newId()
 
     override fun drawAttribute() {
         super.drawAttribute()
@@ -181,8 +182,8 @@ class RangeAttribute(
     override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
 
-        minValue.set(decoder.int("min"))
-        maxValue.set(decoder.int("max"))
+        minValue.set(decoder.intOrNull("min") ?: 0)
+        maxValue.set(decoder.intOrNull("max") ?: 0)
         toggleValue.set(decoder.boolOrNull("toggle") ?: false)
     }
 }

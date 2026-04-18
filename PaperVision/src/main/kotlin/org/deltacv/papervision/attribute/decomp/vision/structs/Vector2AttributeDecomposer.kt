@@ -11,6 +11,7 @@ import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.serialization.v2.CodecType
 import org.deltacv.papervision.serialization.v2.DataDecoder
 import org.deltacv.papervision.serialization.v2.DataEncoder
+import org.deltacv.papervision.serialization.v2.objOrSkip
 
 @CodecType
 class Vector2AttributeDecomposer : AttributeDecomposer<Vector2AttributeDecomposer.Session>() {
@@ -19,8 +20,8 @@ class Vector2AttributeDecomposer : AttributeDecomposer<Vector2AttributeDecompose
     val y = IntAttribute(OUTPUT, "Y")
 
     override fun onEnable() {
-        +x
-        +y
+        + x
+        + y
 
         if (linkedAttribute is Vector2Attribute && (linkedAttribute as Vector2Attribute).useSizeNaming) {
             x.attributeName = "$[att_width]"
@@ -34,17 +35,8 @@ class Vector2AttributeDecomposer : AttributeDecomposer<Vector2AttributeDecompose
 
             val session = Session()
 
-            when (genInput) {
-                is GenValue.Vec2.Actual -> {
-                    session.x = genInput.x.toRuntime(current)
-                    session.y = genInput.y.toRuntime(current)
-                }
-
-                is GenValue.Vec2.Runtime -> {
-                    session.x = genInput.xValue.toRuntime(current)
-                    session.y = genInput.yValue.toRuntime(current)
-                }
-            }
+            session.x = genInput.x.toRuntime(current)
+            session.y = genInput.y.toRuntime(current)
 
             session
         }
@@ -65,8 +57,8 @@ class Vector2AttributeDecomposer : AttributeDecomposer<Vector2AttributeDecompose
     }
 
     override fun decode(decoder: DataDecoder) {
-        decoder.obj("x", x)
-        decoder.obj("y", y)
+        decoder.objOrSkip("x", x)
+        decoder.objOrSkip("y", y)
     }
 
     class Session : CodeGenSession {
@@ -74,6 +66,3 @@ class Vector2AttributeDecomposer : AttributeDecomposer<Vector2AttributeDecompose
         lateinit var y: GenValue.Int.Runtime
     }
 }
-
-
-

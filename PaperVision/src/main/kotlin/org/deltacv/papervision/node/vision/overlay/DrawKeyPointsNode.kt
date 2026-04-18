@@ -105,7 +105,7 @@ open class DrawKeyPointsNode
                     if (!isDrawOnInput) {
                         private(output)
                     }
-                    public(colorScalar, lineColor.label())
+                    public(colorScalar, lineColor.tunerLabel())
                 }
 
                 current.scope {

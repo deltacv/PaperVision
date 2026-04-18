@@ -50,7 +50,7 @@ class Table(val maxColumns: Int = 4, val drawCallback: ((Int, ImVec2) -> Unit)? 
     private val cellRects = mutableMapOf<Int, ImRect>()
     val currentRects: Map<Int, ImRect> get() = cellRects
 
-    private val columnsId by Misc.newMiscId()
+    private val columnsId by Misc.newId()
 
     fun add(id: Int, size: ImVec2) {
         cells += TableCell(id, size)

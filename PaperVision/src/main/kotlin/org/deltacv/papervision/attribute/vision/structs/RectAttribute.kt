@@ -50,6 +50,3 @@ class RectAttribute (
 
     override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.Rect>(current)
 }
-
-
-

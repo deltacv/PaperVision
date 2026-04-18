@@ -20,6 +20,7 @@ package org.deltacv.papervision.codegen.dsl
 
 import org.deltacv.papervision.codegen.*
 import org.deltacv.papervision.codegen.build.*
+import org.deltacv.papervision.codegen.resolve.Resolvable
 
 class CodeGenCtx(val codeGen: CodeGen) : LanguageCtx(codeGen.language) {
 
@@ -39,28 +40,28 @@ class CodeGenCtx(val codeGen: CodeGen) : LanguageCtx(codeGen.language) {
         codeGen.viewportTappedScope(block = block)
     }
 
-    fun public(variable: DeclarableVariable, label: String? = null) =
-        codeGen.classStartScope.instanceVariable(Visibility.PUBLIC, variable, label)
-
-    fun private(variable: DeclarableVariable) =
-        codeGen.classStartScope.instanceVariable(Visibility.PRIVATE, variable, null)
-
-    fun protected(variable: DeclarableVariable) =
-        codeGen.classStartScope.instanceVariable(Visibility.PROTECTED, variable, null)
-
     private var isFirstGroup = true
-    fun group(scope: Scope = codeGen.classStartScope, block: () -> Unit) {
+    fun group(block: ScopeCtx.() -> Unit) {
         if(!isFirstGroup) {
-            scope.newLineIfNotBlank()
+            codeGen.classStartScope.newLineIfNotBlank()
         }
         isFirstGroup = false
 
-        block()
+        codeGen.classStartScope(separate = false) { block(this) }
     }
 
-    fun uniqueVariable(name: String, value: Value, isNullable: Boolean = false) = variable(tryName(name), value, isNullable)
+    fun <T> deferredGroup(dependency: Resolvable.Placeholder<T>, block: ScopeCtx.(T) -> Unit) {
+        codeGen.classStartScope.deferred(dependency, separate = false) {
+            scope.newLineIfNotBlank()
+            block(it)
+        }
+    }
 
-    fun tryName(name: String) = codeGen.classStartScope.tryName(name)
+    fun uniqueVariable(name: String, value: Value, isNullable: Boolean = false, allocateName: Boolean = false) =
+        variable(tryName(name, allocate = allocateName), value, isNullable)
+
+    fun tryName(name: String, allocate: Boolean = false) =
+        codeGen.classStartScope.tryName(name, allocate = allocate)
 
     operator fun String.invoke(
         vis: Visibility, returnType: Type,
