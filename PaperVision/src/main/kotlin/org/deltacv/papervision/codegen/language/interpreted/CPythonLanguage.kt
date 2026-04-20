@@ -230,7 +230,7 @@ object CPythonLanguage : BaseLanguage(
             classBodyScope.scope(classEndScope)
         }
 
-        mainScope.write(importScopePlaceholder.placeholder)
+        mainScope.write(importScopePlaceholder.key)
         mainScope.newStatement()
 
         mainScope.scope(classBodyScope, indentOverride = 0)

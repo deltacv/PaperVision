@@ -1,7 +1,7 @@
 package org.deltacv.papervision.gui
 
 import imgui.flag.ImGuiWindowFlags
-import org.deltacv.papervision.gui.compose.dsl.composeRender
+import org.deltacv.papervision.gui.compose.dsl.immediateCompose
 import org.deltacv.papervision.gui.compose.property.type.Text
 import org.deltacv.papervision.gui.font.Font
 import org.deltacv.papervision.util.event.PaperEventHandler
@@ -28,18 +28,18 @@ class ConfirmationModalWindow(
     val onConfirm = PaperEventHandler("ConfirmationModalWindow-$title-OnConfirm")
     val onCancel = PaperEventHandler("ConfirmationModalWindow-$title-OnCancel")
 
-    override fun drawContents() = composeRender {
+    override fun drawContents() = immediateCompose {
         alignedText(Text(message, font), 0.5)
 
         newLine()
 
         alignedRow(0.5) {
-            button("mis_confirm") {
+            button(Text("mis_confirm", font)) {
                 onConfirm.run()
                 delete()
             }
 
-            button("mis_cancel") {
+            button(Text("mis_cancel", font)) {
                 onCancel.run()
                 delete()
             }

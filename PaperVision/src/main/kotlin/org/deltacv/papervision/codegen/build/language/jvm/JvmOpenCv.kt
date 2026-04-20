@@ -18,7 +18,6 @@
 
 package org.deltacv.papervision.codegen.build.language.jvm
 
-import org.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.codegen.Visibility
@@ -113,34 +112,6 @@ object JvmOpenCv {
 
     object SimpleBlobDetector : Type("SimpleBlobDetector", "org.opencv.features2d") {
         val Params = Type("SimpleBlobDetector_Params", "org.opencv.features2d")
-    }
-
-    fun toPrevizVec2(
-        vec: GenValue.Vec2,
-        labelSource: Vector2Attribute,
-        prefix: String = "vec",
-        current: CodeGen.Current
-    ) = current {
-        if (codeGen.isForPreviz) {
-            val x = uniqueVariable("${prefix}X", vec.x.v, allocateName = true)
-            val y = uniqueVariable("${prefix}Y", vec.y.v, allocateName = true)
-
-            deferredGroup(Resolvable.PairPlaceholder(vec.x.isActual.value, vec.y.isActual.value)) {
-                if(it.first) public(x, labelSource.tunerLabel(0))
-                if(it.second) public(y, labelSource.tunerLabel(1))
-            }
-
-            GenValue.Vec2.Runtime(
-                GenValue.Int.Runtime(Resolvable.DependentPlaceholder(vec.x.isActual.value) {
-                    if(it) x else vec.x.v
-                }),
-                GenValue.Int.Runtime(Resolvable.DependentPlaceholder(vec.y.isActual.value) {
-                    if(it) y else vec.y.v
-                })
-            )
-        } else {
-            vec
-        }
     }
 
     fun toRuntimeLineParameters(

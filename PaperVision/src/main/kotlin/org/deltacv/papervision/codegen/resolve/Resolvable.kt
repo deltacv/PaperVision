@@ -26,11 +26,11 @@ import kotlin.getValue
 sealed class Resolvable<T> {
 
     companion object {
-        const val RESOLVER_PREFIX = "<mack!"
-        const val RESOLVER_SUFFIX = ">"
+        const val PLACEHOLDER_PREFIX = "<mack!"
+        const val PLACEHOLDER_SUFFIX = ">"
 
         // %s is the ID of the placeholder
-        const val RESOLVER_TEMPLATE = "$RESOLVER_PREFIX%d$RESOLVER_SUFFIX"
+        const val PLACEHOLDER_TEMPLATE = "$PLACEHOLDER_PREFIX%d$PLACEHOLDER_SUFFIX"
     }
 
     /* -- abstract Resolvable members -- */
@@ -64,7 +64,7 @@ sealed class Resolvable<T> {
         private val resolver: () -> T?
     ) : Resolvable<T>(), IdElement {
 
-        val placeholder get() = String.format(RESOLVER_TEMPLATE, id)
+        val key get() = String.format(PLACEHOLDER_TEMPLATE, id)
 
         private var usingOnResolve = false // to avoid creating the event handler if not necessary
         val onResolve by lazy {
@@ -99,11 +99,13 @@ sealed class Resolvable<T> {
             } else {
                 onResolve.once {
                     val resolved = cachedValue ?: resolver()
+
                     if (resolved != null) {
                         cachedValue = resolved
                         block(resolved)
                     } else {
-                        throw IllegalStateException("Placeholder $placeholder could not be resolved")
+                        // huh? should not happen, but just in case, we can throw an exception here
+                        throw IllegalStateException("Placeholder '$key' could not be resolved")
                     }
                 }
             }
@@ -119,7 +121,7 @@ sealed class Resolvable<T> {
             }
         }
 
-        override fun toString() = placeholder
+        override fun toString() = key
 
         override val id by IdContainerStack.local.peekNonNull<Placeholder<*>>().nextIdLazy(this)
     }
@@ -148,11 +150,11 @@ sealed class Resolvable<T> {
     })
 
     data class PairPlaceholder<P1, P2>(
-        val dependency1: Resolvable<P1>,
-        val dependency2: Resolvable<P2>
+        val first: Resolvable<P1>,
+        val second: Resolvable<P2>
     ) : Placeholder<Pair<P1, P2>>(resolver = {
-        val depValue1 = dependency1.resolve()
-        val depValue2 = dependency2.resolve()
+        val depValue1 = first.resolve()
+        val depValue2 = second.resolve()
         if (depValue1 != null && depValue2 != null) {
             Pair(depValue1, depValue2)
         } else {

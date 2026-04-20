@@ -50,7 +50,7 @@ class CodeGenCtx(val codeGen: CodeGen) : LanguageCtx(codeGen.language) {
         codeGen.classStartScope(separate = false) { block(this) }
     }
 
-    fun <T> deferredGroup(dependency: Resolvable.Placeholder<T>, block: ScopeCtx.(T) -> Unit) {
+    fun <T> deferredGroup(dependency: Resolvable<T>, block: ScopeCtx.(T) -> Unit) {
         codeGen.classStartScope.deferred(dependency, separate = false) {
             scope.newLineIfNotBlank()
             block(it)

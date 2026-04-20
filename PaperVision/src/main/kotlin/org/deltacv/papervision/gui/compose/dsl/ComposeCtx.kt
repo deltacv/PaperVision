@@ -66,7 +66,7 @@ fun compose(
     return composer
 }
 
-fun composeRender(
+fun immediateCompose(
     size: ImVec2 = ImGui.getContentRegionAvail(),
     content: ComposeCtx.() -> Unit
 ) = compose(size, content).renderAll()

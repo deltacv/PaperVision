@@ -52,14 +52,16 @@ class ContextMenuPopup(
     override fun drawContents() {
         ImGui.pushStyleColor(ImGuiCol.Button, 0)
 
-        if(ImGui.button(tr("mis_cut"))) {
-            cut(selection.filterIsInstance<Node<*>>().map { it })
-            ImGui.closeCurrentPopup()
-        }
+        if(selection.isNotEmpty() && !selection.all { it is Link }) {
+            if(ImGui.button(tr("mis_cut"))) {
+                cut(selection.filterIsInstance<Node<*>>().map { it })
+                ImGui.closeCurrentPopup()
+            }
 
-        if(ImGui.button(tr("mis_copy"))) {
-            copy(selection.filterIsInstance<Node<*>>().map { it })
-            ImGui.closeCurrentPopup()
+            if(ImGui.button(tr("mis_copy"))) {
+                copy(selection.filterIsInstance<Node<*>>().map { it })
+                ImGui.closeCurrentPopup()
+            }
         }
 
         if(ImGui.button(tr("mis_paste"))) {

@@ -4,9 +4,8 @@ import imgui.ImGui
 import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiWindowFlags
 import org.deltacv.papervision.gui.Window
-import org.deltacv.papervision.gui.compose.dsl.composeRender
+import org.deltacv.papervision.gui.compose.dsl.immediateCompose
 import org.deltacv.papervision.gui.compose.property.type.Text
-import org.deltacv.papervision.gui.compose.property.type.asProperty
 import org.deltacv.papervision.gui.editor.NodeEditor
 import org.deltacv.papervision.gui.style.opacity
 import org.deltacv.papervision.gui.font.Font
@@ -32,7 +31,7 @@ class EmptyStateWindow(val editor: NodeEditor) : Window() {
     }
 
     override fun drawContents() {
-        composeRender {
+        immediateCompose {
             val bigFont = Font.find("calcutta-big")
 
             alignedText(Text("mis_nodeeditor_emptystate1", bigFont), 0.5)

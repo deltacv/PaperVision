@@ -20,7 +20,7 @@ package org.deltacv.papervision.node.vision.overlay
 
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.math.IntAttribute
-import org.deltacv.papervision.attribute.rebuildOnChange
+import org.deltacv.papervision.attribute.rebuildOnLink
 import org.deltacv.papervision.attribute.vision.structs.LineParametersAttribute
 import org.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import org.deltacv.papervision.codegen.CodeGen
@@ -58,7 +58,7 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
 
         lineThickness.value.set(3)
 
-        + output.rebuildOnChange()
+        + output.rebuildOnLink()
     }
 
     override val generators = polyglot {

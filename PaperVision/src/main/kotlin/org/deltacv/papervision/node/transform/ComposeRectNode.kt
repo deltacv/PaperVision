@@ -6,10 +6,8 @@ import org.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
-import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import org.deltacv.papervision.codegen.build.language.GenPreviz
 import org.deltacv.papervision.codegen.dsl.polyglot
-import org.deltacv.papervision.codegen.language.BaseLanguage
-import org.deltacv.papervision.codegen.resolve.resolved
 import org.deltacv.papervision.node.DrawNode
 import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.PaperNode
@@ -41,8 +39,8 @@ class ComposeRectNode : DrawNode<ComposeRectNode.Session>() {
         generatorForAny {
             val session = Session()
 
-            var positionValue = JvmOpenCv.toPrevizVec2(positionAtt.genValue(current), positionAtt, "rect", current)
-            var sizeValue = JvmOpenCv.toPrevizVec2(sizeAtt.genValue(current), sizeAtt, "rectSize", current)
+            var positionValue = GenPreviz.toPrevizVec2(positionAtt.genValue(current), positionAtt, current, prefix = "rect")
+            var sizeValue = GenPreviz.toPrevizVec2(sizeAtt.genValue(current), sizeAtt, current, prefix = "rectSize")
 
             session.rect = GenValue.Rect.Components.wrap(
                 positionValue.x, positionValue.y,

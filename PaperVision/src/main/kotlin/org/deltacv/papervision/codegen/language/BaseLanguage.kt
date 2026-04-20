@@ -342,7 +342,7 @@ open class BaseLanguage(
             importScope.importType(pipelineClass)
         }
 
-        mainScope.write(importScopePlaceholder.placeholder)
+        mainScope.write(importScopePlaceholder.key)
         mainScope.newStatement()
 
         if(genInClass) {

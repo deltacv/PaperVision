@@ -71,8 +71,6 @@ class IntroModalWindow(
                 ImGuiEx.centeredText(line)
             }
 
-            ImGui.newLine()
-
             var width = 0f
             width += ImGui.calcTextSize(tr("lan_en")).x
             width += ImGui.getStyle().itemSpacing.x + 30f

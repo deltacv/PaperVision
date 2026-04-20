@@ -29,10 +29,10 @@ import org.deltacv.papervision.serialization.v2.DataEncoder
 import org.deltacv.mai18n.tr
 
 abstract class DrawNode<S: CodeGenSession>(
-    allowDelete: Boolean = true,
+    isDeletable: Boolean = true,
     joinActionStack: Boolean = true,
     rebuildOnLink: Boolean = true
-) : Node<S>(allowDelete, joinActionStack, rebuildOnLink) {
+) : Node<S>(isDeletable, joinActionStack, rebuildOnLink) {
 
     var nextNodePosition: ImVec2? = null
 

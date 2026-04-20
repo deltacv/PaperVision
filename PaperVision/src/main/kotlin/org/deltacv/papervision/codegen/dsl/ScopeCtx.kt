@@ -155,7 +155,7 @@ class ScopeCtx(val scope: Scope) : LanguageCtx(scope.language) {
                 newScope.get()
             }
 
-            scope.write(placeholder.placeholder)
+            scope.write(placeholder.key)
         }
     }
 

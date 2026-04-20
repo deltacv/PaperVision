@@ -8,7 +8,7 @@ import org.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
-import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
+import org.deltacv.papervision.codegen.build.language.GenPreviz
 import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.resolve.resolved
 import org.deltacv.papervision.gui.font.Font
@@ -45,9 +45,9 @@ class Vector2MathNode : DrawNode<Vector2MathNode.Session>() {
         generatorForAny {
             val session = Session()
 
-            val firstValue = JvmOpenCv.toPrevizVec2(first.genValue(current), first, "first", current)
+            val firstValue = GenPreviz.toPrevizVec2(first.genValue(current), first, current, prefix = "first")
             val operationValue = operation.genValue(current)
-            val secondValue = JvmOpenCv.toPrevizVec2(second.genValue(current), second, "second", current)
+            val secondValue = GenPreviz.toPrevizVec2(second.genValue(current), second, current, prefix = "second")
 
             current {
                 fun operate(first: GenValue.Int, second: GenValue.Int) = when(operationValue.value) {
@@ -57,8 +57,8 @@ class Vector2MathNode : DrawNode<Vector2MathNode.Session>() {
                     Operation.DIVIDE -> first.v / second.v
                 }
 
-                val xResultValue = operate(firstValue.x, secondValue.y)
-                val yResultValue = operate(firstValue.x, secondValue.y)
+                val xResultValue = operate(firstValue.x, secondValue.x)
+                val yResultValue = operate(firstValue.y, secondValue.y)
 
                 session.result = GenValue.Vec2.Runtime(
                     GenValue.Int.Runtime(xResultValue.resolved()),

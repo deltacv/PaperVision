@@ -385,7 +385,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         updatePanning()
         updateRightClickMenuSelection()
-        handleDeleteLink()
         handleCreateLink()
         handleDeleteSelection()
     }
@@ -426,7 +425,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             justDeletedLinkTimer.millis >= LINK_DELETE_COOLDOWN_MS &&
             editorHovered
         ) {
-
             currentContextMenuPopup = ContextMenuPopup(
                 nodeList,
                 ::undo, ::redo, ::cut, ::copy, ::paste,
@@ -711,37 +709,32 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
         popupSelection.clear()
 
-        addSelectedNodesToPopup()
-        addSelectedLinksToPopup()
-        addHoveredNodeToPopup()
-    }
-
-    private fun addSelectedNodesToPopup() {
         val nodeSelection = IntArray(ImNodes.numSelectedNodes())
         ImNodes.getSelectedNodes(nodeSelection)
 
         for (nodeId in nodeSelection) {
             if (nodeId >= 0) {
-                nodes[nodeId]?.let { popupSelection.add(it) }
+                nodes[nodeId]?.let { if(it.isDeletable) popupSelection.add(it) }
             }
         }
-    }
 
-    private fun addSelectedLinksToPopup() {
         val linkSelection = IntArray(ImNodes.numSelectedLinks())
         ImNodes.getSelectedLinks(linkSelection)
 
         for (linkId in linkSelection) {
             if (linkId >= 0) {
-                links[linkId]?.let { popupSelection.add(it) }
+                links[linkId]?.let { if(it.isDeletable) popupSelection.add(it) }
             }
         }
-    }
 
-    private fun addHoveredNodeToPopup() {
         val hoveredNodeId = ImNodes.getHoveredNode()
         if (hoveredNodeId >= 0) {
-            nodes[hoveredNodeId]?.let { popupSelection.add(it) }
+            nodes[hoveredNodeId]?.let { if(it.isDeletable) popupSelection.add(it) }
+        }
+
+        val hoveredLinkId = ImNodes.getHoveredLink()
+        if (hoveredLinkId >= 0) {
+            links[hoveredLinkId]?.let { if(it.isDeletable) popupSelection.add(it) }
         }
     }
 
@@ -823,7 +816,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     private fun checkCycle(from: Node<*>, to: Node<*>): Boolean {
         graph.clear()
-        for(link in links.inmutable) {
+        for(link in links) {
             val aNode = link.aAttrib?.parentNode ?: continue
             val bNode = link.bAttrib?.parentNode ?: continue
 
@@ -834,15 +827,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
         }
 
         return graph.hasCycleIfAdded(from.id, to.id)
-    }
-
-    private fun handleDeleteLink() {
-        val hoveredId = ImNodes.getHoveredLink()
-
-        if (ImGui.isMouseClicked(ImGuiMouseButton.Right) && hoveredId >= 0) {
-            links[hoveredId]?.delete()
-            justDeletedLinkTimer.reset()
-        }
     }
 
     private fun handleDeleteSelection() {
@@ -898,6 +882,3 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     }
 
 }
-
-
-

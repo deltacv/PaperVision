@@ -20,7 +20,7 @@ class PlaceholderResolver(
         val placeholders = IdContainerStack.local.peekNonNull<Resolvable.Placeholder<*>>()
 
         logger.info("Resolving active placeholders: ${placeholders.size}")
-        placeholders.forEach { logger.debug("{} = {}", it.placeholder, it.resolve().toString().replace("\n", "\\n")) }
+        placeholders.forEach { logger.debug("{} = {}", it.key, it.resolve().toString().replace("\n", "\\n")) }
 
         val stack = mutableListOf<Int>() // single stack per pass
 
@@ -58,13 +58,13 @@ class PlaceholderResolver(
         var changed = false
 
         while (i < input.length) {
-            val start = input.indexOf(Resolvable.RESOLVER_PREFIX, i)
+            val start = input.indexOf(Resolvable.PLACEHOLDER_PREFIX, i)
             if (start == -1) {
                 sb.append(input, i, input.length)
                 break
             }
 
-            val end = input.indexOf(Resolvable.RESOLVER_SUFFIX, start)
+            val end = input.indexOf(Resolvable.PLACEHOLDER_SUFFIX, start)
             if (end == -1) {
                 sb.append(input, i, input.length)
                 break
@@ -72,7 +72,7 @@ class PlaceholderResolver(
 
             sb.append(input, i, start)
 
-            val id = input.substring(start + Resolvable.RESOLVER_PREFIX.length, end).toIntOrNull()
+            val id = input.substring(start + Resolvable.PLACEHOLDER_PREFIX.length, end).toIntOrNull()
 
             val replacement = id?.let { pid ->
                 val placeholder = placeholders[pid]

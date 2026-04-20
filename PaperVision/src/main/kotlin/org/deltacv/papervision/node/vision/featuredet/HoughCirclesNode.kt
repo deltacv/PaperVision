@@ -32,6 +32,7 @@ import org.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
 import org.deltacv.papervision.codegen.build.language.jvm.JavaTypes
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.dsl.polyglot
+import org.deltacv.papervision.codegen.language.BaseLanguage
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -86,7 +87,7 @@ class HoughCirclesNode : DrawNode<HoughCirclesNode.Session>() {
     }
 
     override val generators = polyglot {
-        generatorFor(JavaLanguage) {
+        generatorFor<BaseLanguage> {
             // Circle type needs to be lazily evaluated to gen its inner class
             val session = Session()
 

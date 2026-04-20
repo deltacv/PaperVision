@@ -210,7 +210,7 @@ class Scope(
             val declaration = Resolvable.DependentPlaceholder(cvtCode) {
                 importValue(it)
                 language.streamMatCallDeclaration(language.int(id), mat, it)
-            }.placeholder
+            }.key
 
             builder.append("$tabs$declaration")
         }
@@ -388,9 +388,9 @@ class Scope(
             val scope = copy()
             scope(separate = separate) { block(value) }
             scope.toString()
-        }.placeholder
+        }
 
-        write(placeholder)
+        write(placeholder.resolve() ?: placeholder.key)
     }
 
     class IfChain(

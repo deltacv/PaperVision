@@ -52,9 +52,9 @@ import org.deltacv.papervision.serialization.v2.objOrSkip
     showInList = false
 )
 @CodecType
-class InputMatNode constructor(
+class InputMatNode(
     var windowSizeSupplier: (() -> ImVec2)? = null
-) : DrawNode<NoSession>(allowDelete = false) {
+) : DrawNode<NoSession>(isDeletable = false) {
 
     private var lastWindowSize: ImVec2? = null
 
@@ -146,7 +146,7 @@ class InputMatNode constructor(
 @CodecType
 class OutputMatNode @JvmOverloads constructor(
     var windowSizeSupplier: (() -> ImVec2)? = null
-) : DrawNode<NoSession>(allowDelete = false) {
+) : DrawNode<NoSession>(isDeletable = false) {
 
     var streamId: Int? = null
     private var lastWindowSize: ImVec2? = null

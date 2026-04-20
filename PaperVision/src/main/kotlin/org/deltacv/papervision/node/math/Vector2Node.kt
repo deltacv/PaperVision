@@ -20,22 +20,21 @@ package org.deltacv.papervision.node.math
 
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.math.IntAttribute
-import org.deltacv.papervision.node.DrawNode
 import org.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
+import org.deltacv.papervision.codegen.build.language.GenPreviz
 import org.deltacv.papervision.codegen.dsl.polyglot
+import org.deltacv.papervision.codegen.language.BaseLanguage
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
-import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
-import org.deltacv.papervision.codegen.resolve.resolved
-import org.deltacv.papervision.node.PaperNode
+import org.deltacv.papervision.node.DrawNode
 import org.deltacv.papervision.node.NodeCategory
+import org.deltacv.papervision.node.PaperNode
 import org.deltacv.papervision.serialization.v2.CodecType
 import org.deltacv.papervision.serialization.v2.DataDecoder
 import org.deltacv.papervision.serialization.v2.DataEncoder
 import org.deltacv.papervision.serialization.v2.objOrSkip
-
 
 @PaperNode(
     name = "nod_vector2",
@@ -43,9 +42,7 @@ import org.deltacv.papervision.serialization.v2.objOrSkip
     description = "des_vector2"
 )
 @CodecType
-class Vector2Node @JvmOverloads constructor(
-    useSizeNaming: Boolean = false
-) : DrawNode<Vector2Node.Session>() {
+class Vector2Node(useSizeNaming: Boolean = false) : DrawNode<Vector2Node.Session>() {
 
     val xAttribute = IntAttribute(INPUT, if(useSizeNaming) "att_width" else "X")
     val yAttribute = IntAttribute(INPUT, if(useSizeNaming) "att_height" else "Y")
@@ -60,7 +57,7 @@ class Vector2Node @JvmOverloads constructor(
     }
 
     override val generators = polyglot {
-        generatorFor(JavaLanguage) {
+        generatorFor<BaseLanguage> {
             val session = Session()
 
             current {
@@ -68,26 +65,10 @@ class Vector2Node @JvmOverloads constructor(
                     val xValue = xAttribute.genValue(current)
                     val yValue = yAttribute.genValue(current)
 
-                    val x = uniqueVariable("vectorX", if (xValue is GenValue.Int.Actual) xValue.v else int(0))
-                    val y = uniqueVariable("vectorY", if (yValue is GenValue.Int.Actual) yValue.v else int(0))
-
-                    group {
-                        public(x, xAttribute.tunerLabel())
-                        public(y, yAttribute.tunerLabel())
-                    }
-
-                    current.scope {
-                        // if runtime, constantly update
-                        if (xValue is GenValue.Int.Runtime) {
-                            x instanceSet xValue.v
-                            y instanceSet yValue.v
-                        }
-                        // if actual, just set once, don't need to bother with constants
-                    }
-
-                    session.vector2 = GenValue.Vec2.Runtime(
-                        GenValue.Int.Runtime(x.resolved()),
-                        GenValue.Int.Runtime(y.resolved())
+                    session.vector2 = GenPreviz.toPrevizVec2(
+                        GenValue.Vec2.wrap(xValue, yValue, current),
+                        xAttribute.tunerLabel(), yAttribute.tunerLabel(),
+                        current
                     )
                 } else {
                     session.vector2 = GenValue.Vec2.wrap(
