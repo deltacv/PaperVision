@@ -20,7 +20,7 @@ package org.deltacv.papervision.gui.editor.menu
 
 import imgui.ImGui
 import imgui.ImVec2
-import imgui.extension.texteditor.TextEditorLanguageDefinition
+import imgui.extension.texteditor.TextEditorLanguage
 import imgui.flag.ImGuiCol
 import imgui.flag.ImGuiWindowFlags
 import org.deltacv.papervision.PaperVision
@@ -58,7 +58,7 @@ class SourceCodeLanguageWindow(
     val logger by loggerForThis()
 
     override fun drawContents() {
-        ImGui.pushFont(fontAwesomeBrandsBig.imfont)
+        fontAwesomeBrandsBig.push()
         ImGui.pushStyleColor(ImGuiCol.Button, 0)
 
         if (ImGui.button(FontAwesomeIcons.Brands.Java)) {
@@ -87,7 +87,10 @@ class SourceCodeLanguageWindow(
 
             CodeDisplayWindow(
                 code, name, language,
-                TextEditorLanguageDefinition.CPlusPlus(),
+                when(language) {
+                    is CPythonLanguage -> TextEditorLanguage.Python()
+                    else -> TextEditorLanguage.Cpp()
+                },
                 paperVision.window
             ).apply {
                 enable()

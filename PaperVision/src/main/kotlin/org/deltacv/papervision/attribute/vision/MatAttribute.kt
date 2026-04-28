@@ -84,7 +84,7 @@ class MatAttribute(
         if(mode == AttributeMode.OUTPUT && allowPrevizButton && isOnEditor) {
             ImGui.sameLine()
 
-            ImGui.pushFont(fontAwesome.imfont)
+            fontAwesome.push()
                 val text = if (isPrevizEnabled) FontAwesomeIcons.EyeSlash else FontAwesomeIcons.Eye
 
                 isPrevizEnabled = ImGuiEx.toggleButton(

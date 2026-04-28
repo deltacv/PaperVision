@@ -21,23 +21,25 @@ package org.deltacv.papervision.id.container
 import org.deltacv.papervision.id.IdElement
 import kotlin.reflect.KClass
 
-class IdContainerStack {
+class IdContext {
 
     companion object {
         // Thread-local instance of IdContainerStack
-        private val threadLocalStack = ThreadLocal.withInitial { IdContainerStack() }
+        private val threadLocalStack = ThreadLocal.withInitial { IdContext() }
 
         // Accessor for the current thread's stack
-        val local: IdContainerStack
+        val local: IdContext
             get() = threadLocalStack.get()
     }
 
     private val stacks = mutableMapOf<KClass<out IdElement>, ArrayDeque<IdContainer<*>>>()
+    private val pushOrder = mutableListOf<KClass<out IdElement>>()
 
     fun <T: IdElement> push(clazz: KClass<T>, container: IdContainer<out T>) {
         val stack = stacks[clazz] ?: ArrayDeque()
 
         stack.addLast(container)
+        pushOrder.add(clazz)
 
         stacks[clazz] = stack
     }
@@ -46,9 +48,10 @@ class IdContainerStack {
 
     @Suppress("UNCHECKED_CAST")
     fun <T: IdElement> peek(clazz: KClass<T>): IdContainer<T>? {
-        return if(stacks.containsKey(clazz)) {
-            stacks[clazz]!!.last() as IdContainer<T> // uhhhh.... this is fine lol
-        } else null
+        val stack = stacks[clazz] ?: return null
+        if(stack.isEmpty()) return null
+
+        return stack.last() as IdContainer<T> // uhhhh.... this is fine lol
     }
 
     inline fun <reified T: IdElement> peek() = peek(T::class)
@@ -61,15 +64,45 @@ class IdContainerStack {
         if(container is SingleIdContainer) {
             return container.get()
         } else {
-            throw ClassCastException("The container for ${T::class.java.typeName} is not a SingleIdElementContainer")
+            throw ClassCastException("The container for ${T::class.simpleName} is not a SingleIdElementContainer")
         }
     }
 
     inline fun <reified T: IdElement> peekSingleNonNull() = peekSingle<T>() ?: throw NullPointerException("No IdElement was found for ${T::class.java.typeName} in the stack")
 
-    fun <T: IdElement> pop(clazz: KClass<T>) = stacks[clazz]?.removeLast() != null
+    fun <T: IdElement> pop(clazz: KClass<T>): Boolean {
+        val stack = stacks[clazz] ?: return false
+        if(stack.isEmpty()) return false
 
+        stack.removeLast()
+        val historyIndex = pushOrder.lastIndexOf(clazz)
+        if(historyIndex >= 0) {
+            pushOrder.removeAt(historyIndex)
+        }
+
+        if(stack.isEmpty()) {
+            stacks.remove(clazz)
+        }
+
+        return true
+    }
+
+    @JvmName("popClass")
     inline fun <reified T: IdElement> pop() = pop(T::class)
+
+    fun pop(): Boolean {
+        val clazz = pushOrder.removeLastOrNull() ?: return false
+        val stack = stacks[clazz] ?: return false
+        if(stack.isEmpty()) return false
+
+        stack.removeLast()
+
+        if(stack.isEmpty()) {
+            stacks.remove(clazz)
+        }
+
+        return true
+    }
 
     fun all(): List<IdContainer<*>> {
         val all = mutableListOf<IdContainer<*>>()
@@ -79,6 +112,13 @@ class IdContainerStack {
         }
 
         return all
+    }
+
+    fun assertEmpty() {
+        val nonEmptyStacks = stacks.filter { it.value.isNotEmpty() }.map { it.key.qualifiedName }
+        if(nonEmptyStacks.isNotEmpty()) {
+            throw IllegalStateException("Push/Pop imbalance detected in IdContext. Non-empty stacks are of: ${nonEmptyStacks.joinToString(", ")}")
+        }
     }
 
 }

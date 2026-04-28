@@ -49,7 +49,7 @@ class LineParametersAttribute(
         if(mode == AttributeMode.INPUT) {
             ImGui.sameLine()
 
-            ImGui.pushFont(fontAwesome.imfont)
+            fontAwesome.push()
 
             if(!hasLink && ImGui.button(FontAwesomeIcons.PencilAlt)) {
                 val node = parentNode.editor.addNode(LineParametersNode::class)

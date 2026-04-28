@@ -21,7 +21,7 @@ package org.deltacv.papervision.gui.editor.menu
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.extension.texteditor.TextEditor
-import imgui.extension.texteditor.TextEditorLanguageDefinition
+import imgui.extension.texteditor.TextEditorLanguage
 import imgui.flag.ImGuiWindowFlags
 import org.deltacv.mai18n.tr
 import org.deltacv.papervision.codegen.language.Language
@@ -38,7 +38,7 @@ class CodeDisplayWindow(
     val code: String,
     val name: String,
     val codeGenLanguage: Language,
-    val editorLanguage: TextEditorLanguageDefinition,
+    val editorLanguage: TextEditorLanguage,
     val platformWindow: PlatformWindow
 ) : Window() {
     override var title = "Code"
@@ -61,9 +61,9 @@ class CodeDisplayWindow(
     override fun onEnable() {
         focus = true
 
-        EDITOR.languageDefinition = editorLanguage
-        EDITOR.textLines = code.lines().toTypedArray()
-        EDITOR.isReadOnly = true
+        EDITOR.language = editorLanguage
+        EDITOR.text = code
+        EDITOR.isReadOnlyEnabled = true
     }
 
     override fun preDrawContents() {
@@ -71,9 +71,7 @@ class CodeDisplayWindow(
     }
 
     override fun drawContents() {
-        codeFont.let {
-            ImGui.pushFont(it.imfont)
-        }
+        codeFont.push()
 
         ImGui.beginChild(
             "${titleId}Child###$id", ImVec2(size.x, size.y * 0.85f),
@@ -88,9 +86,7 @@ class CodeDisplayWindow(
             ImGui.popFont()
         }
 
-        buttonsFont.let {
-            ImGui.pushFont(it.imfont)
-        }
+        buttonsFont.push()
 
         if(ImGui.button("Copy Code")) {
             Toolkit.getDefaultToolkit().systemClipboard.setContents(

@@ -34,8 +34,7 @@ import org.deltacv.papervision.gui.Popup
 import org.deltacv.papervision.gui.TooltipPopup
 import org.deltacv.papervision.gui.font.Font
 import org.deltacv.papervision.id.container.DenseIdContainer
-import org.deltacv.papervision.id.container.IdContainer
-import org.deltacv.papervision.id.container.IdContainerStack
+import org.deltacv.papervision.id.container.IdContext
 import org.deltacv.papervision.node.DrawNode
 import org.deltacv.papervision.node.Node
 import org.deltacv.papervision.util.hashCodeString
@@ -52,9 +51,9 @@ class CodeGenManager(val paperVision: PaperVision) {
     ): String? {
         val placeholders = DenseIdContainer<Resolvable.Placeholder<*>>()
 
-        IdContainerStack.local.push(placeholders) // all placeholders created during code gen will be caught here
+        IdContext.local.push(placeholders) // all placeholders created during code gen will be caught here
 
-        for(popup in IdContainerStack.local.peekNonNull<Popup>().inmutable) {
+        for(popup in IdContext.local.peekNonNull<Popup>().inmutable) {
             if(popup.label == "Gen-Error") {
                 popup.delete()
             }
@@ -65,7 +64,7 @@ class CodeGenManager(val paperVision: PaperVision) {
 
         logger.info("-- Starting CodeGen #${codeGen.hashCodeString} --")
 
-        try {
+        val result = try {
             codeGen.stage = CodeGen.Stage.INITIAL_GEN
 
             paperVision.nodeEditor.outputNode.input.requireAttachedAttribute() // output always needs to be connected
@@ -74,6 +73,8 @@ class CodeGenManager(val paperVision: PaperVision) {
             paperVision.nodeEditor.outputNode.genCodeIfNecessary(codeGen.current)
 
             codeGen.stage = CodeGen.Stage.END_GEN
+
+            codeGen.build()
         } catch (attrEx: AttributeGenException) {
             codeGen.stage = CodeGen.Stage.ENDED_ERROR
 
@@ -84,7 +85,7 @@ class CodeGenManager(val paperVision: PaperVision) {
             ) { ImVec2(attrEx.attribute.position.x + 5, attrEx.attribute.position.y + 20) }.enable()
 
             val node = attrEx.attribute.parentNode
-            showError(codeGen, node, attrEx.message)
+            showError(codeGen, node)
 
             logger.warn("-- CodeGen ${codeGen.hashCodeString} FAILED due to attribute exception --", attrEx)
             return null
@@ -97,7 +98,7 @@ class CodeGenManager(val paperVision: PaperVision) {
                 label = "Gen-Error"
             ) { ImVec2(nodeEx.node.screenPosition.x, nodeEx.node.screenPosition.y - 20) }.enable()
 
-            showError(codeGen, nodeEx.node, nodeEx.message)
+            showError(codeGen, nodeEx.node)
 
             logger.warn("-- CodeGen ${codeGen.hashCodeString} FAILED due to node exception --", nodeEx)
             return null
@@ -113,9 +114,9 @@ class CodeGenManager(val paperVision: PaperVision) {
 
             logger.error("-- CodeGen #${codeGen.hashCodeString} FAILED due to ${if(ex is GenException) "gen" else "unknown"} exception --", ex)
             return null
+        } finally {
+            IdContext.local.pop<Resolvable.Placeholder<*>>() // we're done with placeholders
         }
-
-        val result = codeGen.build()
 
         codeGen.stage = CodeGen.Stage.ENDED_SUCCESS
 
@@ -126,12 +127,10 @@ class CodeGenManager(val paperVision: PaperVision) {
 
         logger.info("-- CodeGen #${codeGen.hashCodeString} OK --")
 
-        IdContainerStack.local.pop<Resolvable.Placeholder<*>>() // we're done with placeholders
-
         return result.trim()
     }
 
-    private fun showError(codeGen: CodeGen, node: Node<*>, message: String) {
+    private fun showError(codeGen: CodeGen, node: Node<*>) {
         if(!codeGen.isForPreviz) { // dont scroll if we're on an active previz session, can become annoying
             paperVision.nodeEditor.editorPanning.x = (-node.gridPosition.x) - (node.size.x / 2) + ImGui.getMainViewport().size.x / 2
             paperVision.nodeEditor.editorPanning.y = (-node.gridPosition.y) - (node.size.y / 2) + ImGui.getMainViewport().size.y / 2

@@ -84,7 +84,7 @@ class ThresholdNode : DrawNode<ThresholdNode.Session>() {
 
         ImGui.newLine()
 
-        ImGui.pushFont(fontAwesome.imfont)
+        fontAwesome.push()
         ImGui.text(EnumAttribute.icon)
         ImGui.popFont()
 

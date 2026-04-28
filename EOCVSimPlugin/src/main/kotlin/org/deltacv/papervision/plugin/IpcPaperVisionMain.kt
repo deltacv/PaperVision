@@ -60,7 +60,7 @@ class IpcPaperVisionMain : Callable<Int?> {
 
         val bridge = EOCVSimIpcEngineBridge(ipcPort)
 
-        app = LWJGLPaperVisionApp(bridge, false, ::paperVisionUserCloseListener)
+        app = LWJGLPaperVisionApp(bridge, false)
 
         app.paperVision.onUpdate.once {
             if (queryProject) {
@@ -120,6 +120,8 @@ class IpcPaperVisionMain : Callable<Int?> {
                     }
                 )
             }
+
+            app.paperVision.window.setCloseListener(::paperVisionUserCloseListener)
         }
 
         Application.launch(app)

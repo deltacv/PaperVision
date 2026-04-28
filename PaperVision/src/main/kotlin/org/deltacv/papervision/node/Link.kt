@@ -24,7 +24,7 @@ import org.deltacv.papervision.action.Action
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.id.DrawableIdElementBase
-import org.deltacv.papervision.id.container.IdContainerStack
+import org.deltacv.papervision.id.container.IdContext
 import org.deltacv.papervision.serialization.v1.data.DataSerializable
 import org.deltacv.papervision.serialization.v1.LinkSerializationData
 import org.deltacv.papervision.serialization.v2.CodecType
@@ -45,8 +45,8 @@ class Link(
 {
     val logger by loggerForThis()
 
-    val attribIdElementContainer = IdContainerStack.local.peekNonNull<Attribute>()
-    override val idContainer = IdContainerStack.local.peekNonNull<Link>()
+    val attribIdElementContainer = IdContext.local.peekNonNull<Attribute>()
+    override val idContainer = IdContext.local.peekNonNull<Link>()
 
     var a = a
         private set
@@ -156,7 +156,7 @@ class Link(
         fun getLinksBetween(a: Node<*>, b: Node<*>): List<Link> {
             val l = mutableListOf<Link>()
 
-            for(link in IdContainerStack.local.peekNonNull<Link>()) {
+            for(link in IdContext.local.peekNonNull<Link>()) {
                 val linkNodeA = link.aAttrib?.parentNode ?: continue
                 val linkNodeB = link.bAttrib?.parentNode ?: continue
 

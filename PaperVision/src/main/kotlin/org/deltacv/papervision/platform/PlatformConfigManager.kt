@@ -18,20 +18,18 @@
 
 package org.deltacv.papervision.platform
 
-class PaperVisionConfig {
-    @JvmField
-    var lang = "en"
+import kotlinx.serialization.Serializable
 
-    @JvmField
-    var shouldAskForLang = true
-}
+@Serializable
+data class PaperVisionConfig(
+    val lang: String = "en",
+    val shouldAskForLang: Boolean = true
+)
 
-abstract class PlatformConfig {
-    var fields = PaperVisionConfig()
+abstract class PlatformConfigManager {
+    var data = PaperVisionConfig()
+        protected set
 
     abstract fun load()
-    abstract fun save()
+    abstract fun save(data: PaperVisionConfig = this.data)
 }
-
-
-

@@ -21,6 +21,8 @@ package org.deltacv.papervision
 import imgui.ImFontGlyphRangesBuilder
 import imgui.ImGui
 import imgui.flag.ImGuiCond
+import org.deltacv.mai18n.Language
+import org.deltacv.mai18n.makeThreadTr
 import org.deltacv.papervision.action.Action
 import org.deltacv.papervision.action.RootAction
 import org.deltacv.papervision.attribute.Attribute
@@ -30,25 +32,20 @@ import org.deltacv.papervision.engine.client.PaperVisionEngineClient
 import org.deltacv.papervision.engine.client.message.PrevizAskNameMessage
 import org.deltacv.papervision.engine.client.response.StringResponse
 import org.deltacv.papervision.engine.previz.ClientPrevizManager
-import org.deltacv.papervision.gui.*
+import org.deltacv.papervision.gui.Popup
+import org.deltacv.papervision.gui.ToastWindow
+import org.deltacv.papervision.gui.Window
 import org.deltacv.papervision.gui.display.ImageDisplay
-import org.deltacv.papervision.gui.editor.menu.IntroModalWindow
 import org.deltacv.papervision.gui.editor.NodeEditor
-import org.deltacv.papervision.gui.style.CurrentStyles
-import org.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
+import org.deltacv.papervision.gui.editor.menu.IntroModalWindow
 import org.deltacv.papervision.gui.font.Font
 import org.deltacv.papervision.gui.font.FontAwesomeIcons
 import org.deltacv.papervision.gui.font.FontManager
-import org.deltacv.papervision.gui.Popup
-import org.deltacv.papervision.gui.Window
 import org.deltacv.papervision.gui.font.defaultFontConfig
-import org.deltacv.papervision.id.*
-import org.deltacv.papervision.id.container.IdContainer
-import org.deltacv.papervision.id.container.IdContainerStack
-import org.deltacv.papervision.id.container.SingleIdContainer
-import org.deltacv.papervision.id.container.DenseIdContainer
-import org.deltacv.papervision.id.container.SparseIdContainer
-import org.deltacv.papervision.id.container.StackIdContainer
+import org.deltacv.papervision.gui.style.CurrentStyles
+import org.deltacv.papervision.gui.style.imnodes.ImNodesDarkStyle
+import org.deltacv.papervision.id.Misc
+import org.deltacv.papervision.id.container.*
 import org.deltacv.papervision.io.KeyManager
 import org.deltacv.papervision.io.TextureProcessorQueue
 import org.deltacv.papervision.node.Link
@@ -58,10 +55,6 @@ import org.deltacv.papervision.serialization.v2.PaperVisionProject
 import org.deltacv.papervision.serialization.v2.json.JsonCodec
 import org.deltacv.papervision.util.event.PaperEventHandler
 import org.deltacv.papervision.util.loggerForThis
-import org.deltacv.mai18n.Language
-import org.deltacv.mai18n.makeThreadTr
-import java.awt.Taskbar
-import java.awt.Toolkit
 
 class PaperVision(
     private val platformSetupCallback: PlatformSetupCallback
@@ -86,7 +79,7 @@ class PaperVision(
         private set
     lateinit var textureFactory: PlatformTextureFactory
         private set
-    lateinit var config: PlatformConfig
+    lateinit var config: PlatformConfigManager
         private set
 
     val onInit            = PaperEventHandler("PaperVision-OnInit")
@@ -106,25 +99,27 @@ class PaperVision(
 
     val nodeEditor by lazy { NodeEditor(this, keyManager) }
 
-    val nodes: IdContainer<Node<*>>                                = DenseIdContainer()
-    val attributes: IdContainer<Attribute>                         = DenseIdContainer()
-    val links: IdContainer<Link>                                   = DenseIdContainer()
-    val windows: IdContainer<Window>                               = DenseIdContainer()
-    val textures: IdContainer<PlatformTexture>                     = DenseIdContainer()
-    val textureProcessorQueues: IdContainer<TextureProcessorQueue> = SingleIdContainer()
-    val fonts: IdContainer<Font>                                   = SparseIdContainer()
-    val streamDisplays: IdContainer<ImageDisplay>                  = DenseIdContainer()
-    val actions: StackIdContainer<Action>                          = StackIdContainer()
-    val popups: IdContainer<Popup>                                 = DenseIdContainer()
-    val misc: IdContainer<Misc>                                    = SparseIdContainer()
+    private val containers = IdContainerRegistry()
+
+    val nodes: IdContainer<Node<*>>                                by containers { DenseIdContainer() }
+    val attributes: IdContainer<Attribute>                         by containers { DenseIdContainer() }
+    val links: IdContainer<Link>                                   by containers { DenseIdContainer() }
+    val windows: IdContainer<Window>                               by containers { DenseIdContainer() }
+    val textures: IdContainer<PlatformTexture>                     by containers { DenseIdContainer() }
+    val textureProcessorQueues: IdContainer<TextureProcessorQueue> by containers { SingleIdContainer() }
+    val fonts: IdContainer<Font>                                   by containers { SparseIdContainer() }
+    val streamDisplays: IdContainer<ImageDisplay>                  by containers { DenseIdContainer() }
+    val actions: StackIdContainer<Action>                          by containers { StackIdContainer() }
+    val popups: IdContainer<Popup>                                 by containers { DenseIdContainer() }
+    val misc: IdContainer<Misc>                                    by containers { SparseIdContainer() }
 
     lateinit var engineClient: PaperVisionEngineClient
     lateinit var previzManager: ClientPrevizManager
 
     lateinit var defaultFont: Font
 
-    fun init() = withIdContainers {
-        logger.info("Starting PaperVision...\n\n${IntroModalWindow.iconLogo}\n")
+    fun init() = containers.withContext {
+        logger.info("-- Starting PaperVision v${Build.VERSION_STRING} --\n\n${IntroModalWindow.iconLogo}\n")
         logger.info("Using the ${platformSetupCallback.name} platform")
 
         initPlatform()
@@ -135,8 +130,6 @@ class PaperVision(
 
         RootAction().enable()
         onInit.run()
-
-        setTaskbarIcon()
 
         dumpStartupDiagnostics()
         logger.info("PaperVision started")
@@ -149,6 +142,9 @@ class PaperVision(
         textureFactory = setup.textureFactory ?: error("Platform ${setup.name} must provide a TextureFactory")
         config = setup.config
         config.load()
+
+        window.title = "PaperVision"
+        window.icon = "/ico/ico_ezv.png"
 
         // serialize and log
         keyManager.addShortcut(keyManager.keys.NativeLeftSuper, keyManager.keys.Spacebar) {
@@ -169,9 +165,9 @@ class PaperVision(
 
     private fun initLanguage() {
         try {
-            changeLanguage(config.fields.lang)
+            changeLanguage(config.data.lang)
         } catch (_: Exception) {
-            logger.warn("Configured language ${config.fields.lang} is not available, defaulting")
+            logger.warn("Configured language ${config.data.lang} is not available, defaulting")
         }
     }
 
@@ -240,19 +236,7 @@ class PaperVision(
         logger.debug("=== end diagnostics ===")
     }
 
-    private fun setTaskbarIcon() {
-        if (Taskbar.isTaskbarSupported() && Taskbar.getTaskbar().isSupported(Taskbar.Feature.ICON_IMAGE)) {
-            Taskbar.getTaskbar().iconImage = Toolkit.getDefaultToolkit().getImage(
-                javaClass.getResource("/ico/ico_ezv.png")
-            )
-        } else {
-            logger.warn("Taskbar icon not supported")
-        }
-    }
-
     fun firstProcess() {
-        window.title = "PaperVision"
-        window.icon = "/ico/ico_ezv.png"
         window.maximized = true
 
         onUpdate.once {
@@ -267,7 +251,7 @@ class PaperVision(
         }
     }
 
-    fun process() = withIdContainers {
+    fun process() = containers.withContext {
         onUpdate.run()
         engineClient.process()
 
@@ -275,11 +259,10 @@ class PaperVision(
         val size = window.size
         ImGui.setNextWindowSize(size.x, size.y, ImGuiCond.Always)
 
-        ImGui.pushFont(defaultFont.imfont)
+        defaultFont.push()
 
         windows.forEach { it.draw() }
         popups.forEach { it.draw() }
-
         textureProcessorQueues.forEach { it.draw() }
 
         ImGui.popFont()
@@ -307,7 +290,7 @@ class PaperVision(
         currentLanguage = Language("/lang_pv.csv", langCode).apply { makeThreadTr() }
     }
 
-    fun showWelcome(askLanguage: Boolean = setup.config.fields.shouldAskForLang) {
+    fun showWelcome(askLanguage: Boolean = setup.config.data.shouldAskForLang) {
         IntroModalWindow(
             nodeEditor, chooseLanguage = askLanguage
         ).apply {
@@ -335,38 +318,4 @@ class PaperVision(
     /** Helper to simplify font creation */
     private fun font(name: String, path: String, size: Float, ranges: ShortArray? = null) =
         fontManager.makeFont(name, path, defaultFontConfig(size), ranges)
-
-    /** Executes a block of code with all containers pushed/popped safely */
-    private inline fun withIdContainers(crossinline block: () -> Unit) {
-        IdContainerStack.local.push(nodes)
-        IdContainerStack.local.push(attributes)
-        IdContainerStack.local.push(links)
-        IdContainerStack.local.push(windows)
-        IdContainerStack.local.push(textures)
-        IdContainerStack.local.push(textureProcessorQueues)
-        IdContainerStack.local.push(fonts)
-        IdContainerStack.local.push(streamDisplays)
-        IdContainerStack.local.push(actions)
-        IdContainerStack.local.push(popups)
-        IdContainerStack.local.push(misc)
-
-        try {
-            block()
-        } finally {
-            IdContainerStack.local.pop<Node<*>>()
-            IdContainerStack.local.pop<Attribute>()
-            IdContainerStack.local.pop<Link>()
-            IdContainerStack.local.pop<Window>()
-            IdContainerStack.local.pop<PlatformTexture>()
-            IdContainerStack.local.pop<TextureProcessorQueue>()
-            IdContainerStack.local.pop<Font>()
-            IdContainerStack.local.pop<ImageDisplay>()
-            IdContainerStack.local.pop<Action>()
-            IdContainerStack.local.pop<Popup>()
-            IdContainerStack.local.pop<Misc>()
-        }
-    }
 }
-
-
-

@@ -26,7 +26,7 @@ import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.engine.client.message.TunerValue
 import org.deltacv.papervision.exception.AttributeGenException
 import org.deltacv.papervision.id.DrawableIdElementBase
-import org.deltacv.papervision.id.container.IdContainerStack
+import org.deltacv.papervision.id.container.IdContext
 import org.deltacv.papervision.node.Link
 import org.deltacv.papervision.node.Node
 import org.deltacv.papervision.serialization.v1.AttributeSerializationData
@@ -55,7 +55,7 @@ abstract class Attribute :
 
     private val logger by loggerForThis()
 
-    override val idContainer get() = IdContainerStack.local.peekNonNull<Attribute>()
+    override val idContainer get() = IdContext.local.peekNonNull<Attribute>()
 
     override val requestedId get() = if(forgetSerializedId || (hasParentNode && parentNode.forgetSerializedId))
         null // generate new id

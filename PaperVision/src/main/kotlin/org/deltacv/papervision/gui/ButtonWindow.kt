@@ -74,13 +74,13 @@ open class ButtonWindow(
         if(buttonHovered) {
             buttonTooltip?.let { text ->
                 if(hoveringTime.seconds >= hoveringTimeForTooltipSecs) {
-                    buttonTooltipFont?.imfont?.let { ImGui.pushFont(it) }
+                    buttonTooltipFont?.push()
 
                     ImGui.beginTooltip()
                     ImGui.text(tr(text))
                     ImGui.endTooltip()
 
-                    buttonTooltipFont?.imfont?.let { ImGui.popFont() }
+                    buttonTooltipFont?.let { ImGui.popFont() }
                 }
             }
         } else {
@@ -98,7 +98,7 @@ open class ButtonWindow(
         lastPressed = held
 
         // ---- centered text ----
-        buttonFont?.imfont?.let { ImGui.pushFont(it) }
+        buttonFont?.push()
 
         val textSize = ImGui.calcTextSize(buttonText)
 
@@ -109,7 +109,7 @@ open class ButtonWindow(
 
         ImGui.text(tr(buttonText))
 
-        buttonFont?.imfont?.let { ImGui.popFont() }
+        buttonFont?.let { ImGui.popFont() }
 
         // ---- restore style ----
         ImGui.popStyleVar() // WindowPadding

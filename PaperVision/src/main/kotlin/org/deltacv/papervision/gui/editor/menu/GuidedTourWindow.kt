@@ -102,7 +102,7 @@ val Stage3: GuidedTourStage = {
     ImGui.sameLine()
 
     ImGui.setCursorPosY(ImGui.getCursorPosY() + 5)
-    ImGui.pushFont(Font.find("font-awesome").imfont)
+    Font.find("font-awesome").push()
     ImGui.text(FontAwesomeIcons.ArrowDown)
     ImGui.popFont()
 
@@ -330,7 +330,7 @@ val Stage12: GuidedTourStage = {
     ImGui.text(tr("mis_guidedtour_27"))
     ImGui.sameLine()
     ImGui.setCursorPosY(ImGui.getCursorPosY() + 5)
-    ImGui.pushFont(Font.find("font-awesome").imfont)
+    Font.find("font-awesome").push()
     ImGui.text(FontAwesomeIcons.ArrowDown)
     ImGui.popFont()
 
@@ -374,7 +374,7 @@ val Stage14: GuidedTourStage = {
     ImGui.text(tr("mis_guidedtour_33"))
     ImGui.sameLine()
     ImGui.setCursorPosY(ImGui.getCursorPosY() + 5)
-    ImGui.pushFont(Font.find("font-awesome").imfont)
+    Font.find("font-awesome").push()
     ImGui.text(FontAwesomeIcons.ArrowDown)
     ImGui.popFont()
 
@@ -425,7 +425,7 @@ class GuidedTourWindow(
 
         previousStage = currentStage
 
-        ImGui.pushFont(font.imfont)
+        font.push()
         currentStage()
         ImGui.popFont()
 

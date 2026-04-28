@@ -49,8 +49,9 @@ class PaperVisionTabPanel(
 
     val projectListAndButtonsPanel = JPanel()
 
-    val sourceSelectorPanel = (plugin.eocvSimApi as? EOCVSimApiImpl)?.let {
-        SourceSelectorPanel(it.internalEOCVSim)
+    val sourceSelectorPanel: SourceSelectorPanel? = (plugin.eocvSimApi as? EOCVSimApiImpl)?.let {
+        // TODO: fix this
+        null // SourceSelectorPanel(it.internalEOCVSim)
     }
 
     override fun create(target: JPanel) = apiImpl {

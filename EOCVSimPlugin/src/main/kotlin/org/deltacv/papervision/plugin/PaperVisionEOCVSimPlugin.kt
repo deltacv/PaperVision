@@ -87,11 +87,11 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         paperVisionProjectManager.init()
 
         eocvSimApi.visualizerApi.creationHook.once {
-            val switchablePanel = eocvSimApi.visualizerApi.sidebarApi
+            val sidebar = eocvSimApi.visualizerApi.sidebarApi
 
-            switchablePanel.addTab(paperVisionTabPanel)
+            sidebar.addTab(paperVisionTabPanel)
 
-            switchablePanel.tabChangeHook {
+            sidebar.tabChangeHook {
                 isRunningPreviewPipeline = false
                 switchToDefaultPipelineIfNecessary()
             }
@@ -139,7 +139,6 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
             currentPrevizSession?.stopPreviz()
             currentPrevizSession = null
-
 
             SwingUtilities.invokeLater {
                 (eocvSimApi.visualizerApi as? VisualizerApiImpl)?.internalVisualizer?.viewport?.activate()

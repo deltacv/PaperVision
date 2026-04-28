@@ -36,7 +36,7 @@ import org.deltacv.papervision.gui.font.Font
 import org.deltacv.papervision.gui.isModalWindowOpen
 import org.deltacv.papervision.gui.style.opacity
 import org.deltacv.papervision.id.container.DenseIdContainer
-import org.deltacv.papervision.id.container.IdContainerStack
+import org.deltacv.papervision.id.container.IdContext
 import org.deltacv.papervision.io.KeyManager
 import org.deltacv.papervision.node.*
 import org.deltacv.papervision.util.ElapsedTime
@@ -104,13 +104,13 @@ class NodeList(
 
     override fun onEnable() {
         // use different id stacks for the node list, we dont want these nodes on the actual editor
-        IdContainerStack.local.push(listNodes)
-        IdContainerStack.local.push(listAttributes)
+        IdContext.local.push(listNodes)
+        IdContext.local.push(listAttributes)
 
         headers = Headers(keyManager) { nodes }
 
-        IdContainerStack.local.pop<Node<*>>()
-        IdContainerStack.local.pop<Attribute>()
+        IdContext.local.pop<Node<*>>()
+        IdContext.local.pop<Attribute>()
     }
 
     override fun preDrawContents() {
@@ -132,8 +132,8 @@ class NodeList(
             return
         }
 
-        IdContainerStack.local.push(listNodes)
-        IdContainerStack.local.push(listAttributes)
+        IdContext.local.push(listNodes)
+        IdContext.local.push(listAttributes)
 
         val size = paperVision.window.size
 
@@ -184,7 +184,7 @@ class NodeList(
 
                         if (highlighted) {
                             if (node.description != null && hoveredNode == node.id) {
-                                ImGui.pushFont(defaultFontBig.imfont)
+                                defaultFontBig.push()
 
                                 ImGui.beginTooltip()
                                 ImGui.textUnformatted(tr(node.description!!))
@@ -328,8 +328,8 @@ class NodeList(
 
         headers.size = size
 
-        IdContainerStack.local.pop<Node<*>>()
-        IdContainerStack.local.pop<Attribute>()
+        IdContext.local.pop<Node<*>>()
+        IdContext.local.pop<Attribute>()
 
         handleClick(!headers.isHeaderHovered)
     }

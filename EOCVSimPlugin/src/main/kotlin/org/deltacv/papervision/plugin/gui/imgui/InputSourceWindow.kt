@@ -75,7 +75,7 @@ class InputSourceWindow(
     override fun drawContents() {
         if(ImGui.beginListBox("###$id")) {
             for (inputSource in inputSources) {
-                ImGui.pushFont(fontAwesome.imfont)
+                fontAwesome.push()
 
                 val type = when(inputSource.type) {
                     IpcInputSourceType.IMAGE -> FontAwesomeIcons.Image
@@ -128,7 +128,7 @@ class CreateInputSourceWindow(
     override fun drawContents() {
         ImGui.pushStyleColor(ImGuiCol.Button, 0)
 
-        ImGui.pushFont(fontAwesome.imfont)
+        fontAwesome.push()
 
         if(ImGui.button(FontAwesomeIcons.Camera)){
             client.sendMessage(OpenCreateInputSourceMessage(IpcInputSourceType.CAMERA))
@@ -137,7 +137,7 @@ class CreateInputSourceWindow(
         if(ImGui.isItemHovered()) {
             ImGui.popFont()
             ImGui.setTooltip(tr("mis_camerasource"))
-            ImGui.pushFont(fontAwesome.imfont)
+            fontAwesome.push()
         }
 
         ImGui.sameLine()
@@ -150,7 +150,7 @@ class CreateInputSourceWindow(
         if(ImGui.isItemHovered()) {
             ImGui.popFont()
             ImGui.setTooltip(tr("mis_imagesource"))
-            ImGui.pushFont(fontAwesome.imfont)
+            fontAwesome.push()
         }
 
         ImGui.sameLine()
@@ -163,7 +163,7 @@ class CreateInputSourceWindow(
         if(ImGui.isItemHovered()) {
             ImGui.popFont()
             ImGui.setTooltip(tr("mis_videosource"))
-            ImGui.pushFont(fontAwesome.imfont)
+            fontAwesome.push()
         }
 
         ImGui.sameLine()
@@ -176,7 +176,7 @@ class CreateInputSourceWindow(
         if(ImGui.isItemHovered()) {
             ImGui.popFont()
             ImGui.setTooltip(tr("mis_httpsource"))
-            ImGui.pushFont(fontAwesome.imfont)
+            fontAwesome.push()
         }
 
         ImGui.popFont()

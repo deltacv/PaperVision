@@ -26,7 +26,7 @@ import java.nio.ByteBuffer
 
 fun loadImageFromResource(resourcePath: String): ImageData {
     val imgBuffer = try {
-        IOUtil.ioResourceToByteBuffer(resourcePath, 8 * 1024)
+        IoUtil.ioResourceToByteBuffer(resourcePath, 8 * 1024)
     } catch(e: Exception) {
         throw RuntimeException("Exception while loading image $resourcePath", e)
     }

@@ -19,7 +19,6 @@
 package org.deltacv.papervision.platform
 
 import org.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
-import org.deltacv.papervision.engine.client.ByteMessageReceiver
 
 class PlatformSetup(val name: String) {
     var window: PlatformWindow? = null
@@ -31,7 +30,7 @@ class PlatformSetup(val name: String) {
 
     var engineBridge: PaperVisionEngineBridge? = null
 
-    var config: PlatformConfig = DefaultFilePlatformConfig()
+    var config: PlatformConfigManager = DefaultFilePlatformConfigManager
 }
 
 data class PlatformSetupCallback(val name: String, val block: PlatformSetup.() -> Unit) {

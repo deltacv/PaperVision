@@ -76,7 +76,8 @@ object PaperNodeRegistry {
     /**
      * Instantiate a node using the registered instantiator if available,
      * falling back to reflection otherwise.
-     * Returns null if instantiation fails.
+     * @param nodeClass The KClass of the node to instantiate.
+     * @return The node instance, or null if instantiation fails.
      */
     fun instantiate(nodeClass: KClass<out Node<*>>): Node<*>? {
         val instantiator = entries[nodeClass]?.instantiator

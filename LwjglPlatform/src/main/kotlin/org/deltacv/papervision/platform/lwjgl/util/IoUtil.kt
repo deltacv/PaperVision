@@ -27,7 +27,7 @@ import java.nio.channels.Channels
 import java.nio.file.Files
 import java.nio.file.Paths
 
-object IOUtil {
+object IoUtil {
 
     private fun resizeBuffer(buffer: ByteBuffer, newCapacity: Int): ByteBuffer {
         val newBuffer = BufferUtils.createByteBuffer(newCapacity)
@@ -57,7 +57,7 @@ object IOUtil {
                 }
             }
         } else {
-            IOUtil::class.java.getResourceAsStream(resource)!!.use { source ->
+            IoUtil::class.java.getResourceAsStream(resource)!!.use { source ->
                 Channels.newChannel(source).use { rbc ->
                     buffer = BufferUtils.createByteBuffer(bufferSize)
                     while (true) {

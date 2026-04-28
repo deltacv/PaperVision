@@ -1,5 +1,6 @@
 package org.deltacv.papervision.codegen.build.language
 
+import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import org.deltacv.papervision.attribute.vision.structs.Vector2Attribute
 import org.deltacv.papervision.codegen.CodeGen
@@ -8,13 +9,13 @@ import org.deltacv.papervision.codegen.resolve.Resolvable
 
 object GenPreviz {
 
-    fun toPrevizScalar(
-        scalar: GenValue.Scalar,
-        labelSource: ScalarAttribute,
+    fun toPrevizNumber(
+        num: GenValue.Number,
+        labelSource: Attribute,
+        variableName: String,
         current: CodeGen.Current,
-        prefix: String = "scalar"
     ) {
-        
+
     }
 
     // ------ VEC2 CONVERSION ------

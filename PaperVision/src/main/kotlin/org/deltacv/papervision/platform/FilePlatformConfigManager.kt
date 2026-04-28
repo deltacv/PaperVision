@@ -18,16 +18,19 @@
 
 package org.deltacv.papervision.platform
 
-import com.google.gson.GsonBuilder
+import kotlinx.serialization.json.Json
 import org.deltacv.papervision.util.loggerForThis
 import java.io.File
-import kotlin.getValue
 
-open class FilePlatformConfig(
+open class FilePlatformConfigManager(
     val path: String
-) : PlatformConfig() {
+) : PlatformConfigManager() {
 
-    private val gson = GsonBuilder().setPrettyPrinting().create()
+    private val json = Json {
+        prettyPrint = true
+        encodeDefaults = true
+    }
+
     val file = File(path)
 
     val logger by loggerForThis()
@@ -45,22 +48,20 @@ open class FilePlatformConfig(
         }
 
         logger.info("Loading config from $path")
-        fields = gson.fromJson(file.readText(), PaperVisionConfig::class.java)
+        data = json.decodeFromString(file.readText())
     }
 
-    override fun save() {
+    override fun save(data: PaperVisionConfig) {
         logger.info("Saving config to $path")
-        file.writeText(gson.toJson(fields))
+        file.writeText(json.encodeToString(data))
+        this.data = data
     }
 }
 
 val defaultConfigPath = System.getProperty("user.home") + File.separator + ".papervision" + File.separator + "config.json"
 
-class DefaultFilePlatformConfig : FilePlatformConfig(defaultConfigPath) {
+object DefaultFilePlatformConfigManager : FilePlatformConfigManager(defaultConfigPath) {
     init {
         File(defaultConfigPath).parentFile.mkdirs() // mkdir .papervision
     }
 }
-
-
-

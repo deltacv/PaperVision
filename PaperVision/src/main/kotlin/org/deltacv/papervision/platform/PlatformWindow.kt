@@ -31,7 +31,6 @@ enum class PlatformFileChooserResult {
 }
 
 interface PlatformWindow {
-
     var title: String
     var icon: String
 
@@ -45,8 +44,11 @@ interface PlatformWindow {
 
     fun requestFocus()
 
-    fun saveFileDialog(content: ByteArray, defaultName: String = "", vararg platformFileFilter: PlatformFileFilter): PlatformFileChooserResult
+    fun close()
 
+    fun setCloseListener(listener: (() -> Boolean)?)
+
+    fun saveFileDialog(content: ByteArray, defaultName: String = "", vararg platformFileFilter: PlatformFileFilter): PlatformFileChooserResult
 }
 
 

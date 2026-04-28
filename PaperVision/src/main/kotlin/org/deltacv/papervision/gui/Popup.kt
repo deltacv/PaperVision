@@ -23,7 +23,7 @@ import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
 import org.deltacv.papervision.gui.font.Font
 import org.deltacv.papervision.id.DrawableIdElementBase
-import org.deltacv.papervision.id.container.IdContainerStack
+import org.deltacv.papervision.id.container.IdContext
 import org.deltacv.papervision.util.ElapsedTime
 import org.deltacv.papervision.util.flags
 import org.deltacv.mai18n.tr
@@ -70,7 +70,7 @@ class TooltipPopup(
             delete()
         }
 
-        font?.let { ImGui.pushFont(it.imfont) }
+        font?.push()
         ImGui.text(tr(text))
         font?.let { ImGui.popFont() }
     }
@@ -80,7 +80,7 @@ class TooltipPopup(
 abstract class Popup(
     val label: String? = null
 ) : DrawableIdElementBase<Popup>() {
-    override val idContainer = IdContainerStack.local.peekNonNull<Popup>()
+    override val idContainer = IdContext.local.peekNonNull<Popup>()
 
     abstract val title: String
     abstract val flags: Int
@@ -119,7 +119,7 @@ abstract class Popup(
         }
 
         if(label != null) {
-            for(popup in IdContainerStack.local.peekNonNull<Popup>().inmutable) {
+            for(popup in IdContext.local.peekNonNull<Popup>().inmutable) {
                 if(popup != this && popup.label == label) { // close other popups with the same label
                     popup.delete()
                 }

@@ -14,7 +14,7 @@ data class ButtonItem(
     override fun measure(): ImVec2 {
         val t = text.get()
 
-        t.font?.let { ImGui.pushFont(it.imfont) }
+        t.font?.push()
         val textSize = ImGui.calcTextSize(tr(t.string))
         t.font?.let { ImGui.popFont() }
 
@@ -29,7 +29,7 @@ data class ButtonItem(
     override fun render() {
         val t = text.get()
 
-        t.font?.let { ImGui.pushFont(it.imfont) }
+        t.font?.push()
 
         if(ImGui.button(tr(t.string))) {
             onClick()
@@ -46,7 +46,7 @@ data class TextItem(
     override fun measure(): ImVec2 {
         val t = text.get()
 
-        t.font?.let { ImGui.pushFont(it.imfont) }
+        t.font?.push()
         val size = ImVec2(
             ImGui.calcTextSize(tr(t.string)).x,
             ImGui.calcTextSize(tr(t.string)).y
@@ -59,7 +59,7 @@ data class TextItem(
     override fun render() {
         val t = text.get()
 
-        t.font?.let { ImGui.pushFont(it.imfont) }
+        t.font?.push()
         ImGui.text(tr(t.string))
         t.font?.let { ImGui.popFont() }
     }

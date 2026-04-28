@@ -19,10 +19,11 @@
 package org.deltacv.papervision.platform.lwjgl
 
 import imgui.app.Application
+import imgui.app.Color
 import imgui.app.Configuration
+import imgui.app.WindowGlfw
 import org.deltacv.papervision.PaperVision
 import org.deltacv.papervision.engine.bridge.PaperVisionEngineBridge
-import org.deltacv.papervision.engine.client.ByteMessageReceiver
 import org.deltacv.papervision.io.KeyAction
 import org.deltacv.papervision.platform.lwjgl.glfw.GlfwKeys
 import org.deltacv.papervision.platform.lwjgl.glfw.GlfwWindow
@@ -33,8 +34,7 @@ import org.lwjgl.glfw.GLFWKeyCallback
 
 class LWJGLPaperVisionApp @JvmOverloads constructor(
     val bridge: PaperVisionEngineBridge? = null,
-    val showWelcomeWindow: Boolean = false,
-    val windowCloseListener: (() -> Boolean)? = null
+    val showWelcomeWindow: Boolean = false
 ) : Application() {
 
     val setup = platformSetup("LWJGL") {
@@ -45,6 +45,7 @@ class LWJGLPaperVisionApp @JvmOverloads constructor(
         engineBridge = bridge
     }
 
+    private val handle get() = (window as WindowGlfw).handle
     val glfwWindow = GlfwWindow { handle }
 
     val paperVision = PaperVision(setup)
@@ -61,22 +62,6 @@ class LWJGLPaperVisionApp @JvmOverloads constructor(
     private var hasProcessed = false
     private var prevKeyCallback: GLFWKeyCallback? = null
 
-    // override to handle windowCloseAction
-    override fun run() {
-        fun callWindowCloseAction(): Boolean {
-            val shouldClose = windowCloseAction()
-
-            glfwSetWindowShouldClose(handle, shouldClose)
-            return shouldClose
-        }
-
-        while (!glfwWindowShouldClose(handle) || !callWindowCloseAction()) {
-            runFrame()
-        }
-    }
-
-    fun windowCloseAction() = windowCloseListener?.invoke() != false
-
     override fun process() {
         if(!hasProcessed) {
             paperVision.firstProcess()
@@ -87,6 +72,8 @@ class LWJGLPaperVisionApp @JvmOverloads constructor(
             // register a new key callback that will call the previous callback and handle some special keys
             prevKeyCallback = glfwSetKeyCallback(handle, ::keyCallback)
         }
+
+        glfwWindow.processWindowOps()
 
         paperVision.process()
     }

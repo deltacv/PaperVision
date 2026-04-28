@@ -44,7 +44,7 @@ class OptionsWindow(
     override val modal = ModalMode.Modal()
 
     override fun drawContents() {
-        ImGui.pushFont(fontAwesomeBig.imfont)
+        fontAwesomeBig.push()
         ImGui.pushStyleColor(ImGuiCol.Button, 0)
         ImGui.pushStyleColor(ImGuiCol.ButtonActive, 0)
 
@@ -55,7 +55,7 @@ class OptionsWindow(
             }
 
             if(ImGui.isItemHovered()) {
-                ImGui.pushFont(tooltipFont.imfont)
+                tooltipFont.push()
                 ImGui.setTooltip(tr(option.description))
                 ImGui.popFont()
             }

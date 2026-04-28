@@ -74,7 +74,7 @@ class Headers(
                 ImGui.pushStyleColor(ImGuiCol.HeaderActive, category.colorSelected)
                 ImGui.pushStyleColor(ImGuiCol.HeaderHovered, category.colorSelected)
 
-                ImGui.pushFont(headerFont.imfont)
+                headerFont.push()
 
                 val isOpen = ImGui.collapsingHeader(
                     tr(category.properName), ImGuiTreeNodeFlags.DefaultOpen

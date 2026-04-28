@@ -29,7 +29,7 @@ import org.deltacv.papervision.codegen.*
 import org.deltacv.papervision.exception.NodeGenException
 import org.deltacv.papervision.gui.editor.NodeEditor
 import org.deltacv.papervision.id.DrawableIdElementBase
-import org.deltacv.papervision.id.container.IdContainerStack
+import org.deltacv.papervision.id.container.IdContext
 import org.deltacv.papervision.node.vision.OutputMatNode
 import org.deltacv.papervision.serialization.v1.data.DataSerializable
 import org.deltacv.papervision.serialization.v1.BasicNodeData
@@ -61,7 +61,7 @@ abstract class Node<S: CodeGenSession>(
 {
     private val logger by loggerForThis()
 
-    override val idContainer = IdContainerStack.local.peekNonNull<Node<*>>()
+    override val idContainer = IdContext.local.peekNonNull<Node<*>>()
     override val requestedId get() = if(forgetSerializedId) null else serializedId
 
     private var beforeDeletingPosition = ImVec2()

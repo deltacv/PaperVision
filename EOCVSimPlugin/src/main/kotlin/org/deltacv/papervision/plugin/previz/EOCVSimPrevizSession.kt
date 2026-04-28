@@ -133,7 +133,7 @@ class EOCVSimPrevizSession(
 
             eocvSimApi.pipelineManagerApi.addPipelineInstantiator(
                 newClass,
-                StreamableNoReflectOpenCvPipelineInstantiator(eocvSimApi.owner, streamer)
+                StreamableNoReflectPipelineInstantiator(eocvSimApi.owner, streamer)
             )
 
             isChangingPipeline = true

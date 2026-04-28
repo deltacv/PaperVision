@@ -21,7 +21,7 @@ package org.deltacv.papervision.gui.font
 import imgui.ImFont
 import imgui.ImFontConfig
 import imgui.ImGui
-import org.deltacv.papervision.id.container.IdContainerStack
+import org.deltacv.papervision.id.container.IdContext
 import org.deltacv.papervision.id.StatedIdElementBase
 import org.deltacv.papervision.util.loggerForThis
 
@@ -99,25 +99,26 @@ class FontManager {
 
 }
 
+@Suppress("unused")
 class Font internal constructor(
     val imfont: ImFont,
-    val fontConfig: ImFontConfig,
+    private val fontConfig: ImFontConfig,
     val name: String,
-    val ttfPath: String?,
+    private val ttfPath: String?,
     val size: Float
 ) : StatedIdElementBase<Font>() {
-    override val idContainer get() = IdContainerStack.local.peekNonNull<Font>()
+    override val idContainer get() = IdContext.local.peekNonNull<Font>()
     override val requestedId = name.hashCode()
 
     companion object {
         fun find(name: String) =
-            IdContainerStack.local.peekNonNull<Font>()[name] ?: throw IllegalArgumentException("Font '$name' not found")
+            IdContext.local.peekNonNull<Font>()[name] ?: throw IllegalArgumentException("Font '$name' not found")
 
         fun findLazy(name: String) = lazy { find(name) }
     }
 
-    fun push() {
-        ImGui.pushFont(imfont)
+    fun push(size: Float = this.size) {
+        ImGui.pushFont(imfont, size)
     }
 
     fun pop() {
@@ -130,8 +131,10 @@ class Font internal constructor(
 }
 
 fun defaultFontConfig(size: Float) = ImFontConfig().apply {
-    oversampleH = 2
-    oversampleV = 2
+    // Use conservative oversampling to avoid stb_truetype packing/assert issues observed on some systems.
+    // Higher oversample values increase atlas size and can trigger packing edge cases in stb.
+    oversampleH = 1
+    oversampleV = 1
     pixelSnapH = false
     sizePixels = size
 }

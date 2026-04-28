@@ -18,7 +18,7 @@
 
 package org.deltacv.papervision.id
 
-import org.deltacv.papervision.id.container.IdContainerStack
+import org.deltacv.papervision.id.container.IdContext
 
 interface IdElement {
     val id: Int
@@ -26,7 +26,7 @@ interface IdElement {
 
 object Misc : IdElement {
     override val id = 0xDAFC
-    fun newId() = IdContainerStack.local.peekNonNull<Misc>().nextIdLazy()
+    fun newId() = IdContext.local.peekNonNull<Misc>().nextIdLazy()
 }
 
 

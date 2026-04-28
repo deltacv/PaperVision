@@ -10,7 +10,7 @@ import org.deltacv.papervision.gui.font.Font
 import org.deltacv.papervision.gui.util.ImGuiEx
 import org.deltacv.papervision.gui.util.OS
 import org.deltacv.papervision.gui.util.getMemoryUsageMB
-import org.deltacv.papervision.id.container.IdContainerStack
+import org.deltacv.papervision.id.container.IdContext
 import org.deltacv.papervision.io.resourceToString
 import org.deltacv.papervision.util.flags
 import org.deltacv.mai18n.tr
@@ -43,14 +43,14 @@ class AboutModalWindow : Window() {
         ImGui.newLine()
         ImGui.newLine()
 
-        ImGui.pushFont(imguiFont.imfont)
+        imguiFont.push()
         ImGuiEx.centeredText(icon)
         ImGui.popFont()
 
         ImGui.newLine()
         ImGui.newLine()
 
-        ImGui.pushFont(monoFont.imfont)
+        monoFont.push()
 
         ImGuiEx.centeredText("PaperVision v${Build.VERSION_STRING} built on ${Build.BUILD_DATE}")
 
@@ -65,7 +65,7 @@ class AboutModalWindow : Window() {
         val OS_VERSION = System.getProperty("os.version")
 
         var elementCount = 0
-        for(container in IdContainerStack.Companion.local.all()) {
+        for(container in IdContext.Companion.local.all()) {
             elementCount += container.inmutable.size
         }
 

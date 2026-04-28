@@ -182,7 +182,7 @@ abstract class TypedAttribute<R: GenValue>(
 
         if(mode == AttributeMode.INPUT) {
             if(hasIcon) {
-                ImGui.pushFont(customIconFont.imfont)
+                customIconFont.push()
                 ImGui.text(customIcon)
                 ImGui.popFont()
                 ImGui.sameLine()
@@ -194,7 +194,7 @@ abstract class TypedAttribute<R: GenValue>(
             var labelWidth = ImGui.calcTextSize(text).x
 
             if(hasIcon) {
-                ImGui.pushFont(customIconFont.imfont)
+                customIconFont.push()
                 labelWidth += ImGui.calcTextSize(customIcon).x + ImGui.getStyle().itemSpacingX
                 ImGui.popFont()
             }
@@ -214,7 +214,7 @@ abstract class TypedAttribute<R: GenValue>(
 
             if(hasIcon) {
                 ImGui.sameLine()
-                ImGui.pushFont(customIconFont.imfont)
+                customIconFont.push()
                 ImGui.text(customIcon)
                 ImGui.popFont()
             }

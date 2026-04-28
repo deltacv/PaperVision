@@ -19,7 +19,7 @@
 package org.deltacv.papervision.gui.display
 
 import imgui.ImGui
-import org.deltacv.papervision.id.container.IdContainerStack
+import org.deltacv.papervision.id.container.IdContext
 import org.deltacv.papervision.engine.previz.ClientPrevizStream
 import org.deltacv.papervision.id.DrawableIdElementBase
 import org.deltacv.papervision.util.ElapsedTime
@@ -29,7 +29,7 @@ class ImageDisplay(
     var clientPrevizStream: ClientPrevizStream
 ) : DrawableIdElementBase<ImageDisplay>() {
 
-    override val idContainer get() = IdContainerStack.local.peekNonNull<ImageDisplay>()
+    override val idContainer get() = IdContext.local.peekNonNull<ImageDisplay>()
 
     private val hoverTimer = ElapsedTime()
 

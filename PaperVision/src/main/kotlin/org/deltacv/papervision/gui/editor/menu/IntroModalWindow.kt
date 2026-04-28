@@ -32,7 +32,7 @@ import org.deltacv.papervision.util.flags
 
 class IntroModalWindow(
     val nodeEditor: NodeEditor,
-    chooseLanguage: Boolean = nodeEditor.paperVision.setup.config.fields.shouldAskForLang
+    chooseLanguage: Boolean = nodeEditor.paperVision.setup.config.data.shouldAskForLang
 ) : Window() {
     override var title = "win_welcome"
 
@@ -62,7 +62,7 @@ class IntroModalWindow(
 
     override fun drawContents() {
         if(choosingLanguage) {
-            ImGui.pushFont(monoFont.imfont)
+            monoFont.push()
 
             ImGui.newLine()
 
@@ -90,8 +90,12 @@ class IntroModalWindow(
                 choosingLanguage = false
             }
 
-            nodeEditor.paperVision.config.fields.lang = nodeEditor.paperVision.currentLanguage.lang
-            nodeEditor.paperVision.config.fields.shouldAskForLang = false
+            nodeEditor.paperVision.config.save(
+                nodeEditor.paperVision.config.data.copy(
+                    lang = nodeEditor.paperVision.currentLanguage.lang,
+                    shouldAskForLang = false
+                )
+            )
 
             ImGui.popFont()
 
@@ -100,14 +104,14 @@ class IntroModalWindow(
             ImGui.newLine()
             ImGui.newLine()
 
-            ImGui.pushFont(imguiFont.imfont)
+            imguiFont.push()
             ImGuiEx.centeredText(icon)
             ImGui.popFont()
 
             ImGui.newLine()
             ImGui.newLine()
 
-            ImGui.pushFont(monoFont.imfont)
+            monoFont.push()
 
             ImGuiEx.centeredText("mis_welcome1")
             ImGuiEx.centeredText("mis_welcome2")

@@ -35,7 +35,6 @@ import org.deltacv.papervision.serialization.v2.DataDecoder
 import org.deltacv.papervision.serialization.v2.DataEncoder
 import org.deltacv.mai18n.tr
 import org.deltacv.papervision.attribute.EditorValue
-import kotlin.enums.EnumEntries
 
 @CodecType(instantiable = false)
 class EnumAttribute<T: Enum<T>>(
@@ -70,7 +69,7 @@ class EnumAttribute<T: Enum<T>>(
         super.drawAttribute()
 
         if(!hasLink) {
-            enumNameFont?.let { ImGui.pushFont(it.imfont) }
+            enumNameFont?.push()
             ImGui.pushItemWidth(110.0f)
 
             ImGui.combo("", currentIndex, valuesStrings)

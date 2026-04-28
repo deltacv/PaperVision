@@ -101,7 +101,7 @@ open class ToggleButtonWindow(
         // ---- centered text ----
         val currentText = if (isToggled) textOn else textOff
 
-        buttonFont?.imfont?.let { ImGui.pushFont(it) }
+        buttonFont?.push()
 
         val textSize = ImGui.calcTextSize(currentText)
 
@@ -112,7 +112,7 @@ open class ToggleButtonWindow(
 
         ImGui.text(currentText)
 
-        buttonFont?.imfont?.let { ImGui.popFont() }
+        buttonFont?.let { ImGui.popFont() }
 
         // ---- restore style ----
         ImGui.popStyleVar() // WindowPadding

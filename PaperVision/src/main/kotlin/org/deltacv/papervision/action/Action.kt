@@ -18,7 +18,7 @@
 
 package org.deltacv.papervision.action
 
-import org.deltacv.papervision.id.container.IdContainerStack
+import org.deltacv.papervision.id.container.IdContext
 import org.deltacv.papervision.id.container.StackIdContainer
 import org.deltacv.papervision.id.StatedIdElementBase
 import org.deltacv.papervision.util.loggerForThis
@@ -26,7 +26,7 @@ import org.deltacv.papervision.util.loggerForThis
 abstract class Action(
     val executeOnEnable: Boolean = true
 ) : StatedIdElementBase<Action>() {
-    override val idContainer get() = IdContainerStack.local.peekNonNull<Action>() as StackIdContainer<Action>
+    override val idContainer get() = IdContext.local.peekNonNull<Action>() as StackIdContainer<Action>
 
     val logger by loggerForThis()
 

@@ -8,7 +8,7 @@ buildscript {
         kotlinx_coroutines_version = "1.10.2"
         kotlinx_serialization_version = "1.10.0"
         classgraph_version = "4.8.112"
-        imgui_version = "1.87.6"
+        imgui_version = "1.92.0"
         gson_version = "2.8.9"
         lwjgl_version = "3.3.2"
         mackjpeg_version = "1.0.5"

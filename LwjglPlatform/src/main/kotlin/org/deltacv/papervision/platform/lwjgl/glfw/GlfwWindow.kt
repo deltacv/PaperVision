@@ -21,8 +21,9 @@ package org.deltacv.papervision.platform.lwjgl.glfw
 import imgui.ImVec2
 import org.deltacv.papervision.platform.PlatformFileChooserResult
 import org.deltacv.papervision.platform.PlatformFileFilter
-import org.deltacv.papervision.platform.lwjgl.util.loadImageFromResource
 import org.deltacv.papervision.platform.PlatformWindow
+import org.deltacv.papervision.platform.lwjgl.util.ImageData
+import org.deltacv.papervision.platform.lwjgl.util.loadImageFromResource
 import org.deltacv.papervision.platform.lwjgl.util.toBufferedImage
 import org.lwjgl.BufferUtils
 import org.lwjgl.glfw.GLFW.*
@@ -32,24 +33,24 @@ import org.lwjgl.glfw.GLFWNativeWin32.glfwGetWin32Window
 import org.lwjgl.glfw.GLFWNativeX11.glfwGetX11Window
 import org.lwjgl.stb.STBImage.stbi_image_free
 import org.lwjgl.system.MemoryStack.stackPush
-import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.MemoryUtil.NULL
 import org.lwjgl.system.Platform
 import org.lwjgl.util.nfd.NFDFilterItem
 import org.lwjgl.util.nfd.NFDSaveDialogArgs
-import org.lwjgl.util.nfd.NativeFileDialog.NFD_OKAY
-import org.lwjgl.util.nfd.NativeFileDialog.NFD_SaveDialog_With
-import org.lwjgl.util.nfd.NativeFileDialog.NFD_WINDOW_HANDLE_TYPE_COCOA
-import org.lwjgl.util.nfd.NativeFileDialog.NFD_WINDOW_HANDLE_TYPE_UNSET
-import org.lwjgl.util.nfd.NativeFileDialog.NFD_WINDOW_HANDLE_TYPE_WINDOWS
-import org.lwjgl.util.nfd.NativeFileDialog.NFD_WINDOW_HANDLE_TYPE_X11
+import org.lwjgl.util.nfd.NativeFileDialog.*
 import java.awt.Taskbar
 import java.io.File
 import java.nio.Buffer
 
 class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
 
-    private val isMac = System.getProperty("os.name").lowercase().contains("mac");
+    private var currentCloseListener: (() -> Boolean)? = null
+    private var closeCallbackSet = false
+    private var pendingIconImage: ImageData? = null
+    private var hasDeferredIconUpdate = false
+
+    private val isMac = System.getProperty("os.name").lowercase().contains("mac")
+    private val isWindows = Platform.get() == Platform.WINDOWS
 
     override var title: String
         get() = glfwGetWindowTitle(ptrSupplier()) ?: ""
@@ -58,28 +59,62 @@ class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
         }
     override var icon: String = ""
         set(value) {
-            if(isMac) return // "Cocoa: Regular windows do not have icons on macOS"
-
             val image = loadImageFromResource(value)
+            field = value
 
             if(Taskbar.isTaskbarSupported() && Taskbar.getTaskbar().isSupported(Taskbar.Feature.ICON_IMAGE)) {
                 Taskbar.getTaskbar().iconImage = image.toBufferedImage()
             }
 
-            GLFWImage.malloc(1).use {
-                it.position(0)
-                    .width(image.width)
-                    .height(image.height)
-                    .pixels(image.buffer)
-
-                it.position(0)
-                glfwSetWindowIcon(ptrSupplier(), it)
-
+            // "Cocoa: Regular windows do not have icons on macOS"
+            if(isMac) {
                 stbi_image_free(image.buffer)
+                return
             }
 
-            field = value
+            // "glfwSetWindowIcon fails to update the Windows taskbar
+            // icon if events are not polled within a timeframe"
+            // - https://github.com/glfw/glfw/issues/2753
+            if (isWindows) {
+                pendingIconImage?.let { stbi_image_free(it.buffer) }
+                pendingIconImage = image
+                hasDeferredIconUpdate = true
+                return
+            }
+
+            applyIcon(image, pollEventsAfterSet = false)
         }
+
+    private fun applyIcon(image: ImageData, pollEventsAfterSet: Boolean) {
+        GLFWImage.malloc(1).use {
+            image.buffer.rewind()
+            it.position(0)
+                .width(image.width)
+                .height(image.height)
+                .pixels(image.buffer)
+
+            it.position(0)
+            glfwSetWindowIcon(ptrSupplier(), it)
+
+            if (pollEventsAfterSet) {
+                glfwPollEvents()
+            }
+
+            stbi_image_free(image.buffer)
+        }
+    }
+
+    private fun flushDeferredWindowOps() {
+        if (!hasDeferredIconUpdate) return
+
+        val image = pendingIconImage
+        hasDeferredIconUpdate = false
+        pendingIconImage = null
+
+        if (image != null) {
+            applyIcon(image, pollEventsAfterSet = true)
+        }
+    }
 
     private val w = BufferUtils.createIntBuffer(1)
     private val h = BufferUtils.createIntBuffer(1)
@@ -135,6 +170,31 @@ class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
         glfwFocusWindow(ptrSupplier())
     }
 
+    override fun close() {
+        glfwSetWindowShouldClose(ptrSupplier(), true)
+    }
+
+    override fun setCloseListener(listener: (() -> Boolean)?) {
+        currentCloseListener = listener
+    }
+
+    private fun ensureCloseListenerInitialized() {
+        if (!closeCallbackSet && currentCloseListener != null) {
+            glfwSetWindowCloseCallback(ptrSupplier()) {
+                val shouldClose = currentCloseListener?.invoke() ?: true
+                if (shouldClose) {
+                    glfwSetWindowShouldClose(ptrSupplier(), true)
+                }
+            }
+            closeCallbackSet = true
+        }
+    }
+
+    fun processWindowOps() {
+        flushDeferredWindowOps()
+        ensureCloseListenerInitialized()
+    }
+
     private val handleType by lazy {
         when(Platform.get()) {
             Platform.LINUX -> NFD_WINDOW_HANDLE_TYPE_X11
@@ -159,7 +219,7 @@ class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
         vararg platformFileFilter: PlatformFileFilter
     ): PlatformFileChooserResult {
         stackPush().use { stack ->
-            val filters = NFDFilterItem.malloc(platformFileFilter.size);
+            val filters = NFDFilterItem.malloc(platformFileFilter.size)
             for((i, filter) in platformFileFilter.withIndex()) {
                 filters.get(i)
                     .name(stack.UTF8(filter.name))

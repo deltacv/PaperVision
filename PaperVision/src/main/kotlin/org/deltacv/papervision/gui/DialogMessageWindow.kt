@@ -53,7 +53,7 @@ class DialogMessageWindow(
 
     override fun drawContents() {
         font?.let {
-            ImGui.pushFont(it.imfont)
+            it.push()
         }
 
         val messageSize = ImGui.calcTextSize(tr(message))

@@ -28,7 +28,7 @@ import org.deltacv.papervision.util.loggerForThis
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.openftc.easyopencv.OpenCvPipeline
 
-class StreamableNoReflectOpenCvPipelineInstantiator(
+class StreamableNoReflectPipelineInstantiator(
     owner: EOCVSimPlugin, val imageStreamer: ImageStreamer
 ) : PipelineInstantiatorApi(owner) {
 

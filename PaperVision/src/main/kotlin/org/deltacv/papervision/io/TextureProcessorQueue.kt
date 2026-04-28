@@ -23,7 +23,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import org.deltacv.papervision.id.DrawableIdElementBase
 import org.deltacv.papervision.id.container.IdContainer
-import org.deltacv.papervision.id.container.IdContainerStack
+import org.deltacv.papervision.id.container.IdContext
 import org.deltacv.papervision.platform.ColorSpace
 import org.deltacv.papervision.platform.PlatformTexture
 import org.deltacv.papervision.platform.PlatformTextureFactory
@@ -267,7 +267,7 @@ class TextureProcessorQueue(
         memoryBehavior: MemoryPool.MemoryBehavior
     ) = getOrCreateReusableBufferBlocking(size, memoryBehavior)
 
-    override val idContainer: IdContainer<TextureProcessorQueue> by lazy { IdContainerStack.local.peekNonNull() }
+    override val idContainer: IdContainer<TextureProcessorQueue> by lazy { IdContext.local.peekNonNull() }
 
     private class FutureTexture(
         val id: Int,

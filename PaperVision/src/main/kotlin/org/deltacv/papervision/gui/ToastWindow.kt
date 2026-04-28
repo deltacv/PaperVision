@@ -59,7 +59,7 @@ class ToastWindow(
 
     override fun drawContents() {
         if(font != null) {
-            ImGui.pushFont(font.imfont)
+            font.push()
         }
 
         val currentSize = if(firstDraw) {
