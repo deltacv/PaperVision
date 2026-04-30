@@ -18,7 +18,6 @@
 
 package org.deltacv.papervision.plugin
 
-import com.github.serivesmejia.eocvsim.plugin.api.impl.VisualizerApiImpl
 import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
 import io.github.deltacv.eocvsim.plugin.api.InputSourceApi
 import io.github.deltacv.eocvsim.plugin.api.PipelineManagerApi
@@ -141,7 +140,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             currentPrevizSession = null
 
             SwingUtilities.invokeLater {
-                (eocvSimApi.visualizerApi as? VisualizerApiImpl)?.internalVisualizer?.viewport?.activate()
+                eocvSimApi.visualizerApi.viewportApi.activate()
             }
         }
     }

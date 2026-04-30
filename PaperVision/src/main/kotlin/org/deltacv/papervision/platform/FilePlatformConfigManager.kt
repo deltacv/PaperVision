@@ -58,7 +58,8 @@ open class FilePlatformConfigManager(
     }
 }
 
-val defaultConfigPath = System.getProperty("user.home") + File.separator + ".papervision" + File.separator + "config.json"
+val defaultPaperVisionFolderPath get() = System.getProperty("user.home") + File.separator + ".papervision"
+val defaultConfigPath get() = defaultPaperVisionFolderPath + File.separator + "config.json"
 
 object DefaultFilePlatformConfigManager : FilePlatformConfigManager(defaultConfigPath) {
     init {

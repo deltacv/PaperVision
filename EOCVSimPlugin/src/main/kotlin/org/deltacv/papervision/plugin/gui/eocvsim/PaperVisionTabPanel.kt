@@ -19,12 +19,10 @@
 package org.deltacv.papervision.plugin.gui.eocvsim
 
 import com.formdev.flatlaf.demo.HintManager
-import com.github.serivesmejia.eocvsim.gui.component.visualizer.pipeline.SourceSelectorPanel
-import com.github.serivesmejia.eocvsim.plugin.api.impl.EOCVSimApiImpl
-import com.github.serivesmejia.eocvsim.plugin.api.impl.VisualizerApiImpl
 import io.github.deltacv.eocvsim.plugin.api.VisualizerSidebarApi
 import org.deltacv.papervision.plugin.PaperVisionEOCVSimPlugin
 import org.deltacv.papervision.plugin.project.PaperVisionProjectTree
+import java.awt.Color
 import java.awt.Font
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -49,10 +47,8 @@ class PaperVisionTabPanel(
 
     val projectListAndButtonsPanel = JPanel()
 
-    val sourceSelectorPanel: SourceSelectorPanel? = (plugin.eocvSimApi as? EOCVSimApiImpl)?.let {
-        // TODO: fix this
-        null // SourceSelectorPanel(it.internalEOCVSim)
-    }
+    val sourceSelectorPanelApi =
+        plugin.eocvSimApi.visualizerApi.visualizerComponentsFactoryApi.createSourceSelectorPanel()
 
     override fun create(target: JPanel) = apiImpl {
         target.layout = GridBagLayout()
@@ -131,22 +127,20 @@ class PaperVisionTabPanel(
             insets = Insets(10, 20, 5, 20)
         })
 
-        if (sourceSelectorPanel != null) {
-            sourceSelectorPanel.border = TitledBorder("Sources").apply {
-                titleFont = titleFont.deriveFont(Font.BOLD)
-                border = EmptyBorder(0, 0, 0, 0)
-            }
-
-            target.add(sourceSelectorPanel, GridBagConstraints().apply {
-                gridy = 1
-
-                weightx = 0.5
-                weighty = 0.5
-                fill = GridBagConstraints.BOTH
-
-                insets = Insets(10, 20, 5, 20)
-            })
+        sourceSelectorPanelApi.jPanel.border = TitledBorder("Sources").apply {
+            titleFont = titleFont.deriveFont(Font.BOLD)
+            border = EmptyBorder(0, 0, 0, 0)
         }
+
+        target.add(sourceSelectorPanelApi.jPanel, GridBagConstraints().apply {
+            gridy = 1
+
+            weightx = 0.5
+            weighty = 0.5
+            fill = GridBagConstraints.BOTH
+
+            insets = Insets(10, 20, 5, 20)
+        })
 
         refreshProjectTree()
     }
@@ -191,9 +185,9 @@ class PaperVisionTabPanel(
     }
 
     private fun setSourceSelectorEnabled(enabled: Boolean) {
-        sourceSelectorPanel?.apply {
-            sourceSelectorScroll.isEnabled = enabled
-            allowSourceSwitching = enabled
+        sourceSelectorPanelApi.apply {
+            isInteractionEnabled = enabled
+            allowSwitching = enabled
 
             // Recursively enable/disable and adjust foreground color for graying effect
             fun setComponentTreeEnabled(component: java.awt.Component, enabled: Boolean) {
@@ -206,9 +200,9 @@ class PaperVisionTabPanel(
                             component.putClientProperty("originalForeground", component.foreground)
                         }
                         // Apply grayed-out color
-                        val original = component.getClientProperty("originalForeground") as? java.awt.Color
+                        val original = component.getClientProperty("originalForeground") as? Color
                         component.foreground = original?.let {
-                            java.awt.Color(
+                            Color(
                                 (it.red + 128) / 2,
                                 (it.green + 128) / 2,
                                 (it.blue + 128) / 2,
@@ -217,7 +211,7 @@ class PaperVisionTabPanel(
                         }
                     } else {
                         // Restore original foreground
-                        val original = component.getClientProperty("originalForeground") as? java.awt.Color
+                        val original = component.getClientProperty("originalForeground") as? Color
                         if (original != null) {
                             component.foreground = original
                         }
@@ -231,9 +225,9 @@ class PaperVisionTabPanel(
                 }
             }
 
-            setComponentTreeEnabled(this, enabled)
+            setComponentTreeEnabled(jPanel, enabled)
 
-            repaint()
+            jPanel.repaint()
         }
     }
 
@@ -252,17 +246,17 @@ class PaperVisionTabPanel(
             plugin.eocvSimApi.configApi.putFlag("hasShownPaperVisionHint")
         }
 
-        (plugin.eocvSimApi.visualizerApi as? VisualizerApiImpl)?.internalVisualizer?.viewport?.renderer?.setFpsMeterEnabled(false)
+        plugin.eocvSimApi.visualizerApi.viewportApi.setFpsMeterEnabled(false)
 
         setSourceSelectorEnabled(false)
 
-        sourceSelectorPanel?.updateSourcesList()
+        sourceSelectorPanelApi.refresh()
     }
 
     override fun onDeactivated() = apiImpl {
         HintManager.hideAllHints()
 
-        (plugin.eocvSimApi.visualizerApi as? VisualizerApiImpl)?.internalVisualizer?.viewport?.renderer?.setFpsMeterEnabled(true)
+        plugin.eocvSimApi.visualizerApi.viewportApi.setFpsMeterEnabled(true)
 
         setSourceSelectorEnabled(false)
     }

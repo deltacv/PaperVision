@@ -206,8 +206,14 @@ abstract class TypedAttribute<R: GenValue>(
             val padding = 8.0f
             val indentValue = nodeSize.x - labelWidth - padding
 
-            if(indentValue > 0) {
+            // In ImGui 1.92+, nodeSize can grow unboundedly if indented, creating feedback loop.
+            // Cap indent to prevent uncontrolled node expansion.
+            val maxIndent = 200.0f
+            val actualIndent = if(indentValue > 0 && indentValue <= maxIndent) {
                 ImGui.indent(indentValue)
+                indentValue
+            } else {
+                0.0f
             }
 
             ImGui.text(text)
@@ -221,8 +227,8 @@ abstract class TypedAttribute<R: GenValue>(
 
             drawAfterText()
 
-            if(indentValue > 0) {
-                ImGui.unindent(indentValue)
+            if(actualIndent > 0) {
+                ImGui.unindent(actualIndent)
             }
         }
     }

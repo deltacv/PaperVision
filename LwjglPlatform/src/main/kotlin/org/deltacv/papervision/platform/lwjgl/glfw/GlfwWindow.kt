@@ -182,9 +182,7 @@ class GlfwWindow(val ptrSupplier: () -> Long) : PlatformWindow {
         if (!closeCallbackSet && currentCloseListener != null) {
             glfwSetWindowCloseCallback(ptrSupplier()) {
                 val shouldClose = currentCloseListener?.invoke() ?: true
-                if (shouldClose) {
-                    glfwSetWindowShouldClose(ptrSupplier(), true)
-                }
+                glfwSetWindowShouldClose(ptrSupplier(), shouldClose)
             }
             closeCallbackSet = true
         }

@@ -19,31 +19,30 @@
 package org.deltacv.papervision.plugin.project
 
 import com.github.serivesmejia.eocvsim.util.SysUtil
-import com.github.serivesmejia.eocvsim.util.extension.plus
 import com.github.serivesmejia.eocvsim.util.extension.removeFromEnd
 import io.github.deltacv.common.util.loggerForThis
-import io.github.deltacv.eocvsim.plugin.PLUGIN_CACHING_FOLDER
 import io.github.deltacv.eocvsim.plugin.api.EOCVSimApi
 import io.github.deltacv.eocvsim.sandbox.nio.SandboxFileSystem
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import org.deltacv.papervision.engine.client.response.JsonElementResponse
 import org.deltacv.papervision.engine.client.response.OkResponse
+import org.deltacv.papervision.platform.defaultPaperVisionFolderPath
 import org.deltacv.papervision.plugin.PaperVisionEOCVSimPlugin
 import org.deltacv.papervision.plugin.PaperVisionProcessRunner
-import org.deltacv.papervision.plugin.previz.SinglePipelineCompiler
-import org.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
 import org.deltacv.papervision.plugin.engine.EOCVSimIpcEngine
 import org.deltacv.papervision.plugin.engine.message.DiscardCurrentRecoveryMessage
 import org.deltacv.papervision.plugin.engine.message.EditorChangeMessage
 import org.deltacv.papervision.plugin.engine.message.GetCurrentProjectMessage
 import org.deltacv.papervision.plugin.engine.message.SaveCurrentProjectMessage
+import org.deltacv.papervision.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
+import org.deltacv.papervision.plugin.previz.SinglePipelineCompiler
 import org.deltacv.papervision.plugin.project.recovery.RecoveredProject
 import org.deltacv.papervision.plugin.project.recovery.RecoveryDaemonProcessManager
 import org.deltacv.papervision.plugin.project.recovery.RecoveryData
 import org.deltacv.papervision.util.event.PaperEventHandler
 import org.deltacv.papervision.util.hashCodeString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
 import org.openftc.easyopencv.OpenCvPipeline
 import java.awt.Window
 import java.io.File
@@ -70,13 +69,13 @@ class PaperVisionProjectManager(
 ) {
 
     companion object {
-        val recoveryFolder =
-            (PLUGIN_CACHING_FOLDER + File.separator + "papervision_recovery").apply { mkdir() }
+        val recoveryFolder get() =
+            File(defaultPaperVisionFolderPath + File.separator + "papervision_recovery").apply { mkdir() }
     }
 
-    val root = fileSystem.getPath("")
+    val root: Path = fileSystem.getPath("")
 
-    val latestSourceFolder = root.resolve(".latest_source")
+    val latestSourceFolder: Path = root.resolve(".latest_source")
 
     val onMainUpdate = eocvSim.mainLoopHook
 

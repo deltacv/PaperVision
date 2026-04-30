@@ -37,7 +37,7 @@ import org.deltacv.papervision.gui.LayoutDirection
 import org.deltacv.papervision.gui.SizingMode
 import org.deltacv.papervision.gui.font.FontAwesomeIcons
 import org.deltacv.papervision.gui.display.ImageDisplay
-import org.deltacv.papervision.gui.display.ImageDisplayNode
+import org.deltacv.papervision.node.display.ImageDisplayNode
 import org.deltacv.papervision.gui.display.ImageDisplayWindow
 import org.deltacv.papervision.gui.TooltipPopup
 import org.deltacv.papervision.gui.Window

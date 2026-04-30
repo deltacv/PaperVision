@@ -18,7 +18,6 @@
 
 package org.deltacv.papervision.plugin.previz
 
-import com.github.serivesmejia.eocvsim.plugin.api.impl.VisualizerApiImpl
 import io.github.deltacv.eocvsim.plugin.api.EOCVSimApi
 import io.github.deltacv.eocvsim.plugin.api.PipelineManagerApi
 import io.github.deltacv.eocvsim.stream.ImageStreamer
@@ -28,7 +27,6 @@ import org.deltacv.papervision.plugin.PaperVisionProcessRunner
 import org.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import org.deltacv.papervision.util.loggerForThis
 import org.openftc.easyopencv.OpenCvPipeline
-import javax.swing.SwingUtilities
 
 class EOCVSimPrevizSession(
     val sessionName: String,
@@ -146,9 +144,7 @@ class EOCVSimPrevizSession(
 
                 eocvSimApi.mainLoopHook.once {
                     // defer to next frame to deactivate after eocv sim activates
-                    SwingUtilities.invokeLater {
-                        (eocvSimApi.visualizerApi as? VisualizerApiImpl)?.internalVisualizer?.viewport?.deactivate()
-                    }
+                    eocvSimApi.visualizerApi.viewportApi.deactivate()
                 }
 
                 latestPipeline = eocvSimApi.pipelineManagerApi.currentPipelineInstance!!

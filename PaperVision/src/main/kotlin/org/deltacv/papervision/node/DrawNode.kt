@@ -71,14 +71,14 @@ abstract class DrawNode<S: CodeGenSession>(
         ImNodes.pushColorStyle(ImNodesCol.TitleBarHovered, titleHoverColor)
         ImNodes.pushColorStyle(ImNodesCol.TitleBarSelected, titleHoverColor)
 
-        ImNodes.beginNode(id)
-            ImNodes.beginNodeTitleBar()
-                ImGui.textUnformatted(tr(title))
-            ImNodes.endNodeTitleBar()
+         ImNodes.beginNode(id)
+             ImNodes.beginNodeTitleBar()
+                 ImGui.textUnformatted(tr(title))
+             ImNodes.endNodeTitleBar()
 
-            drawNode()
-            drawAttributes()
-        ImNodes.endNode()
+             drawNode()
+             drawAttributes()
+         ImNodes.endNode()
 
         ImNodes.getNodeDimensions(size, id)
         ImNodes.getNodeEditorSpacePos(position, id)

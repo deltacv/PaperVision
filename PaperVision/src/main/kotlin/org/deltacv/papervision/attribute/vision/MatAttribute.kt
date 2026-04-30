@@ -19,21 +19,19 @@
 package org.deltacv.papervision.attribute.vision
 
 import imgui.ImGui
-import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.attribute.AttributeMode
 import org.deltacv.papervision.attribute.AttributeType
 import org.deltacv.papervision.attribute.EditorValue
-import org.deltacv.papervision.attribute.misc.EnumAttribute
+import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.attribute.decomp.vision.MatAttributeDecomposer
+import org.deltacv.papervision.attribute.misc.EnumAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.gui.font.FontAwesomeIcons
-import org.deltacv.papervision.gui.display.ImageDisplayNode
 import org.deltacv.papervision.gui.style.rgbaColor
 import org.deltacv.papervision.gui.util.ImGuiEx
-import org.deltacv.papervision.gui.font.Font
+import org.deltacv.papervision.node.display.ImageDisplayNode
 import org.deltacv.papervision.node.vision.ColorSpace
-import org.deltacv.papervision.serialization.v1.data.SerializeIgnore
 import org.deltacv.papervision.serialization.v2.CodecType
 
 @CodecType(instantiable = false)
@@ -66,17 +64,14 @@ class MatAttribute(
         override fun newDecomposer() = MatAttributeDecomposer()
     }
 
-    @field:SerializeIgnore
     var isPrevizEnabled = false
         private set
 
     private var prevIsPrevizEnabled = false
 
-    @field:SerializeIgnore
     var wasPrevizJustEnabled = false
         private set
 
-    @field:SerializeIgnore
     var displayWindow: ImageDisplayNode? = null
         private set
 

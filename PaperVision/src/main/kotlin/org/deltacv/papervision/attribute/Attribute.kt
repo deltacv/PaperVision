@@ -101,7 +101,6 @@ abstract class Attribute :
     val onUnlink = PaperEventHandler("OnUnlink-${this::class.simpleName}")
 
     val position = ImVec2()
-    val editorPosition = ImVec2()
 
     override val changeEmitterDelegate = QueuedChangeEmitter<ChangeType>(defaultPeekChange = ChangeType.ValueChange)
 
@@ -329,7 +328,7 @@ fun <T: Attribute> T.rebuildOnChange(): T = apply {
 }
 
 @CodecType(instantiable = false)
-class EmptyInputAttribute(
+open class EmptyInputAttribute(
     parent: Node<*>? = null
 ) : Attribute() {
     override val mode = AttributeMode.INPUT
@@ -340,13 +339,12 @@ class EmptyInputAttribute(
         }
     }
 
-    override fun drawAttribute() {
-    }
+    override fun drawAttribute() { }
 
     override fun acceptLink(other: Attribute) = LinkAcceptance.Accept
 
     override fun genValue(current: CodeGen.Current): GenValue {
-        throw NotImplementedError("value() is not implemented for EmptyInputAttribute")
+        throw NotImplementedError("genValue() is not implemented for EmptyInputAttribute")
     }
 }
 
