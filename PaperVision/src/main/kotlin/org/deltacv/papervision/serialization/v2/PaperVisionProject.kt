@@ -52,8 +52,7 @@ class PaperVisionProject(
 
         // clear existing state
         for (node in paperVision.nodes.inmutable) {
-            if (node != paperVision.nodeEditor.originNode)
-                node.forceDelete()
+            node.forceDelete()
         }
         for (link in paperVision.links.inmutable) {
             link.delete()

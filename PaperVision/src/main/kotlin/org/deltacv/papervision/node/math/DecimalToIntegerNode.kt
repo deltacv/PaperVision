@@ -1,3 +1,21 @@
+/*
+ * PaperVision
+ * Copyright (C) 2026 Sebastian Erives, deltacv
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.deltacv.papervision.node.math
 
 import org.deltacv.papervision.attribute.Attribute
@@ -8,9 +26,11 @@ import org.deltacv.papervision.attribute.rebuildOnChange
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
+import org.deltacv.papervision.codegen.build.language.GenPreviz
 import org.deltacv.papervision.codegen.build.language.cpython.CPythonTypes
 import org.deltacv.papervision.codegen.build.language.jvm.JavaTypes
 import org.deltacv.papervision.codegen.dsl.polyglot
+import org.deltacv.papervision.codegen.language.BaseLanguage
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -24,8 +44,7 @@ import org.deltacv.papervision.serialization.v2.DataEncoder
 enum class RoundingBehavior(val icon: String) {
     ROUND("mis_round"),
     FLOOR("mis_floor"),
-    CEIL("mis_ceil"),
-    TRUNCATE("mis_truncate")
+    CEIL("mis_ceil")
 }
 
 @PaperNode(
@@ -47,28 +66,21 @@ class DecimalToIntegerNode : DrawNode<DecimalToIntegerNode.Session>(){
     }
 
     override val generators = polyglot {
-        generatorFor(JavaLanguage) {
+        generatorFor<BaseLanguage> {
             val session = Session()
 
             val inputValue = input.genValue(current)
             val roundingBehaviorValue = roundingBehavior.genValue(current)
 
             current {
-                var inputV = inputValue.v
-
-                if(codeGen.isForPreviz && inputValue is GenValue.Double.Actual) {
-                    inputV = uniqueVariable("decimalToIntegerInput", inputV)
-
-                    group {
-                        public(inputV, input.tunerLabel())
-                    }
-                }
+                var inputV = GenPreviz.toPrevizDouble(
+                    inputValue, input, current, variableName = "decimalToIntegerTarget"
+                ).v
 
                 val result = when(roundingBehaviorValue.value) {
                     RoundingBehavior.ROUND -> JavaTypes.Math.callValue("round", LongType, inputV)
                     RoundingBehavior.FLOOR -> JavaTypes.Math.callValue("floor", DoubleType, inputV).castTo(IntType)
                     RoundingBehavior.CEIL -> JavaTypes.Math.callValue("ceil", DoubleType, inputV).castTo(IntType)
-                    RoundingBehavior.TRUNCATE -> int(inputV) // cast to int in java truncates towards zero
                 }
 
                 session.output = GenValue.Int.Runtime(result.resolved())
@@ -90,7 +102,6 @@ class DecimalToIntegerNode : DrawNode<DecimalToIntegerNode.Session>(){
                     RoundingBehavior.ROUND -> "round".callValue(CPythonLanguage.NoType, inputV)
                     RoundingBehavior.FLOOR -> int(CPythonTypes.math.callValue("floor", CPythonLanguage.NoType, inputV))
                     RoundingBehavior.CEIL -> int(CPythonTypes.math.callValue("ceil", CPythonLanguage.NoType, inputV))
-                    RoundingBehavior.TRUNCATE -> int(inputV) // int() in python truncates towards zero
                 }
 
                 session.output = GenValue.Int.Runtime(result.resolved())

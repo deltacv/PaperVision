@@ -94,7 +94,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
 
     // Node references
     private val winSizeSupplier: () -> ImVec2 = { paperVision.window.size }
-    val originNode by lazy { InvisibleNode() }
     lateinit var flagsNode: FlagsNode
 
     val flags get() = flagsNode.flags
@@ -229,8 +228,6 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
     }
 
     private fun initializeNodes() {
-        originNode.enable()
-
         if (!::flagsNode.isInitialized) {
             flagsNode = FlagsNode()
         }
@@ -347,12 +344,7 @@ class NodeEditor(val paperVision: PaperVision, private val keyManager: KeyManage
             flagsNode.enable()
         }
 
-        if(emptyStateWindow.isEnabled && nodes.inmutable.find { !it.isDeletable } != null) {
-            // emptyStateWindow.delete()
-        }
-
         ImNodes.beginNodeEditor()
-        ImNodes.setNodeGridSpacePos(originNode.id, 0f, 0f)
         ImNodes.miniMap(MINIMAP_SCALE, ImNodesMiniMapLocation.BottomLeft)
 
         for (node in nodes.inmutable) {

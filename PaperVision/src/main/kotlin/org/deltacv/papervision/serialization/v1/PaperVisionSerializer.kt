@@ -85,8 +85,7 @@ object PaperVisionSerializer {
 
         if(paperVision != null) {
             for(node in paperVision.nodes.inmutable) {
-                if(node != paperVision.nodeEditor.originNode) // everything freaking breaks if we delete this thing
-                    node.forceDelete()
+                node.forceDelete()
             }
 
             for(link in paperVision.links.inmutable) {

@@ -34,10 +34,7 @@ class FlagsNode : InvisibleNode() {
 
     override val requestedId = 171
 
-    @SerializeData
     val flags = mutableMapOf<String, Boolean>()
-
-    @SerializeData
     val numFlags = mutableMapOf<String, Double>()
 
     override fun encode(encoder: DataEncoder) {
