@@ -18,13 +18,13 @@
 
 package org.deltacv.papervision.plugin
 
-import io.github.deltacv.eocvsim.plugin.EOCVSimPlugin
-import io.github.deltacv.eocvsim.plugin.api.InputSourceApi
-import io.github.deltacv.eocvsim.plugin.api.PipelineManagerApi
-import io.github.deltacv.eocvsim.plugin.api.TunableFieldApi
-import io.github.deltacv.eocvsim.plugin.loader.FilePluginLoader
-import io.github.deltacv.eocvsim.plugin.loader.PluginSource
-import io.github.deltacv.eocvsim.virtualreflect.VirtualField
+import org.deltacv.eocvsim.plugin.EOCVSimPlugin
+import org.deltacv.eocvsim.plugin.api.InputSourceApi
+import org.deltacv.eocvsim.plugin.api.PipelineManagerApi
+import org.deltacv.eocvsim.plugin.api.TunableFieldApi
+import org.deltacv.eocvsim.plugin.loader.FilePluginLoader
+import org.deltacv.eocvsim.plugin.loader.PluginSource
+import org.deltacv.eocvsim.virtualreflect.VirtualField
 import org.deltacv.papervision.engine.client.message.*
 import org.deltacv.papervision.engine.client.response.ErrorResponse
 import org.deltacv.papervision.engine.client.response.OkResponse

@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+@file:Suppress("DEPRECATION")
+
 package org.deltacv.papervision.plugin
 
 import imgui.app.Application

@@ -76,7 +76,7 @@ class CvtColorNode : DrawNode<CvtColorNode.Session>() {
                 val matColorResolved = matColor.resolve()
 
                 if(matColorResolved == null || matColorResolved != targetColor) {
-                    val mat = uniqueVariable("${targetColor.name.lowercase()}Mat", Mat.new())
+                    val mat = uniqueVariable("${inputMat.value.v}${targetColor.name}", Mat.new())
 
                     group {
                         // create mat instance variable

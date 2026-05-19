@@ -30,7 +30,7 @@ import org.deltacv.papervision.serialization.v2.DataEncoder
     showInList = false
 )
 @CodecType
-class FlagsNode : InvisibleNode() {
+class FlagsNode : InvisibleNode(shouldDraw = false) {
 
     override val requestedId = 171
 

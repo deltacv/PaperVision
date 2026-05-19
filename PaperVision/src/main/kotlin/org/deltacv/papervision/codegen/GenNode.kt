@@ -61,13 +61,13 @@ interface GenNode<S: CodeGenSession> : PolyglotGenerator<Unit, S> {
 
                 val name = genNodeName
 
-                logger.info("Generating code for ${name ?: this}")
+                logger.debug("Generating code for {}", name ?: this)
 
                 codeGen.sessions[this] = genCode(Unit, current)
 
                 codeGen.unmarkBusy(this)
 
-                logger.info("DONE generating code for ${name ?: this}")
+                logger.debug("DONE generating code for {}", name ?: this)
 
                 codeGenPropagate(current)
             }
@@ -84,6 +84,3 @@ interface GenNode<S: CodeGenSession> : PolyglotGenerator<Unit, S> {
     fun ScopeCtx.nameComment() = scope.nameComment()
 
 }
-
-
-

@@ -19,7 +19,7 @@
 package org.deltacv.papervision.plugin.gui.eocvsim
 
 import com.formdev.flatlaf.demo.HintManager
-import io.github.deltacv.eocvsim.plugin.api.VisualizerSidebarApi
+import org.deltacv.eocvsim.plugin.api.VisualizerSidebarApi
 import org.deltacv.papervision.plugin.PaperVisionEOCVSimPlugin
 import org.deltacv.papervision.plugin.project.PaperVisionProjectTree
 import java.awt.Color

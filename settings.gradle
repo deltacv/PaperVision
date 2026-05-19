@@ -1,3 +1,13 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+
+        maven { url "https://frcmaven.wpi.edu/artifactory/release" }
+        maven { url "https://maven.photonvision.org/releases" }
+    }
+}
+
 rootProject.name = 'PaperVision'
 
 include 'PaperVision'

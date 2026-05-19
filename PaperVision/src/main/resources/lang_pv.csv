@@ -87,7 +87,7 @@ att_crosshair,Crosshair,Crosshair
 att_crosshairimage,Overlay Output,Salida del Overlay
 att_crosshairline_params,Crosshair Line,Linea del Crosshair
 att_crosshairposition,Crosshair Offset,Offset del Crosshair
-att_exporteddata,Export Data,Datos Exportados
+att_exporteddata,Exported Data,Datos Exportados
 att_value,Value,Valor
 att_operation,Operation,Operacion
 att_roundingbehavior,Rounding,Redondeo
@@ -291,9 +291,9 @@ mis_discard,Discard,Descartar
 mis_cancel,Cancel,Cancelar
 mis_changelanguage,Change Language,Cambiar Lenguaje
 mis_saveproject,Save Project,Guardar Proyecto
-mis_projectsaved,Project Saved Successfully !,Proyecto Guardado Correctamente !
-mis_codecopied,Copied to Clipboard !,Copiado al Portapapeles !
-mis_filesave_success,File saved successfully !,Archivo guardado correctamente !
+mis_projectsaved,Project Saved Successfully.,Proyecto Guardado Correctamente.
+mis_codecopied,Copied to Clipboard.,Copiado al Portapapeles.
+mis_filesave_success,File saved successfully.,Archivo guardado correctamente.
 mis_codegen_erroron_toast,Generation error in node '$[0]',Error de generación en el nodo '$[0]'
 mis_codegen_errortoast,Generation Error,Error de Generación
 mis_cut,Cut,Cortar

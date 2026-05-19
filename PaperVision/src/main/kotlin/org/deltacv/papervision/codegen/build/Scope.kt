@@ -117,7 +117,6 @@ class Scope(
                          isStatic: Boolean = false, isFinal: Boolean = false) {
         newStatement()
         usedNames.add(variable.name)
-        importValue(variable)
 
         handleNullability(variable)
 
@@ -126,6 +125,10 @@ class Scope(
             if(isForPreviz) label else null, // labels are ignored in non-previsualization mode
             isStatic, isFinal
         )
+
+        // import after asking language for the declaration because the language
+        // may add additional imports to the variable (e.g. annotation types).
+        importValue(variable)
 
         pair.first?.let {
             builder.appendLine("$tabs$it")

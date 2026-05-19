@@ -23,30 +23,30 @@ import imgui.extension.imnodes.flag.ImNodesCol
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.NoSession
 import org.deltacv.papervision.gui.style.rgbaColor
-import org.deltacv.papervision.serialization.v1.data.SerializeIgnore
 import org.deltacv.papervision.serialization.v2.CodecType
 import org.deltacv.papervision.serialization.v2.DataEncoder
 
-@SerializeIgnore
 @CodecType
-open class InvisibleNode : Node<NoSession>(isDeletable = false) {
+open class InvisibleNode(private val shouldDraw: Boolean = true) : Node<NoSession>(isDeletable = false) {
 
     private val invisibleColor = rgbaColor(0, 0, 0, 0)
 
     override fun draw() {
-        ImNodes.pushColorStyle(ImNodesCol.NodeOutline, invisibleColor)
-        ImNodes.pushColorStyle(ImNodesCol.TitleBar, invisibleColor)
-        ImNodes.pushColorStyle(ImNodesCol.TitleBarHovered, invisibleColor)
-        ImNodes.pushColorStyle(ImNodesCol.TitleBarSelected, invisibleColor)
-        ImNodes.pushColorStyle(ImNodesCol.NodeBackground, invisibleColor)
-        ImNodes.pushColorStyle(ImNodesCol.NodeBackgroundHovered, invisibleColor)
-        ImNodes.pushColorStyle(ImNodesCol.NodeBackgroundSelected, invisibleColor)
+        if(shouldDraw) {
+            ImNodes.pushColorStyle(ImNodesCol.NodeOutline, invisibleColor)
+            ImNodes.pushColorStyle(ImNodesCol.TitleBar, invisibleColor)
+            ImNodes.pushColorStyle(ImNodesCol.TitleBarHovered, invisibleColor)
+            ImNodes.pushColorStyle(ImNodesCol.TitleBarSelected, invisibleColor)
+            ImNodes.pushColorStyle(ImNodesCol.NodeBackground, invisibleColor)
+            ImNodes.pushColorStyle(ImNodesCol.NodeBackgroundHovered, invisibleColor)
+            ImNodes.pushColorStyle(ImNodesCol.NodeBackgroundSelected, invisibleColor)
 
-        ImNodes.beginNode(id)
-        ImNodes.endNode()
+            ImNodes.beginNode(id)
+            ImNodes.endNode()
 
-        repeat(7) {
-            ImNodes.popColorStyle()
+            repeat(7) {
+                ImNodes.popColorStyle()
+            }
         }
     }
 
@@ -58,6 +58,5 @@ open class InvisibleNode : Node<NoSession>(isDeletable = false) {
     }
 
 }
-
 
 

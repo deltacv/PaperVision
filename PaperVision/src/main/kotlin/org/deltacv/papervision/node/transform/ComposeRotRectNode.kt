@@ -46,24 +46,12 @@ class ComposeRotRectNode : DrawNode<ComposeRotRectNode.Session>() {
 
                 val positionValue = GenPreviz.toPrevizVec2(positionAtt.genValue(current), positionAtt, current, prefix = "rotRect")
                 val sizeValue = GenPreviz.toPrevizVec2(sizeAtt.genValue(current), sizeAtt, current, prefix = "rotRectSize")
-                val angleValue = angleAtt.genValue(current)
-
-                val finalAngleValue = if(codeGen.isForPreviz) {
-                    val angleVar = uniqueVariable("rotRectAngle", angleValue.v)
-
-                    deferredGroup(angleValue.isActual.value) {
-                        if (it) public(angleVar, angleAtt.tunerLabel())
-                    }
-
-                    GenValue.Double.Runtime(Resolvable.DependentPlaceholder(angleValue.isActual.value) {
-                        if(it) angleVar else angleValue.v
-                    })
-                } else angleValue
+                val angleValue = GenPreviz.toPrevizDouble(angleAtt.genValue(current), angleAtt, current, variableName = "rotRectAngle")
 
                 session.rotRect = GenValue.RotatedRect.Components(
                     positionValue.x.toDouble(current), positionValue.y.toDouble(current),
                     sizeValue.x.toDouble(current), sizeValue.y.toDouble(current),
-                    finalAngleValue
+                    angleValue
                 )
 
                 session

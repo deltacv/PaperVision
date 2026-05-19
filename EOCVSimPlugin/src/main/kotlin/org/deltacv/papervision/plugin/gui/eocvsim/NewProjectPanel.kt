@@ -18,7 +18,7 @@
 
 package org.deltacv.papervision.plugin.gui.eocvsim
 
-import io.github.deltacv.common.util.loggerForThis
+import org.deltacv.common.util.loggerForThis
 import org.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout

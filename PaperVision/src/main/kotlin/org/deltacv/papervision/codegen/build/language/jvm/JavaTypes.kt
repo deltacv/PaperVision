@@ -60,7 +60,7 @@ object JavaTypes {
 
     val Collections = Type("Collections", "java.util")
 
-    val LabelAnnotation = Type("Label", "io.github.deltacv.eocvsim.virtualreflect.jvm")
+    val LabelAnnotation = Type("Label", "org.deltacv.eocvsim.virtualreflect.jvm")
 
 }
 

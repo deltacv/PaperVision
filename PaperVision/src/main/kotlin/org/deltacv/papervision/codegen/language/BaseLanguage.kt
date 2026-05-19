@@ -26,12 +26,6 @@ import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.csv
 import org.deltacv.papervision.util.loggerForThis
 import org.deltacv.papervision.util.toValidIdentifier
-import org.eclipse.jdt.core.JavaCore
-import org.eclipse.jdt.core.ToolFactory
-import org.eclipse.jdt.core.formatter.CodeFormatter
-import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants
-import org.eclipse.jface.text.Document
-import org.eclipse.text.edits.TextEdit
 
 open class BaseLanguage(
     val usesSemicolon: Boolean = true,
@@ -351,49 +345,7 @@ open class BaseLanguage(
             mainScope.scope(classBodyScope, indentOverride = 0)
         }
 
-        val code = mainScope.get()
-
-        // Format the generated code using Palantir Java Formatter
-        // Clean up some of the mess left by code-gen, we didn't bother
-        // to make it clean due to complexity, so this we'll see if this helps
-        formatJavaSource(code)
-    }
-
-    private fun formatJavaSource(source: String): String {
-        val options = HashMap<String, String>().apply {
-            putAll(JavaCore.getOptions())
-
-            put(
-                DefaultCodeFormatterConstants.FORMATTER_TAB_CHAR,
-                JavaCore.SPACE
-            )
-            put(DefaultCodeFormatterConstants.FORMATTER_TAB_SIZE, "4")
-            put(DefaultCodeFormatterConstants.FORMATTER_LINE_SPLIT, "120")
-
-            put(JavaCore.COMPILER_SOURCE, JavaCore.VERSION_1_8)
-            put(JavaCore.COMPILER_COMPLIANCE, JavaCore.VERSION_1_8)
-            put(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM, JavaCore.VERSION_1_8)
-        }
-
-        val formatter = ToolFactory.createCodeFormatter(options)
-
-        val edit: TextEdit = formatter.format(
-            CodeFormatter.K_COMPILATION_UNIT,
-            source,
-            0,
-            source.length,
-            0,
-            System.lineSeparator()
-        ) ?: return source
-
-        return try {
-            val document = Document(source)
-            edit.apply(document)
-            document.get()
-        } catch (e: Exception) {
-            logger.error("Error formatting generated code, returning unformatted code.", e)
-            source
-        }
+        mainScope.get()
     }
 
     override val trueValue by lazy { ConValue(BooleanType, "true") }

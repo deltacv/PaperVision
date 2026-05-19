@@ -35,9 +35,6 @@ dependencies {
 
     implementation "org.java-websocket:Java-WebSocket:1.5.2"
 
-    implementation("org.eclipse.jdt:org.eclipse.jdt.core:3.44.0")
-    implementation("org.eclipse.platform:org.eclipse.text:3.14.500")
-
     implementation "com.google.code.gson:gson:$gson_version"
     implementation "io.github.classgraph:classgraph:$classgraph_version"
 

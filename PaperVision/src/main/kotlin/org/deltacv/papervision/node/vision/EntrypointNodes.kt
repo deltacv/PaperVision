@@ -29,7 +29,9 @@ import org.deltacv.papervision.attribute.vision.structs.PointsAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.codegen.NoSession
+import org.deltacv.papervision.codegen.Visibility
 import org.deltacv.papervision.codegen.build.AccessorVariable
+import org.deltacv.papervision.codegen.build.Parameter
 import org.deltacv.papervision.codegen.build.Value
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
@@ -37,8 +39,8 @@ import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.BaseLanguage
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
-import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.DrawNode
+import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.PaperNode
 import org.deltacv.papervision.serialization.v1.data.SerializeData
 import org.deltacv.papervision.serialization.v2.CodecType
@@ -82,11 +84,11 @@ class InputMatNode(
 
                 lastWindowSize = ImVec2(windowSize.x, windowSize.y)
 
-                // by default, the node editor starts with 4 nodes
-                // InputMatNode, OutputMatNode, originNode, flagsNode
-                // if there are more than 4 nodes, we'll stop adjusting the position
+                // by default, the node editor starts with 3 nodes
+                // InputMatNode, OutputMatNode, flagsNode
+                // if there are more than 3 nodes, we'll stop setting the position
                 // since it's likely the user has just created a new project
-                if (editor.nodes.inmutable.size > 4 || ImNodes.isNodeSelected(id)) {
+                if (editor.nodes.inmutable.size > 3 || ImNodes.isNodeSelected(id)) {
                     removeListener()
                     editor.onEditorPan.run()
                 }
@@ -98,12 +100,12 @@ class InputMatNode(
         }
     }
 
-    @SerializeData 
+    @SerializeData
     val output = MatAttribute(OUTPUT, "$[att_input]")
 
     override fun onEnable() {
         output.colorSpace = ColorSpace.RGBA
-        + output.rebuildOnChange()
+        +output.rebuildOnChange()
     }
 
     fun ensureAttributeExists() { // prevent weird oopsies due to the special way these persistent buddies are handled
@@ -200,9 +202,9 @@ class OutputMatNode @JvmOverloads constructor(
     val exportedData = ListAttribute(INPUT, "$[att_exporteddata]", DoubleAttribute)
 
     override fun onEnable() {
-        + input.rebuildOnChange()
-        + crosshair.rebuildOnChange()
-        + exportedData.rebuildOnChange()
+        +input.rebuildOnChange()
+        +crosshair.rebuildOnChange()
+        +exportedData.rebuildOnChange()
     }
 
     fun ensureAttributeExists() { // prevent weird oopsies due to the special way these persistent buddies are handled
@@ -214,8 +216,35 @@ class OutputMatNode @JvmOverloads constructor(
 
     override val generators = polyglot {
         generatorFor<BaseLanguage> {
+            val exportedDataValue = exportedData.genValue(current)
+
             current {
                 val inputValue = input.genValue(current)
+                val hasExportedData =
+                    (exportedDataValue is GenValue.List.Actual<*> && exportedDataValue.elements.isNotEmpty())
+                            || exportedData.hasLink
+
+                if (hasExportedData) {
+                    val exportedData = uniqueVariable("exportedData", DoubleType.newArray(0.v))
+
+                    current.codeGen.classStartScope {
+                        private(exportedData)
+                    }
+
+                    current.codeGen.classEndScope {
+                        val dataParameter = Parameter(DoubleType.arrayType(), "data")
+
+                        method(Visibility.PRIVATE, VoidType, "setExportedData", dataParameter, isSynchronized = true) {
+                            exportedData instanceSet dataParameter
+                        }
+
+                        separate()
+
+                        method(Visibility.PUBLIC, DoubleType.arrayType(), "getExportedData", isSynchronized = true) {
+                            returnMethod(exportedData)
+                        }
+                    }
+                }
 
                 current.scope(false) {
                     if (crosshair.availableLinkedAttributes.isNotEmpty()) {
@@ -293,6 +322,22 @@ class OutputMatNode @JvmOverloads constructor(
                         separate()
                     }
 
+                    if (hasExportedData) {
+                        exportedDataValue.switch(
+                            ifActual = {
+                                "setExportedData"(
+                                    DoubleType.newArrayOfValues(*it.elements.map { element -> element.v }
+                                        .toTypedArray())
+                                )
+                            },
+                            ifRuntime = {
+                                "setExportedData"(
+                                    it.value.v.callValue("toArray", DoubleType.arrayType(), DoubleType.newArray(0.v))
+                                )
+                            }
+                        )
+                    }
+
                     streamMat(streamId!!, inputValue.value.v, inputValue.color)
                     returnMethod(inputValue.value.v)
                 }
@@ -305,11 +350,11 @@ class OutputMatNode @JvmOverloads constructor(
         generatorFor(CPythonLanguage) {
             current {
                 val inputValue = input.genValue(current)
-                val dataValue = exportedData.genValue(current)
+                val exportedDataValue = exportedData.genValue(current)
 
                 current.scope(false) {
                     val llpython = uniqueVariable(
-                        "llpython", dataValue.switch(
+                        "llpython", exportedDataValue.switch(
                             ifActual = {
                                 val data = mutableListOf<Value>()
 

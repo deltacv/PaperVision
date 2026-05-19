@@ -18,11 +18,11 @@
 
 package org.deltacv.papervision.plugin.previz
 
-import io.github.deltacv.eocvsim.plugin.api.EOCVSimApi
-import io.github.deltacv.eocvsim.plugin.api.PipelineManagerApi
-import io.github.deltacv.eocvsim.stream.ImageStreamer
-import io.github.deltacv.eocvsim.virtualreflect.VirtualReflectContext
-import io.github.deltacv.eocvsim.virtualreflect.jvm.JvmVirtualReflection
+import org.deltacv.eocvsim.plugin.api.EOCVSimApi
+import org.deltacv.eocvsim.plugin.api.PipelineManagerApi
+import org.deltacv.eocvsim.stream.ImageStreamer
+import org.deltacv.eocvsim.virtualreflect.VirtualReflectContext
+import org.deltacv.eocvsim.virtualreflect.jvm.JvmVirtualReflection
 import org.deltacv.papervision.plugin.PaperVisionProcessRunner
 import org.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import org.deltacv.papervision.util.loggerForThis

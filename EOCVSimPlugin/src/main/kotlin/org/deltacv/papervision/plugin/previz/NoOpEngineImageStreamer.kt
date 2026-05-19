@@ -18,7 +18,7 @@
 
 package org.deltacv.papervision.plugin.previz
 
-import io.github.deltacv.eocvsim.stream.ImageStreamer
+import org.deltacv.eocvsim.stream.ImageStreamer
 import org.opencv.core.Mat
 
 object NoOpEngineImageStreamer : ImageStreamer {

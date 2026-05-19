@@ -7,7 +7,11 @@ plugins {
     id "com.vanniktech.maven.publish"
 }
 
-apply from: '../build.common.gradle'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
 components.java {
     tasks.named("shadowJar").configure {
@@ -154,6 +158,7 @@ dependencies {
     // compileOnly("org.deltacv.EOCV-Sim:EOCV-Sim:$eocvsim_version") { transitive = false }
     compileOnly("org.deltacv.EOCV-Sim:Common:$eocvsim_version") { transitive = false }
     compileOnly("org.deltacv.EOCV-Sim:Vision:$eocvsim_version")
+    compileOnly "org.openpnp:opencv:4.9.0-0"
 
     // ugh, coroutines, an internal method call of EOCV-Sim in PaperVisionTabPanel returns a Job
     // and the compiler freaks out if we don't have it accessible during compile time, we can make

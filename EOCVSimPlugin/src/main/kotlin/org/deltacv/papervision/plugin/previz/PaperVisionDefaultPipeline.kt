@@ -20,7 +20,7 @@ package org.deltacv.papervision.plugin.previz
 
 import android.graphics.*
 import com.qualcomm.robotcore.eventloop.opmode.Disabled
-import io.github.deltacv.common.util.loggerForThis
+import org.deltacv.common.util.loggerForThis
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.opencv.core.Mat
 import org.opencv.core.MatOfByte

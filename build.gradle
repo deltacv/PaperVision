@@ -14,7 +14,7 @@ buildscript {
         mackjpeg_version = "1.0.5"
 
         // eocvsim_version = '4.1.1'
-        eocvsim_version = '4.1.2-dev-260429-1442'
+        eocvsim_version = '4.2.0-dev-260518-1710'
 
         slf4j_version = "2.0.16"
         log4j_version = "2.24.1"
