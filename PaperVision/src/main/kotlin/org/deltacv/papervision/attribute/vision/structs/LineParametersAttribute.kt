@@ -27,7 +27,6 @@ import org.deltacv.papervision.attribute.TypedAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.codegen.resolve.resolved
-import org.deltacv.papervision.gui.font.Font
 import org.deltacv.papervision.gui.font.FontAwesomeIcons
 import org.deltacv.papervision.node.Link
 import org.deltacv.papervision.node.vision.overlay.LineParametersNode
@@ -71,7 +70,7 @@ class LineParametersAttribute(
     }
 
     override fun genValue(current: CodeGen.Current) = readGenValue<GenValue.LineParameters>(
-        current, GenValue.LineParameters.Actual(
+        current, GenValue.LineParameters.Components(
             GenValue.Scalar.Components(GenValue.Double.ZERO, GenValue.Double.Actual(255.0.resolved()), GenValue.Double.ZERO, GenValue.Double.ZERO),
             GenValue.Int.Actual(3.resolved())
         )

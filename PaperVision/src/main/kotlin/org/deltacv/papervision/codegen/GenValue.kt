@@ -20,7 +20,6 @@ package org.deltacv.papervision.codegen
 
 import org.deltacv.papervision.attribute.Attribute
 import org.deltacv.papervision.codegen.build.Value
-import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.resolve.Resolvable
 import org.deltacv.papervision.codegen.resolve.from
 import org.deltacv.papervision.codegen.resolve.resolved
@@ -295,28 +294,19 @@ sealed class GenValue {
 
     sealed class LineParameters : GenValue() {
         companion object {
-            fun wrap(color: Scalar, thickness: Int): LineParameters {
+            fun wrap(color: Scalar, thickness: Int, langHolder: CodeGen.LanguageHolder): LineParameters {
                 return when (color) {
-                    is Scalar.Components if thickness is Int.Actual -> {
-                        Actual(color, thickness)
+                    is Scalar.Components -> {
+                        Components(color, thickness)
                     }
-
-                    is Scalar.Inst if thickness is Int.Runtime -> {
-                        Runtime(color, thickness)
-                    }
-
-                    else -> {
-                        throw IllegalArgumentException(
-                            "Invalid types for LineParameters wrap(): " +
-                                    "color must be either Scalar.Components or Scalar.Inst, " +
-                                    "thickness must be either Int.Actual or Int.Runtime"
-                        )
+                    is Scalar.Inst -> {
+                        Runtime(color, thickness.toRuntime(langHolder))
                     }
                 }
             }
         }
 
-        data class Actual(val color: Scalar.Components, val thickness: Int.Actual) : LineParameters()
+        data class Components(val color: Scalar.Components, val thickness: Int) : LineParameters()
 
         data class Runtime(val color: Scalar.Inst, val thicknessValue: Int.Runtime) : LineParameters() {
             companion object {
@@ -414,7 +404,7 @@ sealed class GenValue {
                 Runtime(value, Resolvable.Now(T::class))
         }
 
-        fun <R> switch(
+        fun <R> match(
             ifActual: (Actual<E>) -> R,
             ifRuntime: (Runtime<E>) -> R,
         ): R = when (this) {

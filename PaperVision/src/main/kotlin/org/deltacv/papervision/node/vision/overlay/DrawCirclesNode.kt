@@ -118,7 +118,7 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
                 val circlesValue = circles.genValue(current) as? GenValue.List.Runtime<*>
                     ?: raise("") // TODO: handle non-runtime lists
 
-                val line = line.genValue(current) as GenValue.LineParameters.Actual
+                val line = line.genValue(current) as GenValue.LineParameters.Components
 
                 current.scope {
                     nameComment()
@@ -139,7 +139,7 @@ open class DrawCirclesNode : DrawNode<DrawCirclesNode.Session>() {
                                     line.color.b.v,
                                     line.color.c.v
                                 ),
-                                line.thickness.value.v
+                                line.thickness.v
                             )
                         }
                     }

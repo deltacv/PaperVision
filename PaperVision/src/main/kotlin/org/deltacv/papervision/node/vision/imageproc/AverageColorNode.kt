@@ -77,6 +77,8 @@ class AverageColorNode : DrawNode<AverageColorNode.Session>() {
                 val inputValue = input.genValue(current)
 
                 current.scope {
+                    nameComment()
+
                     val outputVar = uniqueVariable("${inputValue.value.v}_avg", cv2.callValue("mean", CPythonLanguage.NoType, inputValue.value.v))
                     local(outputVar)
 

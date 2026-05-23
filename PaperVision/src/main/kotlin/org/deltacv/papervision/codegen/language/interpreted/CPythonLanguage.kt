@@ -274,6 +274,7 @@ object CPythonLanguage : BaseLanguage(
     override fun int(value: Value) = if(value.type != IntType && value.type != LongType)
         callValue("int", language.IntType, value)
     else value
+
     override fun int(value: Int) = ConValue(IntType, value.toString())
 
     override fun long(value: Value) = int(value)

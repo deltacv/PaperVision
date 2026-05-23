@@ -104,7 +104,8 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
 
             session.lineParameters = GenValue.LineParameters.wrap(
                 lineColor.genValue(current),
-                lineThickness.genValue(current)
+                lineThickness.genValue(current),
+                current
             )
 
             session

@@ -165,7 +165,7 @@ open class DrawRotatedRectanglesNode
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)
 
-                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Actual
+                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Components
 
                 current.scope {
                     nameComment()
@@ -182,7 +182,7 @@ open class DrawRotatedRectanglesNode
                     }
 
                     val color = lineParams.color
-                    val thickness = lineParams.thickness.value
+                    val thickness = lineParams.thickness.v
 
                     val colorScalar = CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
 
@@ -193,7 +193,7 @@ open class DrawRotatedRectanglesNode
                             val box = uniqueVariable("box", cv2.callValue("boxPoints", CPythonLanguage.NoType, rectValue))
                             local(box)
                             box set np.callValue("int32", CPythonLanguage.NoType, box)
-                            cv2("drawContours", target, CPythonLanguage.NoType.newArrayOfValues(box), (0).v, colorScalar, thickness.v)
+                            cv2("drawContours", target, CPythonLanguage.NoType.newArrayOfValues(box), (0).v, colorScalar, thickness)
                         }
                     }
 

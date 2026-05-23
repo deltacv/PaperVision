@@ -37,7 +37,6 @@ import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
 import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.BaseLanguage
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
-import org.deltacv.papervision.codegen.language.jvm.JavaLanguage
 import org.deltacv.papervision.codegen.resolve.resolved
 import org.deltacv.papervision.node.NodeCategory
 import org.deltacv.papervision.node.DrawNode
@@ -284,7 +283,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
 
             val drawOn = drawCrosshairOn.genValue(current)
 
-            val crosshairLineParams = crosshairLineParams.genValue(current) as GenValue.LineParameters.Actual
+            val crosshairLineParams = crosshairLineParams.genValue(current) as GenValue.LineParameters.Components
             val crosshairSizeValue = crosshairScale.genValue(current)
 
             current {
@@ -338,7 +337,7 @@ class CrosshairNode : DrawNode<CrosshairNode.Session>() {
                     separate()
 
                     val crosshairCol = CPythonOpenCv.scalarTuple(crosshairLineParams.color, current)
-                    val crosshairThickness = crosshairLineParams.thickness.value.v
+                    val crosshairThickness = crosshairLineParams.thickness.v
 
                     CPythonOpenCv.cv2(
                         "line",

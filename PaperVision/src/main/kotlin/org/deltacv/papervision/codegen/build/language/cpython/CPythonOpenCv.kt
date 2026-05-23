@@ -23,42 +23,31 @@ import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.codegen.build.ConValue
 import org.deltacv.papervision.codegen.build.Value
 import org.deltacv.papervision.codegen.language.interpreted.CPythonLanguage
+import org.deltacv.papervision.codegen.resolve.resolved
 
 object CPythonOpenCv {
     object cv2 : CPythonType("cv2") {
-        val RETR_LIST = ConValue(this, "cv2.RETR_LIST").apply {
-            additionalImports(this)
-        }
+        val RETR_LIST = ConValue(this, "cv2.RETR_LIST")
 
-        val RETR_EXTERNAL = ConValue(this, "cv2.RETR_EXTERNAL").apply {
-            additionalImports(this)
-        }
+        val RETR_EXTERNAL = ConValue(this, "cv2.RETR_EXTERNAL")
 
-        val CHAIN_APPROX_SIMPLE = ConValue(this, "cv2.CHAIN_APPROX_SIMPLE").apply {
-            additionalImports(this)
-        }
+        val CHAIN_APPROX_SIMPLE = ConValue(this, "cv2.CHAIN_APPROX_SIMPLE")
 
-        val MORPH_RECT = ConValue(this, "cv2.MORPH_RECT").apply {
-            additionalImports(this)
-        }
+        val MORPH_RECT = ConValue(this, "cv2.MORPH_RECT")
 
-        val HOUGH_GRADIENT = ConValue(this, "cv2.HOUGH_GRADIENT").apply {
-            additionalImports(this)
-        }
+        val HOUGH_GRADIENT = ConValue(this, "cv2.HOUGH_GRADIENT")
 
-        val contourArea = ConValue(this, "cv2.contourArea").apply {
-            additionalImports(this)
-        }
+        val contourArea = ConValue(this, "cv2.contourArea")
     }
 
     val np = CPythonType("numpy", null, "np")
 
-    val npArray = object: CPythonType("np.ndarray") {
+    val npArray = object : CPythonType("np.ndarray") {
         override var overridenImport = np
     }
 
     fun scalarTuple(scalar: GenValue.Scalar, languageHolder: CodeGen.LanguageHolder) = languageHolder.language {
-        scalar.switch(
+        scalar.match(
             ifActual = { list ->
                 val elements = list.elements.map { it.v }.toTypedArray()
                 CPythonLanguage.tuple(*elements)
@@ -70,8 +59,20 @@ object CPythonOpenCv {
         )
     }
 
+    fun toRuntimeLineParameters(params: GenValue.LineParameters, languageHolder: CodeGen.LanguageHolder) =
+        when (params) {
+            is GenValue.LineParameters.Components -> {
+                val color = scalarTuple(params.color, languageHolder)
+                val thickness = params.thickness.toRuntime(languageHolder)
+
+                GenValue.LineParameters.Runtime(GenValue.Scalar.Inst(color.resolved()), thickness)
+            }
+
+            is GenValue.LineParameters.Runtime -> params
+        }
+
     fun toRectTuple(rect: GenValue.Rect, languageHolder: CodeGen.LanguageHolder) = languageHolder.language {
-        when(rect) {
+        when (rect) {
             is GenValue.Rect.Components -> {
                 val pos = rect.position.toRuntime(languageHolder)
                 val size = rect.size.toRuntime(languageHolder)
@@ -85,19 +86,20 @@ object CPythonOpenCv {
         }
     }
 
-    fun toRotatedRectTuple(rect: GenValue.RotatedRect, languageHolder: CodeGen.LanguageHolder) = languageHolder.language {
-        when(rect) {
-            is GenValue.RotatedRect.Components -> {
-                CPythonLanguage.tuple(
-                    CPythonLanguage.tuple(rect.x.v, rect.y.v),
-                    CPythonLanguage.tuple(rect.w.v, rect.h.v),
-                    rect.angle.v
-                )
-            }
+    fun toRotatedRectTuple(rect: GenValue.RotatedRect, languageHolder: CodeGen.LanguageHolder) =
+        languageHolder.language {
+            when (rect) {
+                is GenValue.RotatedRect.Components -> {
+                    CPythonLanguage.tuple(
+                        CPythonLanguage.tuple(rect.x.v, rect.y.v),
+                        CPythonLanguage.tuple(rect.w.v, rect.h.v),
+                        rect.angle.v
+                    )
+                }
 
-            is GenValue.RotatedRect.Inst -> rect.value.v
+                is GenValue.RotatedRect.Inst -> rect.value.v
+            }
         }
-    }
 
 }
 

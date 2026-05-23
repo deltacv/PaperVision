@@ -120,7 +120,7 @@ object JvmOpenCv {
     ): GenValue.LineParameters.Runtime {
         return current {
             when (line) {
-                is GenValue.LineParameters.Actual -> {
+                is GenValue.LineParameters.Components -> {
                     val color = uniqueVariable(
                         "lineColor", Scalar.new(
                             line.color.a.v,
@@ -130,7 +130,7 @@ object JvmOpenCv {
                         )
                     )
 
-                    val thickness = uniqueVariable("lineThickness", line.thickness.value.v)
+                    val thickness = uniqueVariable("lineThickness", line.thickness.v)
 
                     group {
                         public(color)

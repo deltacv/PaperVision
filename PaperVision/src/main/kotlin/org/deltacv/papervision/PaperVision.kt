@@ -119,7 +119,7 @@ class PaperVision(
     lateinit var defaultFont: Font
 
     fun init() = containers.withContext {
-        logger.info("-- Starting PaperVision v${Build.VERSION_STRING} --\n\n${IntroModalWindow.iconLogo}\n")
+        logger.info("-- Starting PaperVision v${BuildInfo.VERSION_STRING} --\n\n${IntroModalWindow.iconLogo}\n")
         logger.info("Using the ${platformSetupCallback.name} platform")
 
         initPlatform()

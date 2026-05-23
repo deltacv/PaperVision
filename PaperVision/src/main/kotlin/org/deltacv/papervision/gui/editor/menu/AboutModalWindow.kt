@@ -3,7 +3,7 @@ package org.deltacv.papervision.gui.editor.menu
 import imgui.ImGui
 import imgui.ImVec2
 import imgui.flag.ImGuiWindowFlags
-import org.deltacv.papervision.Build
+import org.deltacv.papervision.BuildInfo
 import org.deltacv.papervision.gui.Window
 import org.deltacv.papervision.gui.util.ARCH
 import org.deltacv.papervision.gui.font.Font
@@ -52,9 +52,9 @@ class AboutModalWindow : Window() {
 
         monoFont.push()
 
-        ImGuiEx.centeredText("PaperVision v${Build.VERSION_STRING} built on ${Build.BUILD_DATE}")
+        ImGuiEx.centeredText("PaperVision v${BuildInfo.VERSION_STRING} built on ${BuildInfo.BUILD_DATE}")
 
-        if(Build.IS_DEV) {
+        if(BuildInfo.IS_DEV) {
             ImGuiEx.centeredText("You are running a development build. Report any issues to the developers.")
         } else {
             ImGuiEx.centeredText("You are running a stable build.")

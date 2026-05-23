@@ -28,6 +28,7 @@ import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
 import org.deltacv.papervision.codegen.build.Value
+import org.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv
 import org.deltacv.papervision.codegen.build.language.cpython.CPythonOpenCv.cv2
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv.Imgproc
@@ -162,7 +163,7 @@ open class DrawRectanglesNode
                 val input = inputMat.genValue(current)
                 val rectanglesList = rectangles.genValue(current)
 
-                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Actual
+                val lineParams = CPythonOpenCv.toRuntimeLineParameters(lineParams.genValue(current), current)
 
                 current.scope {
                     nameComment()
@@ -178,11 +179,8 @@ open class DrawRectanglesNode
                         output
                     }
 
-                    val color = lineParams.color
-                    val thickness = lineParams.thickness.value
-
-                    val colorScalar =
-                        CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
+                    val color = lineParams.color.value.v
+                    val thickness = lineParams.thicknessValue.v
 
                     fun ScopeCtx.runtimeRect(rectValue: Value) {
                         ifCondition(rectValue notEqualsTo language.nullValue) {
@@ -192,8 +190,7 @@ open class DrawRectanglesNode
                             )
                             local(rectangle)
 
-                            // cv2.rectangle(mat, (x, y), (x + w, y + h), color, thickness)
-                            // color is a (r, g, b, a) tuple
+                            // cv2.rectangle(mat, (x, y), (x + w, y + h), (r, g, b), thickness)
                             cv2(
                                 "rectangle", target,
                                 CPythonLanguage.tuple(rectangle.get("x"), rectangle.get("y")),
@@ -201,8 +198,8 @@ open class DrawRectanglesNode
                                     rectangle.get("x") + rectangle.get("w"),
                                     rectangle.get("y") + rectangle.get("h")
                                 ),
-                                colorScalar,
-                                thickness.v
+                                color,
+                                thickness
                             )
                         }
                     }
@@ -227,8 +224,8 @@ open class DrawRectanglesNode
                                     cv2(
                                         "rectangle", target,
                                         tl, br,
-                                        colorScalar,
-                                        thickness.v
+                                        color,
+                                        thickness
                                     )
                                 }
                             } else if (rectangle is GenValue.Rect.Inst) {

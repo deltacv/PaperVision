@@ -323,7 +323,7 @@ class OutputMatNode @JvmOverloads constructor(
                     }
 
                     if (hasExportedData) {
-                        exportedDataValue.switch(
+                        exportedDataValue.match(
                             ifActual = {
                                 "setExportedData"(
                                     DoubleType.newArrayOfValues(*it.elements.map { element -> element.v }
@@ -354,7 +354,7 @@ class OutputMatNode @JvmOverloads constructor(
 
                 current.scope(false) {
                     val llpython = uniqueVariable(
-                        "llpython", exportedDataValue.switch(
+                        "llpython", exportedDataValue.match(
                             ifActual = {
                                 val data = mutableListOf<Value>()
 

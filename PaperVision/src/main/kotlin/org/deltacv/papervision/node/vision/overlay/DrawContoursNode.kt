@@ -155,13 +155,13 @@ open class DrawContoursNode
 
                 val contoursList = contours.genValue(current)
 
-                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Actual
+                val lineParams = lineParams.genValue(current) as GenValue.LineParameters.Components
 
                 current.scope {
                     nameComment()
 
                     val color = lineParams.color
-                    val thickness = lineParams.thickness.value
+                    val thickness = lineParams.thickness.v
 
                     val colorScalar = CPythonLanguage.tuple(color.a.v, color.b.v, color.c.v, color.d.v)
 
@@ -177,7 +177,7 @@ open class DrawContoursNode
                     }
 
                     if(contoursList is GenValue.List.Runtime<*>) {
-                        cv2("drawContours", target, contoursList.value.v, (-1).v, colorScalar, thickness.v)
+                        cv2("drawContours", target, contoursList.value.v, (-1).v, colorScalar, thickness)
                     } else {
                         separate()
 
@@ -196,7 +196,7 @@ open class DrawContoursNode
 
                         separate()
 
-                        cv2("drawContours", target, list, (-1).v, colorScalar, thickness.v)
+                        cv2("drawContours", target, list, (-1).v, colorScalar, thickness)
                     }
 
                     session.outputMat = GenValue.Mat(target.resolved(), input.color, input.isBinary)
