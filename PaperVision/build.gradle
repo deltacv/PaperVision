@@ -11,8 +11,51 @@ plugins {
 
 apply from: '../build.common.gradle'
 
+def generatedResourcesDirProvider =
+        layout.buildDirectory.dir("generated/resources/main")
 
-def generatedResourcesDir = layout.buildDirectory.dir("generated/resources/main")
+tasks.register('writeBuildInfo') {
+    outputs.dir(generatedResourcesDirProvider)
+
+    inputs.property('version', version.toString())
+    inputs.property('standardVersion', standardVersion.toString())
+
+    doLast {
+        String date = DateTimeFormatter
+                .ofPattern("yyyy-M-d hh:mm:ss")
+                .format(LocalDateTime.now())
+
+        def outputDir = generatedResourcesDirProvider.get().asFile
+        outputDir.mkdirs()
+
+        def buildInfoFile =
+                new File(outputDir, "PaperVisionBuildInfo.json")
+
+        def json = """{
+  "versionString": "$version",
+  "standardVersionString": "$standardVersion",
+  "buildDate": "$date",
+  "isDev": ${version.toString().contains("dev")}
+}"""
+
+        if (!buildInfoFile.exists() ||
+                buildInfoFile.text != json) {
+            buildInfoFile.text = json
+        }
+    }
+}
+
+def generatedResourcesDir = files(
+        generatedResourcesDirProvider
+).builtBy(tasks.named("writeBuildInfo"))
+
+sourceSets {
+    main {
+        resources {
+            srcDir(generatedResourcesDir)
+        }
+    }
+}
 
 dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib"
@@ -20,7 +63,7 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinx_serialization_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
 
-    compileOnly "io.github.spair:imgui-java-binding:$imgui_version" // platforms should add the "implementation" they need
+    compileOnly "io.github.spair:imgui-java-binding:$imgui_version"
 
     api 'org.deltacv:mai18n:1.2.0'
 
@@ -44,40 +87,3 @@ ksp {
     arg("codecTypeClassesMetadataPackage", "org.deltacv.papervision.serialization.v2.generated")
     arg("codecTypeClassesMetadataClassName", "CodecTypeMetadata")
 }
-
-tasks.register('writeBuildInfo') {
-    outputs.dir(generatedResourcesDir)
-    inputs.property('version', version.toString())
-    inputs.property('standardVersion', standardVersion.toString())
-
-    doLast {
-        String date = DateTimeFormatter.ofPattern("yyyy-M-d hh:mm:ss").format(LocalDateTime.now())
-
-        def outputDir = generatedResourcesDir.get().asFile
-        outputDir.mkdirs()
-
-        def buildInfoFile = file("${outputDir}/PaperVisionBuildInfo.json")
-
-        // Generate JSON with build information
-        def json = """{
-  "versionString": "$version",
-  "standardVersionString": "$standardVersion",
-  "buildDate": "$date",
-  "isDev": ${version.contains("dev")}
-}"""
-
-        // Only write if content has changed (no-op on repeated builds)
-        if (!buildInfoFile.exists() || buildInfoFile.text != json) {
-            buildInfoFile.text = json
-        }
-    }
-}
-
-tasks.named('processResources').configure {
-    dependsOn writeBuildInfo
-    from(generatedResourcesDir)
-}
-
-// Remove the old source set configuration since we're not generating Kotlin anymore
-
-
