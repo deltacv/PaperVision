@@ -44,7 +44,12 @@ object SinglePipelineCompiler {
         }
 
         for(classFile in compiler.classFiles) {
-            val clazz = compiler.classLoader.loadClass(classFile.thisClassName)
+            val clazz = try {
+                compiler.classLoader.loadClass(classFile.thisClassName)
+            } catch (classErr: ClassFormatError) {
+                throw IllegalStateException("A ClassFormatError was thrown during class loading (build was successful)", classErr)
+            }
+
             if(ReflectUtil.hasSuperclass(clazz, OpenCvPipeline::class.java)) {
                 return clazz as Class<out OpenCvPipeline>
             }

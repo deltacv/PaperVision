@@ -27,6 +27,7 @@ import org.deltacv.papervision.plugin.PaperVisionProcessRunner
 import org.deltacv.papervision.plugin.project.PaperVisionProjectManager
 import org.deltacv.papervision.util.loggerForThis
 import org.openftc.easyopencv.OpenCvPipeline
+import kotlin.math.log
 
 class EOCVSimPrevizSession(
     val sessionName: String,
@@ -116,7 +117,12 @@ class EOCVSimPrevizSession(
         eocvSimApi.mainLoopHook.once {
             logger.info("Refreshing previz session $sessionName with new source code")
 
-            val newClass = SinglePipelineCompiler.compilePipeline(sourceCode)
+            val newClass = try {
+                SinglePipelineCompiler.compilePipeline(sourceCode)
+            } catch(e: Exception) {
+                logger.error("Exception while building new source code", e)
+                return@once
+            }
 
             latestClass = newClass
             allClasses.add(newClass)

@@ -147,7 +147,13 @@ class Scope(
     }
 
     fun tryName(name: String, allocate: Boolean = false): String {
-        if (name !in usedNames) return name
+        if (name !in usedNames) {
+            if(allocate) {
+                usedNames += name
+            }
+
+            return name
+        }
 
         var count = 1
         var newName: String
