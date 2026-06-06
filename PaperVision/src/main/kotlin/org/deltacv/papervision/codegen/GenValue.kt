@@ -396,6 +396,8 @@ sealed class GenValue {
                 Resolvable.from { genValueResolver()?.value }
             )
         }
+
+        fun not() = Boolean(value.map { !it })
     }
 
     sealed class List<E: GenValue> : GenValue() {

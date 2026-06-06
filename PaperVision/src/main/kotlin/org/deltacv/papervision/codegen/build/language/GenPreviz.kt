@@ -51,7 +51,7 @@ object GenPreviz {
                 Resolvable.DependentPlaceholder(num.isActual.value) {
                     if (it) variable else num.v
                 },
-                isActual = num.isActual
+                isActual = GenValue.Boolean.FALSE
             )
         } else num
     }
@@ -82,7 +82,7 @@ object GenPreviz {
                 Resolvable.DependentPlaceholder(num.isActual.value) {
                     if (it) variable else num.v
                 },
-                isActual = num.isActual
+                isActual = GenValue.Boolean.FALSE
             )
         } else num
     }
@@ -113,7 +113,7 @@ object GenPreviz {
                 Resolvable.DependentPlaceholder(num.isActual.value) {
                     if (it) variable else num.v
                 },
-                isActual = num.isActual
+                isActual = GenValue.Boolean.FALSE
             )
         } else num
     }

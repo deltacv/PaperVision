@@ -24,7 +24,7 @@ import org.deltacv.papervision.codegen.language.Language
 import org.deltacv.papervision.codegen.resolve.Resolvable
 import org.deltacv.papervision.node.vision.ColorSpace
 
-class Scope(
+data class Scope(
     val tabsCount: Int = 1,
     val language: Language,
     val importScope: Scope? = null,
@@ -415,10 +415,6 @@ class Scope(
             parent.builder.append(parent.language.block(parent.language.elseStatementDeclaration(), scope, baseIndent))
         }
     }
-
-
-
-    fun copy() = Scope(tabsCount, language, importScope, isForPreviz)
 
 }
 
