@@ -406,13 +406,28 @@ data class Scope(
         private val parent: Scope,
         private val baseIndent: Int
     ) {
+        private fun appendBranch(branch: String, scope: Scope) {
+            while(parent.builder.isNotEmpty() && parent.builder[parent.builder.length - 1].isWhitespace()) {
+                parent.builder.deleteCharAt(parent.builder.length - 1)
+            }
+
+            parent.builder.append(' ')
+            parent.builder.append(
+                parent.language.block(
+                    branch,
+                    scope,
+                    baseIndent
+                ).trimStart()
+            )
+        }
+
         fun elseIf(condition: Condition, scope: Scope): IfChain {
-            parent.builder.append(parent.language.block(parent.language.elseIfStatementDeclaration(condition), scope, baseIndent))
+            appendBranch(parent.language.elseIfStatementDeclaration(condition), scope)
             return this
         }
 
         fun elseCondition(scope: Scope) {
-            parent.builder.append(parent.language.block(parent.language.elseStatementDeclaration(), scope, baseIndent))
+            appendBranch(parent.language.elseStatementDeclaration(), scope)
         }
     }
 

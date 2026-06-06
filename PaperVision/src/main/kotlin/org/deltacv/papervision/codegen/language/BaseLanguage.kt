@@ -193,8 +193,8 @@ open class BaseLanguage(
         } else "return") + semicolonIfNecessary()
 
     override fun ifStatementDeclaration(condition: Condition) = "if(${condition.value})"
-    override fun elseIfStatementDeclaration(condition: Condition) = " else if(${condition.value})"
-    override fun elseStatementDeclaration() = " else"
+    override fun elseIfStatementDeclaration(condition: Condition) = "else if(${condition.value})"
+    override fun elseStatementDeclaration() = "else"
 
     override fun forLoopDeclaration(variable: Value, start: Value, max: Value, step: Value?): String {
         val stepStr = if(step == null || step.value == "1") {
