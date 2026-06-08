@@ -16,7 +16,7 @@ import org.deltacv.papervision.util.flags
 import org.deltacv.mai18n.tr
 
 class AboutModalWindow : Window() {
-    override var title = "win_welcome"
+    override var title = "win_about"
 
     val imguiFont by Font.findLazy("default-12")
     val monoFont by Font.findLazy("jetbrains-mono-big")

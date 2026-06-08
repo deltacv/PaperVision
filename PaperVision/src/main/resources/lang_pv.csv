@@ -5,6 +5,7 @@ win_inputsources,Input Sources,Fuentes de Entrada
 win_createinput_sources,Create Input Sources,Crear Fuentes de Entrada
 win_selectlanguage,Select Language,Seleccionar Lenguaje
 win_welcome,Welcome!,Bienvenid@!
+win_about,About PaperVision,Acerca de PaperVision
 win_confirm,Confirm,Confirmar
 win_options,Options,Opciones
 win_codegen_error,Unexpected Generation Error,Error de Generación Inesperado

@@ -43,16 +43,21 @@ class CodeGenCtx(val codeGen: CodeGen) : LanguageCtx(codeGen.language) {
     private var isFirstGroup = true
     fun group(block: ScopeCtx.() -> Unit) {
         if(!isFirstGroup) {
-            codeGen.classStartScope.newLineIfNotBlank()
+            codeGen.classStartScope.separateStatement()
         }
         isFirstGroup = false
 
         codeGen.classStartScope(separate = false) { block(this) }
     }
 
+    private var isFirstDeferredGroup = true
     fun <T> deferredGroup(dependency: Resolvable<T>, block: ScopeCtx.(T) -> Unit) {
+        if(!isFirstDeferredGroup) {
+            codeGen.classStartScope.separateStatement()
+        }
+        isFirstDeferredGroup = false
+
         codeGen.classStartScope.deferred(dependency, separate = false) {
-            scope.newLineIfNotBlank()
             block(it)
         }
     }

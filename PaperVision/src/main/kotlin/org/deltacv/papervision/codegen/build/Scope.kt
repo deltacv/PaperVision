@@ -361,6 +361,16 @@ data class Scope(
         }
     }
 
+    fun separateStatement() {
+        while(builder.isNotEmpty() && builder[builder.length - 1].isWhitespace()) {
+            builder.deleteCharAt(builder.length - 1)
+        }
+
+        if(builder.isNotEmpty()) {
+            builder.appendLine()
+        }
+    }
+
     fun newLineIfNotBlank() {
         val str = get()
 
@@ -396,7 +406,7 @@ data class Scope(
         val placeholder = Resolvable.DependentPlaceholder(dependency) { value ->
             val scope = copy()
             scope(separate = separate) { block(value) }
-            scope.toString()
+            scope.toString().trimStart('\n', '\r')
         }
 
         write(placeholder.resolve() ?: placeholder.key)
@@ -436,6 +446,4 @@ data class Scope(
 data class Parameter(override val type: Type, val name: String, val isFinal: Boolean = false) : Value() {
     override val value = name
 }
-
-
 
