@@ -88,7 +88,12 @@ class CodeGen(
         importScope.initializeTypes(current)
 
         val raw = language.build(this)
-        return placeholderResolver.resolve(raw)
+        logger.debug("Pre-placeholders generated source code:\n{}", raw)
+
+        val resolved = placeholderResolver.resolve(raw)
+        logger.debug("Post-placeholders generated source code:\n{}", resolved)
+
+        return resolved
     }
 
     fun addFlag(flag: String) = if(!flags.contains(flag)) flags.add(flag) else false

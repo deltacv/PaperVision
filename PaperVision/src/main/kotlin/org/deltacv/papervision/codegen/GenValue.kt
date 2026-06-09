@@ -425,7 +425,7 @@ sealed class GenValue {
 
         open class Either<E: GenValue>(val actual: Actual<E>?, val runtime: Runtime<E>?) : List<E>() {
             init {
-                if (actual == null && runtime == null) {
+                if ((actual == null && runtime == null) || (actual != null && runtime != null)) {
                     throw IllegalArgumentException("Either actual or runtime must be provided, not both at the same time")
                 }
             }

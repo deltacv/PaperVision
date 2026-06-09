@@ -382,7 +382,7 @@ data class Scope(
     }
 
     fun write(str: String) {
-        newStatement()
+        newLineIfNotBlank()
         builder.append(str)
     }
 
@@ -406,7 +406,7 @@ data class Scope(
         val placeholder = Resolvable.DependentPlaceholder(dependency) { value ->
             val scope = copy()
             scope(separate = separate) { block(value) }
-            scope.toString().trimStart('\n', '\r')
+            scope.toString()
         }
 
         write(placeholder.resolve() ?: placeholder.key)

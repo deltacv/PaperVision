@@ -84,39 +84,18 @@ object JvmOpenCv {
         scalar: GenValue.Scalar.Components,
         current: CodeGen.Current
     ) = current {
-        fun ScopeCtx.syncComponent(index: Int, isActualValues: List<Boolean>, value: GenValue.Double) {
-            if(!isActualValues[index]) {
-                val target = scalarVariable.propertyVariable("val", DoubleType.arrayType())
-                target[index.v] = value.v
-            }
-        }
-
         current.scope.deferred(Resolvable.ListPlaceholder(
             scalar.a.isActual.value,
             scalar.b.isActual.value,
             scalar.c.isActual.value,
             scalar.d.isActual.value
         )) { isActualValues ->
-            syncComponent(0, isActualValues, scalar.a)
-            syncComponent(1, isActualValues, scalar.b)
-            syncComponent(2, isActualValues, scalar.c)
-            syncComponent(3, isActualValues, scalar.d)
-        }
-    }
-
-    fun runtimeScalarVariable(
-        variableName: String,
-        scalar: GenValue.Scalar,
-        current: CodeGen.Current
-    ) = current {
-        when(scalar) {
-            is GenValue.Scalar.Components -> {
-                val variable = uniqueVariable(variableName, Scalar(scalar, current))
-                syncScalarVariable(variable, scalar, current)
-
-                variable
+            repeat(4) {
+                if(!isActualValues[it]) {
+                    val target = scalarVariable.propertyVariable("val", DoubleType.arrayType())
+                    target[it.v] = scalar.toActualOrNull()!!.elements[it].v
+                }
             }
-            is GenValue.Scalar.Inst -> scalar.value.v
         }
     }
 
@@ -163,13 +142,15 @@ object JvmOpenCv {
         return current {
             when (line) {
                 is GenValue.LineParameters.Components -> {
-                    val color = runtimeScalarVariable("lineColor", line.color, current)
+                    val color = uniqueVariable("lineColor", Scalar(line.color, current))
                     val thickness = uniqueVariable("lineThickness", line.thickness.v)
 
                     group {
-                        public(color as DeclarableVariable)
+                        public(color)
                         public(thickness)
                     }
+
+                    syncScalarVariable(color, line.color, current)
 
                     GenValue.LineParameters.Runtime(
                         GenValue.Scalar.Inst(Resolvable.Now(color)),
