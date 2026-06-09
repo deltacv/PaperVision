@@ -243,6 +243,17 @@ class OutputMatNode @JvmOverloads constructor(
                         method(Visibility.PUBLIC, DoubleType.arrayType(), "getExportedData", isSynchronized = true) {
                             returnMethod(exportedData)
                         }
+
+                        separate()
+
+                        val indexParameter = Parameter(IntType, "index")
+                        method(Visibility.PUBLIC, DoubleType, "getExportedData", indexParameter, isSynchronized = true) {
+                            ifCondition(indexParameter greaterOrEqualThan exportedData.propertyValue("length", IntType)) {
+                                returnMethod(0.0.v)
+                            }.elseCondition {
+                                returnMethod(exportedData[indexParameter, DoubleType])
+                            }
+                        }
                     }
                 }
 
