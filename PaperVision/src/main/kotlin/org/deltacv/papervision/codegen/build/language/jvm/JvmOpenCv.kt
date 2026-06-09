@@ -26,6 +26,7 @@ import org.deltacv.papervision.codegen.build.DeclarableVariable
 import org.deltacv.papervision.codegen.build.Parameter
 import org.deltacv.papervision.codegen.build.Type
 import org.deltacv.papervision.codegen.build.language.StandardTypes
+import org.deltacv.papervision.codegen.dsl.ScopeCtx
 import org.deltacv.papervision.codegen.resolve.Resolvable
 import org.deltacv.papervision.codegen.resolve.resolved
 
@@ -78,6 +79,47 @@ object JvmOpenCv {
         }
     }
 
+    fun syncScalarVariable(
+        scalarVariable: DeclarableVariable,
+        scalar: GenValue.Scalar.Components,
+        current: CodeGen.Current
+    ) = current {
+        fun ScopeCtx.syncComponent(index: Int, isActualValues: List<Boolean>, value: GenValue.Double) {
+            if(!isActualValues[index]) {
+                val target = scalarVariable.propertyVariable("val", DoubleType.arrayType())
+                target[index.v] = value.v
+            }
+        }
+
+        current.scope.deferred(Resolvable.ListPlaceholder(
+            scalar.a.isActual.value,
+            scalar.b.isActual.value,
+            scalar.c.isActual.value,
+            scalar.d.isActual.value
+        )) { isActualValues ->
+            syncComponent(0, isActualValues, scalar.a)
+            syncComponent(1, isActualValues, scalar.b)
+            syncComponent(2, isActualValues, scalar.c)
+            syncComponent(3, isActualValues, scalar.d)
+        }
+    }
+
+    fun runtimeScalarVariable(
+        variableName: String,
+        scalar: GenValue.Scalar,
+        current: CodeGen.Current
+    ) = current {
+        when(scalar) {
+            is GenValue.Scalar.Components -> {
+                val variable = uniqueVariable(variableName, Scalar(scalar, current))
+                syncScalarVariable(variable, scalar, current)
+
+                variable
+            }
+            is GenValue.Scalar.Inst -> scalar.value.v
+        }
+    }
+
     val Rect = Type("Rect", "org.opencv.core")
 
     fun toRectInst(rect: GenValue.Rect, langHolder: CodeGen.LanguageHolder) = when (rect) {
@@ -121,19 +163,11 @@ object JvmOpenCv {
         return current {
             when (line) {
                 is GenValue.LineParameters.Components -> {
-                    val color = uniqueVariable(
-                        "lineColor", Scalar.new(
-                            line.color.a.v,
-                            line.color.b.v,
-                            line.color.c.v,
-                            line.color.d.v
-                        )
-                    )
-
+                    val color = runtimeScalarVariable("lineColor", line.color, current)
                     val thickness = uniqueVariable("lineThickness", line.thickness.v)
 
                     group {
-                        public(color)
+                        public(color as DeclarableVariable)
                         public(thickness)
                     }
 

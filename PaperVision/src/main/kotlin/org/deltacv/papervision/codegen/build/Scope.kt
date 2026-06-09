@@ -177,11 +177,11 @@ data class Scope(
         builder.append("$tabs${language.variableSetDeclaration(variable, v)}")
     }
 
-    fun arraySet(variable: DeclarableVariable, index: Value, v: Value) {
+    fun arraySet(value: Value, index: Value, v: Value) {
         newStatement()
         importValue(v)
 
-        builder.append("$tabs${language.arrayVariableSetDeclaration(variable, index, v)}")
+        builder.append("$tabs${language.arrayValueSetDeclaration(value, index, v)}")
     }
 
     fun instanceVariableSet(variable: DeclarableVariable, v: Value) {

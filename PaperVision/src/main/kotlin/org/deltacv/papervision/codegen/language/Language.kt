@@ -167,7 +167,7 @@ interface Language : ValueBuilder, CodeGen.LanguageHolder {
     fun localVariableDeclaration(variable: DeclarableVariable, isFinal: Boolean = false): String
 
     fun variableSetDeclaration(variable: DeclarableVariable, v: Value): String
-    fun arrayVariableSetDeclaration(variable: DeclarableVariable, index: Value, v: Value): String
+    fun arrayValueSetDeclaration(value: Value, index: Value, v: Value): String
     fun instanceVariableSetDeclaration(variable: DeclarableVariable, v: Value): String
     fun methodCallDeclaration(className: Type, methodName: String, vararg parameters: Value): String
     fun methodCallDeclaration(callee: Value, methodName: String, vararg parameters: Value): String

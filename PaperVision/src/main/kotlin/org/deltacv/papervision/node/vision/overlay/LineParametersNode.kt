@@ -26,6 +26,8 @@ import org.deltacv.papervision.attribute.vision.structs.ScalarAttribute
 import org.deltacv.papervision.codegen.CodeGen
 import org.deltacv.papervision.codegen.CodeGenSession
 import org.deltacv.papervision.codegen.GenValue
+import org.deltacv.papervision.codegen.build.DeclarableVariable
+import org.deltacv.papervision.codegen.build.language.GenPreviz
 import org.deltacv.papervision.codegen.build.language.jvm.JvmOpenCv
 import org.deltacv.papervision.codegen.dsl.polyglot
 import org.deltacv.papervision.codegen.language.BaseLanguage
@@ -69,31 +71,17 @@ class LineParametersNode : DrawNode<LineParametersNode.Session>() {
                 val lineColorValue = lineColor.genValue(current)
                 val lineThicknessValue = lineThickness.genValue(current)
 
-                val lineColorVar = uniqueVariable("lineColor", JvmOpenCv.Scalar(lineColorValue, current))
-                val lineThicknessVar = uniqueVariable("lineThickness", lineThicknessValue.v)
+                val lineColorVar = JvmOpenCv.runtimeScalarVariable("lineColor", lineColorValue, current)
+                val lineThicknessVar = GenPreviz.toPrevizInt(
+                    lineThicknessValue, lineThickness, current,
+                    variableName = "lineThickness"
+                )
 
                 group {
-                    public(lineColorVar, lineColor.tunerLabel())
-                    public(lineThicknessVar, lineThickness.tunerLabel())
+                    if(lineColorVar is DeclarableVariable) public(lineColorVar, lineColor.tunerLabel())
                 }
 
-                if(lineColorValue is GenValue.Scalar.Inst || lineThicknessValue is GenValue.Int.Runtime) {
-                    current.scope {
-                        nameComment()
-
-                        // if these are inst/runtime values, we need to set them to the line variables
-                        // to reflect any changes that might have happened since it was first set
-                        // (e.g. through a tuner)
-                        if(lineColorValue is GenValue.Scalar.Inst) {
-                            lineColorVar instanceSet JvmOpenCv.Scalar(lineColorValue, current)
-                        }
-                        if(lineThicknessValue is GenValue.Int.Runtime) {
-                            lineThicknessVar instanceSet lineThickness.genValue(current).v
-                        }
-                    }
-                }
-
-                session.lineParameters = GenValue.LineParameters.Runtime(GenValue.Scalar.Inst(lineColorVar.resolved()), GenValue.Int.Runtime(lineThicknessVar.resolved()))
+                session.lineParameters = GenValue.LineParameters.Runtime(GenValue.Scalar.Inst(lineColorVar.resolved()), lineThicknessVar.toRuntime(current))
             }
 
             session

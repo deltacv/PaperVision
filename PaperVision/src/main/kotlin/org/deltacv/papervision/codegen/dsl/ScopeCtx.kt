@@ -94,10 +94,10 @@ class ScopeCtx(val scope: Scope) : LanguageCtx(scope.language) {
     infix fun DeclarableVariable.set(v: Value) =
         scope.variableSet(this, v)
 
-    fun DeclarableVariable.arraySet(index: Value, v: Value) =
+    fun Value.arraySet(index: Value, v: Value) =
         scope.arraySet(this, index, v)
 
-    operator fun DeclarableVariable.set(index: Value, v: Value) = arraySet(index, v)
+    operator fun Value.set(index: Value, v: Value) = arraySet(index, v)
 
     infix fun DeclarableVariable.instanceSet(v: Value) =
         scope.instanceVariableSet(this, v)

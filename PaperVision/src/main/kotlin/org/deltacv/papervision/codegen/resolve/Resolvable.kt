@@ -149,18 +149,18 @@ sealed class Resolvable<T> {
         }
     })
 
-    data class PairPlaceholder<P1, P2>(
-        val first: Resolvable<P1>,
-        val second: Resolvable<P2>
-    ) : Placeholder<Pair<P1, P2>>(resolver = {
-        val depValue1 = first.resolve()
-        val depValue2 = second.resolve()
-        if (depValue1 != null && depValue2 != null) {
-            Pair(depValue1, depValue2)
+    class ListPlaceholder<T>(
+        dependencies: List<Resolvable<T>>,
+    ) : Placeholder<List<T>>(resolver = {
+        val vals = dependencies.map { it.resolve() }
+        if(vals.all { it != null }) {
+            vals.map { it!! }
         } else {
             null
         }
-    })
+    }) {
+        constructor(vararg dependencies: Resolvable<T>) : this(dependencies.toList())
+    }
 }
 
 

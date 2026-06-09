@@ -144,8 +144,8 @@ open class BaseLanguage(
 
     override fun variableSetDeclaration(variable: DeclarableVariable, v: Value) = "${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
 
-    override fun arrayVariableSetDeclaration(variable: DeclarableVariable, index: Value, v: Value) =
-        "${variable.name}[${index.value}] = ${v.value}${semicolonIfNecessary()}"
+    override fun arrayValueSetDeclaration(value: Value, index: Value, v: Value) =
+        "${value.value}[${index.value}] = ${v.value}${semicolonIfNecessary()}"
 
     override fun instanceVariableSetDeclaration(variable: DeclarableVariable, v: Value) = "this.${variable.name} = ${v.value!!}${semicolonIfNecessary()}"
 

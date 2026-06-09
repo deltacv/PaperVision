@@ -61,7 +61,7 @@ class AverageColorNode : DrawNode<AverageColorNode.Session>() {
                 session.output = GenValue.Scalar.Inst(outputVar.resolved())
 
                 for (i in 0 until 4) {
-                    session.elementGenValues[i] = GenValue.Double.Runtime(
+                    session.outputElements[i] = GenValue.Double.Runtime(
                         outputVar.resolved().map { it.propertyValue("val", DoubleType.arrayType())[i.v, DoubleType] }
                     )
                 }
@@ -85,7 +85,7 @@ class AverageColorNode : DrawNode<AverageColorNode.Session>() {
                     session.output = GenValue.Scalar.Inst(outputVar.resolved())
 
                     for (i in 0 until 4) {
-                        session.elementGenValues[i] = GenValue.Double.Runtime(
+                        session.outputElements[i] = GenValue.Double.Runtime(
                             outputVar.resolved().map { it[i.v, DoubleType] }
                         )
                     }
@@ -101,7 +101,7 @@ class AverageColorNode : DrawNode<AverageColorNode.Session>() {
         else -> {
             val index = output.findIndex(attrib)
             if (index != null) {
-                GenValue.Double.Runtime.defer { current.sessionOf(this)?.elementGenValues?.get(index) }
+                GenValue.Double.Runtime.defer { current.sessionOf(this)?.outputElements?.get(index) }
             } else noValue(attrib)
         }
     }
@@ -120,7 +120,7 @@ class AverageColorNode : DrawNode<AverageColorNode.Session>() {
 
     class Session : CodeGenSession {
         lateinit var output: GenValue.Scalar.Inst
-        val elementGenValues = mutableMapOf<Int, GenValue.Double.Runtime>()
+        val outputElements = mutableMapOf<Int, GenValue.Double.Runtime>()
     }
 
 }
