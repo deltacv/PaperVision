@@ -28,13 +28,20 @@ import org.deltacv.papervision.codegen.dsl.jvm.jvmTargets
 fun CodeGen.Current.enableJavaTargets() = this {
     if(!codeGen.hasFlag("targetsEnabled")) {
         jvmTargets(enableTargetsIfNeeded = false) {
+            val forceCasts = codeGen.isForPreviz
+
             scope {
-                clearTargets()
+                swapTargets()
             }
 
             group {
-                private(rectTargets)
-                private(rotRectTargets)
+                private(frontRectTargets)
+                private(frontRotRectTargets)
+
+                separate()
+
+                private(backRectTargets)
+                private(backRotRectTargets)
             }
 
             codeGen.classEndScope {
@@ -45,11 +52,27 @@ fun CodeGen.Current.enableJavaTargets() = this {
                 method(
                     Visibility.PRIVATE,
                     VoidType,
-                    "clearTargets",
+                    "swapTargets",
                     isSynchronized = true
                 ) {
-                    rectTargets("clear")
-                    rotRectTargets("clear")
+                    val tempRect = DeclarableVariable("tempRect", frontRectTargets)
+                    local(tempRect)
+
+                    frontRectTargets instanceSet backRectTargets
+                    backRectTargets instanceSet tempRect
+
+                    separate()
+
+                    val tempRotRect = DeclarableVariable("tempRotRect", frontRotRectTargets)
+                    local(tempRotRect)
+
+                    frontRotRectTargets instanceSet backRotRectTargets
+                    backRotRectTargets instanceSet tempRotRect
+
+                    separate()
+
+                    backRectTargets("clear")
+                    backRotRectTargets("clear")
                 }
 
                 separate()
@@ -59,26 +82,24 @@ fun CodeGen.Current.enableJavaTargets() = this {
                     VoidType,
                     "addRectTarget",
                     labelParameter,
-                    rectTargetParameter,
-                    isSynchronized = true
+                    rectTargetParameter
                 ) {
-                    rectTargets("put", labelParameter, rectTargetParameter)
+                    backRectTargets("put", labelParameter, rectTargetParameter)
                 }
 
                 method(
                     Visibility.PRIVATE,
                     VoidType, "addRotRectTarget",
                     labelParameter,
-                    rotatedRectTargetParameter,
-                    isSynchronized = true
+                    rotatedRectTargetParameter
                 ) {
-                    rotRectTargets("put", labelParameter, rotatedRectTargetParameter)
+                    backRotRectTargets("put", labelParameter, rotatedRectTargetParameter)
                 }
 
                 separate()
 
                 method(Visibility.PUBLIC, JvmOpenCv.Rect, "getRectTarget", labelParameter,  isSynchronized = true) {
-                    returnMethod(rectTargets.callValue("get", JvmOpenCv.Rect, labelParameter).castTo(JvmOpenCv.Rect))
+                    returnMethod(frontRectTargets.callValue("get", JvmOpenCv.Rect, labelParameter).castTo(JvmOpenCv.Rect, forceCasts))
                 }
 
                 separate()
@@ -91,10 +112,12 @@ fun CodeGen.Current.enableJavaTargets() = this {
                     separate()
 
                     val entryType = JavaTypes.Map.Entry(JavaTypes.String, JvmOpenCv.Rect)
-                    val entrySetType = JavaTypes.Set(entryType) // oof
-                    foreach(AccessorVariable(entryType, "namedTarget"), rectTargets.callValue("entrySet", entrySetType)) {
-                        ifCondition (it.callValue("getKey", JavaTypes.String).castTo(JavaTypes.String).callValue("startsWith", BooleanType, labelParameter).condition()) {
-                            targets("add", it.callValue("getValue", JvmOpenCv.Rect))
+                    val entrySetType = JavaTypes.Set(entryType)
+                    foreach(AccessorVariable(entryType, "namedTarget"), frontRectTargets.callValue("entrySet", entrySetType)) {
+                        val label = it.callValue("getKey", JavaTypes.String).castTo(JavaTypes.String, forceCasts)
+
+                        ifCondition(label.callValue("startsWith", BooleanType, labelParameter).condition()) {
+                            targets("add", it.callValue("getValue", JvmOpenCv.Rect).castTo(JvmOpenCv.Rect, forceCasts))
                         }
                     }
 
@@ -106,8 +129,10 @@ fun CodeGen.Current.enableJavaTargets() = this {
                 separate()
 
                 method(Visibility.PUBLIC, JvmOpenCv.RotatedRect, "getRotRectTarget", labelParameter, isSynchronized = true) {
-                    returnMethod(rotRectTargets.callValue("get",
-                        JvmOpenCv.RotatedRect, labelParameter).castTo(JvmOpenCv.RotatedRect))
+                    returnMethod(
+                        frontRotRectTargets.callValue("get", JvmOpenCv.RotatedRect, labelParameter)
+                            .castTo(JvmOpenCv.RotatedRect, forceCasts)
+                    )
                 }
 
                 separate()
@@ -120,11 +145,12 @@ fun CodeGen.Current.enableJavaTargets() = this {
                     separate()
 
                     val entryType = JavaTypes.Map.Entry(JavaTypes.String, JvmOpenCv.RotatedRect)
-                    val entrySetType = JavaTypes.Set(entryType) // oof
+                    val entrySetType = JavaTypes.Set(entryType)
 
-                    foreach(DeclarableVariable(entryType, "namedTarget"), rotRectTargets.callValue("entrySet", entrySetType)) {
-                        ifCondition (it.callValue("getKey", JavaTypes.String).castTo(JavaTypes.String).callValue("startsWith", BooleanType, labelParameter).condition()) {
-                            targets("add", it.callValue("getValue", JvmOpenCv.RotatedRect))
+                    foreach(DeclarableVariable(entryType, "namedTarget"), frontRotRectTargets.callValue("entrySet", entrySetType)) {
+                        val label = it.callValue("getKey", JavaTypes.String).castTo(JavaTypes.String, forceCasts)
+                        ifCondition(label.callValue("startsWith", BooleanType, labelParameter).condition()) {
+                            targets("add", it.callValue("getValue", JvmOpenCv.RotatedRect).castTo(JvmOpenCv.RotatedRect, forceCasts))
                         }
                     }
 

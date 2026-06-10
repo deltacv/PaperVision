@@ -202,12 +202,12 @@ class OutputMatNode @JvmOverloads constructor(
     val exportedData = ListAttribute(INPUT, "$[att_exporteddata]", DoubleAttribute)
 
     override fun onEnable() {
-        +input.rebuildOnChange()
-        +crosshair.rebuildOnChange()
-        +exportedData.rebuildOnChange()
+        + input.rebuildOnChange()
+        + crosshair.rebuildOnChange()
+        + exportedData.rebuildOnChange()
     }
 
-    fun ensureAttributeExists() { // prevent weird oopsies due to the special way these persistent buddies are handled
+    fun ensureAttributeExists() { // prevent weird oopsies due to the special way these persistent elements are handled
         enable()
         input.enable()
         crosshair.enable()

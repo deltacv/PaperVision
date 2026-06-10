@@ -74,7 +74,8 @@ class ExportTargetsNode : DrawNode<NoSession>() {
                 current.jvmTargets {
                     current.scope {
                         forLoop(AccessorVariable(IntType, "i"), 0.v, targetsValue.value.v.callValue("size", IntType), 1.v) {
-                            addRectTarget(string("${labelValue}_").plus(it), targetsValue.value.v.callValue("get", JvmOpenCv.Rect, it).castTo(JvmOpenCv.Rect))
+                            val rect = targetsValue.value.v.callValue("get", JvmOpenCv.Rect, it)
+                            addRectTarget(string("${labelValue}_").plus(it), rect.castTo(JvmOpenCv.Rect, force = current.isForPreviz))
                         }
                     }
                 }
@@ -138,7 +139,8 @@ class ExportRotTargetsNode : DrawNode<NoSession>() {
                 current.jvmTargets {
                     current.scope {
                         forLoop(DeclarableVariable(IntType, "i"), 0.v, targetsValue.value.v.callValue("size", IntType), 1.v) {
-                            addRotRectTarget(string("${labelValue}_").plus(it), targetsValue.value.v.callValue("get", JvmOpenCv.RotatedRect, it).castTo(JvmOpenCv.RotatedRect))
+                            val rect = targetsValue.value.v.callValue("get", JvmOpenCv.RotatedRect, it)
+                            addRotRectTarget(string("${labelValue}_").plus(it), rect.castTo(JvmOpenCv.RotatedRect, force = current.isForPreviz))
                         }
                     }
                 }

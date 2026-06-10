@@ -94,7 +94,7 @@ open class LanguageCtx(override val language: Language): CodeGen.LanguageHolder 
         return condition
     }
 
-    fun Value.castTo(type: Type) = language.castValue(this, type)
+    fun Value.castTo(type: Type, force: Boolean = false) = language.castValue(this, type, force)
 
     fun Value.condition(): Condition {
         require(type == language.BooleanType) {

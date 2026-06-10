@@ -28,11 +28,18 @@ import org.deltacv.papervision.codegen.dsl.LanguageCtx
 import org.deltacv.papervision.codegen.dsl.ScopeCtx
 
 class JvmTargetsCtx(context: LanguageCtx) {
-    val rectTargets = context.run {
-        DeclarableVariable("rectTargets", JavaTypes.HashMap(JavaTypes.String, JvmOpenCv.Rect).new())
+    val frontRectTargets = context.run {
+        DeclarableVariable("frontRectTargets", JavaTypes.HashMap(JavaTypes.String, JvmOpenCv.Rect).new())
     }
-    val rotRectTargets = context.run {
-        DeclarableVariable("rotRectTarget", JavaTypes.HashMap(JavaTypes.String, JvmOpenCv.RotatedRect).new())
+    val backRectTargets = context.run {
+        DeclarableVariable("backRectTargets", JavaTypes.HashMap(JavaTypes.String, JvmOpenCv.Rect).new())
+    }
+
+    val frontRotRectTargets = context.run {
+        DeclarableVariable("frontRotRectTarget", JavaTypes.HashMap(JavaTypes.String, JvmOpenCv.RotatedRect).new())
+    }
+    val backRotRectTargets = context.run {
+        DeclarableVariable("backRotRectTarget", JavaTypes.HashMap(JavaTypes.String, JvmOpenCv.RotatedRect).new())
     }
 
     fun ScopeCtx.addRectTarget(label: Value, rect: Value) {
@@ -43,8 +50,8 @@ class JvmTargetsCtx(context: LanguageCtx) {
         "addRotRectTarget"(label, rect)
     }
 
-    fun ScopeCtx.clearTargets() {
-        "clearTargets"()
+    fun ScopeCtx.swapTargets() {
+        "swapTargets"()
     }
 }
 

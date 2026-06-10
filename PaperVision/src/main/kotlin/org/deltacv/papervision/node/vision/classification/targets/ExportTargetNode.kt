@@ -54,7 +54,8 @@ class ExportTargetNode : DrawNode<NoSession>() {
         generatorFor(JavaLanguage) {
             current.jvmTargets {
                 current.scope {
-                    addRectTarget(string(label.genValue(current).value.v), JvmOpenCv.toRectInst(inputTarget.genValue(current), current).value.v)
+                    val rect = JvmOpenCv.toRectInst(inputTarget.genValue(current), current).value.v
+                    addRectTarget(string(label.genValue(current).value.v), rect.castTo(JvmOpenCv.Rect, force = current.isForPreviz))
                 }
             }
 
@@ -101,7 +102,8 @@ class ExportRotTarget : DrawNode<NoSession>() {
         generatorFor(JavaLanguage) {
             current.jvmTargets {
                 current.scope {
-                    addRotRectTarget(string(label.genValue(current).value.v), inputTarget.genValue(current).value.v)
+                    val rect = inputTarget.genValue(current).value.v
+                    addRotRectTarget(string(label.genValue(current).value.v), rect.castTo(JvmOpenCv.RotatedRect, force = current.isForPreviz))
                 }
             }
 

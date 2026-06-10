@@ -205,6 +205,7 @@ des_integerto_decimal,Converts an integer number to a decimal,Convierte un numer
 des_decimalmath,Performs mathematical operations on decimals,Realiza operaciones matemáticas con decimales
 des_decimalto_integer,Converts a decimal number to an integer,Convierte un numero decimal a entero
 des_vector2math,Performs mathematical operations on 2D vectors,Realiza operaciones matemáticas con vectores 2D
+err_emptylabel,Label cannot be empty,La etiqueta no puede estar vacia
 err_bitwiseor_binary,"Both inputs must be of the same type, binary or not","Ambas entradas deben ser del mismo tipo, binario o no"
 err_grayscale_required,"Grayscale image required","Se requiere una imagen en escala de grises"
 err_musthave_attachedattrib,Must have an attribute attached,Debe tener un atributo conectado
