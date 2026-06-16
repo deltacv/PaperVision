@@ -92,13 +92,13 @@ class ExportTargetsNode : DrawNode<NoSession>() {
 
     override fun encode(encoder: DataEncoder) {
         super.encode(encoder)
-        encoder.obj("inputTarget", inputTargets)
+        encoder.obj("inputTargets", inputTargets)
         encoder.obj("label", label)
     }
 
     override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
-        decoder.obj("inputTarget", inputTargets)
+        decoder.obj("inputTargets", inputTargets)
         decoder.obj("label", label)
     }
 
@@ -157,13 +157,13 @@ class ExportRotTargetsNode : DrawNode<NoSession>() {
 
     override fun encode(encoder: DataEncoder) {
         super.encode(encoder)
-        encoder.obj("inputTarget", inputTargets)
+        encoder.obj("inputTargets", inputTargets)
         encoder.obj("label", label)
     }
 
     override fun decode(decoder: DataDecoder) {
         super.decode(decoder)
-        decoder.obj("inputTarget", inputTargets)
+        decoder.obj("inputTargets", inputTargets)
         decoder.obj("label", label)
     }
 
