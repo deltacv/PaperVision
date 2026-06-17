@@ -392,7 +392,7 @@ class OutputMatNode @JvmOverloads constructor(
                     val crosshairValueV = if (crosshair.allLinkedAttributes.isNotEmpty()) {
                         crosshair.genValue(current).value.v
                     } else {
-                        nullValue
+                        CPythonLanguage.NoType.newArrayOfValues()
                     }
 
                     returnMethod(CPythonLanguage.tuple(crosshairValueV, inputValue.value.v, llpython))
