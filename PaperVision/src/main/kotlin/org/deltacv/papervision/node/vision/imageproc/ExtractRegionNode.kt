@@ -99,16 +99,22 @@ class ExtractRegionNode : DrawNode<ExtractRegionNode.Session>() {
                     val roiVar = uniqueVariable("${inputMat.value.v}_roi", inputMat.value.v)
                     local(roiVar)
 
-                    ifCondition(rectVar isNotInstanceOf  nullType) {
-                        val x = rectVar[0.v, CPythonLanguage.NoType]
-                        val y = rectVar[1.v, CPythonLanguage.NoType]
-                        val w = rectVar[2.v, CPythonLanguage.NoType]
-                        val h = rectVar[3.v, CPythonLanguage.NoType]
+                    separate()
 
-                        val roi = inputMat.value.v[CPythonLanguage.NoType, CPythonLanguage.sliceValue(
-                            y,
-                            y + h
-                        ), CPythonLanguage.sliceValue(x, x + w)]
+                    ifCondition(rectVar isNotInstanceOf  nullType) {
+                        val rectTuple = CPythonLanguage.declaredTupleVariable(rectVar, "x", "y", "w", "h")
+                        local(rectTuple)
+
+                        val roi = inputMat.value.v[CPythonLanguage.NoType,
+                            CPythonLanguage.sliceValue(
+                                rectTuple.get("y"),
+                                rectTuple.get("y") + rectTuple.get("h")
+                            ),
+                            CPythonLanguage.sliceValue(
+                                rectTuple.get("x"),
+                                rectTuple.get("x") + rectTuple.get("w")
+                            )
+                        ]
 
                         roiVar instanceSet roi
                     }
