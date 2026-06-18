@@ -56,6 +56,13 @@ open class Type(
         }
     }
 
+    override fun equals(other: Any?) = other is Type
+                && className == other.className
+                && packagePath == other.packagePath
+                && generics.contentEquals(other.generics)
+                && overridenImport == other.overridenImport
+                && isArray == other.isArray
+
     override fun toString() = "Type(className=$className, packagePath=$packagePath, actualImport=$overridenImport, isArray=$isArray)"
 
     @ConsistentCopyVisibility

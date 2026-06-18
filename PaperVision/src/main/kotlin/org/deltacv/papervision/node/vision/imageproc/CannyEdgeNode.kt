@@ -127,6 +127,7 @@ class CannyEdgeNode : DrawNode<CannyEdgeNode.Session>(){
                     val output = uniqueVariable("${input.value}_canny",
                         cv2.callValue("Canny", CPythonLanguage.NoType, input.value.v, firstThreshold.genValue(current).v, secondThreshold.genValue(current).v)
                     )
+                    local(output)
 
                     session.outputMat = GenValue.Mat(output.resolved(), input.color)
                 }
