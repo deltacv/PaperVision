@@ -7,14 +7,14 @@ buildscript {
         kotlin_version = "2.3.0"
         kotlinx_coroutines_version = "1.10.2"
         kotlinx_serialization_version = "1.10.0"
+
+        imgui_version = "1.92.7.1"
         classgraph_version = "4.8.112"
-        imgui_version = "1.92.0"
         gson_version = "2.8.9"
         lwjgl_version = "3.3.2"
         mackjpeg_version = "1.0.5"
 
         eocvsim_version = '4.2.0'
-        // eocvsim_version = '4.2.0-dev-260518-1710'
 
         slf4j_version = "2.0.16"
         log4j_version = "2.24.1"

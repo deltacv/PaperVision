@@ -231,7 +231,7 @@ mis_doubleclick_tominimize,Double-Click to minimize,Doble-Clic para minimizar
 mis_searchingnodes_pleasewait,"Searching for nodes, please wait...","Buscando nodos, por favor espera..."
 mis_welcomelanguage,Choose a language to proceed<br>Elige un lenguaje para continuar,Choose a language to proceed<br>Elige un lenguaje para continuar
 mis_welcome1,Welcome to PaperVision! This is a visual programming tool for OpenCV.,Bienvenido a PaperVision! Esta es una herramienta visual para OpenCV.
-mis_welcome2,You can create nodes and connect them to create your very own vision pipelines.,Puedes crear nodos y conectarlos para crear tus propios algoritmos de vision.
+mis_welcome2,You can add nodes and connect them to create your very own vision pipelines.,Puedes añadir nodos y conectarlos para crear tus propios algoritmos de vision.
 mis_welcome3,Generate Java or Python code and run it in your own project right away.,Genera codigo Java o Python y ejecutalo en tu proyecto instantaneamente.
 mis_welcome4,"If you are new, make sure to click on the 'Guided Tour' button below.","Si eres nuev@, asegurate de presionar ""Visita Guiada"" aqui abajo."
 mis_welcome5,Made with <3 by the deltacv team. Have fun!,Hecho con <3 por el equipo de deltacv. Buena suerte!
