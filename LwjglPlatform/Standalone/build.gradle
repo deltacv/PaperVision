@@ -14,7 +14,7 @@ dependencies {
 
 tasks.register('runPv', JavaExec) {
     dependsOn 'classes'
-    mainClass = 'org.deltacv.papervision.platform.lwjgl.AppMain'
+    mainClass = 'org.deltacv.visiongraph.platform.lwjgl.AppMain'
     classpath = sourceSets.main.runtimeClasspath
 
     if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
@@ -24,7 +24,7 @@ tasks.register('runPv', JavaExec) {
 
 tasks.withType(Jar) {
     manifest {
-        attributes['Main-Class'] = 'org.deltacv.papervision.platform.lwjgl.AppMain'
+        attributes['Main-Class'] = 'org.deltacv.visiongraph.platform.lwjgl.AppMain'
     }
 }
 

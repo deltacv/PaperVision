@@ -19,7 +19,7 @@ Use the following commands to run the project with gradle, this will allow you t
 
 ```shell
 git clone https://github.com/deltacv/PaperVision.git
-cd PaperVision
+cd VisionGraph
 ./gradlew runEv
 ```
 

@@ -81,9 +81,9 @@ dependencies {
 ksp {
     arg("moduleName", "PaperVision")
 
-    arg("paperNodeClassesMetadataPackage", "org.deltacv.papervision.node.generated")
+    arg("paperNodeClassesMetadataPackage", "org.deltacv.visiongraph.node.generated")
     arg("paperNodeClassesMetadataClassName", "PaperNodeMetadata")
 
-    arg("codecTypeClassesMetadataPackage", "org.deltacv.papervision.serialization.v2.generated")
+    arg("codecTypeClassesMetadataPackage", "org.deltacv.visiongraph.serialization.v2.generated")
     arg("codecTypeClassesMetadataClassName", "CodecTypeMetadata")
 }

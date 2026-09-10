@@ -179,7 +179,7 @@ dependencies {
 
 ksp {
     arg("moduleName", "EOCVSimPlugin")
-    arg("polymorphicSerializableMetadataPackage", "org.deltacv.papervision.serialization.generated")
+    arg("polymorphicSerializableMetadataPackage", "org.deltacv.visiongraph.serialization.generated")
 }
 
 
