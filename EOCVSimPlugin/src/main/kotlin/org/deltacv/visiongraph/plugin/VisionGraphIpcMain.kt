@@ -44,7 +44,7 @@ import picocli.CommandLine
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
-class IpcPaperVisionMain : Callable<Int?> {
+class VisionGraphIpcMain : Callable<Int?> {
     @CommandLine.Option(names = ["-i", "--ipcport"], description = ["Engine IPC server port"])
     var ipcPort: Int = 0
 
@@ -179,7 +179,7 @@ class IpcPaperVisionMain : Callable<Int?> {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val exitCode = CommandLine(IpcPaperVisionMain()).execute(*args)
+            val exitCode = CommandLine(VisionGraphIpcMain()).execute(*args)
             exitProcess(exitCode)
         }
     }

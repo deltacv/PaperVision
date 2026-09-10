@@ -36,16 +36,16 @@ import java.util.concurrent.Future
  *
  * It is expected that the VisionGraph process will be initialized and controlled through this object.
  */
-object PaperVisionProcessRunner {
+object VisionGraphProcessRunner {
 
     val logger by loggerForThis()
 
     val paperVisionEngine = EOCVSimIpcEngine()
 
-    val onPaperVisionStart = EventHandler("PaperVisionProcessRunner-OnPaperVisionStart")
+    val onPaperVisionStart = EventHandler("VisionGraphProcessRunner-OnPaperVisionStart")
 
-    val onPaperVisionExit = EventHandler("PaperVisionProcessRunner-OnPaperVisionExit")
-    val onPaperVisionExitError = EventHandler("PaperVisionProcessRunner-OnPaperVisionExitError")
+    val onPaperVisionExit = EventHandler("VisionGraphProcessRunner-OnPaperVisionExit")
+    val onPaperVisionExitError = EventHandler("VisionGraphProcessRunner-OnPaperVisionExitError")
 
     private val pool = Executors.newFixedThreadPool(1)
 
@@ -72,7 +72,7 @@ object PaperVisionProcessRunner {
                 val jvmArgs = listOf("-XstartOnFirstThread", "-Djava.awt.headless=true")
 
                 JavaProcess.execClasspath(
-                    IpcPaperVisionMain::class.java,
+                    VisionGraphIpcMain::class.java,
                     SLF4JIOReceiver(logger),
                     classpath,
                     jvmArgs,
@@ -80,7 +80,7 @@ object PaperVisionProcessRunner {
                 )
             } else {
                 JavaProcess.execClasspath(
-                    IpcPaperVisionMain::class.java,
+                    VisionGraphIpcMain::class.java,
                     SLF4JIOReceiver(logger),
                     classpath,
                     listOf(), programParams,

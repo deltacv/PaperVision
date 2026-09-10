@@ -29,14 +29,14 @@ import kotlinx.serialization.json.JsonObject
 import org.deltacv.visiongraph.engine.client.response.JsonElementResponse
 import org.deltacv.visiongraph.engine.client.response.OkResponse
 import org.deltacv.visiongraph.platform.defaultPaperVisionFolderPath
-import org.deltacv.visiongraph.plugin.PaperVisionEOCVSimPlugin
-import org.deltacv.visiongraph.plugin.PaperVisionProcessRunner
+import org.deltacv.visiongraph.plugin.VisionGraphPlugin
+import org.deltacv.visiongraph.plugin.VisionGraphProcessRunner
 import org.deltacv.visiongraph.plugin.engine.EOCVSimIpcEngine
 import org.deltacv.visiongraph.plugin.engine.message.DiscardCurrentRecoveryMessage
 import org.deltacv.visiongraph.plugin.engine.message.EditorChangeMessage
 import org.deltacv.visiongraph.plugin.engine.message.GetCurrentProjectMessage
 import org.deltacv.visiongraph.plugin.engine.message.SaveCurrentProjectMessage
-import org.deltacv.visiongraph.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
+import org.deltacv.visiongraph.plugin.gui.eocvsim.dialog.VisionGraphDialogFactory
 import org.deltacv.visiongraph.plugin.previz.SinglePipelineCompiler
 import org.deltacv.visiongraph.plugin.project.recovery.RecoveredProject
 import org.deltacv.visiongraph.plugin.project.recovery.RecoveryDaemonProcessManager
@@ -60,11 +60,11 @@ import kotlin.io.path.exists
 import kotlin.io.path.pathString
 import kotlin.io.path.readText
 
-class PaperVisionProjectManager(
+class VisionGraphProjectManager(
     val classpath: String,
     val fileSystem: SandboxFileSystem,
     val engine: EOCVSimIpcEngine,
-    val plugin: PaperVisionEOCVSimPlugin,
+    val plugin: VisionGraphPlugin,
     val eocvSim: EOCVSimApi,
 ) {
 
@@ -79,24 +79,24 @@ class PaperVisionProjectManager(
 
     val onMainUpdate = eocvSim.mainLoopHook
 
-    var projectTree = PaperVisionProjectTree(root)
+    var projectTree = VisionGraphProjectTree(root)
         private set
 
-    var projects = listOf<PaperVisionProjectTree.TreeNode.Project>()
+    var projects = listOf<VisionGraphProjectTree.TreeNode.Project>()
         private set
 
-    var currentProject: PaperVisionProjectTree.TreeNode.Project? = null
+    var currentProject: VisionGraphProjectTree.TreeNode.Project? = null
         private set
 
-    var currentPaperVisionProject: EOCVSimPaperVisionProject? = null
+    var currentPaperVisionProject: VisionGraphProject? = null
         private set
 
     val previewPipelines = mutableListOf<WeakReference<Class<out OpenCvPipeline>>>()
 
     fun paperVisionProjectFrom(
-        project: PaperVisionProjectTree.TreeNode.Project,
+        project: VisionGraphProjectTree.TreeNode.Project,
         tree: JsonElement
-    ) = EOCVSimPaperVisionProject(
+    ) = VisionGraphProject(
         Instant.now().toEpochMilli(),
         findProjectFolderPath(project)!!.pathString,
         project.name,
@@ -126,7 +126,7 @@ class PaperVisionProjectManager(
 
                         if (projectPath.exists()) {
                             val project = try {
-                                Json.decodeFromString<EOCVSimPaperVisionProject>(String(
+                                Json.decodeFromString<VisionGraphProject>(String(
                                     fileSystem.readAllBytes(projectPath),
                                     StandardCharsets.UTF_8
                                 ))
@@ -151,7 +151,7 @@ class PaperVisionProjectManager(
             }
         }.toList()
 
-    val onRefresh = PaperEventHandler("PaperVisionProjectManager-onRefresh")
+    val onRefresh = PaperEventHandler("VisionGraphProjectManager-onRefresh")
 
     fun init() {
         engine.setMessageHandlerOf<DiscardCurrentRecoveryMessage> {
@@ -176,22 +176,22 @@ class PaperVisionProjectManager(
     }
 
     fun refresh() {
-        projectTree = PaperVisionProjectTree(root)
+        projectTree = VisionGraphProjectTree(root)
         projects = recursiveSearchProjects(projectTree.rootTree)
 
         onRefresh.run()
     }
 
-    private fun recursiveSearchProjects(root: PaperVisionProjectTree.TreeNode.Folder): List<PaperVisionProjectTree.TreeNode.Project> {
-        val list = mutableListOf<PaperVisionProjectTree.TreeNode.Project>()
+    private fun recursiveSearchProjects(root: VisionGraphProjectTree.TreeNode.Folder): List<VisionGraphProjectTree.TreeNode.Project> {
+        val list = mutableListOf<VisionGraphProjectTree.TreeNode.Project>()
 
         for (node in root.nodes) {
             when (node) {
-                is PaperVisionProjectTree.TreeNode.Folder -> {
+                is VisionGraphProjectTree.TreeNode.Folder -> {
                     list.addAll(recursiveSearchProjects(node))
                 }
 
-                is PaperVisionProjectTree.TreeNode.Project -> {
+                is VisionGraphProjectTree.TreeNode.Project -> {
                     list.add(node)
                 }
             }
@@ -206,7 +206,7 @@ class PaperVisionProjectManager(
                 fileFilter = FileNameExtensionFilter("VisionGraph Project (.paperproj)", "paperproj")
 
                 if (showSaveDialog(ancestor) == JFileChooser.APPROVE_OPTION) {
-                    PaperVisionDialogFactory.displayNewProjectDialog(
+                    VisionGraphDialogFactory.displayNewProjectDialog(
                         ancestor,
                         projectTree.projects,
                         projectTree.folders,
@@ -240,9 +240,9 @@ class PaperVisionProjectManager(
         }
     }
 
-    fun cloneProjectAsk(project: PaperVisionProjectTree.TreeNode.Project, ancestor: Window) {
+    fun cloneProjectAsk(project: VisionGraphProjectTree.TreeNode.Project, ancestor: Window) {
         SwingUtilities.invokeLater {
-            PaperVisionDialogFactory.displayNewProjectDialog(
+            VisionGraphDialogFactory.displayNewProjectDialog(
                 ancestor,
                 projectTree.projects,
                 projectTree.folders,
@@ -275,16 +275,16 @@ class PaperVisionProjectManager(
     }
 
     fun importProject(path: String, name: String, file: File) {
-        newProject(path, name, jsonElement = Json.decodeFromString<EOCVSimPaperVisionProject>(SysUtil.loadFileStr(file)).data)
+        newProject(path, name, jsonElement = Json.decodeFromString<VisionGraphProject>(SysUtil.loadFileStr(file)).data)
     }
 
-    fun cloneProject(path: String, newName: String, project: PaperVisionProjectTree.TreeNode.Project) {
-        newProject(path, newName, jsonElement = Json.decodeFromString<EOCVSimPaperVisionProject>(readProjectFile(project)).data)
+    fun cloneProject(path: String, newName: String, project: VisionGraphProjectTree.TreeNode.Project) {
+        newProject(path, newName, jsonElement = Json.decodeFromString<VisionGraphProject>(readProjectFile(project)).data)
     }
 
     fun newProjectAsk(ancestor: Window) {
         SwingUtilities.invokeLater {
-            PaperVisionDialogFactory.displayNewProjectDialog(
+            VisionGraphDialogFactory.displayNewProjectDialog(
                 ancestor,
                 projectTree.projects,
                 projectTree.folders,
@@ -311,7 +311,7 @@ class PaperVisionProjectManager(
         val projectFile = projectPath.resolve(if (appendExtension) "$name.paperproj" else name)
         fileSystem.createFile(projectFile)
         fileSystem.write(
-            projectFile, Json.encodeToString(EOCVSimPaperVisionProject(
+            projectFile, Json.encodeToString(VisionGraphProject(
                 Instant.now().toEpochMilli(),
                 path, name,
                 jsonElement ?: JsonObject(emptyMap())
@@ -321,11 +321,11 @@ class PaperVisionProjectManager(
         refresh()
     }
 
-    fun deleteProject(project: PaperVisionProjectTree.TreeNode.Project) {
+    fun deleteProject(project: VisionGraphProjectTree.TreeNode.Project) {
         bulkDeleteProjects(project)
     }
 
-    fun bulkDeleteProjects(vararg projects: PaperVisionProjectTree.TreeNode.Project) {
+    fun bulkDeleteProjects(vararg projects: VisionGraphProjectTree.TreeNode.Project) {
         for (project in projects) {
             val path = findProjectPath(project) ?: throw FileNotFoundException("Project $project not found in tree")
             fileSystem.delete(path)
@@ -334,7 +334,7 @@ class PaperVisionProjectManager(
         refresh()
     }
 
-    fun readProjectFile(project: PaperVisionProjectTree.TreeNode.Project) =
+    fun readProjectFile(project: VisionGraphProjectTree.TreeNode.Project) =
         String(
             fileSystem.readAllBytes(
                 findProjectPath(project) ?: throw FileNotFoundException("Project $project not found in tree")
@@ -342,13 +342,13 @@ class PaperVisionProjectManager(
             StandardCharsets.UTF_8
         )
 
-    fun requestOpenProject(project: PaperVisionProjectTree.TreeNode.Project) {
+    fun requestOpenProject(project: VisionGraphProjectTree.TreeNode.Project) {
         onMainUpdate.once {
             openProject(project)
         }
     }
 
-    fun previewProject(project: PaperVisionProjectTree.TreeNode.Project?) {
+    fun previewProject(project: VisionGraphProjectTree.TreeNode.Project?) {
         onMainUpdate.once {
             if(project == null) {
                 plugin.isRunningPreviewPipeline = false
@@ -379,22 +379,22 @@ class PaperVisionProjectManager(
         }
     }
 
-    fun openProject(project: PaperVisionProjectTree.TreeNode.Project) {
+    fun openProject(project: VisionGraphProjectTree.TreeNode.Project) {
         logger.info("Opening ${project.name}")
 
-        currentPaperVisionProject = Json.decodeFromString<EOCVSimPaperVisionProject>(readProjectFile(project))
+        currentPaperVisionProject = Json.decodeFromString<VisionGraphProject>(readProjectFile(project))
 
         SwingUtilities.invokeLater {
             eocvSim.visualizerApi.frame!!.isVisible = false
         }
 
-        PaperVisionProcessRunner.onPaperVisionExit.once {
+        VisionGraphProcessRunner.onPaperVisionExit.once {
             SwingUtilities.invokeLater {
                 eocvSim.visualizerApi.frame!!.isVisible = true
             }
         }
 
-        PaperVisionProcessRunner.execPaperVision(classpath)
+        VisionGraphProcessRunner.execPaperVision(classpath)
 
         currentProject = project
     }
@@ -411,16 +411,16 @@ class PaperVisionProjectManager(
         )
     }
 
-    fun findProject(path: String, name: String): PaperVisionProjectTree.TreeNode.Project? {
+    fun findProject(path: String, name: String): VisionGraphProjectTree.TreeNode.Project? {
         val paths = path.split("/").filter { it.isNotBlank() }
 
         // Start at the root of the project tree
-        var currentNode: PaperVisionProjectTree.TreeNode = projectTree.rootTree
+        var currentNode: VisionGraphProjectTree.TreeNode = projectTree.rootTree
 
         if (path.isNotBlank() || path != "/") {
             // Traverse the path segments
             for (segment in paths) {
-                if (currentNode is PaperVisionProjectTree.TreeNode.Folder) {
+                if (currentNode is VisionGraphProjectTree.TreeNode.Folder) {
                     // Find the subfolder with the matching segment name
                     val nextNode = currentNode.nodes.find { it.name == segment }
                     if (nextNode != null) {
@@ -437,29 +437,29 @@ class PaperVisionProjectManager(
         }
 
         // At the end of the path, check for a project with the given name
-        if (currentNode is PaperVisionProjectTree.TreeNode.Folder) {
+        if (currentNode is VisionGraphProjectTree.TreeNode.Folder) {
             return currentNode.nodes.find {
-                it is PaperVisionProjectTree.TreeNode.Project && it.name == name
-            } as? PaperVisionProjectTree.TreeNode.Project
+                it is VisionGraphProjectTree.TreeNode.Project && it.name == name
+            } as? VisionGraphProjectTree.TreeNode.Project
         }
 
         // If the final node is not a folder or doesn't contain the project, return null
         return null
     }
 
-    fun findProjectFolderPath(project: PaperVisionProjectTree.TreeNode.Project) =
+    fun findProjectFolderPath(project: VisionGraphProjectTree.TreeNode.Project) =
         findProjectPath(project)?.toAbsolutePath()?.parent
 
-    fun findProjectPath(project: PaperVisionProjectTree.TreeNode.Project) =
+    fun findProjectPath(project: VisionGraphProjectTree.TreeNode.Project) =
         findProjectPath(project, projectTree.rootTree, root)
 
     private fun findProjectPath(
-        targetProject: PaperVisionProjectTree.TreeNode.Project,
-        currentNode: PaperVisionProjectTree.TreeNode,
+        targetProject: VisionGraphProjectTree.TreeNode.Project,
+        currentNode: VisionGraphProjectTree.TreeNode,
         currentPath: Path
     ): Path? {
         return when (currentNode) {
-            is PaperVisionProjectTree.TreeNode.Folder -> {
+            is VisionGraphProjectTree.TreeNode.Folder -> {
                 for (node in currentNode.nodes) {
                     val path = findProjectPath(targetProject, node, currentPath.resolve(currentNode.name))
                     if (path != null) {
@@ -469,7 +469,7 @@ class PaperVisionProjectManager(
                 null
             }
 
-            is PaperVisionProjectTree.TreeNode.Project -> {
+            is VisionGraphProjectTree.TreeNode.Project -> {
                 if (currentNode == targetProject) {
                     return currentPath.resolve(currentNode.name)
                 }
@@ -479,7 +479,7 @@ class PaperVisionProjectManager(
     }
 
     fun sendRecoveryProject(
-        projectNode: PaperVisionProjectTree.TreeNode.Project,
+        projectNode: VisionGraphProjectTree.TreeNode.Project,
         tree: JsonElement
     ) {
         val projectPath = findProjectPath(projectNode)?.pathString ?: return
@@ -528,7 +528,7 @@ class PaperVisionProjectManager(
         refresh()
     }
 
-    fun saveLatestSource(source: String, project: PaperVisionProjectTree.TreeNode.Project? = currentProject) {
+    fun saveLatestSource(source: String, project: VisionGraphProjectTree.TreeNode.Project? = currentProject) {
         fileSystem.createDirectories(latestSourceFolder)
 
         val path = (if (project == null) "" else findProjectFolderPath(project)?.pathString ?: "").replace("/", "_")

@@ -7,7 +7,7 @@ import kotlinx.serialization.json.JsonNames
 
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
-data class EOCVSimPaperVisionProject(
+data class VisionGraphProject(
     val timestamp: Long,
     val path: String,
     val name: String,

@@ -1,4 +1,4 @@
-name = "PaperVision"
+name = "VisionGraph"
 author = "deltacv"
 author-email = "dev@deltacv.org"
 version = "{{version}}" # This will be replaced by Gradle using the artifact version
@@ -7,6 +7,6 @@ description = "Create your custom OpenCV algorithms using a user-friendly node e
 min-api-version = "4.2.0"
 
 super-access = true
-super-access-reason = "PaperVision requires your permision to fully support all features related to rendering user interaction and filesystem access."
+super-access-reason = "VisionGraph requires your permision to fully support all features related to rendering user interaction and filesystem access."
 
-main = "org.deltacv.papervision.plugin.PaperVisionEOCVSimPlugin"
+main = "org.deltacv.visiongraph.plugin.VisionGraphPlugin"

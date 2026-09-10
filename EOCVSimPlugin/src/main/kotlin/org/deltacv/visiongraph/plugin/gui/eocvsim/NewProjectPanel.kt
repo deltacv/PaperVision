@@ -19,7 +19,7 @@
 package org.deltacv.visiongraph.plugin.gui.eocvsim
 
 import org.deltacv.common.util.loggerForThis
-import org.deltacv.visiongraph.plugin.project.PaperVisionProjectManager
+import org.deltacv.visiongraph.plugin.project.VisionGraphProjectManager
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Window
@@ -27,7 +27,7 @@ import javax.swing.JButton
 import javax.swing.JPanel
 
 class NewProjectPanel(
-    val projectManager: PaperVisionProjectManager,
+    val projectManager: VisionGraphProjectManager,
     val ancestor: Window
 ) : JPanel() {
 

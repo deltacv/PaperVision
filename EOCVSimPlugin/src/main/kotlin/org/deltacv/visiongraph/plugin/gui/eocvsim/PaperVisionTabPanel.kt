@@ -20,8 +20,8 @@ package org.deltacv.visiongraph.plugin.gui.eocvsim
 
 import com.formdev.flatlaf.demo.HintManager
 import org.deltacv.eocvsim.plugin.api.VisualizerSidebarApi
-import org.deltacv.visiongraph.plugin.PaperVisionEOCVSimPlugin
-import org.deltacv.visiongraph.plugin.project.PaperVisionProjectTree
+import org.deltacv.visiongraph.plugin.VisionGraphPlugin
+import org.deltacv.visiongraph.plugin.project.VisionGraphProjectTree
 import java.awt.Color
 import java.awt.Font
 import java.awt.GridBagConstraints
@@ -36,14 +36,14 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 
 class PaperVisionTabPanel(
-    private val plugin: PaperVisionEOCVSimPlugin
+    private val plugin: VisionGraphPlugin
 ) : VisualizerSidebarApi.Tab(plugin) {
 
     val root = DefaultMutableTreeNode("/")
 
-    private var previousSelectedProjectNode: PaperVisionProjectTree.TreeNode.Project? = null
+    private var previousSelectedProjectNode: VisionGraphProjectTree.TreeNode.Project? = null
     val projectList = JTree(root)
-    val projectButtonsPanel = PaperVisionTabButtonsPanel(projectList, plugin.paperVisionProjectManager)
+    val projectButtonsPanel = PaperVisionTabButtonsPanel(projectList, plugin.visionGraphProjectManager)
 
     val projectListAndButtonsPanel = JPanel()
 
@@ -75,17 +75,17 @@ class PaperVisionTabPanel(
                     val nodeObject = node.userObject
 
                     if (e.clickCount >= 2) {
-                        if (nodeObject is PaperVisionProjectTree.TreeNode.Project) {
+                        if (nodeObject is VisionGraphProjectTree.TreeNode.Project) {
                             previousSelectedProjectNode = nodeObject
-                            plugin.paperVisionProjectManager.requestOpenProject(nodeObject)
+                            plugin.visionGraphProjectManager.requestOpenProject(nodeObject)
                         }
                     } else if (e.clickCount == 1 && previousSelectedProjectNode != nodeObject) {
-                        if (nodeObject is PaperVisionProjectTree.TreeNode.Project) {
+                        if (nodeObject is VisionGraphProjectTree.TreeNode.Project) {
                             previousSelectedProjectNode = nodeObject
-                            plugin.paperVisionProjectManager.previewProject(nodeObject)
+                            plugin.visionGraphProjectManager.previewProject(nodeObject)
                             setSourceSelectorEnabled(true)
                         } else {
-                            plugin.paperVisionProjectManager.previewProject(null) // return to papervision default pipeline
+                            plugin.visionGraphProjectManager.previewProject(null) // return to papervision default pipeline
                             setSourceSelectorEnabled(false)
                         }
                     }
@@ -97,7 +97,7 @@ class PaperVisionTabPanel(
 
         projectListScroll.setViewportView(projectList)
 
-        plugin.paperVisionProjectManager.onRefresh {
+        plugin.visionGraphProjectManager.onRefresh {
             refreshProjectTree()
         }
 
@@ -146,22 +146,22 @@ class PaperVisionTabPanel(
     }
 
     fun refreshProjectTree() {
-        val rootTree = plugin.paperVisionProjectManager.projectTree.rootTree.nodes
+        val rootTree = plugin.visionGraphProjectManager.projectTree.rootTree.nodes
 
         SwingUtilities.invokeLater {
             root.removeAllChildren()
 
             if (rootTree.isNotEmpty()) {
-                fun buildTree(folder: PaperVisionProjectTree.TreeNode.Folder): DefaultMutableTreeNode {
+                fun buildTree(folder: VisionGraphProjectTree.TreeNode.Folder): DefaultMutableTreeNode {
                     val folderNode = DefaultMutableTreeNode(folder)
 
                     for (node in folder.nodes) {
                         when (node) {
-                            is PaperVisionProjectTree.TreeNode.Project -> {
+                            is VisionGraphProjectTree.TreeNode.Project -> {
                                 folderNode.add(DefaultMutableTreeNode(node))
                             }
 
-                            is PaperVisionProjectTree.TreeNode.Folder -> {
+                            is VisionGraphProjectTree.TreeNode.Folder -> {
                                 folderNode.add(buildTree(node))
                             }
                         }
@@ -171,9 +171,9 @@ class PaperVisionTabPanel(
                 }
 
                 for (node in rootTree) { // skip root "/" from showing up
-                    if (node is PaperVisionProjectTree.TreeNode.Folder) {
+                    if (node is VisionGraphProjectTree.TreeNode.Folder) {
                         root.add(buildTree(node))
-                    } else if (node is PaperVisionProjectTree.TreeNode.Project) {
+                    } else if (node is VisionGraphProjectTree.TreeNode.Project) {
                         root.add(DefaultMutableTreeNode(node))
                     }
                 }

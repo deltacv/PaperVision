@@ -25,7 +25,7 @@ import javax.swing.JDialog
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
-object PaperVisionDialogFactory {
+object VisionGraphDialogFactory {
 
     fun displayNewProjectDialog(parent: Window, projects: List<String>, groups: List<String>, name: String? = null, callback: (String?, String) -> Unit) {
         val panel = CreateNewProjectPanel(projects, groups, name, callback)

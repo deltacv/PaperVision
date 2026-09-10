@@ -17,7 +17,7 @@
  */
 package org.deltacv.visiongraph.plugin.project.recovery
 
-import org.deltacv.visiongraph.plugin.project.EOCVSimPaperVisionProject
+import org.deltacv.visiongraph.plugin.project.VisionGraphProject
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -25,7 +25,7 @@ data class RecoveredProject(
     val originalProjectPath: String,
     val date: Long,
     val hash: String,
-    val project: EOCVSimPaperVisionProject
+    val project: VisionGraphProject
 )
 
 @Serializable

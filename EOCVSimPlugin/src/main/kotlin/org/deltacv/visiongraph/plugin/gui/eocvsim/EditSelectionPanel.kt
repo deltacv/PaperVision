@@ -20,8 +20,8 @@ package org.deltacv.visiongraph.plugin.gui.eocvsim
 
 import com.github.serivesmejia.eocvsim.util.SysUtil
 import com.github.serivesmejia.eocvsim.util.extension.plus
-import org.deltacv.visiongraph.plugin.project.PaperVisionProjectManager
-import org.deltacv.visiongraph.plugin.project.PaperVisionProjectTree
+import org.deltacv.visiongraph.plugin.project.VisionGraphProjectManager
+import org.deltacv.visiongraph.plugin.project.VisionGraphProjectTree
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
@@ -35,8 +35,8 @@ import javax.swing.JPanel
 import javax.swing.filechooser.FileNameExtensionFilter
 
 class EditSelectionPanel(
-    val targetProjects: List<PaperVisionProjectTree.TreeNode.Project>,
-    val projectManager: PaperVisionProjectManager,
+    val targetProjects: List<VisionGraphProjectTree.TreeNode.Project>,
+    val projectManager: VisionGraphProjectManager,
     val ancestor: Window
 ) : JPanel() {
 
@@ -69,7 +69,7 @@ class EditSelectionPanel(
         exportProjectBtt.addActionListener {
             var nextDir: File? = null
 
-            fun openFileChooserFor(project: PaperVisionProjectTree.TreeNode.Project) {
+            fun openFileChooserFor(project: VisionGraphProjectTree.TreeNode.Project) {
                 JFileChooser().apply {
                     if(nextDir == null) {
                         nextDir = fileSystemView.defaultDirectory

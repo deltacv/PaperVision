@@ -22,7 +22,7 @@ import java.nio.file.Path
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 
-class PaperVisionProjectTree(val rootPath: Path) {
+class VisionGraphProjectTree(val rootPath: Path) {
 
     val rootTree = scanDeep(rootPath)
 

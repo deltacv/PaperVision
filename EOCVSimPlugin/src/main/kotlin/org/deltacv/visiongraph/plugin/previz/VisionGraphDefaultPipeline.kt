@@ -31,7 +31,7 @@ import org.opencv.imgproc.Imgproc
 import org.openftc.easyopencv.OpenCvPipeline
 
 @Disabled
-class PaperVisionDefaultPipeline(
+class VisionGraphDefaultPipeline(
     val telemetry: Telemetry
 ) : OpenCvPipeline() {
 
@@ -46,7 +46,7 @@ class PaperVisionDefaultPipeline(
         drawMat.setTo(Scalar(0.0, 0.0, 0.0, 0.0))
 
         try {
-            val bytes = PaperVisionDefaultPipeline::class.java.getResourceAsStream("/ico/ico_ezv.png")!!.use {
+            val bytes = VisionGraphDefaultPipeline::class.java.getResourceAsStream("/ico/ico_ezv.png")!!.use {
                 it.readBytes()
             }
 

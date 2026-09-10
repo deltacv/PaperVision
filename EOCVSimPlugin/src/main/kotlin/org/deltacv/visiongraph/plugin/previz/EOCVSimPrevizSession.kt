@@ -23,16 +23,15 @@ import org.deltacv.eocvsim.plugin.api.PipelineManagerApi
 import org.deltacv.eocvsim.stream.ImageStreamer
 import org.deltacv.eocvsim.virtualreflect.VirtualReflectContext
 import org.deltacv.eocvsim.virtualreflect.jvm.JvmVirtualReflection
-import org.deltacv.visiongraph.plugin.PaperVisionProcessRunner
-import org.deltacv.visiongraph.plugin.project.PaperVisionProjectManager
+import org.deltacv.visiongraph.plugin.VisionGraphProcessRunner
+import org.deltacv.visiongraph.plugin.project.VisionGraphProjectManager
 import org.deltacv.visiongraph.util.loggerForThis
 import org.openftc.easyopencv.OpenCvPipeline
-import kotlin.math.log
 
 class EOCVSimPrevizSession(
     val sessionName: String,
     val eocvSimApi: EOCVSimApi,
-    val projectManager: PaperVisionProjectManager,
+    val projectManager: VisionGraphProjectManager,
     val streamer: ImageStreamer = NoOpEngineImageStreamer,
     initialSourceCode: String
 ) {
@@ -92,7 +91,7 @@ class EOCVSimPrevizSession(
             }
         }
 
-        PaperVisionProcessRunner.onPaperVisionExit.once {
+        VisionGraphProcessRunner.onPaperVisionExit.once {
             stopPreviz()
         }
 

@@ -18,7 +18,7 @@
 
 package org.deltacv.visiongraph.plugin.gui.eocvsim
 
-import org.deltacv.visiongraph.plugin.project.PaperVisionProjectTree
+import org.deltacv.visiongraph.plugin.project.VisionGraphProjectTree
 import java.awt.Component
 import javax.swing.JTree
 import javax.swing.UIManager
@@ -33,9 +33,9 @@ class ProjectTreeCellRenderer: DefaultTreeCellRenderer() {
         if(value is DefaultMutableTreeNode) {
             val node = value.userObject
 
-            if(node is PaperVisionProjectTree.TreeNode.Project) {
+            if(node is VisionGraphProjectTree.TreeNode.Project) {
                 icon = UIManager.getIcon("FileView.fileIcon")
-            } else if(node is PaperVisionProjectTree.TreeNode.Folder) {
+            } else if(node is VisionGraphProjectTree.TreeNode.Folder) {
                 icon = UIManager.getIcon("FileView.directoryIcon")
             }
         }

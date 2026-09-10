@@ -30,14 +30,14 @@ import org.deltacv.visiongraph.engine.client.response.ErrorResponse
 import org.deltacv.visiongraph.engine.client.response.OkResponse
 import org.deltacv.visiongraph.engine.client.response.PrevizStatisticsResponse
 import org.deltacv.visiongraph.engine.client.response.StringResponse
-import org.deltacv.visiongraph.plugin.previz.PaperVisionDefaultPipeline
+import org.deltacv.visiongraph.plugin.previz.VisionGraphDefaultPipeline
 import org.deltacv.visiongraph.plugin.gui.eocvsim.PaperVisionTabPanel
-import org.deltacv.visiongraph.plugin.gui.eocvsim.dialog.PaperVisionDialogFactory
+import org.deltacv.visiongraph.plugin.gui.eocvsim.dialog.VisionGraphDialogFactory
 import org.deltacv.visiongraph.plugin.previz.EOCVSimEngineImageStreamer
 import org.deltacv.visiongraph.plugin.previz.EOCVSimPrevizSession
 import org.deltacv.visiongraph.plugin.engine.message.*
 import org.deltacv.visiongraph.plugin.engine.message.response.InputSourcesListResponse
-import org.deltacv.visiongraph.plugin.project.PaperVisionProjectManager
+import org.deltacv.visiongraph.plugin.project.VisionGraphProjectManager
 import org.deltacv.visiongraph.util.replaceLast
 import org.deltacv.visiongraph.util.toValidIdentifier
 import org.opencv.core.Size
@@ -52,9 +52,9 @@ import javax.swing.SwingUtilities
  * Main entry point for the VisionGraph plugin.
  * Specified in the plugin.toml file.
  */
-class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
+class VisionGraphPlugin : EOCVSimPlugin() {
 
-    val engine = PaperVisionProcessRunner.paperVisionEngine
+    val engine = VisionGraphProcessRunner.paperVisionEngine
 
     var isRunningPreviewPipeline = false
 
@@ -74,8 +74,8 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         } + File.pathSeparator
     }
 
-    val paperVisionProjectManager by lazy {
-        PaperVisionProjectManager(
+    val visionGraphProjectManager by lazy {
+        VisionGraphProjectManager(
             fullClasspath, fileSystem, engine, this, eocvSimApi
         )
     }
@@ -83,7 +83,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     val paperVisionTabPanel by lazy { PaperVisionTabPanel(this) }
 
     override fun onLoad() {
-        paperVisionProjectManager.init()
+        visionGraphProjectManager.init()
 
         eocvSimApi.visualizerApi.creationHook.once {
             val sidebar = eocvSimApi.visualizerApi.sidebarApi
@@ -102,14 +102,14 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
             val fileNewPaperVisionProject = JMenuItem("New Project")
             fileNewPaperVisionProject.addActionListener {
-                paperVisionProjectManager.newProjectAsk(eocvSimApi.visualizerApi.frame!!)
+                visionGraphProjectManager.newProjectAsk(eocvSimApi.visualizerApi.frame!!)
             }
 
             fileNewVisionGraphMenu.add(fileNewPaperVisionProject)
 
             val filePaperVisionImport = JMenuItem("Import...")
             filePaperVisionImport.addActionListener {
-                paperVisionProjectManager.importProjectAsk(eocvSimApi.visualizerApi.frame!!)
+                visionGraphProjectManager.importProjectAsk(eocvSimApi.visualizerApi.frame!!)
             }
 
             fileNewVisionGraphMenu.add(filePaperVisionImport)
@@ -118,13 +118,13 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         }
 
         eocvSimApi.mainLoopHook.once(this::recoverProjects)
-        PaperVisionProcessRunner.onPaperVisionExitError.once(this::recoverProjects)
+        VisionGraphProcessRunner.onPaperVisionExitError.once(this::recoverProjects)
 
         eocvSimApi.pipelineManagerApi.onPipelineChangeHook {
             switchToDefaultPipelineIfNecessary()
         }
 
-        PaperVisionProcessRunner.onPaperVisionStart {
+        VisionGraphProcessRunner.onPaperVisionStart {
             // abort papervision pipeline
             switchToDefaultPipelineIfNecessary()
 
@@ -133,7 +133,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
             }
         }
 
-        PaperVisionProcessRunner.onPaperVisionExit {
+        VisionGraphProcessRunner.onPaperVisionExit {
             switchToDefaultPipelineIfNecessary()
 
             currentPrevizSession?.stopPreviz()
@@ -147,7 +147,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
 
     override fun onEnable() {
         eocvSimApi.pipelineManagerApi.addPipelineClass(
-            PaperVisionDefaultPipeline::class.java,
+            VisionGraphDefaultPipeline::class.java,
             PipelineManagerApi.PipelineSource.CLASSPATH,
             hidden = true
         )
@@ -212,7 +212,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         engine.setMessageHandlerOf<PrevizAskNameMessage> {
             respond(
                 StringResponse(
-                    paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "")?.toValidIdentifier()
+                    visionGraphProjectManager.currentProject?.name?.replaceLast(".paperproj", "")?.toValidIdentifier()
                         ?: "Mack"
                 )
             )
@@ -221,7 +221,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         engine.setMessageHandlerOf<AskProjectGenClassNameMessage> {
             respond(
                 StringResponse(
-                    paperVisionProjectManager.currentProject?.name?.replaceLast(".paperproj", "")?.toValidIdentifier()
+                    visionGraphProjectManager.currentProject?.name?.replaceLast(".paperproj", "")?.toValidIdentifier()
                         ?: "Mack"
                 )
             )
@@ -248,7 +248,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                 currentPrevizSession = EOCVSimPrevizSession(
                     message.previzName,
                     eocvSimApi,
-                    paperVisionProjectManager,
+                    visionGraphProjectManager,
                     streamer,
                     message.sourceCode
                 )
@@ -307,21 +307,21 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
     }.toTypedArray().apply { sortBy { it.timestamp } }
 
     override fun onDisable() {
-        PaperVisionProcessRunner.stopPaperVision()
+        VisionGraphProcessRunner.stopPaperVision()
 
         currentPrevizSession?.stopPreviz()
         currentPrevizSession = null
 
-        paperVisionProjectManager.closeCurrentProject()
+        visionGraphProjectManager.closeCurrentProject()
     }
 
     private fun recoverProjects() {
-        if (paperVisionProjectManager.recoveredProjects.isNotEmpty()) {
-            PaperVisionDialogFactory.displayProjectRecoveryDialog(
-                eocvSimApi.visualizerApi.frame!!, paperVisionProjectManager.recoveredProjects
+        if (visionGraphProjectManager.recoveredProjects.isNotEmpty()) {
+            VisionGraphDialogFactory.displayProjectRecoveryDialog(
+                eocvSimApi.visualizerApi.frame!!, visionGraphProjectManager.recoveredProjects
             ) {
                 for (recoveredProject in it) {
-                    paperVisionProjectManager.recoverProject(recoveredProject)
+                    visionGraphProjectManager.recoverProject(recoveredProject)
                 }
 
                 if (it.isNotEmpty()) {
@@ -333,7 +333,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
                     )
                 }
 
-                paperVisionProjectManager.deleteAllRecoveredProjects()
+                visionGraphProjectManager.deleteAllRecoveredProjects()
             }
         }
     }
@@ -344,7 +344,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         eocvSimApi.mainLoopHook.once {
             eocvSimApi.pipelineManagerApi.changePipeline(
                 eocvSimApi.pipelineManagerApi.getIndexOf(
-                    PaperVisionDefaultPipeline::class.java,
+                    VisionGraphDefaultPipeline::class.java,
                     PipelineManagerApi.PipelineSource.CLASSPATH
                 ) ?: 0
             )
@@ -355,7 +355,7 @@ class PaperVisionEOCVSimPlugin : EOCVSimPlugin() {
         if (isRunningPreviewPipeline) return
 
         if (eocvSimApi.visualizerApi.sidebarApi.isActive(paperVisionTabPanel)) {
-            if (currentPrevizSession?.previzRunning != true || !PaperVisionProcessRunner.isRunning) {
+            if (currentPrevizSession?.previzRunning != true || !VisionGraphProcessRunner.isRunning) {
                 switchToDefaultPipeline()
             }
         } else {
@@ -387,6 +387,3 @@ fun InputSourceApi.Type.toIpc() = when(this) {
     InputSourceApi.Type.CAMERA -> IpcInputSourceType.CAMERA
     InputSourceApi.Type.HTTP -> IpcInputSourceType.HTTP
 }
-
-
-

@@ -20,8 +20,8 @@ package org.deltacv.visiongraph.plugin.gui.eocvsim
 
 import com.formdev.flatlaf.demo.HintManager
 import com.github.serivesmejia.eocvsim.gui.component.PopupX
-import org.deltacv.visiongraph.plugin.project.PaperVisionProjectManager
-import org.deltacv.visiongraph.plugin.project.PaperVisionProjectTree
+import org.deltacv.visiongraph.plugin.project.VisionGraphProjectManager
+import org.deltacv.visiongraph.plugin.project.VisionGraphProjectTree
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
@@ -33,7 +33,7 @@ import javax.swing.tree.DefaultMutableTreeNode
 
 class PaperVisionTabButtonsPanel(
     projectsJTree: JTree,
-    projectManager: PaperVisionProjectManager
+    projectManager: VisionGraphProjectManager
 ) : JPanel(GridBagLayout()) {
 
     val newProjectBtt  = JButton("New")
@@ -73,15 +73,15 @@ class PaperVisionTabButtonsPanel(
         editSelectionBtt.addActionListener {
             if(projectsJTree.selectionPaths == null) return@addActionListener
 
-            val projects = mutableListOf<PaperVisionProjectTree.TreeNode.Project>()
+            val projects = mutableListOf<VisionGraphProjectTree.TreeNode.Project>()
 
             for(selection in projectsJTree.selectionPaths!!) {
                 val selectedProject = selection.lastPathComponent
-                if(selectedProject !is DefaultMutableTreeNode || selectedProject.userObject !is PaperVisionProjectTree.TreeNode.Project)
+                if(selectedProject !is DefaultMutableTreeNode || selectedProject.userObject !is VisionGraphProjectTree.TreeNode.Project)
                     continue
 
                 if(projects.contains(selectedProject.userObject)) continue // avoid duplication
-                projects.add(selectedProject.userObject as PaperVisionProjectTree.TreeNode.Project)
+                projects.add(selectedProject.userObject as VisionGraphProjectTree.TreeNode.Project)
             }
 
             val location = editSelectionBtt.locationOnScreen
@@ -105,17 +105,17 @@ class PaperVisionTabButtonsPanel(
 
         openSelectionBtt.addActionListener {
             val selectedProject = projectsJTree.lastSelectedPathComponent
-            if(selectedProject !is DefaultMutableTreeNode || selectedProject.userObject !is PaperVisionProjectTree.TreeNode.Project)
+            if(selectedProject !is DefaultMutableTreeNode || selectedProject.userObject !is VisionGraphProjectTree.TreeNode.Project)
                 return@addActionListener
 
-            projectManager.requestOpenProject(selectedProject.userObject as PaperVisionProjectTree.TreeNode.Project)
+            projectManager.requestOpenProject(selectedProject.userObject as VisionGraphProjectTree.TreeNode.Project)
         }
 
         projectsJTree.addTreeSelectionListener {
             val selectedProject = projectsJTree.lastSelectedPathComponent
 
             val state = selectedProject is DefaultMutableTreeNode &&
-                    selectedProject.userObject is PaperVisionProjectTree.TreeNode.Project
+                    selectedProject.userObject is VisionGraphProjectTree.TreeNode.Project
 
             editSelectionBtt.isEnabled = state
             openSelectionBtt.isEnabled = state
