@@ -5,7 +5,12 @@ win_inputsources,Input Sources,Fuentes de Entrada
 win_createinput_sources,Create Input Sources,Crear Fuentes de Entrada
 win_selectlanguage,Select Language,Seleccionar Lenguaje
 win_welcome,Welcome!,Bienvenid@!
-win_about,About PaperVision,Acerca de PaperVision
+win_about,About VisionGraph,Acerca de VisionGraph
+win_about_version,VisionGraph v$[0] built on $[1],VisionGraph v$[0] compilado el $[1]
+win_about_devbuild,You are running a development build. Report any issues to the developers.,Es una version de desarrollo. Reporta cualquier problema a los desarrolladores.
+win_about_stablebuild,You are running a stable build.,Es una version estable.
+win_about_systemdetails,System: $[0] $[1] $[2] running on Java $[3] $[4],Sistema: $[0] $[1] $[2] ejecutándose en Java $[3] $[4]
+win_about_memusage,Current heap usage: $[0] MB | Element count: $[1],Uso actual de heap: $[0] MB | Cantidad de elementos: $[1]
 win_confirm,Confirm,Confirmar
 win_options,Options,Opciones
 win_codegen_error,Unexpected Generation Error,Error de Generación Inesperado
@@ -217,7 +222,7 @@ err_couldntlink_didntmatch,Couldn't link nodes: Types didn't match,No se complet
 err_couldntlink_recursion,Couldn't link nodes: Unable to create a recursive link,No se completo la conexion: No se puede crear una conexion recursiva
 err_recursiondetected,Recursion detected: Unable to generate code due to an attribute cycle.,Recursión detectada: No se puede generar el código debido a un ciclo de atributos.
 err_couldntlink_notdecomposable,Couldn't link nodes: Attribute is not decomposable,No se completo la conexion: El atributo no es descomponible
-err_noop_engine,"PaperVision engine is running in no-op mode, this feature is not available","El motor de PaperVision esta corriendo en modo no-op, esta caracteristica no esta disponible"
+err_noop_engine,"VisionGraph engine is running in no-op mode, this feature is not available","El motor de VisionGraph esta corriendo en modo no-op, esta caracteristica no esta disponible"
 mis_input,Input,Entrada
 mis_output,Output,Salida
 mis_round,Nearest Round,Redondear al mas cercano
@@ -230,7 +235,7 @@ mis_doubleclick_tomaximize,Double-Click to maximize,Doble-Clic para maximizar
 mis_doubleclick_tominimize,Double-Click to minimize,Doble-Clic para minimizar
 mis_searchingnodes_pleasewait,"Searching for nodes, please wait...","Buscando nodos, por favor espera..."
 mis_welcomelanguage,Choose a language to proceed<br>Elige un lenguaje para continuar,Choose a language to proceed<br>Elige un lenguaje para continuar
-mis_welcome1,Welcome to PaperVision! This is a visual programming tool for OpenCV.,Bienvenido a PaperVision! Esta es una herramienta visual para OpenCV.
+mis_welcome1,Welcome to VisionGraph! This is a visual programming tool for OpenCV.,Bienvenido a VisionGraph! Esta es una herramienta visual para OpenCV.
 mis_welcome2,You can add nodes and connect them to create your very own vision pipelines.,Puedes añadir nodos y conectarlos para crear tus propios algoritmos de vision.
 mis_welcome3,Generate Java or Python code and run it in your own project right away.,Genera codigo Java o Python y ejecutalo en tu proyecto instantaneamente.
 mis_welcome4,"If you are new, make sure to click on the 'Guided Tour' button below.","Si eres nuev@, asegurate de presionar ""Visita Guiada"" aqui abajo."
@@ -246,7 +251,7 @@ mis_imagesource,Image File Source,Archivo de Imagen
 mis_httpsource,HTTP Stream Source,Video HTTP
 mis_guidedtour,Guided Tour,Visita Guiada
 mis_guidedtour_1,Welcome to the guided tour!,¡Bienvenido al recorrido guiado!
-mis_guidedtour_2,This will help you get started with PaperVision.<br>Read each step carefully !,Esto te ayudará a comenzar con PaperVision.<br>¡Lee cada paso con cuidado!
+mis_guidedtour_2,This will help you get started with VisionGraph.<br>Read each step carefully !,Esto te ayudará a comenzar con VisionGraph.<br>¡Lee cada paso con cuidado!
 mis_guidedtour_3,"A 'pipeline' is a sequence of nodes that transform data in a series of steps.","Un 'pipeline' es una secuencia de nodos que transforman datos en una serie de pasos."
 mis_guidedtour_4,"This is the entry point, from which the 'pipeline' receives the input images.","Este es el punto de entrada, desde donde el 'pipeline' recibe las imágenes de entrada."
 mis_guidedtour_5,"This is the exit point, where the pipeline outputs the final result.","Este es el punto de salida, donde el pipeline genera el resultado final."
@@ -310,7 +315,7 @@ mis_nodeeditor_emptystate1,"There's nothing here... Yet.","No hay nada aquí... 
 mis_nodeeditor_emptystate2,"Select an option to get started!","¡Selecciona una opción para comenzar!"
 mis_about,About,Acerca de
 mis_docs,Documentation,Documentación
-mis_opendocs,Do you want to open PaperVision's documentation in your web browser?,¿Quieres abrir la documentación de PaperVision en tu navegador web?
+mis_opendocs,Do you want to open VisionGraph's documentation in your web browser?,¿Quieres abrir la documentación de VisionGraph en tu navegador web?
 mis_confirmaction,Confirm Action,Confirmar Acción
 mis_confirm,Confirm,Confirmar
 mis_lowercase_or,or,o

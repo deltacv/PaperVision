@@ -52,12 +52,12 @@ class AboutModalWindow : Window() {
 
         monoFont.push()
 
-        ImGuiEx.centeredText("PaperVision v${BuildInfo.VERSION_STRING} built on ${BuildInfo.BUILD_DATE}")
+        ImGuiEx.centeredText(tr("win_about_version", BuildInfo.VERSION_STRING, BuildInfo.BUILD_DATE))
 
         if(BuildInfo.IS_DEV) {
-            ImGuiEx.centeredText("You are running a development build. Report any issues to the developers.")
+            ImGuiEx.centeredText(tr("win_about_devbuild"))
         } else {
-            ImGuiEx.centeredText("You are running a stable build.")
+            ImGuiEx.centeredText(tr("win_about_stablebuild"))
         }
 
         ImGui.newLine()
@@ -69,8 +69,8 @@ class AboutModalWindow : Window() {
             elementCount += container.inmutable.size
         }
 
-        ImGuiEx.centeredText("System details: ${OS} $OS_VERSION ${ARCH} running on Java ${System.getProperty("java.version")} ${System.getProperty("java.vendor")}")
-        ImGuiEx.centeredText("Current heap memory usage: ${getMemoryUsageMB()} MB | Element count: $elementCount")
+        ImGuiEx.centeredText(tr("win_about_systemdetails", OS, OS_VERSION, ARCH, System.getProperty("java.version"), System.getProperty("java.vendor")))
+        ImGuiEx.centeredText(tr("win_about_memusage", getMemoryUsageMB(), elementCount))
 
         ImGui.newLine()
 
