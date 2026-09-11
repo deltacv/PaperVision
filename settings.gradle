@@ -8,17 +8,14 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'PaperVision'
+rootProject.name = 'VisionGraph'
 
-include 'PaperVision'
+include 'VisionGraph'
 include 'Shared'
 
-include 'EOCVSimPlugin'
+include 'VisionGraphPlugin'
 
 include 'LwjglPlatform'
 include 'LwjglPlatform:Standalone'
 
 include 'AnnotationProcessor'
-
-
-

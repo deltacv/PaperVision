@@ -7,7 +7,7 @@ plugins {
 apply from: '../build.common.gradle'
 
 dependencies {
-    api project(":PaperVision")
+    api project(":VisionGraph")
 
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib"
 
