@@ -13,7 +13,7 @@ rootProject.name = 'VisionGraph'
 include 'VisionGraph'
 include 'Shared'
 
-include 'VisionGraphPlugin'
+include 'VisionBenchPlugin'
 
 include 'LwjglPlatform'
 include 'LwjglPlatform:Standalone'
